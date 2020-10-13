@@ -1,0 +1,42 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model dblu.Portale.Plugin.Docs.ViewModels.DocumentViewModel
+
+@using Newtonsoft.Json.Linq
+@using Newtonsoft.Json
+@{
+
+    JObject jnote = (JObject)Model.Allegato.jNote;
+    var note = new JArray();   //jnote["note"] as JArray;
+
+    if (jnote is null)
+    { }
+    else {
+        if (jnote.ContainsKey("note"))
+        {
+            note = jnote["note"] as JArray;
+        }
+    }
+}
+
+
+<div class="k-card-deck-scrollwrap">
+    <div class="k-card-deck">
+        @foreach (var item in note)
+        {
+            <div class="k-card" style="width: 20rem;">
+                <img class="k-card-image" src="https://www.becomingminimalist.com/wp-content/uploads/2008/07/post-it-note.jpg" alt="Card image cap" style="width:20px; height:20px">
+                <div class="k-card-body">
+                    <h6 class="">@DateTime.Parse(item["datemodifica"].ToString())</h6>
+                    <h6 class="">Utente: <em>@item["utente"].ToString()</em></h6>
+                    <h6 class="">Ultima Modifica: <em>@(item["utentemodifica"] == null ? "" : item["utentemodifica"].ToString())</em></h6>
+                    <br />
+                    <p class="card-text">Nota: <strong>@item["contenuto"].ToString()</strong></p>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

@@ -1,0 +1,1339 @@
+﻿@inject dblu.Portale.Services.Camunda.CamundaService  _bpmservice
+@inject dblu.Portale.Plugin.Docs.Services.MailService _mailservice
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _allservice
+@inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
+
+@using BPMClient;
+@using dblu.Portale.Extensions
+@using Kendo.Mvc.UI
+@addTagHelper *, Kendo.Mvc
+@using dblu.Portale.Plugin.Docs.ViewModels
+
+
+@{
+    MailViewModel vModel = null;
+    try
+    {
+        if (Model.isInsideTask)
+        {
+            BPMTaskDto task = TempData.Get<BPMTaskDto>("task");
+            vModel = await _mailservice.GetMailViewModel(task);
+        }
+        else { vModel = await _mailservice.GetMailViewModel(Model.id); }
+
+        TempData.Put("FileAllegati", vModel.FileAllegati);
+    }
+    catch (Exception)
+    {
+
+        BPMTaskDto task = TempData.Get<BPMTaskDto>("task");
+        vModel = await _mailservice.GetMailViewModel(task);
+    }
+
+    var soggetti = await _sggservice.GetSoggettiAsync();
+    ViewData["Title"] = "Gestione Email";
+}
+<script src="~/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+@*
+    <script src="https://kendo.cdn.telerik.com/2020.3.915/js/kendo.all.min.js"></script>
+*@
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"></script>
+<script src="~/lib/kendo-ui/js/cultures/kendo.culture.it-IT.min.js"></script>
+<script>
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js';
+</script>
+
+<script type="text/javascript">
+    kendo.culture("it-IT");
+</script>
+<style>
+
+    .legend {
+        background-color: lightyellow;
+    }
+
+    .k-grid tbody .k-grid .k-grid-header .k-header {
+        background-color: #e6ffff;
+        color: black
+    }
+
+    .kendoDanger {
+        background-color: red;
+        color: white;
+    }
+
+        .kendoDanger:hover {
+            background-color: darkred;
+            color: white;
+        }
+    /* PRESETS */
+    /* line 2, ../sass/style.scss */
+    .no-padding {
+        padding: 0px;
+    }
+
+    /* line 7, ../sass/style.scss */
+    .home-search {
+        width: 100%;
+    }
+
+    /* line 10, ../sass/style.scss */
+    .navbar {
+        margin-bottom: 0px;
+    }
+
+    /* line 13, ../sass/style.scss */
+    .navbar-default {
+        background: #E87E04;
+    }
+        /* line 15, ../sass/style.scss */
+        .navbar-default .navbar-brand {
+            color: #fff;
+        }
+            /* line 17, ../sass/style.scss */
+            .navbar-default .navbar-brand:hover {
+                color: #fff;
+            }
+            /* line 20, ../sass/style.scss */
+            .navbar-default .navbar-brand:focus {
+                color: #fff;
+            }
+        /* line 24, ../sass/style.scss */
+        .navbar-default .navbar-form {
+            border: none;
+            padding: 0px 0px;
+        }
+        /* line 28, ../sass/style.scss */
+        .navbar-default .navbar-toggle {
+            border-color: #fff;
+        }
+            /* line 30, ../sass/style.scss */
+            .navbar-default .navbar-toggle .icon-bar {
+                background: #fff;
+            }
+            /* line 33, ../sass/style.scss */
+            .navbar-default .navbar-toggle:hover {
+                background: #EB9532;
+            }
+            /* line 36, ../sass/style.scss */
+            .navbar-default .navbar-toggle:focus {
+                background: #EB9532;
+            }
+        /* line 42, ../sass/style.scss */
+        .navbar-default .navbar-nav li a {
+            color: #fff;
+        }
+            /* line 44, ../sass/style.scss */
+            .navbar-default .navbar-nav li a:focus {
+                color: #fff;
+            }
+            /* line 47, ../sass/style.scss */
+            .navbar-default .navbar-nav li a:hover {
+                color: #fff;
+            }
+        /* line 53, ../sass/style.scss */
+        .navbar-default .navbar-nav .open a {
+            color: #fff;
+            background: #E87E04;
+        }
+            /* line 56, ../sass/style.scss */
+            .navbar-default .navbar-nav .open a:focus {
+                background: #EB9532;
+                color: #fff;
+            }
+            /* line 60, ../sass/style.scss */
+            .navbar-default .navbar-nav .open a:hover {
+                background: #EB9532;
+                color: #fff;
+            }
+        /* line 65, ../sass/style.scss */
+        .navbar-default .navbar-nav .open .dropdown-menu {
+            background: #E87E04;
+        }
+            /* line 68, ../sass/style.scss */
+            .navbar-default .navbar-nav .open .dropdown-menu li a {
+                color: #fff;
+            }
+                /* line 70, ../sass/style.scss */
+                .navbar-default .navbar-nav .open .dropdown-menu li a:focus {
+                    color: #fff;
+                    background: #EB9532;
+                }
+                /* line 74, ../sass/style.scss */
+                .navbar-default .navbar-nav .open .dropdown-menu li a:hover {
+                    color: #fff;
+                    background: #EB9532;
+                }
+
+    /* line 85, ../sass/style.scss */
+    .home-banner {
+        height: 300px;
+        background: url("http://lbc9.net/digital-art/vector/flowers/orange-vector-flower-patterns-background-1920x1080.jpg") no-repeat;
+        background-position: center;
+        background-size: cover;
+    }
+
+    /* line 92, ../sass/style.scss */
+    .card {
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.16), 0 2px 10px 0 rgba(0, 0, 0, 0.12);
+        margin-top: 10px;
+        box-sizing: border-box;
+        border-radius: 2px;
+        background-clip: padding-box;
+    }
+        /* line 98, ../sass/style.scss */
+        .card .card-title {
+            color: black;
+            font-size: 24px;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
+        /* line 104, ../sass/style.scss */
+        .card .card-image {
+            position: relative;
+            overflow: hidden;
+        }
+            /* line 107, ../sass/style.scss */
+            .card .card-image img {
+                border-radius: 2px 2px 0 0;
+                background-clip: padding-box;
+                position: relative;
+                z-index: -1;
+            }
+            /* line 113, ../sass/style.scss */
+            .card .card-image .card-title {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                padding: 16px;
+            }
+        /* line 120, ../sass/style.scss */
+        .card .card-content {
+            padding: 16px;
+            border-radius: 0 0 2px 2px;
+            background-clip: padding-box;
+            box-sizing: border-box;
+        }
+            /* line 125, ../sass/style.scss */
+            .card .card-content p {
+                margin: 0;
+            }
+            /* line 128, ../sass/style.scss */
+            .card .card-content .card-title {
+                line-height: 48px;
+            }
+        /* line 132, ../sass/style.scss */
+        .card .card-action {
+            border-top: 1px solid rgba(160, 160, 160, 0.2);
+            padding: 16px;
+        }
+            /* line 135, ../sass/style.scss */
+            .card .card-action a {
+                color: #ffab40;
+                margin-right: 16px;
+                transition: color 0.3s ease;
+                text-transform: uppercase;
+            }
+                /* line 140, ../sass/style.scss */
+                .card .card-action a:hover {
+                    color: #ffd8a6;
+                    text-decoration: none;
+                }
+
+
+    /* line 149, ../sass/style.scss */
+    .mSidebar {
+        position: absolute;
+        right: 20px;
+        top: 50px;
+        overflow-y: scroll;
+        -webkit-transition: all 500ms cubic-bezier(0.255, 1, 0.44, 1);
+        /* older webkit */
+        -webkit-transition: all 500ms cubic-bezier(0.255, 1.225, 0.44, 1.32);
+        -moz-transition: all 500ms cubic-bezier(0.255, 1.225, 0.44, 1.32);
+        -o-transition: all 500ms cubic-bezier(0.255, 1.225, 0.44, 1.32);
+        transition: all 500ms cubic-bezier(0.255, 1.225, 0.44, 1.32);
+        /* custom */
+        -webkit-transition-timing-function: cubic-bezier(0.255, 1, 0.44, 1);
+        /* older webkit */
+        -webkit-transition-timing-function: cubic-bezier(0.255, 1.225, 0.44, 1.32);
+        -moz-transition-timing-function: cubic-bezier(0.255, 1.225, 0.44, 1.32);
+        -o-transition-timing-function: cubic-bezier(0.255, 1.225, 0.44, 1.32);
+        transition-timing-function: cubic-bezier(0.255, 1.225, 0.44, 1.32);
+        /* custom */
+    }
+
+    html body #pdfviewer {
+        width: 100% !important;
+    }
+
+
+
+    tr.chargeback {
+        background-color: red;
+    }
+
+    tr.retroactive {
+        background-color: green;
+    }
+
+    tr:hover {
+        background-color: #ffff99;
+    }
+
+    .modal-dialog.modal-search {
+        width: 90%;
+        margin: 30px auto;
+        z-index: 1000000000;
+    }
+</style>
+
+
+<script>
+
+
+    $( document ).ready(function() {
+        checkCliente();
+        checkFascicoli();
+
+    });
+
+
+    function checkFascicoli() {
+         console.log("checkFascicoli");
+        var idFascicolo = '@vModel.IdFascicolo';
+        var idElemento = '@vModel.IdElemento';
+
+        if (idFascicolo.length == 0) {
+            //$("#DivNuovoFascicolo").show();
+            console.log("Fascicolo non associato");
+        } else {
+            console.log("Fascicolo associato");
+            $("#DivNuovo").hide();
+            $("#DivCarica").show();
+
+            //$("#DivGridElementi").show();
+            var fascicolo = @Html.Raw(Json.Serialize(@vModel.Fascicolo));
+            CaricaFascicolo(fascicolo);
+        }
+
+        if (idElemento.length == 0) {
+            //$("#DivNuovoElemento").show();
+            console.log("Elemento non associato");
+            $("#DivCarica").hide();
+            $("#DivNuovo").show();
+            $("#DivGridElementi").show()
+        }
+        else
+        {
+            console.log("Elemento associato");
+            var elemento = @Html.Raw(Json.Serialize(@vModel.Elemento));
+            CaricaElemento(elemento);
+            $("#DivNuovo").hide();
+            $("#DivCarica").show();
+        }
+    }
+
+    function checkCliente() {
+        console.log("checkCliente");
+        var codice = $("#CodCliente").val();
+        if (codice.length > 0) {
+            console.log("cliente già caricato");
+           // ho il cliente già caricato mostro i due Bottoni NUOVO E CERCA nel div collassato dei fascicoli
+             $("#FascicoloData").show();
+        }
+
+    }
+
+
+
+    function CaricaElemento(elemento) {
+
+        $("#btnAllega").css('visibility', 'visible');
+
+        //nascondi il div nuovo
+        $("#DivNuovo").hide();
+
+        $("#DivCarica").show();
+
+        $("#eleId").val(elemento.Id);
+        $("#eleTipo").val(elemento.Tipo);
+        $("#eleDes").val(elemento.Descrizione);
+
+    }
+
+    function Allega() {
+        var dialog = $("#detElemento").data("kendoWindow");
+        dialog.title("Allega a elemento");
+        //var ds = $("#detElemento").data("kendoGrid").DataSource;
+        $.ajax({
+            url: '@Url.Action("AllegaAElemento", "MailView")',
+            type: 'POST',
+            data: {
+                IdAllegato: $("#IdAllegato").val(),
+                IdElemento: $("#eleId").val(),
+                IdFascicolo: $("#IdFascicolo").val(),
+                allegamail: true
+            },
+            success: function(data) {
+                dialog.content(data);
+                dialog.open();
+            }
+        });
+
+    }
+
+    function MostraDatiNuovo() {
+        // ho cliccato il bottone Nuovo e mostro il div con l'inserimento di un Nuovo fascicolo\elemento
+       // alert("MostraDatiNuovo: Bottone Nuovo Click!")
+        $("#DivNuovo").show();
+        $("#DivGridElementi").show();
+        $("#DivCarica").hide();
+
+        $("#btnAllega").css('visibility', 'hidden');
+        //pulisco campi nel caso di un nuovo click
+        $("#neleDes").val("");
+
+    }
+
+    function SelectCliente(e) {
+        var item = e.item;
+        var codice = item.text();
+        CaricaCliente(codice);
+    }
+
+    function FascicoliData() {
+        return {
+            soggetto: $("#CodCliente").val()
+        }
+    }
+
+    function ElementiData() {
+        return {
+            id: $("#IdFascicolo").val()
+        }
+    }
+
+    function AllegatiData() {
+        return {
+            elemento: $("#eleId").val()
+        }
+    }
+
+
+
+    function CaricaCliente(codice) {
+        $.post(window.location.origin + '/MailView/GetSoggetto?codice=' + codice, function (data, status) {
+
+            $("#inputNome").val(data.Nome);
+            $("#inputRag").val(data.Nome);
+            $("#inputIndirizzo").val(data.Indirizzo);
+            $("#inputLocalità").val(data.Localita);
+            $("#inputProvincia").val(data.Provincia);
+
+            $("#FascicoloData").show();
+
+        })
+    }
+
+
+
+     $(function () {
+        $('#bAllegaFascicolo').on('click', function (evt) {
+            evt.preventDefault();
+             alert("TODO Allega a Elemento");
+        });
+     });
+
+
+     $(function () {
+        $('#bDettaglio').on('click', function (evt) {
+            evt.preventDefault();
+            var dialog = $("#detElemento").data("kendoWindow");
+
+            $.ajax({
+                url: '@Url.Action("editDettaglioElemento", "MailView")',
+                type: 'POST',
+                    data: { IdElemento:  $("#eleId").val() },
+                success: function(data) {
+                    dialog.content(data);
+                    dialog.open();
+                }
+            });
+        });
+     });
+
+
+
+
+
+
+
+</script>
+
+@(Html.Kendo().Notification()
+    .Name("notification")
+    .Position(p => p.Pinned(true).Top(30).Right(30))
+    .Stacking(NotificationStackingSettings.Down)
+    .AutoHideAfter(0)
+    .Templates(t =>
+    {
+        t.Add().Type("error").ClientTemplateID("errorTemplate");
+    })
+)
+
+<style>
+    h3 {
+        text-align: center;
+    }
+
+    p {
+        text-align: center;
+    }
+</style>
+
+<script id="errorTemplate" type="text/x-kendo-template">
+    <div class="wrong-pass" style="width:250px">
+        <h3>#= title #</h3>
+        <p>#= message #</p>
+    </div>
+</script>
+
+
+
+<div id="sidebar" class="mSidebar">
+    @(Html.Kendo().Window()
+        .Name("window")
+        .HtmlAttributes(new
+                          {
+                              //@class = "mSidebar"
+                          })
+        .Title("Gestione Mail")
+        .Content(@<text>
+                    <div class="box box-primary">
+                        <div class="box-header with-border" style="background-color:  #cceeff;">
+                            <h1 class="box-title" style="font-size: 25px">Gestione Mail</h1>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">Mittente</label>
+                                    <input id="TaskId" name="TaskId" type="hidden" value="@vModel.task.id" />
+                                    <input id="IdAllegato" name="IdAllegato" type="hidden" value="@vModel.IdAllegato" />
+                                    <div class="input-group col-sm-10" style="margin-left:10px">
+                                        @*<span class=""><i class="fa fa-envelope"></i></span>*@
+                                            <input type="email"
+                                                   id="sMittente"
+                                                   name="sMittente"
+                                                   class="form-control" value="@vModel.TaskVar["sMittente"].ToString()" maxlength="200" readonly="readonly" />
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-2 control-label">Data</label>
+                                        <div class="input-group col-sm-10" style="margin-left:10px">
+                                            @*<span class="input-group-addon"><i class="fa fa-calendar"></i></span>*@
+                                                <input type="datetime"
+                                                       id="dData"
+                                                       name="dData"
+                                                       class="form-control" value="@vModel.TaskVar["dData"]" maxlength="30" readonly="readonly" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-sm-2">Oggetto</label>
+                                            <div class="input-group col-sm-10" style="margin-left:10px">
+                                                @*<span class="input-group-addon"><i class="fa fa-thumb-tack"></i></span>*@
+
+                                                    <input type="text"
+                                                           id="sOggetto"
+                                                           name="sOggetto"
+                                                           class="form-control" value="@vModel.TaskVar["sOggetto"].ToString()" maxlength="200" readonly="readonly" />
+                                                </div>
+                                            </div>
+                                            <label class="control-label col-md-2">Testo</label>
+                                            <div style="width:80%">
+                                                <textarea class="form-control" asp-for="Testo" rows="5" style="width:100%" readonly="readonly">@vModel.Messaggio.TextBody</textarea>
+                                            </div>
+
+                                        </div>
+                                        <br /><br />
+                                        <div class="row">
+                                            <div class="form-group">
+                                                <label class="control-label col-md-2">Allegati</label>
+                                                <div class="col-md-10" style="width:50%">
+                                                    @(Html.Kendo().Grid<EmailAttachments>()
+                                           .Name("Attachments")
+                                           .Selectable()
+                                          .Events(events => events.Change("Attachments_OnRowSelect"))
+                                           .Columns(columns =>
+                                           {
+                                               columns.Bound(p => p.Id).Visible(false);
+                                               columns.Bound(p => p.NomeFile).Title("Nome file");
+                                           })
+                                            .BindTo(vModel.FileAllegati)
+                                                    )
+
+                                                    <script>
+                                        Attachments_OnRowSelect = function (e) {
+                                            var data = this.dataItem(this.select());
+
+                                            var nomefile = data.NomeFile;
+
+                                            var pdfViewer = $("#pdfviewer").data("kendoPDFViewer");
+                                            if (!pdfViewer) {
+                                                pdfViewer = $("#pdfviewer").kendoPDFViewer({
+                                                    pdfjsProcessing: {
+                                                        file: ""
+                                                    },
+                                                    width: "100%",
+                                                    height: 500
+                                                }).data("kendoPDFViewer");
+                                            }
+
+                                            pdfViewer.width = "100%";
+                                            pdfViewer.height = 700;
+                                            var url = "IdAllegato=" + '@vModel.IdAllegato' + "&NomeFile=" + nomefile;
+                                            var pdfHandlerUrl = "/MailView/GetPdf/data?" + url;
+                                            pdfViewer.fromFile(pdfHandlerUrl);
+                                        }
+
+                                                    </script>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="example">
+                                    @(Html.Kendo().PDFViewer().Name("pdfviewer")
+                                .Toolbar(toolbar =>
+                                toolbar.Items(items =>
+                                {
+                                    items.Add().Name("pager");
+                                    items.Add().Name("spacer");
+                                    items.Add().Name("zoom");
+                                    items.Add().Name("toggleSelection");
+
+
+                                })
+                            )
+
+                        .Width(10)
+                         .Height(700)
+                                    )
+                                </div>
+        </text>)
+.Draggable()
+.Resizable()
+.Width(700)
+.Actions(actions => actions.Pin().Minimize().Maximize())
+//.Events(ev => ev.Open("onOpen"))
+    )
+
+</div>
+
+
+@(Html.Kendo().Window()
+    .Name("detElemento")
+    .Visible(false).Modal(false)
+    .Title("Dettaglio Elemento")
+    .Draggable()
+    .Resizable()
+    .Width(800)
+    .Actions(actions => actions.Pin().Minimize().Maximize().Close())
+)
+
+@(Html.Kendo().Window()
+    .Name("cercasoggetti")
+    .Size("auto")
+    .Title("Soggetti")
+    .Visible(false)
+    .Actions(actions => actions.Refresh().Minimize().Maximize().Close())
+    .Content("")
+    .Scrollable(true)
+    .Draggable(false)
+    .Resizable()
+    .Modal(true)
+)
+
+
+<script>
+    function CercaSoggettiOnClick(e) {
+        //alert("@_sggservice.UrlServizio()");
+        var myWindow = $("#cercasoggetti").data("kendoWindow");
+        myWindow.refresh({
+            url: "@_sggservice.UrlServizio()",
+            type: "Post"
+        });
+        myWindow.open().maximize();
+    }
+</script>
+
+<script>
+    GridSoggetti_OnRowSelect = function (e) {
+        var data = this.dataItem(this.select());
+        var myWindow = $("#cercasoggetti").data("kendoWindow");
+        myWindow.close();
+        $("#CodCliente").val($.trim(data.Codice));
+        CaricaCliente(data.Codice);
+    }
+</script>
+
+
+<section class="content">
+    <div class="container-fluid">
+
+        <div class="row">
+            <!-- Left col -->
+            <div class="col-md-6">
+
+                <div class="box box-success">
+                    <div class="box-header with-border" style="background-color: #e6ffe6;">
+                        <h1 style="font-size: 25px" class="box-title">Cliente</h1>
+
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body no-padding">
+                        <div class="row">
+                            <div class="col-md-12 col-sm-12">
+                                <div class="pad">
+                                    <div class="form-group">
+                                        <label class="control-label col-md-4" style="font-size:20px">Codice Cliente</label>
+                                        <div class="col-md-10" style="width:30%;">
+
+                                            @(Html.Kendo().AutoComplete()
+                                              .Name("CodCliente")
+                                              .DataTextField("Codice")
+                                              .Filter("contains")
+                                              .MinLength(3)
+                                              .HtmlAttributes(new { style = "width:100%;font-size:20px" })
+                                            .BindTo((soggetti)
+                                            )
+                                            .Value(vModel.CodiceSoggetto)
+                                            .Events(e =>
+                                            {
+                                                e.Select("SelectCliente");
+                                            })
+                                            )
+
+                                        </div>
+
+                                        <button type="button" class="btn btn-lg btn-info" id="CercaSoggetti" onclick="CercaSoggettiOnClick()">Cerca Soggetto</button>
+                                        @*<button type="button" class="btn btn-lg btn-primary" data-toggle="modal" id="CercaCli" data-target="#selClienti">Cerca Cliente</button>
+                                            @(Html.Kendo().Button()
+                                                .Name("CercaSoggetti")
+                                                .Content("Cerca Soggetto")
+                                                .Events(ev => ev.Click("CercaSoggettiOnClick")))*@
+
+                                        <br /><br />
+                                        <div class="row" style="padding-top:10px; margin-top:10px; border:groove">
+                                            <div class="col-md-12">
+                                                <form>
+                                                    <div class="form-row">
+                                                        <div class="form-group col-md-6">
+                                                            <label for="inputNome">Ragione Sociale</label>
+                                                            <input type="text" class="form-control" id="inputNome" placeholder="" disabled value="@vModel.Soggetto.Nome">
+                                                        </div>
+                                                        <div class="form-group col-md-6">
+                                                            <label for="Indirizzo">Indirizzo</label>
+                                                            <input type="text" class="form-control" id="inputIndirizzo" placeholder="" value="@vModel.Soggetto.Indirizzo" disabled>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-row">
+                                                        <div class="form-group col-md-6">
+                                                            <label for="inputLocalità">Località</label>
+                                                            <input type="text" class="form-control" id="inputLocalità" disabled value="@vModel.Soggetto.Localita">
+                                                        </div>
+
+                                                        <div class="form-group col-md-2">
+                                                            <label for="inputProvincia">Provincia</label>
+                                                            <input type="text" class="form-control" id="inputProvincia" disabled value="@vModel.Soggetto.Provincia">
+                                                        </div>
+                                                    </div>
+
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.row -->
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+
+                <div class="box box-info">
+                    <div class="box-header with-border" style="background-color: #e6f2ff;">
+                        <h3 style="font-size: 25px" class="box-title">Fascicolo</h3>
+
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- /.box-header -->
+                    <div class="box-body">
+
+                        <div class="row" id="FascicoloData" style="margin-top:10px" hidden>
+                            <div class="form-group">
+
+                                <div class="row" style="padding:20px; margin-top:20px; border:groove; border-radius: 5px;" id="divFascicolo">
+                                    <div class="col-md-12" style="padding:10px;">
+                                        <label class="control-label col-md-2" style="font-size:20px">Fascicolo</label>
+                                        <button type="button" class="btn btn-lg btn-primary" data-toggle="modal" data-target="#selFascicoli" onclick="GridFascicoli()">Cerca Fascicolo</button>
+                                        <button type="button" class="btn btn-lg btn-warning" id="MostraDatiNuovo" onclick="MostraDatiNuovo()" style="visibility:hidden">Nuovo </button>
+                                        <button type="button" class="btn btn-lg btn-info" id="btnAllega" onclick="Allega()" style="visibility:hidden">Allega A Elemento</button>
+
+
+
+                                        <div style="margin-top:20px" id="DivNuovo" hidden>
+                                            <form>
+                                                <fieldset>
+                                                    <legend class="legend">Nuovo</legend>
+
+                                                    <div class="form-group" style="margin-top:10px">
+                                                        <label class="control-label col-md-2" style="font-size:17px">Allegati</label>
+                                                        <div class="col-md-12" style="width:80%">
+                                                            @(Html.Kendo().Grid<EmailAttachments>()
+                                                            .Name("NuovoFascicoloAttachments")
+                                                            .Selectable()
+                                                            .Columns(columns =>
+                                                            {
+                                                                columns.Select().Width(80).Title("Seleziona");
+                                                                columns.Bound(p => p.Id).Visible(false);
+                                                                columns.Bound(p => p.NomeFile).Title("Nome file");
+                                                            })
+                                                             .BindTo(vModel.FileAllegati)
+                                                            )
+                                                        </div><br /><br />
+                                                    </div>
+                                                </fieldset>
+                                            </form>
+                                            <div class="col-md-12">
+                                                <form>
+
+                                                    <div class="form-group" style="margin-top:10px">
+                                                        <label class="control-label col-md-2" style="font-size:17px">Allega Mail</label>
+                                                        <div class="col-md-10" style="font-size:20px">
+                                                            @(Html.Kendo().CheckBox().Name("allegamail")
+                                                                    .Checked(true).Label("Allega il testo della Mail")
+
+                                                            )
+                                                        </div>
+                                                    </div>
+                                                    <br />
+                                                    <br />
+                                                    <div class="form-group" style="margin-top:10px">
+                                                        <label style="font-size:20px" for="neleDes">Descrizione</label>
+                                                        <br />
+                                                        <br />
+                                                        <input style="font-size:20px" type="text" class="form-control" id="neleDes" placeholder="Descrizione Elemento">
+                                                    </div>
+                                                </form>
+
+                                                <br />
+                                                <br />
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <div id="DivCarica" hidden>
+                                            <div class="row" style="padding:15px; margin-top:10px; border:groove">
+                                                <div class="col-md-12">
+                                                    <form>
+                                                        <div class="form-row">
+                                                            <div class="form-group col-md-6">
+                                                                <input id="IdFascicolo" name="IdFascicolo" type="hidden" value="@vModel.IdFascicolo" />
+                                                                <label for="inputidfascicolo">ID Fascicolo</label>
+                                                                <input type="text" class="form-control" id="inputidfascicolo" placeholder="" disabled>
+                                                            </div>
+                                                            <div class="form-group col-md-6">
+                                                                <label for="inputtipofascicolo">Tipo Fascicolo</label>
+                                                                <input type="text" class="form-control" id="inputtipofascicolo" disabled>
+                                                            </div>
+
+                                                        </div>
+
+                                                        <div class="form-row">
+
+                                                            <div class="form-group col-md-12">
+                                                                <label for="inputdesfascicolo">Descrizione</label>
+                                                                <input type="text" class="form-control" id="inputdesfascicolo" disabled>
+                                                            </div>
+                                                        </div>
+
+                                                    </form>
+                                                    <br />
+                                                    <br />
+                                                </div>
+
+                                                <div class="col-md-12">
+                                                    <form>
+                                                        <fieldset>
+                                                            <legend class="legend">Elemento Associato</legend>
+                                                        </fieldset>
+                                                    </form>
+
+                                                    <div class="row" style="padding-top:10px; margin-top:10px; border:groove" id="DivCaricaElemento">
+                                                        <div class="col-md-12">
+                                                            <form>
+                                                                <div class="form-row">
+                                                                    <div class="form-group col-md-6">
+                                                                        <label for="eleId">Id Elemento</label>
+                                                                        <input type="text" class="form-control" id="eleId" placeholder="" value="" disabled>
+                                                                    </div>
+                                                                    <div class="form-group col-md-6">
+                                                                        <label for="eleTipo">Tipo</label>
+                                                                        <input type="text" class="form-control" id="eleTipo" placeholder="" value="" disabled>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="form-row">
+
+                                                                    <div class="form-group col-md-6">
+                                                                        <label for="eleDes">Descrizione</label>
+                                                                        <input type="text" class="form-control" id="eleDes" placeholder="" value="" disabled>
+                                                                    </div>
+                                                                    <div class="form-group col-md-6">
+                                                                        <button type="button" class="btn btn-lg btn-info" id="bDettaglio">Dettaglio</button>
+                                                                    </div>
+                                                                </div>
+                                                                <br/>
+                                                                <button type="button" class="btn btn-lg btn-info" id="bDettaglio" @*style="visibility:hidden"*@>Dettaglio</button>
+                                                            </form>
+                                                        </div>
+
+                                                    </div>
+
+
+
+                                                </div>
+                                             </div>
+                                         </div>
+
+
+                                        <div id="DivGridElementi" hidden>
+                                            <br /><br />
+                                            <div class="grid-container">
+                                                @foreach (dblu.Docs.Models.TipiElementi item in vModel.ListaTipiElementi)
+                                                {
+                                                    <div class="grid-item">
+                                                        @*@item.Descrizione <br /><br />*@
+                                                        <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info">@item.Descrizione </button>
+
+                                                    </div>
+                                                }
+
+                                                <style>
+                                                    .grid-container {
+                                                        display: inline-grid;
+                                                        grid-template-columns: auto auto auto;
+                                                        background-color: #2196F3;
+                                                        padding: 10px;
+                                                    }
+
+                                                    .grid-item {
+                                                        background-color: rgba(255, 255, 255, 0.8);
+                                                        border: 1px solid rgba(0, 0, 0, 0.8);
+                                                        padding: 20px;
+                                                        font-size: 20px;
+                                                        text-align: center;
+                                                    }
+
+                                                    .b {
+                                                        margin-left: 5px;
+                                                    }
+                                                </style>
+                                                <script>
+                                                        function NuovoElemento(e, Categoria, TipoElemento) {
+
+            //alert("(DEBUG) BOTTONE NUOVO elemento");
+
+            var gridall = $("#NuovoFascicoloAttachments").data("kendoGrid");
+            var items = '';
+            var selectedElements = gridall.select();
+            for (var j = 0; j < selectedElements.length; j++) {
+                var item = gridall.dataItem(selectedElements[j]);
+                items = items + item.NomeFile + ';';
+            }
+            //string IdAllegato, string Categoria, string TipoElemento, string CodiceSoggetto, string ElencoFile, bool AllegaEmail, string Descrizione
+            var obj = {
+                IdAllegato: $("#IdAllegato").val(),
+                Categoria: Categoria,
+                TipoElemento: TipoElemento,
+                CodiceSoggetto: $("#CodCliente").val(),
+                elencoFile: items,
+                AllegaEmail: $("#allegamail").val(),
+                Descrizione: $("#neleDes").val(),
+            };
+            $.ajax({
+                url: '@Url.Action("CreaElementoFascicolo","MailView")',
+                type: 'POST',
+                data: obj,
+                success: function (elemento) {
+
+                                                                    //alert("Carico Elemento dopo salvataggio sul  server")
+                        $("#DivCarica").show();
+                        $("#DivNuovo").hide();
+                        CaricaFascicolo(elemento.IdFascicoloNavigation);
+                        CaricaElemento(elemento);
+                        $("#DivGridElementi").show()
+
+                },
+                error: function () {
+
+                }
+            });
+        }
+
+        function DettaglioElemento(e) {
+                                                   // alert("Contenuto Finestra da Altra PartialView ---> DettaglioElemento click: " + e.id);
+                                                    var dialog = $("#detElemento").data("kendoWindow");
+
+                                                     $.ajax({
+                                                        url: '@Url.Action("editTipoElemento", "Docs")',
+                                                        type: 'POST',
+                                                         data: { codice: e.id },
+                                                        success: function(data) {
+                                                            dialog.content(data);
+                                                            dialog.open();
+                                                        }
+                                                    });
+
+                                                }
+
+                                                </script>
+
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+            <!-- /.box-footer -->
+        </div>
+    </div>
+</section>
+
+
+<div id="selClienti" class="modal fade" style="z-index:100000">
+    <div class="modal-dialog modal-search">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: lightblue">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h3 class="modal-title">Clienti</h3>
+            </div>
+            <div class="modal-body">
+                @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggetti>()
+
+                      .Events(events => events.Change("Grid_OnRowSelect"))
+                                      .Name("Soggetti")
+                                      .Columns(columns =>
+    {
+                                          columns.Bound(p => p.Codice).Width(90).Title("Codice").Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                          columns.Bound(p => p.Nome).Width(200).Title("Ragione Sociale").Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false))); ;
+                                          columns.Bound(p => p.Indirizzo).Width(250).Title("Indirizzo").Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                          columns.Bound(p => p.Localita).Width(100).Title("Localita'").Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                          columns.Bound(p => p.Provincia).Width(100).Title("Provincia").Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+
+    })
+                      .Pageable(
+                          pageable => pageable
+                            .PageSizes(true)
+                            .ButtonCount(5)
+                          )
+
+                      .Sortable()
+                       .Scrollable()
+                      .Selectable(selectable => selectable
+                          .Mode(GridSelectionMode.Single)
+                          .Type(GridSelectionType.Row))
+                      .Filterable(ftb => ftb.Mode(GridFilterMode.Row))
+                      //.HtmlAttributes(new { style = "height:550px;" })
+                      .DataSource(dataSource => dataSource
+                        .Ajax()
+                        .PageSize(10)
+                        .Read(read => read.Action("GetSoggetti", "Fascicolo"))
+                      )
+                      .Resizable(resize => resize.Columns(true))
+                )
+
+                <script>
+                    Grid_OnRowSelect = function (e) {
+                        var data = this.dataItem(this.select());
+
+                        $('#selClienti').modal('hide');
+                        $('.modal-backdrop').removeClass('modal-backdrop');
+                        $('.fade').removeClass('fade');
+                        $('.in').removeClass('in');
+                        $("#CodCliente").val($.trim(data.Codice));
+
+                        CaricaCliente(data.Codice);
+                    }
+                </script>
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Chiudi</button>
+                @*<button type="button" class="btn btn-primary">Scegli</button>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function GridFascicoli() {
+        var destinationgrid = $('#Fascicoli').data('kendoGrid');
+        destinationgrid.dataSource.read();
+    }
+
+
+</script>
+
+
+<div id="selFascicoli" class="modal fade" style="z-index:100000">
+    <div class="modal-dialog modal-search">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: lightblue">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h3 class="modal-title">Fascicoli</h3>
+            </div>
+            <div class="modal-body">
+
+                @(Html.Kendo().Grid<ElementiViewModel>()
+                .Name("Fascicoli")
+                .Columns(columns =>
+                {
+                    columns.Bound(o => o.IdFascicolo).Visible(false);
+                    columns.Bound(o => o.IdElemento).Visible(false);
+                    columns.Bound(o => o.DscCategoria).Title("Categoria").Width(100).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                    columns.Bound(o => o.DscFascicolo).Title("Fascicolo").Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                    columns.Bound(o => o.DscTipo).Title("Tipo").Width(100).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                    columns.Bound(o => o.DscElemento).Title("Elemento").Width(200).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                    columns.Bound(o => o.Chiave1E).Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                    columns.Bound(o => o.Chiave2E).Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                    columns.Bound(o => o.Chiave3E).Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                    columns.Bound(o => o.Revisione).Width(50);
+                })
+                .Pageable()
+                .Selectable()
+                .Events(e => e.Change("onChange"))
+                .Scrollable()
+                .AutoBind(false)
+                .Filterable(ftb => ftb.Mode(GridFilterMode.Row))
+                .HtmlAttributes(new { style = "height:550px;" })
+                .DataSource(dataSource => dataSource
+                    .Ajax()
+                    .PageSize(10)
+                    .Read(read => read.Action("GetElementiSoggetto", "Fascicolo").Data("FascicoliData"))
+                    .Model(model =>
+                    {
+                        model.Id(p => p.IdElemento);
+
+                    })
+                )
+                )
+
+
+                <script>
+
+                    function onChange(e) {
+
+                        $('#selFascicoli').modal('hide');
+                        $('.modal-backdrop').removeClass('modal-backdrop');
+                        $('.fade').removeClass('fade');
+                        $('.in').removeClass('in');
+
+                        var grid = e.sender;
+                        var selectedRow = grid.select();
+                        var selectedItem = grid.dataItem(selectedRow);
+                        //dati fascicolo
+                        $("#IdFascicolo").val(selectedItem.IdFascicolo);
+                        $("#inputdesfascicolo").val(selectedItem.DscFascicolo);
+                        $("#inputtipofascicolo").val(selectedItem.DscCategoria);
+
+                        //dati elemento
+                        $("#eleId").val(selectedItem.IdElemento);
+                        $("#eleDes").val(selectedItem.DscElemento);
+                        $("#eleTipo").val(selectedItem.Tipo);
+
+
+                        //mostra bottone allega
+                        $("#btnAllega").css('visibility', 'visible');
+
+
+                        //mostra div elmenti caricati
+                        $("#DivCarica").show();
+
+                        //nascondo div di nuovo
+                        $("#DivNuovo").hide();
+                        $("#DivGridElementi").hide()
+                    }
+
+
+
+                    function CaricaFascicolo(fascicolo) {
+                        //console.log("CaricaFascicolo" + fascicolo.Id );
+
+
+
+
+                        $("#inputtipofascicolo").val(fascicolo.Categoria);
+                        $("#inputidfascicolo").val(fascicolo.Id);
+                        $("#inputdesfascicolo").val(fascicolo.Descrizione);
+                    }
+                </script>
+                @*
+                        @(Html.Kendo().Grid<dblu.Docs.Models.Fascicoli>()
+                        .Name("Fascicoli")
+                        .Columns(columns =>
+                        {
+                            columns.Bound(o => o.Id).Visible(false);
+                            columns.Bound(o => o.Categoria).Width(80).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                            columns.Bound(o => o.Descrizione).Width(200).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                            columns.Bound(o => o.Chiave1).Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                            columns.Bound(o => o.Chiave2).Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                            columns.Bound(o => o.Chiave3).Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                            columns.Bound(o => o.Chiave4).Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                            columns.Bound(o => o.Chiave5).Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                            columns.Command(column =>
+                            {
+                                column.Custom("VEDI").Click("VediFascicolo").HtmlAttributes(new
+                                    { @class = "kendoDanger", style = "border-color: gray;" });
+                            }).Width(70);
+
+
+                        })
+                        .ClientDetailTemplateId("template")
+                        .Pageable()
+                            .Selectable()
+                            .Events(e => e.Change("onChange"))
+                            .Scrollable()
+                            .AutoBind(false)
+
+                        .Filterable(ftb => ftb.Mode(GridFilterMode.Row))
+                        .HtmlAttributes(new { style = "height:550px;" })
+                        .DataSource(dataSource => dataSource
+                            .Ajax()
+                            .PageSize(10)
+                            .Read(read => read.Action("GetFascicoliSoggetto", "Fascicolo").Data("FascicoliData"))
+                            .Model(model =>
+                            {
+                                model.Id(p => p.Id);
+
+                            })
+                        )
+                        )
+                        <style>
+                            .k-i-add:before, .k-i-plus:before, .k-plus:before {
+                                content: "\E014";
+                            }
+
+                            .k-i-kpi-trend-equal:before, .k-i-minus:before, .k-minus:before {
+                                content: "\E015";
+                            }
+                        </style>
+                        <script id="template" type="text/kendo-tmpl">
+                            @(Html.Kendo().Grid<dblu.Docs.Models.Elementi>()
+                                    .Name("grid_#=Id#")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Bound(o => o.Id).Visible(false);
+                                        columns.Bound(o => o.Tipo).Width(80);
+                                        columns.Bound(o => o.Descrizione).Width(150);
+                                        columns.Bound(o => o.DataC).Title("Data Creazione").Format("{0:dd/MM/yyyy}").Width(110);
+                                        columns.Bound(o => o.DataUM).Title("Data Modifica").Format("{0:dd/MM/yyyy}").Width(110);
+
+                                    })
+                                    .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .Read(read => read.Action("GetElementiPost", "Fascicolo", new { id = "#=Id#" }))
+                                    )
+                                    .Pageable()
+                                    .Sortable()
+                                    .ToClientTemplate()
+                            )
+                        </script>
+                        <script>
+                            function dataBound() {
+                                this.expandRow(this.tbody.find("tr.k-master-row").first());
+                            }
+                        </script>
+
+                        <script>
+
+
+                            function VediFascicolo(e) {
+                                e.preventDefault();
+                                var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+                                var url = "@(Url.Action("Fascicolo", "Docs"))" + "/" + dataItem.Id;
+                                window.open(url)
+                            }
+
+
+
+                            function onChange(e) {
+
+                                $('#selFascicoli').modal('hide');
+                                $('.modal-backdrop').removeClass('modal-backdrop');
+                                $('.fade').removeClass('fade');
+                                $('.in').removeClass('in');
+
+                                var grid = e.sender;
+                                var selectedRow = grid.select();
+                                var selectedItem = grid.dataItem(selectedRow);
+                                $("#IdFascicolo").val(selectedItem.Id);
+                                $("#inputdesfascicolo").val(selectedItem.Descrizione);
+
+                                CaricaFascicolo(selectedItem);
+                        }
+
+                            function CaricaFascicolo(fascicolo) {
+                    //console.log("CaricaFascicolo" + fascicolo.Id );
+
+
+
+
+                                $("#inputtipofascicolo").val(fascicolo.Categoria);
+                                $("#inputidfascicolo").val(fascicolo.Id);
+                                $("#inputdesfascicolo").val(fascicolo.Descrizione);
+                            }
+                        </script>
+                *@
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,50 @@
+﻿
+@{
+    Layout = "";
+}
+
+@model IEnumerable<ElementiViewModel>
+
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using Kendo.Mvc.UI
+
+<section class="content">
+    <!-- Main row -->
+    <div class="row">
+        <div class="box-body">
+
+            <form class="form-horizontal" role="form" method="post">
+                <div class="form-group">
+
+                    @(Html.Kendo().Grid<ElementiViewModel>()
+                          .Events(events => events.Change("GridElementi_OnRowSelect"))
+                          .Name("GridElementi")
+                          .Columns(columns =>
+                                {
+                                    columns.Bound(o => o.IdFascicolo).Visible(false);
+                                    columns.Bound(o => o.IdElemento).Visible(false);
+                                    columns.Bound(o => o.DscCategoria).Title("Categoria").Width(100).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                    columns.Bound(o => o.DscFascicolo).Title("Fascicolo").Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                    columns.Bound(o => o.DscTipo).Title("Tipo").Width(100).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                    columns.Bound(o => o.DscElemento).Title("Elemento").Width(200).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                    columns.Bound(o => o.Chiave1E).Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                    columns.Bound(o => o.Chiave2E).Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                    columns.Bound(o => o.Chiave3E).Width(150).Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                    columns.Bound(o => o.Revisione).Width(50);
+                                })
+                                .Pageable()
+                                .Selectable()
+                                .Scrollable()
+                        .Sortable()
+                                .Filterable(ftb => ftb.Mode(GridFilterMode.Row))
+                                .HtmlAttributes(new { style = "height:90% widht:90%;" })
+                                .BindTo(Model)
+                        .ToolBar(toolbar => { toolbar.Search(); })
+                        .Search(s => { s.Field(c => c.DscCategoria); s.Field(c => c.DscFascicolo); s.Field(c => c.Chiave1E); s.Field(c => c.Chiave2E); s.Field(c => c.Chiave3E); })
+
+                          )
+                </div>
+            </form>
+        </div>
+    </div>
+</section>

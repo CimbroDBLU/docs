@@ -1,0 +1,211 @@
+﻿@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
+
+@using Kendo.Mvc.UI
+@{
+    ViewBag.Title = "Gestione Fascicoli";
+    List<dblu.Docs.Models.Colonna> Cols = _ele.GetColonne("vFASCICOLO");
+}
+<section class="content-header">
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li><a href="#">Fascicoli</a></li>
+        <li class="active">All</li>
+    </ol>
+</section>
+
+<br />
+<br />
+<section class="content">
+    <div class="container-fluid">
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Tutti i Fascicoli</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-xs-12">
+
+
+                        @(Html.Kendo().Grid<dblu.Docs.Models.viewFascicoli>()
+                            .Name("Grid")
+                            .Columns(columns =>
+                            {
+                                columns.Bound(p => p.IdFascicolo).Width(130).Visible(false);
+                                columns.Bound(p => p.DscFascicolo).Title("Descrizione").Width(100);
+                                columns.Bound(p => p.Campo1).Title(Cols.ElementAt(0).Des).Visible(Cols.ElementAt(0).Visible);
+                                columns.Bound(p => p.Campo2).Title(Cols.ElementAt(1).Des).Visible(Cols.ElementAt(1).Visible);
+                                columns.Bound(p => p.Campo3).Title(Cols.ElementAt(2).Des).Visible(Cols.ElementAt(2).Visible).Width(120);
+                                columns.Bound(p => p.Campo4 ).Title(Cols.ElementAt(3).Des).Visible(Cols.ElementAt(3).Visible).Width(120);
+                                columns.Bound(p => p.Campo5 ).Title(Cols.ElementAt(4).Des).Visible(Cols.ElementAt(4).Visible).Width(120);
+                                columns.Bound(p => p.Campo6).Title(Cols.ElementAt(5).Des).Visible(Cols.ElementAt(5).Visible).Width(120);
+                                columns.Bound(p => p.Campo7).Title(Cols.ElementAt(6).Des).Visible(Cols.ElementAt(6).Visible).Width(120);
+                                columns.Bound(p => p.Campo8).Title(Cols.ElementAt(7).Des).Visible(Cols.ElementAt(7).Visible).Width(120);
+                                columns.Bound(p => p.Campo9 ).Title(Cols.ElementAt(8).Des).Visible(Cols.ElementAt(8).Visible);
+                                columns.Bound(p => p.Campo10 ).Title(Cols.ElementAt(9).Des).Visible(Cols.ElementAt(9).Visible);
+                                columns.Command(command =>
+                                {
+                                    command.Custom("Apri").Click("goFascicolo");
+                                }).Width(120);
+
+                            })
+                            .HtmlAttributes(new { style = "height: 1000px;" })
+                            .ToolBar(toolbar => {
+                                toolbar.ClientTemplateId("GridToolbarTemplate");
+                            })
+                            .Search(s => { s.Field(c => c.DscFascicolo);
+                                s.Field(c => c.Campo1);
+                                s.Field(c => c.Campo2);
+                                s.Field(c => c.Campo3);
+                                s.Field(c => c.Campo4);
+                                s.Field(c => c.Campo5);
+                                s.Field(c => c.Campo6);
+                                s.Field(c => c.Campo7);
+                                s.Field(c => c.Campo8);
+                                s.Field(c => c.Campo9);
+                                s.Field(c => c.Campo10);
+                                s.Field(c => c.UtenteC);
+                                s.Field(c => c.UtenteUM);
+                            })
+                            .Pageable()
+                            .Filterable()
+                            .Scrollable()
+                            .Sortable()
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .PageSize(20)
+                                .ServerOperation(false)
+                                .Events(events => events.Error("error_handler"))
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.IdFascicolo);
+                                })
+                                .Read("GetFascicoliV", "Fascicolo")
+                                
+                            )
+                            .Events(events => events
+                                .DataBound("GridonDataBound")
+                            )
+                        )
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script id="GridToolbarTemplate" type="text/x-kendo-template">
+    <div class="toolbar">
+        <label for="category">Categoria:</label>
+        @(Html.Kendo().DropDownList()
+            .Name("categories")
+            .OptionLabel("All")
+            .DataTextField("Descrizione")
+            .DataValueField("Codice")
+            .AutoBind(true)
+            .Events(e => e.Change("categoriesChange"))
+            .HtmlAttributes(new { style = "width: 150px;" })
+            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                 .Read("Categorie_Read", "Docs"))
+            .ToClientTemplate()
+        )
+        <span class="k-textbox k-grid-search k-display-flex">
+            <input autocomplete="off" placeholder="Cerca..." title="Cerca..." class="k-input">
+            <span class="k-input-icon">
+                <span class="k-icon k-i-search"></span>
+            </span>
+        </span>
+    </div>
+</script>
+
+
+<script type="text/javascript">
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function() {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+
+
+    function categoriesChange() {
+        var value = this.value();
+        grid = $("#Grid").data("kendoGrid");
+
+
+        if (value) {
+            grid.dataSource.filter({ field: "CodCategoria", operator: "eq", value: value });
+            @*var dropdownlist = $("#categories").data("kendoDropDownList");
+
+            var dataItem = dropdownlist.dataItem();
+            $.ajax({
+                url: '@Url.Action("Descrizioni","Docs")',
+                data: { Cat: dataItem },
+                success: function (data) {
+                    $("#Grid th[data-field=Chiave1]").html(dataItem.Attributi.DescrizioneChiave("Chiave1"))
+
+                    //call is successfully completed and we got result in data
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    //some errror, some show err msg to user and log the error
+                    alert(xhr.responseText);
+                }
+            });
+
+            //var dropdownlist = $("#categories").data("kendoDropDownList");
+
+            //var xx = dropdownlist.dataItem();
+            ////xx.ListaAttributi;
+            //var Chiave1 = xx.Attributi.GetAttributo("Chiave1");
+            //$("#Grid th[data-field=Chiave1]").html(dataItem.Attributi[i].Descrizione)*@
+
+
+
+        } else {
+            grid.dataSource.filter({});
+            $("#Grid th[data-field=Campo1]").html("Campo1");
+        }
+
+    }
+
+
+
+    function goFascicolo(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var itemId = dataItem.IdFascicolo;
+        window.location.href = '@Url.Action("Fascicolo", "Docs")/' + dataItem.IdFascicolo;
+        @*$.ajax({
+            url: '@Url.Action("Fascicolo","Docs")',
+            data: { id: itemId },
+            success: function (data) {
+                //call is successfully completed and we got result in data
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                //some errror, some show err msg to user and log the error
+                alert(xhr.responseText);
+            }
+        });*@
+    }
+
+
+    function GridonDataBound(arg) {
+        var grid = $("#Grid").data("kendoGrid");
+        for (var i = 0; i < grid.columns.length; i++) {
+            grid.autoFitColumn(i);
+        }
+    }
+</script>
+
+
+

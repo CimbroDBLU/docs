@@ -1,0 +1,184 @@
+﻿@model dblu.Docs.Models.EmailServer
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using Kendo.Mvc.UI
+@addTagHelper *, Kendo.Mvc
+@{
+    ViewData["Title"] = "Server eMail";
+}
+
+<section class="content-header">
+    <h1>
+        Server eMail
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
+        <li><a href="/Docs/ServersEmail">Server Email</a></li>
+    </ol>
+</section>
+
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box box-solid box-default">
+                <div class="box-header with-border">
+                    @*     <h3 class="box-title">Categorie</h3>*@
+                    @Html.Hidden("Nome")
+                </div>
+                <div class="box-body">
+
+                    @(Html.Kendo().Grid<dblu.Docs.Models.EmailServer>()
+            .Name("gridEmailServer")
+            .Columns(columns =>
+            {
+                columns.Bound(p => p.Nome).Width(100);
+                columns.Bound(p => p.Email).Width(300);
+                columns.Bound(p => p.Cartella).Width(200);
+                columns.Bound(p => p.CartellaArchivio).Width(200);
+                columns.Bound(p => p.NomeServerInUscita).Width(200);
+                columns.Command(command => command.Custom("Modifica").Click("showEditor")).Width(150);
+                columns.Command(command => command.Destroy().Text("Elimina")).Width(150);
+          
+            })
+            .ToolBar(toolbar =>
+                {
+                    toolbar.Custom().Text("Nuovo Elemento").HtmlAttributes(new { id = "AddServer" });
+                })
+            //.ToolBar(toolbar => toolbar.Create())
+            .Editable(editable => editable.Mode(GridEditMode.PopUp))
+            .Pageable()
+            .Sortable()
+            .Scrollable()
+
+            .DataSource(dataSource => dataSource
+                .Ajax()
+                .PageSize(20)
+                .Events(events => events.Error("error_handler"))
+                .Model(model =>
+                {
+                    model.Id(p => p.Nome);
+                                    })
+
+                            .Read(read => read.Action("EmailServer_Read", "Docs"))
+                            .Update(update => update.Action("EmailServer_Update", "Docs"))
+                            .Destroy(update => update.Action("EmailServer_Destroy", "Docs"))
+                        )
+                    )
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+
+<script type="text/javascript">
+    $(function () {
+        // The Name() of the Window is used to get its client-side instance.
+        var dialog = $("#window").data("kendoWindow");
+    });
+</script>
+
+<script type="text/javascript">
+
+    function showEditor(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        window.location.href = '/Docs/editServerEmail?Nome=' + dataItem.Nome;
+
+        
+        //$("#EmailServer").val(dataItem.Nome);
+        //var myWindow = $("#window").data("kendoWindow");
+        //myWindow.refresh({
+        //    url: "/Docs/editServerEmail",
+        //    data: { Nome: dataItem.Nome },
+        //    type: "Post"
+        //});
+        //myWindow.open().maximize();
+    }
+
+
+        function Edit(e) {
+            e.preventDefault();
+            var item = this.dataItem($(e.currentTarget).closest("tr"));
+            // window.location.href = '/Management/Utente?id=' + item.UserId;
+            $("#EmailServer").val(dataItem.Nome);
+            var myWindow = $("#window").data("kendoWindow");
+            myWindow.refresh({
+                url: "/Docs/editServerEmail",
+                data: { Nome: dataItem.Nome },
+                type: "Post"
+            });
+            myWindow.open().maximize();
+
+        }
+</script>
+
+<script type="text/javascript">
+
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+    $(document).ready(function () {
+
+             var myWindow = $("#window");
+
+                $("#AddServer").bind("click", function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "@(Url.Action("EmailServer_Create", "Docs"))",
+
+                        success: function (result) {
+                               window.location.href = '/Docs/editServerEmail?Nome=' + result.Nome;
+                            //var myWindow = $("#window").data("kendoWindow");
+                            //$("#NomeServer").val(result.Nome);
+                            //myWindow.refresh({
+                            //    url: "/Docs/editServerEmail",
+                            //    data: { Nome: result.Nome },
+                            //    type: "Post"
+                            //});
+                            // myWindow.open().maximize();
+                        }
+                    });
+
+                     //.open();
+                });
+         });
+</script>
+
+
+@(Html.Kendo().Window()
+                .Name("window")
+    .Size("auto")
+    .Title("Server Email")
+    .Visible(false)
+    .Actions(actions => actions.Refresh().Minimize().Maximize().Close())
+    .Content("")
+    .Scrollable(true)
+    .Draggable(false)
+    .Resizable()
+    .Modal(true)
+)
+
+<script>
+    function window_open() {
+        // Handle the open event.
+    }
+
+    function window_close() {
+        // Handle the close event.
+    }
+</script>

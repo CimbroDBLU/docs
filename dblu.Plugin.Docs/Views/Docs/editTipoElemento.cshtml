@@ -1,0 +1,340 @@
+﻿
+
+@model dblu.Docs.Models.TipiElementi
+@using dblu.Portale.Core.Infrastructure.Identity.Class
+
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using Kendo.Mvc.UI
+
+    <section class="content-header">
+        <h1>
+            Dettaglio Tipo di Elemento :  @(Model.Descrizione)
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
+            <li><a href="/Docs/TipiElementi">Elementi</a></li>
+            <li class="active">Dettaglio</li>
+        </ol>
+    </section>
+
+    <section class="content">
+        <!-- Main row -->
+        <div class="row">
+            <div class="box-body">
+                <form class="form-horizontal" role="form" method="post">
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Codice</label>
+                        <div class="col-md-2" style="width:20%">
+                            <input type="text"
+                                   name="Codice"
+                                   class="form-control" value="@Model.Codice" />
+                        </div>
+                        @if (Model.Codice != "") { 
+                        <div class="col-md-2">
+                            <button formaction="/Docs/duplicaTipoElemento" method="post" type="submit" margin class="btn btn-info pull-left">Duplica</button>    
+                        </div>
+                        }
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Descrizione</label>
+                        <div class="col-md-10" style="width:50%">
+                            <input type="text"
+                                   name="Descrizione"
+                                   class="form-control" value="@Model.Descrizione" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Processo</label>
+                        <div class="col-md-10" style="width:50%">
+                            <input type="text"
+                                   name="Processo"
+                                   class="form-control" value="@Model.Processo" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Categoria</label>
+                        <div class="col-md-10" style="width:50%">
+
+
+                            @(Html.Kendo().DropDownListFor(m => Model.Categoria)
+
+                                  .DataTextField("Descrizione")
+                                  .DataValueField("Codice")
+
+                                  .BindTo((System.Collections.IEnumerable)ViewData["categorie"])
+
+                                  .HtmlAttributes(new { style = "width: 100%" })
+                            )
+
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Aggrega a elemento</label>
+                        <div class="col-md-10" style="width:50%">
+                            @(Html.Kendo().SwitchFor(m => Model.AggregaAElemento)
+                                           .Name("AggregaAElemento")
+                                           .Messages(c => c.Checked("SI").Unchecked("NO"))
+                                        )
+                         
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-2">View atttributi </label>
+                        <div class="col-md-10" style="width:50%">
+                            <input type="text"
+                                   name="ViewAttributi"
+                                   class="form-control" value="@Model.ViewAttributi" />
+                        </div>
+                        <div class="col-md-2">
+                            <button formaction="/Docs/SalvaTipoElemento" method="post" type="submit" margin class="btn btn-info pull-left">Salva</button>
+                        </div>
+
+
+                    </div>
+                </form>
+                <form class="form-horizontal" role="form" method="post">
+                    <div class="form-group">
+
+                        @(Html.Kendo().Grid<dblu.Docs.Classi.Attributo>()
+                           .Name("gridAttributi")
+                           .Columns(columns =>
+                           {
+                               columns.Bound(p => p.Nome).Width(200);
+                               columns.Bound(p => p.Descrizione).Width(200);
+                               columns.Bound(p => p.Alias).Width(200);
+                               columns.ForeignKey(p => p.Tipo, (System.Collections.IEnumerable)ViewData["Tipi"], "Id", "Des").Width(200);
+                               //columns.Bound(p => p.Tipo).Width(200);
+                               columns.Bound(p => p.Obbligatorio).ClientTemplate("<input type='checkbox' #= Obbligatorio ? checked='checked':'' # class='chkbxW' disabled />").Width(100);
+                               columns.ForeignKey(p => p.Visibilità, (System.Collections.IEnumerable)ViewData["Visibilita"], "Id", "Des").Width(150);
+                               //columns.Bound(p => p.Visibilità).Width(100);
+                               columns.Bound(p => p.ValorePredefinito).Width(200); 
+                               columns.Bound(p => p.Sequenza).Width(100);
+                               columns.Command(command =>
+                               {
+                                   command.Edit().Text("Modifica");
+                                   command.Destroy().Text("Elimina");
+                               }).Width(500);
+                           })
+                           .ToolBar(toolbar => toolbar.Create())
+                           .Editable(editable => editable.Mode(GridEditMode.InLine))
+                           .Pageable()
+                           .Sortable()
+                           .Scrollable()
+                           .HtmlAttributes(new { style = "height:430px;" })
+                           .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .PageSize(20)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.Nome);
+                                })
+                                .Create(update => update.Action("AttributiTipoElemento_Create", "Docs"))
+                                .Read(read => read.Action("AttributiTipoElemento_Read", "Docs"))
+                                .Update(update => update.Action("AttributiTipoElemento_Update", "Docs"))
+                                .Destroy(update => update.Action("AttributiTipoElemento_Destroy", "Docs"))
+                         )
+
+                        )
+
+                    </div>
+
+                    <div class="form-group">
+                        <div class="box box-solid box-danger">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Ruoli abilitati</h3>
+                                <div class="box-tools pull-right">
+                                </div>
+                            </div>
+
+                            <br />
+
+                            @(Html.Kendo().Grid<Role>
+                                ()
+                                .Name("GridRuoli")
+                                .Columns(columns =>
+                                {
+
+                                columns.Bound(c => c.Code).Width(180).Title("COD");
+                                columns.Bound(c => c.Name).Title("Descrizione");
+                                columns.Command(command => command.Destroy()).Width(190);
+                                })
+                                .ToolBar(toolbar =>
+                                {
+                                    toolbar.Custom().Text("Aggiungi ruolo").HtmlAttributes(new { id = "AddRuolo" });
+                                })
+                                .Scrollable(scr => scr.Height(430))
+                                .Sortable()
+                                .Pageable(pageable => pageable
+                                    .Refresh(true)
+                                    .PageSizes(true)
+                                    .ButtonCount(5))
+
+                                .DataSource(dataSource => dataSource
+                                    .Ajax()
+
+                                    .PageSize(20)
+                                    .Batch(true)
+                                    .Events(events => events.Error("error_handler"))
+                                    .AutoSync(true)
+                                    .ServerOperation(false)
+                                    .Model(model =>
+                                    {
+                                    model.Id(p => p.RoleId);
+                                    model.Field(p => p.Code);
+                                    model.Field(p => p.Name);
+                                    model.Field(p => p.Position);
+                                    })
+                                    //.Create("Ruoli_Create", "Grid")
+                                    .Read("RuoliElemento", "Docs", new { Tipo = Model.Codice })
+                                    
+                                    //.Create("AddUtenteRuoli", "Grid", new { UserId = Utente.UserId })
+                                    .Destroy("RemoveElementoFromRole", "Docs", new { Tipo = Model.Codice })
+                                    //.Update("Modules_Update", "Grid")
+                                )
+                            )
+
+                        </div>
+                    </div>
+                </form>
+            </div>
+            @(Html.Kendo().Window()
+                          .Name("window")
+                          .Title("Ruoli Disponibili")
+                          .Modal(true)
+                          .Actions(actions => actions
+                              .Custom("custom")
+                              .Minimize()
+                              .Maximize()
+                              .Close()
+                          )
+                          .Content(@<text>
+                                    @(Html.Kendo().Grid<Role>()
+                           .Name("SelectRuoli")
+                           .Columns(columns =>
+                           {
+                           columns.Select().Width(50);
+                           columns.Bound(c => c.Code).Width(180).Title("COD");
+                           columns.Bound(c => c.Name).Title("Descrizione");
+
+                           })
+                          .Scrollable(scr => scr.Height(430))
+                           .Sortable()
+                           .Pageable(pageable => pageable
+                           .Refresh(true)
+                           .PageSizes(true)
+                           .ButtonCount(5))
+
+                           .DataSource(dataSource => dataSource
+                           .Ajax()
+
+                           .PageSize(20)
+                           .Batch(true)
+                           .Events(events => events.Error("error_handler"))
+                           .Model(model =>
+                           {
+                           model.Id(p => p.RoleId);
+                            })
+                           //.Create("Ruoli_Create", "Grid")
+                                           .Read("RuoliNonAttivi_Elemento", "Docs", new { Tipo = Model.Codice })
+
+
+                           )
+                                    )
+                                    <div>
+                                        <span id="Annulla" class="k-button">Annulla</span>
+                                        <span id="OK" class="k-button">OK</span>
+                                    </div>
+                        </text>)
+.Draggable()
+.Resizable()
+.Width(500)
+.Visible(false)
+            )
+        </div>
+
+
+        <script type="text/javascript">
+            function error_handler(e) {
+                if (e.errors) {
+                    var message = "Errors:\n";
+                    $.each(e.errors, function (key, value) {
+                        if ('errors' in value) {
+                            $.each(value.errors, function () {
+                                message += this + "\n";
+                            });
+                        }
+                    });
+                    alert(message);
+                }
+            }
+
+            $(document).ready(function() {
+                var myWindow = $("#window");
+
+                $("#AddRuolo").bind("click", function () {
+
+                    $("#SelectRuoli").data("kendoGrid").dataSource.read();
+                    myWindow.data("kendoWindow").open().element.closest(".k-window").css({
+                        top: 55,
+                        left: 150
+                     });
+                     //.open();
+                });
+
+               myWindow.data("kendoWindow").wrapper
+                    .find(".k-i-custom").parent().click(function (e) {
+                        alert("Custom action button clicked");
+                        e.preventDefault();
+                    });
+
+            });
+
+           $(function () {
+             $('#OK').click(function () {
+                 var items = {};
+                 var grid = $('#SelectRuoli').data('kendoGrid');
+
+
+                 if (grid === undefined) {
+
+                 }
+                 else {
+                     var selectedElements = grid.select();
+                     for (var j = 0; j < selectedElements.length; j++) {
+                         var item = grid.dataItem(selectedElements[j]);
+                         items['Rol[' + j + '].Tipo'] = "@Model.Codice";
+                         items['Rol[' + j + '].RoleId'] = item.RoleId;
+                      }
+                 }
+
+                  if (item === undefined) {
+                        //ShowPopup();
+                    } else {
+
+                          $.ajax({
+                          type: "POST",
+                          data: items,
+                          url: "@(Url.Action("AddRoleToElemento", "Docs"))",
+
+                          success: function (result) {
+
+                              $("#GridRuoli").data("kendoGrid").dataSource.read();
+
+                          }
+                      });
+
+                 }
+                  $(this).closest("[data-role=window]").data("kendoWindow").close();
+
+
+
+             })
+            $('#Annulla').click(function () {
+                $(this).closest("[data-role=window]").data("kendoWindow").close();
+            })
+
+         })
+        </script>
+    </section>

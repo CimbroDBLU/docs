@@ -1,0 +1,58 @@
+﻿
+@{
+    Layout = "";
+}
+
+@model Soggetti
+
+@using dblu.Docs.Models
+@using Kendo.Mvc.UI
+
+<section class="content">
+    <!-- Main row -->
+    <div class="row">
+        <div class="box-body">
+
+            <form class="form-horizontal" role="form" method="post">
+                <div class="form-group">
+
+                    @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggetti>()
+                           .Events(events => events.Change("GridSoggetti_OnRowSelect"))
+                                           .Name("GridSoggetti")
+                                           .Columns(columns =>
+         {
+                                               columns.Bound(p => p.Codice).Width(90).Title("Codice").Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                               columns.Bound(p => p.Nome).Width(200).Title("Ragione Sociale").Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false))); ;
+                                               columns.Bound(p => p.Indirizzo).Width(250).Title("Indirizzo").Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                               columns.Bound(p => p.Localita).Width(100).Title("Localita'").Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+                                               columns.Bound(p => p.Provincia).Width(100).Title("Provincia").Filterable(ftb => ftb.Cell(cell => cell.Operator("contains").ShowOperators(false)));
+
+         })
+                           .Pageable(
+                               pageable => pageable
+                                 .PageSizes(true)
+                                 .ButtonCount(5)
+                               )
+
+                           .Sortable()
+                            .Scrollable()
+                           .Selectable(selectable => selectable
+                               .Mode(GridSelectionMode.Single)
+                               .Type(GridSelectionType.Row))
+                           .Filterable(ftb => ftb.Mode(GridFilterMode.Row))
+                           //.HtmlAttributes(new { style = "height:550px;" })
+                           .DataSource(dataSource => dataSource
+                             .Ajax()
+                             .PageSize(10)
+                             .Read(read => read.Action("GetSoggetti", "Fascicolo"))
+                           )
+                           .Resizable(resize => resize.Columns(true))
+                    )
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+</section>

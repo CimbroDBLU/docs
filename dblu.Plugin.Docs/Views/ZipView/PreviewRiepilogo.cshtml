@@ -1,0 +1,103 @@
+﻿@model dblu.Docs.Models.Allegati
+
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _doc
+@using Kendo.Mvc.UI
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using Syncfusion.EJ2
+@addTagHelper *, Kendo.Mvc
+
+@addTagHelper "*, Syncfusion.EJ2"
+
+
+@{
+    var IdAllegato = Model.Id.ToString();
+
+}
+
+
+@* Syncfusion Essential JS 2 Styles*@
+<link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
+
+@* Syncfusion Essential JS 2 Scripts*@
+<script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+<style>
+
+    html body #riepilogopdfviewer {
+        width: 100% !important;
+    }
+</style>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="box box-">
+                    <div class="box-body">
+                        <div class="form-group" style="margin-top:10px" hidden>
+                            <div class="col-md-12">
+                                <input type="text" id="IdRiepilogo" value="@IdAllegato">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-top:10px">
+                            <div class="col-md-12" style="width:100%" id="anteprimapdf">
+                                @*<button type="button" onclick="saveAnnotations();" class="btn btn-success btn-lg"  hidden="hidden">Salva Annotazioni</button>*@
+                                <ejs-pdfviewer id="riepilogopdfviewer" serviceUrl="/api/zipPdfViewer"
+                                               documentPath=""
+                                               enablePrint="true"
+                                               documentLoad="documentLoaded"
+                                               annotationAdd="annotationAdd"
+                                               enableStampAnnotations="true"
+                                               locale="it-IT"
+                                               downloadFileName="riepilogo.pdf"
+                                               height="900px"
+                                               toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool,PanTool"  })">
+                                </ejs-pdfviewer>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script type="text/javascript">
+    window.onload = function () {
+        var nome = 'riepilogo.pdf';
+        var id = $("#IdRiepilogo").val();;
+        //alert(Id)
+        var emailpdfviewer = document.getElementById('riepilogopdfviewer').ej2_instances[0];
+        var param = "riepilogo;" + id;
+        emailpdfviewer.load(param);
+        emailpdfviewer.downloadFileName = nome;
+    }
+    function importAnnotations() {
+
+        var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
+        emailpdfviewer.importAnnotations('');
+    }
+
+    function annotationAdd(e) {
+        // alert("The signature is added to the PDF document successfully");
+    }
+
+
+    function saveAnnotations() {
+
+        var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
+        emailpdfviewer.exportAnnotations();
+    }
+
+    function documentLoaded(args) {
+        //alert("The document" + args.fileName + "is ready to view");
+        importAnnotations()
+    }
+
+</script>
+
+<ejs-scripts></ejs-scripts>
+
+

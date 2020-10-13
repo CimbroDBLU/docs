@@ -1,0 +1,116 @@
+﻿
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _doc
+@using Kendo.Mvc.UI
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using dblu.Docs.Models;
+@addTagHelper *, Kendo.Mvc
+@model dblu.Portale.Plugin.Docs.ViewModels.EditorFascicoloViewModel
+@{
+    var categoria = _doc.GetCategoria(Model.Oggetto.Categoria);
+
+}
+
+<style>
+    .pad {
+        margin: 10px;
+    }
+</style>
+
+
+<div class="row" style="margin:10px">
+  @await  Html.PartialAsync("EditorAttributi" , new EditorAttributiViewModel() { })
+</div>
+<br />
+<br />
+<div class="row" style="padding:10px">
+
+    @(Html.Kendo().Button()
+           .Name("salva")
+           .HtmlAttributes(new { type = "button", @class = "k-primary" })
+           .Content("SALVA")
+           //.Events(ev => ev.Click("infoDialog"))
+    )
+
+</div>
+@*</div>*@
+<!-- /.card -->
+@*<form>
+        <div class="form-group">
+            <label for="exampleInputEmail1">Email address</label>
+            <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email">
+        </div>
+        <div class="form-group">
+            <label for="exampleInputPassword1">Password</label>
+            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+        </div>
+        <div class="form-group">
+            <label for="exampleInputFile">File input</label>
+            <input type="file" id="exampleInputFile">
+            <p class="help-block">Example block-level help text here.</p>
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox"> Check me out
+            </label>
+        </div>
+        @(Html.Kendo().Button()
+           .Name("salva")
+           .HtmlAttributes(new { type = "button", @class = "k-primary" })
+           .Content("SAVA")
+           //.Events(ev => ev.Click("infoDialog"))
+        )
+
+    </form>*@
+
+@*<div class="row">
+        <div class="col-md-6">
+            <form class='form-horizontal'>
+                <div class='card-body'>
+                    <div class='form-group row'>
+                        <label for='' class='col-sm-2 col-form-label'>Chiave 1</label>
+                        <div class='col-xs-6'>
+                            <input type='text' class='form-control' id='wElemento' placeholder='1' value='@Model.Fascicolo.Chiave1' disabled>
+                        </div>
+                    </div>
+                    <div class='form-group row'>
+                        <label for='' class='col-sm-2 col-form-label'>Chiave 2</label>
+                        <div class='col-xs-6'>
+                            <input type='text' class='form-control' id='wDescrizione' placeholder='2' value='@Model.Fascicolo.Chiave2' disabled>
+                        </div>
+
+                    </div>
+                    <div class='form-group row'>
+                        <label for='' class='col-sm-2 col-form-label'>Chiave 3</label>
+                        <div class='col-xs-6'>
+                            <input type='text' class='form-control' id='wTipo' placeholder='3' value='@Model.Fascicolo.Chiave3' disabled>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+        <div class="col-md-6">
+            <div class='form-group row'>
+                <label for='' class='col-sm-2 col-form-label'>Chiave 4</label>
+                <div class='col-xs-6'>
+                    <input type='text' class='form-control' id='' placeholder='4' value='@Model.Fascicolo.Chiave4' disabled>
+                </div>
+            </div>
+            <div class='form-group row'>
+                <label for='' class='col-sm-2 col-form-label'>Chiave 5</label>
+                <div class='col-xs-6'>
+                    <input type='text' class='form-control' id='' placeholder='5' value='@Model.Fascicolo.Chiave5' disabled>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class='form-group row'>
+            @(Html.Kendo().Button()
+                   .Name("salva")
+                   .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                   .Content("SAVA")
+                   //.Events(ev => ev.Click("infoDialog"))
+            )
+        </div>
+    </div>*@

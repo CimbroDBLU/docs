@@ -1,0 +1,208 @@
+﻿@page
+@using System.Security.Claims
+@inject dblu.Portale.Plugin.Docs.Services.DocsService  _service
+@model dblu.Portale.Pages.Docs.CategorieModel
+@{
+    ViewData["Title"] = "Categorie";
+}
+
+@section Styles{
+    <link rel="stylesheet" href="~/bower_components/morris.js/morris.css">
+    <!-- jvectormap -->
+    <link rel="stylesheet" href="~/bower_components/jvectormap/jquery-jvectormap.css">
+    <!-- Date Picker -->
+    @*<link rel="stylesheet" href="~/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">*@
+    <!-- Daterange picker -->
+    <link rel="stylesheet" href="~/bower_components/bootstrap-daterangepicker/daterangepicker.css">
+    <!-- bootstrap wysihtml5 - text editor -->
+    <link rel="stylesheet" href="~/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">
+    <link rel="stylesheet" href="~/bower_components/fullcalendar/dist/fullcalendar.min.css">
+    <link rel="stylesheet" href="~/bower_components/fullcalendar/dist/fullcalendar.print.min.css" media="print">
+    <style>
+        .hover-end {
+            padding: 0;
+            margin: 0;
+            font-size: 75%;
+            text-align: center;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            opacity: .8
+        }
+    </style>
+}
+
+@section Scripts {
+    <!-- fullCalendar -->
+    <script src="~/bower_components/moment/moment.js"></script>
+    <script src="~/bower_components/fullcalendar/dist/fullcalendar.min.js"></script>
+    <script src="~/bower_components/fullcalendar/dist/locale/it.js"></script>
+    <script src="https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js"></script>
+    <script>
+        $(function () {
+
+
+            @*var taskcount = @Model.myTask.Count;
+
+            if (taskcount> 0) {
+               var task = @Html.Raw(Json.Serialize(@Model.myTask));
+            }*@
+            $('#calendar').fullCalendar({
+                //eventRender: function (event, element) {
+                //    element.attr('title', event.tooltip);
+                //},
+                firstDay: 1,
+                locale:'it',
+                eventRender: function (eventObj, $el) {
+
+                    $el.popover({
+                        title: eventObj.title,
+                        content: eventObj.tooltip, //eventObj.description,
+                        trigger: 'hover',
+                        placement: 'top',
+                        container: 'body'
+                    });
+                },
+                //eventMouseover: function (calEvent, jsEvent) {
+                //    var tooltip = '<div class="tooltipevent" style="width:100px;height:100px;background:#ccc;position:absolute;z-index:10001;">' + calEvent.title + '</div>';
+                //    var $tooltip = $(tooltip).appendTo('body');
+
+                //    $(this).mouseover(function (e) {
+                //        $(this).css('z-index', 10000);
+                //        $tooltip.fadeIn('500');
+                //        $tooltip.fadeTo('10', 1.9);
+                //    }).mousemove(function (e) {
+                //        $tooltip.css('top', e.pageY + 10);
+                //        $tooltip.css('left', e.pageX + 20);
+                //    });
+                //},
+
+                //eventMouseout: function (calEvent, jsEvent) {
+                //    $(this).css('z-index', 8);
+                //    $('.tooltipevent').remove();
+                //},
+                eventClick: function (info) {
+
+                    // alert('Event: ' + info.title);
+                    //alert('Coordinates: ' + info.jsEvent.pageX + ',' + info.jsEvent.pageY);
+                    //alert('View: ' + info.view.type);
+
+                    // change the border color just for fun
+                    // info.el.style.borderColor = 'red';
+                },
+
+
+                header: {
+                    left: 'prev,next oggi',
+                    center: 'title',
+                    right: 'month,agendaWeek,agendaDay'
+                },
+                buttonText: {
+                    today: 'oggi',
+                    month: 'mese',
+                    week: 'settimana',
+                    day: 'giorno'
+                },
+                //dayRender: function (date, cell) {
+                //    var today = $.fullCalendar.moment();
+                //    var end = $.fullCalendar.moment().add(7, 'days');
+                //    if (date.get('date') == today.get('date')) {
+                //        cell.css("background", "#e8e8e8");
+                //    }
+                //},
+                events: function (start, end, timezone, callback){
+
+                    var events = [];
+                    if (task != undefined) {
+                        task.forEach(function (element) {
+                            console.log(element);
+
+                            var color = "";
+                            if (moment().diff(element.due, 'days') > 0) {
+                                color = "#FF0000";
+                            }
+
+                            events.push({
+                                title: element.name,
+                                start: element.due,
+                                backgroundColor: color,
+                                tooltip:  element.description
+                            });
+                        });
+                    }
+
+                    callback(events);
+                }
+                ,
+                //eventRender: function (info) {
+                //    var tooltip = new Tooltip(info.el, {
+                //        title: info.event.extendedProps.description,
+                //        placement: 'top',
+                //        trigger: 'hover',
+                //        container: 'body'
+                //    })
+                //},
+                editable: false,
+                droppable: false // this allows things to be dropped onto the calendar !!!
+
+            })
+
+        })</script>
+
+}
+
+
+<section class="content-header">
+    <h1>
+        Lista Attività
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
+        <li><a href="/Action/TaskList">User Task</a></li>
+        <li class="active">@User.Identity.Name</li>
+    </ol>
+</section>
+
+<section class="content">
+    <!-- Main row -->
+    <div class="row">
+        <!-- Left col -->
+        <section class="col-lg-7 connectedSortable">
+            <!-- TO DO List -->
+            <div class="box box-primary">
+                <div class="box-header">
+                    <i class="ion ion-clipboard"></i>
+                    <h3 class="box-title">Mie Attività - Utente: <b>@User.Identity.Name.ToUpper()</b></h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </section>
+        <!-- /.Left col -->
+        <section class="col-lg-5 connectedSortable">
+            <!-- Calendar -->
+            <div class="box box-solid no-padding">
+                <div class="box-header">
+                    <i class="fa fa-calendar"></i>
+                    <h3 class="box-title">Calendario</h3>
+                </div>
+                <!-- THE CALENDAR -->
+                <div id="calendar"></div>
+            </div>
+        </section>
+        <!-- right col -->
+    </div>
+
+
+
+
+    
+
+</section>

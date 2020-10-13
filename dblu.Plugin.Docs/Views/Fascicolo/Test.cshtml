@@ -1,0 +1,93 @@
+﻿@model dblu.Portale.Plugin.Docs.ViewModels.FascicoloViewModel
+
+@using dblu.Docs.Models
+@using Newtonsoft.Json
+@using Kendo.Mvc.UI
+@addTagHelper *, Kendo.Mvc
+@removeTagHelper "*, Microsoft.AspNet.Mvc.Razor"
+@removeTagHelper "*, Microsoft.AspNetCore.Mvc.Razor"
+@{
+    ViewBag.Title = "Test Page ";
+
+
+}
+
+
+<section class="content-header">
+    <h1>
+        @*Fascicolo
+            <small>Fascicolo @Model.Fascicolo.Id</small>*@
+    </h1>
+    <br />
+    <br />
+
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li><a href="#">Documenti</a></li>
+        <li class="active">Test Page</li>
+    </ol>
+</section>
+
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Gestione Fascicolo</h3>
+            </div>
+            <!-- /.card-header -->
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <form class='form-horizontal'>
+                            @(Html.Kendo().Button()
+                                    .Name("test")
+                                    .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                    .Content("Primary Button"))
+
+                          
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@(Html.Kendo().Window()
+    .Name("window")
+    .Title("Fascicolo")
+    .Modal(true)
+    .Draggable()
+.Resizable()
+.Events(ev => ev.Close("onClose"))
+.Actions(actions => actions.Pin().Minimize().Maximize().Close())
+.Width(1500).Visible(false)
+    .LoadContentFrom("Fascicolo","Docs", new { ID = "F81A6478-0711-4E77-A8B4-28DD224E8BA9"  })
+    @*.Content(@<text>
+
+    </text>)
+.Draggable()
+.Resizable()
+.Width(600).Visible(false)
+.Actions(actions => actions.Pin().Minimize().Maximize().Close())
+.Events(ev => ev.Close("onClose"))*@
+)
+
+
+<script>
+
+    function onClose() {
+       // $("#undo").show();
+    }
+
+    $(document).ready(function() {
+        $("#test").bind("click", function() {
+            $("#window").data("kendoWindow").open().center()
+                .wrapper.css({top: "auto", right: "auto", left: 40, top: 40 });
+   
+            });
+    });
+
+</script>
+<!-- /.content -->

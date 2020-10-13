@@ -1,0 +1,342 @@
+﻿@model dblu.Portale.Plugin.Docs.ViewModels.DocumentViewModel
+
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _doc
+
+@using dblu.Portale.Plugin.Docs.Models
+@using Newtonsoft.Json.Linq
+@using Newtonsoft.Json
+@using Kendo.Mvc.UI
+@using Syncfusion.EJ2
+@addTagHelper *, Kendo.Mvc
+
+@addTagHelper "*, Syncfusion.EJ2"
+
+@{
+    ViewBag.Title = "Allegato";
+}
+
+
+
+@* Syncfusion Essential JS 2 Styles *@
+<link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
+
+@* Syncfusion Essential JS 2 Scripts *@
+<script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+<script>
+    ej.base.L10n.load({
+        'it-IT': {
+            'PdfViewer': {
+                "PdfViewer": "Visualizzatore PDF",
+                "Cancel": "Annulla",
+                "Download file": "Download file",
+                "Download": "Scarica",
+                "Enter Password": "Questo documento è protetto da password. Per favore inserire una password.",
+                "File Corrupted": "File corrotto",
+                "File Corrupted Content": "Il file è danneggiato e non può essere aperto.",
+                "Fit Page": "Adatta alla pagina",
+                "Fit Width": "Adatta larghezza",
+                "Automatic": "Automatico",
+                "Go To First Page": "Mostra la prima pagina",
+                "Invalid Password": "Password errata. Per favore riprova.",
+                "Next Page": "Mostra la pagina successiva",
+                "OK": "ok",
+                "Open": "Apri il file",
+                "Page Number": "Numero di pagina corrente",
+                "Previous Page": "Mostra la pagina precedente",
+                "Go To Last Page": "Mostra l'ultima pagina",
+                "Zoom": "Ingrandisci",
+                "Zoom In": "Ingrandire",
+                "Zoom Out": "Rimpicciolire",
+                "Page Thumbnails": "Miniature di pagina",
+                "Bookmarks": "Segnalibri",
+                "Print": "Stampa file",
+                "Password Protected": "Password richiesta",
+                "Copy": "Copia",
+                "Text Selection": "Strumento di selezione del testo",
+                "Panning": "Panning",
+                "Text Search": "Trova testo",
+                "Find in document": "Trova nel documento",
+                "Match case": "Caso di corrispondenza",
+                "Apply": "Applicare",
+                "GoToPage": "Vai alla pagina",
+                "No matches": "Il visualizzatore ha terminato la ricerca del documento. Non sono state trovate altre corrispondenze",
+                "No Text Found": "Nessun testo trovato",
+                "Undo": "Undo",
+                "Redo": "Redo",
+                "Annotation": "Aggiungi o modifica annotazioni",
+                "Highlight": "Testo evidenziato",
+                "Underline": "Sottolinea il testo",
+                "Strikethrough": "Testo barrato",
+                "Delete": "Elimina annotazione",
+                "Opacity": "Opacità",
+                "Color edit": "Cambia colore",
+                "Opacity edit": "Cambia opacità",
+                "Highlight context": "Evidenziare",
+                "Underline context": "Sottolineare",
+                "Strikethrough context": "Colpisci",
+                "Server error": "Il servizio Web non è in ascolto. PDF Viewer dipende dal servizio web per tutte le sue funzionalità. Si prega di avviare il servizio Web per continuare.",
+                "Open text": "Aperto",
+                "First text": "Prima pagina",
+                "Previous text": "Pagina precedente",
+                "Next text": "Pagina successiva",
+                "Last text": "Ultima pagina",
+                "Zoom in text": "Ingrandire",
+                "Zoom out text": "Zoom indietro",
+                "Selection text": "Selezione",
+                "Pan text": "Pan text",
+                "Print text": "Stampa",
+                "Search text": "Ricerca",
+                "Annotation Edit text": "Modifica annotazione",
+                "Line Thickness": "Spessore della linea",
+                "Line Properties": "Proprietà linea",
+                "Start Arrow": "Inizia la freccia",
+                "End Arrow": "Freccia finale",
+                "Line Style": "Stile di linea",
+                "Fill Color": "Colore di riempimento",
+                "Line Color": "Linea di colore",
+                "None": "Nessuna",
+                "Open Arrow": "Aperto",
+                "Closed Arrow": "Chiuso",
+                "Round Arrow": "Round",
+                "Square Arrow": "Square",
+                "Diamond Arrow": "Diamond",
+                "Cut": "Tagliare",
+                "Paste": "Incolla",
+                "Delete Context": "Elimina",
+                "Properties": "Proprietà",
+                "Add Stamp": "Aggiungi timbro",
+                "Add Shapes": "Aggiungi forme",
+                "Stroke edit": "Cambia colore tratto",
+                "Change thickness": "Cambia spessore del bordo",
+                "Add line": "Aggiungi linea",
+                "Add arrow": "Aggiungi freccia",
+                "Add rectangle": "Aggiungi rettangolo",
+                "Add circle": "Aggiungi cerchia",
+                "Add polygon": "Aggiungi poligono",
+                "Add Comments": "Aggiungi commenti",
+                "Comments": "Commenti",
+                "No Comments Yet": "Ancora nessun commento",
+                "Accepted": "Accettato",
+                "Completed": "Completato",
+                "Cancelled": "Annullato",
+                "Rejected": "Respinto",
+                "Leader Length": "Lunghezza del leader",
+                "Scale Ratio": "Rapporto di scala",
+                "Calibrate": "Calibrare",
+                "Calibrate Distance": "Calibra distanza",
+                "Calibrate Perimeter": "Calibra perimetro",
+                "Calibrate Area": "Calibra area",
+                "Calibrate Radius": "Calibra raggio",
+                "Calibrate Volume": "Calibra volume"
+            }
+        }
+    });
+</script>
+
+
+
+
+
+<section class="content-header" style="padding: 10px">
+    <h1>
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">Documenti</li>
+    </ol>
+</section>
+
+<br>
+
+<button id="return" style="margin-left:30px"
+        class="btn btn-app">
+    <i class="fa fa-backward"></i> Indietro
+</button>
+
+<script>
+    $('#return').click(function (evt) {
+
+        window.history.back();
+    });
+</script>
+
+
+@*<button onclick="saveAnnotations();">Salva Annotazioni</button>
+<button onclick="importAnnotations();">Importa Annotazioni</button>*@
+
+<script>
+
+
+
+    $(document).ready(function () {
+
+        //$("#pdfviewer_comment").remove();
+        var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
+        pdfViewer.stickyNotesSettings.author = '@User.Identity.Name' //'@User.Identity.Name.Replace('.',' ')';
+        pdfViewer.strikethroughSettings.author = '@User.Identity.Name';
+        pdfViewer.underlineSettings.author = '@User.Identity.Name';
+        pdfViewer.highlightSettings.author = '@User.Identity.Name';
+        pdfViewer.annotationSettings.author = '@User.Identity.Name';
+        pdfViewer.freeTextSettings.author = '@User.Identity.Name';
+
+        //pdfViewer.measurementSettings.displayUnit = "mm";
+        //pdfViewer.measurementSettings.conversionUnit = "mm";
+
+
+    });
+
+     function importAnnotations() {
+
+        var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
+        pdfViewer.importAnnotations('@Model.Allegato.Id');
+    }
+
+    function annotationAdd(e) {
+       // alert("The signature is added to the PDF document successfully");
+    }
+
+
+    function saveAnnotations() {
+
+        var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
+        pdfViewer.exportAnnotations();
+    }
+
+    function documentLoaded(args) {
+        //alert("The document" + args.fileName + "is ready to view");
+        importAnnotations()
+    }
+
+
+</script>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="box box-primary">
+                <div class="box-header">
+                    <h3 class="box-title">Gestione Documento</h3>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- /.card-header -->
+                <div class="box-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <form class='form-horizontal'>
+                                <div class='card-body'>
+                                    <div class='form-group row'>
+                                        <label for='' class='col-sm-2 col-form-label'>ID Documento</label>
+                                        <div class='col-sm-10'>
+                                            <input type='text' class='form-control' id='' placeholder='' value='@Model.Allegato.Id' disabled>
+                                        </div>
+                                    </div>
+                                    <div class='form-group row'>
+                                        <label for='' class='col-sm-2 col-form-label'>Creato il</label>
+                                        <div class='col-sm-10'>
+                                            <input type='datetime' class='form-control' id='' placeholder='' value='@Model.Allegato.DataC' disabled>
+                                        </div>
+
+                                    </div>
+                                    <div class='form-group row'>
+                                        <label for='' class='col-sm-2 col-form-label'>Utente Creazione</label>
+                                        <div class='col-sm-10'>
+                                            <input type='text' class='form-control' id='' placeholder='Nome' value='@Model.Allegato.UtenteC' disabled>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </form>
+
+                        </div>
+                        <div class="col-md-6">
+                            <div class='form-group row'>
+                                <label for='' class='col-sm-2 col-form-label'>Descrizione</label>
+                                <div class='col-sm-10'>
+                                    <input type='text' class='form-control' id='' placeholder='' value='@Model.Allegato.Descrizione' disabled>
+                                </div>
+
+                            </div>
+                            <div class='form-group row'>
+                                <label for='' class='col-sm-2 col-form-label'>Modificato il</label>
+                                <div class='col-sm-10'>
+                                    <input type='datetime' class='form-control' id='' placeholder='' value='@Model.Allegato.DataUM' disabled>
+                                </div>
+
+                            </div>
+                            <div class='form-group row'>
+                                <label for='' class='col-sm-2 col-form-label'>Utente Ultima Modifica</label>
+                                <div class='col-sm-10'>
+                                    <input type='text' class='form-control' id='' placeholder='Nome' value='@Model.Allegato.UtenteUM' disabled>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card -->
+                        <!-- /.col (right) -->
+                    </div>
+                    <!-- /.row -->
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <button type="button" onclick="saveAnnotations();" class="btn btn-success btn-lg">Salva Annotazioni</button>
+            <br />
+            <br />
+            <div class="col-xs-12 col-md-12">
+                <div>
+                    <ejs-pdfviewer id="pdfviewer" serviceUrl="/api/PdfViewer" documentPath="@Model.Allegato.Id"
+                                   enablePrint="true"
+                                   documentLoad="documentLoaded"
+                                   annotationAdd="annotationAdd"
+                                   enableStampAnnotations="false"
+                                   locale="it-IT"
+                                   downloadFileName="@string.Concat(@Model.Allegato.Id.ToString(),".pdf")">
+                    </ejs-pdfviewer>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+<style>
+
+    #menuitem_2 {
+        display: none;
+    }
+
+    #pdfviewer_openContainer {
+        display: none
+    }
+
+
+    html body #container {
+        width: 100% !important;
+    }
+
+    .container {
+        height: 100vh; /* For 100% screen height */
+        width: 100vw; /* For 100% screen width */
+    }
+
+    .panel-wrap {
+        background-color: #f5f5f5;
+        border: 1px solid #e5e5e5;
+        position: relative;
+    }
+
+
+    #main-content {
+        overflow: hidden;
+        margin: 0;
+        padding: 20px;
+        min-height: 580px;
+        vertical-align: top;
+    }
+</style>
+<ejs-scripts></ejs-scripts>

@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>dbDocs</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{01c60406-0637-4445-8b12-e497261aa603}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql130DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>dbDocs</RootNamespace>
+    <AssemblyName>dbDocs</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
+    <DefaultFileStructure>BySchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <DefaultCollation>Latin1_General_CI_AS</DefaultCollation>
+    <DefaultFilegroup>PRIMARY</DefaultFilegroup>
+    <DefaultFileStreamFilegroup>fsGroup</DefaultFileStreamFilegroup>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="Tables\" />
+    <Folder Include="FileTables\" />
+    <Folder Include="Views\" />
+    <Folder Include="Storage\" />
+    <Folder Include="Stored Procedures\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="Tables\Soggetti.sql" />
+    <Build Include="Tables\Allegati.sql" />
+    <Build Include="Tables\Categorie.sql" />
+    <Build Include="Tables\Elementi.sql" />
+    <Build Include="Tables\EmailServer.sql" />
+    <Build Include="Tables\ServersInRole.sql" />
+    <Build Include="Tables\EmailSoggetti.sql" />
+    <Build Include="Tables\ElementiInRoles.sql" />
+    <Build Include="Tables\Fascicoli.sql" />
+    <Build Include="Tables\TipiAllegati.sql" />
+    <Build Include="Tables\TipiElementi.sql" />
+    <Build Include="FileTables\Docs.sql" />
+    <Build Include="Views\vElementi.sql" />
+    <Build Include="Views\vDocs.sql" />
+    <Build Include="Storage\fsGroup.sql" />
+    <Build Include="Stored Procedures\sp_AggDoc.sql" />
+    <Build Include="Stored Procedures\sp_CancDoc.sql" />
+    <Build Include="Stored Procedures\sp_InsDoc.sql" />
+    <Build Include="Stored Procedures\msg_AssegnaClienteMessaggio.sql" />
+    <Build Include="Stored Procedures\sp_GetSoggettoEmail.sql" />
+    <Build Include="Views\vRicercaElementi.sql" />
+    <Build Include="Views\vListaElementi.sql" />
+    <Build Include="Views\vListaFascicoli.sql" />
+    <Build Include="Views\vListaAllegati.sql" />
+    <Build Include="Tables\LogDoc.sql" />
+    <Build Include="Tables\Configurazione.sql" />
+    <Build Include="Tables\AllegatiInRoles.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <RefactorLog Include="dbDocs.refactorlog" />
+  </ItemGroup>
+</Project>

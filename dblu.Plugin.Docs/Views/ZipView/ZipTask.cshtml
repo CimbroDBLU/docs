@@ -1,0 +1,859 @@
+﻿@model dblu.Portale.Plugin.Docs.ViewModels.ZipViewModel
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using dblu.Docs.Models
+@inject dblu.Portale.Plugin.Docs.Services.ZipService _zipservice
+@inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _allservice
+
+@using Kendo.Mvc.UI
+@using Syncfusion.EJ2
+@addTagHelper *, Kendo.Mvc
+@addTagHelper *, Syncfusion.EJ2
+
+@{
+    ViewData["Title"] = "Documenti da processare";
+
+    List<dblu.Docs.Models.TipiElementi> ListaTipiElementi;
+    List<SelectListItem> ListaRuoliZip = _zipservice.GetRuoliZip(Context.User.Claims);
+    if (ListaRuoliZip.Count() == 0) {
+        ListaRuoliZip.Add(new SelectListItem("(nessuno)", ".."));
+    }
+
+    List<string> ListaRuoli = new List<string>();
+    foreach (SelectListItem s in ListaRuoliZip)
+        ListaRuoli.Add(s.Value);
+
+    ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoli);
+
+    bool mostraSposa = false; // ListaRuoliZip.Count > 1;
+
+    List<dblu.Docs.Models.Colonna> ElCols = _allservice.GetColonne("vELEMENTO");
+
+}
+
+<style>
+
+    #gridZip td {
+        font-size: 12px;
+        padding-top: 0em;
+        padding-bottom: 0em;
+        height: 100%;
+    }
+
+    #zipAttachments td {
+        font-size: 12px;
+        padding-top: 0em;
+        padding-bottom: 0em;
+    }
+
+    #gridZipElementi td {
+        font-size: 12px;
+        padding-top: 0em;
+        padding-bottom: 0em;
+    }
+
+    #gridSoggettoElementiAperti td {
+        font-size: 12px;
+        padding-top: 0em;
+        padding-bottom: 0em;
+    }
+
+    html body #zippdfviewer {
+        width: 100% !important;
+    }
+
+    .new-tab-opener {
+        display: none;
+    }
+
+    .my-icon-class-inoltra:before {
+        content: "\e101"; /* Adds a glyph using the Unicode character number */
+    }
+
+    .my-icon-class-sposta:before {
+        content: "\e903"; /* Adds a glyph using the Unicode character number */
+    }
+
+    .my-icon-class-cancella:before {
+        content: "\e10c"; /* Adds a glyph using the Unicode character number */
+    }
+
+    .my-icon-class-download:before {
+        content: "\e132"; /* Adds a glyph using the Unicode character number */
+    }
+
+    body.waiting * {
+        cursor: progress;
+    }
+</style>
+
+@* Syncfusion Essential JS 2 Styles *@
+<link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
+
+@* Syncfusion Essential JS 2 Scripts *@
+<script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+<script src="~/Scripts/dblupdf.js"></script>
+<script src="~/Scripts/ziptaskview.js"></script>
+
+
+<script>
+$(document).ready(function () {
+
+    var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
+    zippdfviewer.stickyNotesSettings.author = '@User.Identity.Name' //'@User.Identity.Name.Replace('.',' ')';
+    zippdfviewer.strikethroughSettings.author = '@User.Identity.Name';
+    zippdfviewer.underlineSettings.author = '@User.Identity.Name';
+    zippdfviewer.highlightSettings.author = '@User.Identity.Name';
+    zippdfviewer.annotationSettings.author = '@User.Identity.Name';
+    zippdfviewer.freeTextSettings.author = '@User.Identity.Name';
+
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"></script>
+<script>
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js';
+</script>
+
+
+<section class="content-header">
+    <h1>
+        Documenti in arrivo
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
+        <li><a href="/ZipView/FileTask">Documenti in arrivo</a></li>
+    </ol>
+</section>
+
+<script>
+
+    UrlActions = {
+        ZipView_CaricaDettaglio: '@Url.Action("CaricaDettaglio", "ZipView")',
+        ZipView_ZipFileCompleto: '@Url.Action("ZipFileCompleto", "ZipView")',
+        ZipView_editDettaglioElemento: '@Url.Action("editDettaglioElemento", "ZipView")',
+        ZipView_ApriFile: '@Url.Action("ApriFile", "ZipView")',
+        ZipView_AllegaAElementoFascicolo: '@Url.Action("AllegaAElementoFascicolo", "ZipView")',
+        ZipView_GetSoggetto: '@Url.Action("GetSoggetto", "ZipView")',
+        ZipView_NotificaAssociazione: '@Url.Action("NotificaAssociazione", "ZipView")',
+        ZipView_ZipFileAnnulla: '@Url.Action("ZipFileAnnulla", "ZipView")',
+        ZipView_StampaRiepilogo:'@Url.Action("StampaRiepilogo","ZipView" )',
+        ZipView_CancellaElemento:'@Url.Action("CancellaElemento", "ZipView" )',
+  
+        sggservice_UrlServizio: '@_sggservice.UrlServizio()',
+        sggservice_UrlServizioRicercaElementi: "@_sggservice.UrlServizioRicercaElementi()"
+    };
+
+
+    function MostraSposta(dataItem) {
+
+        if (@mostraSposa)
+            return true;
+        else
+            return false;
+    }
+
+    function inoltraOnClick(e) {
+        e.preventDefault();
+       var obj = {
+            IdAllegato: $("#IdAllegato").val(),
+            email: $("#emailInoltro").val(),
+            chiudi: $("#chkemailInoltro").is(':checked')
+        };
+        $.ajax({
+            url: '@Url.Action("Inoltra","ZipView" )',
+            type: 'POST',
+            cache: false,
+            data: obj,
+            success: function (data) {
+                var ok = $.parseJSON(data);
+                if (ok) {
+                    var dialog = $("#wInoltra").data("kendoWindow");
+                    dialog.close();
+                    if ($("#chkemailInoltro").is(':checked')) {
+                        PulisciDettaglio();
+                        var grid = $("#gridEmail").data("kendoGrid");
+                        grid.dataSource.read();
+                    }
+                }
+            },
+            error: function (data) {
+                var ok = $.parseJSON(data);
+            }
+        });
+    }
+
+    function spostaOnClick(e) {
+        e.preventDefault();
+        var obj = {
+            IdAllegato: $("#IdAllegato").val(),
+            server: $("#zipFolder_sposta").data("kendoComboBox").value()
+        };
+        $.ajax({
+            url: '@Url.Action("Sposta", "ZipView")',
+            type: 'POST',
+            cache: false,
+            data: obj,
+            success: function (data) {
+                var ok = $.parseJSON(data);
+                if (ok) {
+                    var dialog = $("#wSposta").data("kendoWindow");
+                    dialog.close();
+                    PulisciDettaglio();
+                    var grid = $("#gridEmail").data("kendoGrid");
+                    grid.dataSource.read();
+                }
+            },
+            error: function (data) {
+                var ok = $.parseJSON(data);
+            }
+        });
+    }
+
+
+</script>
+
+<!-- Main content -->
+<section class="content">
+
+    <div class="row">
+        <div class="col-xs-5">
+            <label class="control-label col-md-4" style="font-size:12px">Ruolo:</label>
+            <div class="col-md-6">
+                @(Html.Kendo().ComboBox()
+                    .Name("cmbRuoliZip")
+                    .Placeholder("Seleziona gruppo...")
+                    .DataTextField("Text")
+                    .DataValueField("Value")
+                    .BindTo(ListaRuoliZip)
+                    .SelectedIndex(0)
+                    .Suggest(true)
+                    .HtmlAttributes(new { style = "width:100%;" })
+                    .Events(e =>
+                    {
+                        e.Select("onSelectRuoloZip");
+                    })
+                )
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-5">
+            <div class="box box-solid box-default">
+                @Html.Hidden("IdTask")
+                @Html.Hidden("IdAllegato")
+
+                <div class="box-body">
+                    <div class="k-grid">
+                        @(Html.Kendo().Grid<ZipViewModel>()
+                            .Name("gridZip")
+                            .Columns(columns =>
+                            {
+                                columns.Bound(p => p.id).Title("id").Width(0).Hidden();
+                                columns.Bound(p => p.name).Title("Nome").Width(50);
+                                columns.Bound(p => p.description).Title("Descrizione").Width(230);
+                                columns.Bound(p => p.DataC).Title("Data").Width(60).Format("{0:dd/MM/yy HH:mm}");
+                                columns.Command(command =>
+                                {
+                                    //command.Custom("Inoltra").Text("").Click("InoltraZip").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:80px" });
+                                    //command.Custom("Sposta").Text("").Click("SpostaZip").IconClass("k-icon my-icon-class-sposta").HtmlAttributes(new { style = "width:80px " });
+                                    // command.Custom("*Elimina*").Click("DeleteEmail");
+                                    command.Destroy().Text("Annulla").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:80px"});
+                                }).Width(100);
+                                //columns.Bound(p => p.Stato).Width(50).ClientTemplate("#if (data.Stato == 3){#<span class='k-icon k-i-printer'></span>#} else if (data.Stato==2){#<span class='k-icon k-i-file-add'></span>#}#");
+                            })
+                            .Pageable()
+                            .Sortable()
+                            .Scrollable(s => s.Height("auto"))
+                            .Filterable()
+                            .Groupable(false)
+                            .Selectable()
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .PageSize(20)
+                                .Batch(false)
+                                .ServerOperation(true)
+                                .AutoSync(true)
+                                .Events(events => events.Error("error_handler"))
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.id);
+                                })
+                                .Read(read => read.Action("Task_Read", "ZipView").Data("getRuolo"))
+                                .Sort(sort => sort.Add("created").Ascending())
+                             )
+                             .Events(events => events
+                                .Remove("gridZipOnRemove")
+                                .Change("gridZipOnChange")
+                             )
+                             .Resizable(resize => resize.Columns(true))
+                             .HtmlAttributes(new { Height = "100%", style = "font-size:10" })
+                             .ToolBar(toolbar => { toolbar.Search(); })
+                             .Search(s => { s.Field(c => c.description); s.Field(c => c.name); })
+
+                        )
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-7">
+            <div class="box box-default">
+                <div class="box-header">
+                    <i class="ion ion-person"></i>
+                    <h4 class="box-title">Cliente</h4>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <form>
+                        <div class="row" id="divCliente">
+                            <div class="form-group">
+                                @*   <label class="control-label col-md-4" style="font-size:12px">Cliente</label> *@
+                                <div class="col-md-12" style="width:80%;">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-2">
+                                            <input type="text" class="form-control" id="CodiceSoggetto" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <input type="text" class="form-control" id="NomeSoggetto" placeholder="" disabled value="" />
+                                        </div>
+                                        @(Html.Kendo().Button()
+                                                .Name("CercaSoggetti")
+                                                .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                                .Content("Cerca")
+                                                .Events(e => e.Click("CercaSoggettiOnClick"))
+                                            )
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" id="divSoggettoElementiAperti" hidden>
+                            <div class="form-group col-md-12" style="width:80%">
+                                @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggettoElementiAperti>()
+                                .Name("gridSoggettoElementiAperti")
+                                .Columns(columns =>
+                                {
+                                    columns.Bound(p => p.Numero).Title("Numero").Width("20%");
+                                    columns.Bound(p => p.Riferimento).Title("Riferimento").Width("40%");
+                                    columns.Bound(p => p.DataConsegna).Title("Data cons.").Width("20%").Format("{0:dd/MM/yy}");
+                                    columns.Bound(p => p.Stato).Title("Stato").Width("20%");
+                                })
+                                .Pageable()
+                                .Sortable()
+                                .Scrollable(s => s.Height("auto"))
+                                .Filterable()
+                                .DataSource(dataSource => dataSource
+                                    .Ajax()
+                                    .PageSize(10)
+                                    .Batch(false)
+                                    .ServerOperation(true)
+                                    .AutoSync(true)
+                                    .Events(events => events.Error("error_handler"))
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.Numero);
+                                    })
+                                    .Read(read => read.Action("SoggettoElementiAperti", "ZipView").Data("getSoggetto"))
+                                 )
+                                .Groupable(false)
+                                .Resizable(resize => resize.Columns(true))
+                                .HtmlAttributes(new { style = "font-size:10" })
+                            )
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="box box-default" id="divFascicolo" hidden>
+                @Html.Hidden("IdFascicolo")
+                @Html.Hidden("IdElemento")
+                <div class="box-header with-border">
+                    <i class="ion ion-folder"></i>
+                    <h4 class="box-title">Fascicolo / Elementi</h4>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse" id="CollapseFascicolo">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <form>
+                        <div class="form-group">
+                            @* <label class="control-label col-md-4" style="font-size:12px">Fascicolo / Elemento</label>*@
+                            <div class="col-md-12" style="width:100%;">
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <input type="text" class="form-control" id="DescrizioneElemento" placeholder="" value="" />
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        @(Html.Kendo().Button()
+                                                .Name("CercaFascicolo")
+                                                .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                                .Content("Cerca")
+                                            .Events(e => e.Click("CercaElementiOnClick"))
+                                        )
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        @(Html.Kendo().Button()
+                                    .Name("Completa")
+                                    .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                    .Content("Operazione Completa")
+                                    .Events(e => e.Click("ZipCompleto"))
+                                    )
+                                    </div>
+                                    <div class="form-group col-md-2">
+                                        @(Html.Kendo().Button()
+                                            .Name("StampaRiepilogo")
+                                            .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                            .Content("Stampa Riepilogo")
+                                            .Events(e => e.Click("StampaRiepilogo"))
+                                        )
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group" id="divElemento">
+                            <div class="col-md-12" style="width:100%;">
+
+                                <div class="form-row" hidden>
+                                    <div class="form-group col-md-2">
+                                        @(Html.Kendo().Button()
+                                            .Name("ApriDettaglio")
+                                            .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                            .Content("Apri")
+                                            .Events(e => e.Click("ApriDettaglioOnClick"))
+                                        )
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        @(Html.Kendo().Button()
+                                            .Name("AggiungiAElemento")
+                                            .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                            .Content("Aggiungi a Elemento")
+                                            .Events(e => e.Click("AggiungiAElementoOnClick"))
+                                        )
+                                    </div>
+
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-12">
+                                        @(Html.Kendo().Grid<EmailElementi>()
+                                            .Name("gridZipElementi")
+                                            .Columns(columns =>
+                                            {
+                                                columns.Bound(p => p.Id).Title("Id").Hidden(true);
+                                                columns.Bound(p => p.IsUltimo).Title("Ult.").Width("5%");
+                                                columns.Bound(p => p.DescrizioneTipo).Title("Tipo").Width("15%");
+                                                columns.Bound(p => p.Descrizione).Title("Descrizione").Width("40%");
+                                                columns.Bound(p => p.Chiave1).Title(ElCols.ElementAt(0).Des).Visible(ElCols.ElementAt(0).Visible).Width(50);
+                                                columns.Bound(p => p.Chiave2).Title(ElCols.ElementAt(1).Des).Visible(ElCols.ElementAt(1).Visible).Width(50);
+                                                columns.Bound(p => p.Chiave3).Title(ElCols.ElementAt(2).Des).Visible(ElCols.ElementAt(2).Visible).Width(50);
+                                                columns.Command(command =>
+                                                {
+                                                    command.Custom("ApriElemento").Text("Apri").Click("ApriElementoGrid").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:70px" });
+                                                    command.Custom("AggiungiAElemento").Text("Agg.").Click("AggiungiAElementoGrid").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:70px" });
+                                                    command.Custom("CancellaElemento").Text("Canc.").Click("RimuoviElementoGrid").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:70px" });
+                                                }).Width(75);
+                                            })
+                                            .DataSource(dataSource => dataSource
+                                                .Ajax()
+                                                .PageSize(5)
+                                                .Batch(false)
+                                                .ServerOperation(true)
+                                                .AutoSync(true)
+                                                .Events(events => events.Error("error_handler"))
+                                                .Model(model =>
+                                                {
+                                                    model.Id(p => p.Id);
+                                                })
+                                                .Read(read => read.Action("ListaZipElementi", "ZipView").Data("getFascicolo"))
+                                            )
+                                            .Groupable(false)
+                                            .Selectable()
+                                            .HtmlAttributes(new { style = "font-size:10" })
+                                            .Events(events => events
+                                                .Change("gridZipElementiOnChange"))
+                                        )
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-4" style="font-size:12px">Nuovo</label>
+                            <div class="col-md-10" style="width:80%;">
+                                <div id="DivGridElementi">
+                                    <div class="grid-container">
+                                        @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
+                                        {
+                                            <div class="grid-item">
+                                                <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info">@item.Descrizione </button>
+                                                @*if (ListaTipiElementiServ.Contains(item))
+                                                    {
+                                                        <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info">@item.Descrizione </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info" disabled >@item.Descrizione </button>
+                                                    }*@
+                                            </div>
+                                        }
+                                        <style>
+                                            .grid-container {
+                                                display: inline-grid;
+                                                grid-template-columns: auto auto auto;
+                                                background-color: #2196F3;
+                                                padding: 5px;
+                                            }
+
+                                            .grid-item {
+                                                background-color: rgba(255, 255, 255, 0.8);
+                                                border: 1px solid rgba(0, 0, 0, 0.8);
+                                                padding: 5px;
+                                                font-size: 15px;
+                                                text-align: center;
+                                            }
+
+                                            .b {
+                                                margin-left: 5px;
+                                            }
+                                        </style>
+                                        <script>
+                                        function NuovoElemento(e, Categoria, TipoElemento) {
+
+                                            $('body').addClass('waiting');
+
+                                            var idElemento = $('#IdElemento').val();
+                                            var gridall = $("#zipAttachments").data("kendoGrid");
+                                            var items = '';
+                                            var selectedElements = gridall.select();
+                                            for (var j = 0; j < selectedElements.length; j++) {
+                                                var item = gridall.dataItem(selectedElements[j]);
+                                                items = items + item.NomeFile + ';';
+                                            }
+                                            var r = true;
+                                            if (idElemento != "") {
+                                                r = confirm("Confermi la creazione di un nuovo elemento nel fascicolo corrente?");
+                                            }
+                                            if (r) {
+                                                var obj = {
+                                                    IdAllegato: $("#IdAllegato").val(),
+                                                    IdFascicolo: $("#IdFascicolo").val(),
+                                                    IdElemento: idElemento,
+                                                    Categoria: Categoria,
+                                                    TipoElemento: TipoElemento,
+                                                    CodiceSoggetto: $("#CodiceSoggetto").val(),
+                                                    NomeSoggetto: $("#NomeSoggetto").val(),
+                                                    elencoFile: items,
+                                                    AllegaZip: $("#allegamail").val(),
+                                                    Descrizione: $("#DescrizioneElemento").val(),
+                                                };
+                                                $.ajax({
+                                                    url: '@Url.Action("CreaElementoFascicolo","ZipView")',
+                                                    type: 'POST',
+                                                    data: obj,
+                                                    success: function (elemento) {
+                                                        CaricaElemento(elemento);
+                                                    },
+                                                    error: function () {
+                                                        $('body').removeClass('waiting');
+                                                    }
+                                                });
+                                            }
+
+                                            }
+
+                                        </script>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="box box-default">
+                <div class="box-header with-border">
+                    <i class="ion ion-folder"></i>
+                    <h4 class="box-title">Allegati</h4>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse" id="CollapseContenuto">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <form>
+                        <div class="form-group" hidden>
+                            <label class="control-label col-md-2" style="font-size:12px">Testo</label>
+                            <div class="col-md-12" style="width:100%">
+                                <textarea class="form-control" id="TestoEmail" name="TestoEmail" rows="5" style="width:100%" readonly="readonly"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-2" style="font-size:12px" hidden>Allegati da includere</label>
+                            <div class="col-md-12" style="width:100%">
+                                @(Html.Kendo().Grid<EmailAttachments>()
+                                    .Name("zipAttachments")
+                                    .PersistSelection()
+                                    .Columns(columns =>
+                                    {
+                                        columns.Select().Width(50).Title("Allega");
+                                        columns.Bound(p => p.NomeFile).Title("Nome ").Width("50%");
+                                        columns.Bound(p => p.IsIncluso).Title("Incluso nel pdf").Width("20%");
+                                        columns.Command(command =>
+                                        {
+                                            command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon my-icon-class-download");
+                                        }).Width("10%");
+                                    })
+                                    .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .Model(model => model.Id(p => p.Id))
+                                        )
+                                    .HtmlAttributes(new { style = "font-size:12" })
+                                    )
+                                @*
+                                     .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
+                                     .Events(events => events.Change("Attachments_OnRowSelect"))
+                                    .Events(ev => ev.Change("xxonChange"))*@
+                            </div><br /><br />
+                        </div>
+
+                        <div class="form-group" style="margin-top:10px" hidden>
+                            <div class="col-md-10" style="font-size:15px">
+                                @(Html.Kendo().CheckBox().Name("allegamail")
+                                .Checked(true).Label("Allega il testo della Mail")
+                            )
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="box box-solid box-default">
+                <div class="box-body">
+                    <div class="form-group" style="margin-top:10px">
+                        <div class="form-row">
+                            <div class="col-md-12" style="width:100%" id="anteprimapdf">
+                                @*@(Html.Kendo().PDFViewer().Name("pdfviewer")
+                                        .Toolbar(toolbar =>
+                                        toolbar.Items(items =>
+                                            {
+                                                items.Add().Name("pager");
+                                                items.Add().Name("spacer");
+                                                items.Add().Name("zoom");
+                                                items.Add().Name("print");
+                                                items.Add().Name("search");
+                                                items.Add().Name("download");
+                                                items.Add().Name("open");
+                                            })
+                                        )
+                                        .Height(800)
+                                        .Scale(2)
+                                    )*@
+
+                                <ejs-pdfviewer id="zippdfviewer" serviceUrl="/api/ZipPdfViewer" documentPath=""
+                                               enablePrint="true"
+                                               documentLoad="documentLoaded"
+                                               annotationAdd="annotationAdd"
+                                               enableStampAnnotations="false"
+                                               locale="it-IT"
+                                               downloadFileName="@string.Concat("",".pdf")" height="900px"
+                                               toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
+                                </ejs-pdfviewer>
+
+                            </div>
+                            <div class="col-md-12" style="width:80%" id="anteprimajpg" hidden>
+                                <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form class="new-tab-opener" method="get" target="_blank"></form>
+</section>
+
+
+<script type="text/javascript">
+
+    function OpenEmail(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        //$("#IdAllegato").val(dataItem.Id);
+
+        var url = "@Url.Action("InArrivoApri","MailView" )" + "/" + dataItem.Id;
+        window.location.href  = url;
+
+    }
+
+
+   @*
+    function DeleteEmail(e) {
+        //e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        $("#IdAllegato").val(dataItem.Id);
+        if (confirm('Eliminare il messaggio?') == true) {
+            $.ajax({
+                url: '@Url.Action("InArrivo_Cancella","MailView" )',
+                type: 'POST',
+                cache: false,
+                data: { Id: dataItem.Id },
+                success: function (data) {
+                    var ok = $.parseJSON(data);
+
+                },
+                error: function (data) {
+                    var ok = $.parseJSON(data);
+
+                }
+            });
+        }
+      }*@
+</script>
+
+<script type="text/javascript">
+
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+</script>
+
+
+
+
+@(Html.Kendo().Window()
+    .Name("detElemento")
+    .Visible(false).Modal(false)
+    .Title("Dettaglio Elemento")
+    .Draggable()
+    .Resizable()
+    .Width(750)
+    .Position(p => p.Top(200).Left(0))
+    .Actions(actions => actions.Pin().Minimize().Maximize().Close())
+    .Events(e => e.Close("detElementoClose").Open("detElementoOpen")  )
+)
+@(Html.Kendo().Window()
+    .Name("wCercaElementi")
+    .Visible(false).Modal(false)
+    .Title("Cerca Elemento")
+    .Draggable()
+    .Resizable()
+    .Width(900)
+    .Height(700)
+    .Modal(true)
+    .Position(p => p.Top(0).Left(0))
+    .Actions(actions => actions.Pin().Minimize().Maximize().Close())
+    .Events(e => e.Close("wCercaElementiClose") )
+)
+@(Html.Kendo().Window()
+    .Name("cercasoggetti")
+    .Size("auto")
+    .Title("Cerca")
+    .Visible(false)
+    .Actions(actions => actions.Refresh().Minimize().Maximize().Close())
+    .Content("")
+    .Draggable()
+    .Resizable()
+    .Scrollable(true)
+    .Width(900)
+    .Height(700)
+    .Modal(true)
+
+)
+@(Html.Kendo().Window()
+    .Name("wInoltra")
+    .Size("auto")
+    .Title("Inoltra a:")
+    .Visible(false)
+    .Actions(actions => actions.Close())
+    .Content(@<text>
+        <div class="box-body">
+            <form>
+                <div class="form-group">
+                    @*              <label class="control-label col-md-1" style="font-size:14px">indirizzo</label>*@
+                    <div class="form-group col-md-8">
+                        @(Html.Kendo().TextBox()
+                        .Name("emailInoltro")
+                        .Value("")
+                        .HtmlAttributes(new { style = "width: 100%" } )
+                        )
+                    </div>
+                    <div class="form-group col-md-2">
+                        @(Html.Kendo().Button()
+                        .Name("okinoltra")
+                        .Content("Invia")
+                        .Events(ev => ev.Click("inoltraOnClick"))
+                        )
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-group col-md-10" >
+                        <input type="checkbox" checked  id="chkemailInoltro" title="Chiudi email">
+                        <label class="control-label col-md-3" >Chiudi email</label>
+                    </div>
+                </div>
+            </form >
+        </div >
+    </text>)
+    .Width(600)
+    .Height(180)
+    .Modal(true)
+)
+@(Html.Kendo().Window()
+    .Name("wSposta")
+    .Size("auto")
+    .Title("Sposta in:")
+    .Visible(false)
+    .Actions(actions => actions.Close())
+    .Content(@<text>
+        <div class="box-body">
+            <form>
+                <div class="form-group">
+                    @*              <label class="control-label col-md-1" style="font-size:14px">indirizzo</label>*@
+                    <div class="form-group col-md-8">
+                         @(Html.Kendo().ComboBox()
+                            .Name("ZipServer_sposta")
+                            .Placeholder("Seleziona cartella...")
+                            .DataTextField("Text")
+                            .DataValueField("Value")
+                            .BindTo(ListaRuoliZip)
+                            .SelectedIndex(0)
+                            .Suggest(true)
+                            .HtmlAttributes(new { style = "width:100%;" })
+                        )
+                    </div>
+                    <div class="form-group col-md-2">
+                        @(Html.Kendo().Button()
+                        .Name("okSposta")
+                        .Content("Sposta")
+                        .Events(ev => ev.Click("spostaOnClick"))
+                        )
+                    </div>
+                </div>
+            </form >
+        </div >
+    </text>)
+    .Width(600)
+    .Height(180)
+    .Modal(true)
+                 )
+
+<ejs-scripts></ejs-scripts>

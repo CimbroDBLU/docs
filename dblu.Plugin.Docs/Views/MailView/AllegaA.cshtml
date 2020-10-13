@@ -1,0 +1,126 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using dblu.Docs.Models
+@using Kendo.Mvc.UI
+@using dblu.Portale.Extensions
+
+@addTagHelper *, Kendo.Mvc
+@model AllegaAViewModel
+
+@{
+    Model.FileAllegati = TempData.Get<IEnumerable<EmailAttachments>>("FileAllegati");
+
+}
+
+<script src="~/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="~/lib/kendo-ui/js/kendo.all.min.js"></script>
+<script src="~/lib/kendo-ui/js/kendo.aspnetmvc.min.js"></script>
+<script src="~/lib/kendo-ui/js/cultures/kendo.culture.it-IT.min.js"></script>
+
+<script type="text/javascript">
+    kendo.culture("it-IT");
+</script>
+
+
+<section class="content">
+    <div class="container-fluid">
+
+        <div class="row">
+                    <div style="margin-top:20px" id="DivAllegaA" >
+                        <form>
+                            <fieldset>
+                                <input id="allegaIdAllegato" name="IdElemento" type="hidden" value="@Model.IdAllegato.ToString()" />
+                                <input id="allegaIdElemento" name="IdElemento" type="hidden" value="@Model.IdElemento.ToString()" />
+                                <input id="allegaIdFascicolo" name="IdFascicolo" type="hidden" value="@Model.IdFascicolo.ToString()" />
+
+                                <div class="form-group" style="margin-top:10px">
+                                    <label class="control-label col-md-2" style="font-size:17px">Allegati</label>
+                                    <div class="col-md-12" style="width:80%">
+                                        @(Html.Kendo().Grid<EmailAttachments>()
+                                        .Name("allegaAttachments")
+                                        .Columns(columns =>
+                                        {
+                                            columns.Select().Width(80).Title("Seleziona");
+                                            columns.Bound(p => p.Id).Visible(false);
+                                            columns.Bound(p => p.NomeFile).Title("Nome file");
+                                        })
+                                        .PersistSelection()
+                                        .BindTo(Model.FileAllegati)
+                                        .DataSource(dataSource => dataSource
+                                            .Ajax()
+                                            .Model(model => model.Id(p => p.NomeFile)
+                                        )
+                                        ))
+                                    </div><br /><br />
+                                </div>
+                            </fieldset>
+                        </form>
+                        <div class="col-md-12">
+                            <form>
+                                <div class="form-group" style="margin-top:10px">
+                                    @* 
+                                        <label class="control-label col-md-2" style="font-size:17px">Allega Mail</label>
+                                    *@ 
+                                    <div class="col-md-10" style="font-size:20px; width:80% ">
+                                        @(Html.Kendo().CheckBox().Name("allegatestoemail")
+                                                .Checked(true).Label("Allega il testo della Mail")
+
+                                        )
+                                    </div>
+                                </div>
+                                <br />
+                                <br />
+                                <div class="form-group" style="margin-top:10px; width:80%">
+                                    <label style="font-size:20px" for="AllegaDescrizione">Descrizione</label>
+                                    <br />
+                                    <br />
+                                    <input style="font-size:20px" type="text" class="form-control" id="AllegaDescrizione" placeholder="Descrizione">
+                                </div>
+                                <button type="button" class="btn btn-lg btn-info pull-right" id="AllegaFile" onclick="AllegaFileaElemento()">Allega</button>
+
+                            </form>
+                        </div>
+                    </div>
+        </div>
+    </div>
+</section>
+
+            <script>
+function AllegaFileaElemento(e) {
+
+    var gridall = $("#allegaAttachments").data("kendoGrid");
+    var items='';
+    var selectedElements = gridall.select();
+    for (var j = 0; j < selectedElements.length; j++) {
+        var item = gridall.dataItem(selectedElements[j]);
+        items = items + item.NomeFile + ';';
+    }
+    var obj = {
+        IdAllegato: $("#allegaIdAllegato").val(),
+        IdFascicolo: $("#allegaIdFascicolo").val(),
+        IdElemento: $("#allegaIdElemento").val(),
+        elencoFile: items,
+        AllegaEmail: $("#allegatestoemail").val(),
+        Descrizione: $("#AllegaDescrizione").val()
+    };
+    $.ajax({
+        url: '@Url.Action("AllegaAElementoFascicolo","MailView")',
+        type: 'POST',
+        data: obj,
+        success: function (res) {
+            if (res) {
+                var w = $(this).closest("[data-role=window]").data("kendoWindow");
+                w.close();
+            }
+        },
+        error: function () {
+
+        }
+    });
+
+}
+</script>
+
+

@@ -1,0 +1,33 @@
+﻿@model dblu.Portale.Plugin.Docs.ViewModels.CategorieViewModel
+@using Kendo.Mvc.UI
+
+<div>
+    @Html.Label("aaa")
+    @Html.EditorFor(m => m.Codice)
+</div>
+<div>
+    @Html.LabelFor(m => m.Descrizione)
+    @Html.EditorFor(m => m.Descrizione)
+</div>
+<div>
+    @Html.LabelFor(m => m.ViewAttributi)
+    @Html.EditorFor(m => m.ViewAttributi)
+</div>
+<hr />
+@(Html.Kendo().Grid<dblu.Docs.Classi.Attributo>()
+    .Name("gridAttributi")
+    .Sortable()
+        .Columns(cols =>
+        {
+            cols.Bound(b => b.Nome);
+            cols.Bound(b => b.Descrizione);
+        })
+        .Editable(ed => ed.Mode(GridEditMode.InCell))
+        .AutoBind(false)
+            .DataSource(ds => ds.Ajax().Model(mo =>
+                {
+                mo.Id(m => m.Nome);
+                mo.Field(f => f.Nome).Editable(false);
+            }))
+        .ToClientTemplate()
+)

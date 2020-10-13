@@ -1,0 +1,82 @@
+﻿@using dblu.Docs.Classi
+@using dblu.Docs.Models
+@using Kendo.Mvc.UI
+@addTagHelper *, Kendo.Mvc
+@{
+    ViewData["Title"] = "Storico operazioni";
+}
+
+<section class="content-header">
+    <h1>
+        Archivio delle operazioni effettutate
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
+        <li><a href="/Docs/Logs">Operazioni</a></li>
+    </ol>
+</section>
+
+
+<br />
+<br />
+<section class="content">
+    <div class="container-fluid">
+        <div class="box box-primary">
+            <!-- /.card-header -->
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-xs-12">
+                        @(Html.Kendo().Grid<LogDoc>()
+                            .Name("Grid")
+                            .Columns(columns =>
+                            {
+                                //columns.Bound(p => p.ID).Width(130).Visible(false);
+                                columns.ForeignKey(p => p.TipoOggetto,(System.Collections.IEnumerable)ViewData["TipiElemento"], "Id", "Des").Title("Tipo elemento").Width(120);
+                                columns.Bound(p => p.IdOggetto).Title("Id Elemento").Width(120);
+                                columns.Bound(p => p.Data).Title("Data").Width(120).Format("{0:dd/MM/yyyy HH:mm}");
+                                columns.ForeignKey(p => p.Operazione, (System.Collections.IEnumerable)ViewData["Operazione"], "Id", "Des").Title("Operazione").Width(120);
+                                columns.Bound(p => p.Utente ).Title("Utente").Width(120);
+                            })
+                            .HtmlAttributes(new { style = "height: 1000px;" })
+                            .Pageable()
+                            .Filterable()
+                            .Scrollable()
+
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .PageSize(10)
+                                .ServerOperation(false)
+                                .Events(events => events.Error("error_handler"))
+                                //.Model(model =>
+                                //{
+                                //    model.Id(p => p.ID);
+                                //})
+                                .Read("GetLogs", "Docs")
+                            )
+                        )
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script type="text/javascript">
+    function error_handler(e) {
+        if (e.errors) {
+            var message = "Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function() {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alert(message);
+        }
+    }
+
+
+
+</script>

@@ -1,0 +1,84 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+    
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <Version>1.3.2.0000</Version>
+    <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+  </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="Scripts\ziptaskview.js">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+  
+  <ItemGroup>
+     <EmbeddedResource Include="Styles\**;Views\**;Scripts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Components\PdfEditor.razor" />
+    <Content Remove="Views\Docs\EditorPdf.cshtml" />
+    <Content Remove="Views\ZipView\ZipDaFare.cshtml" />
+    <Content Remove="Views\ZipView\zipProcessati.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="Views\Docs\EditorPdf.cshtml" />
+    <EmbeddedResource Remove="Views\ZipView\PreviewRiepilogo.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Scripts\dblugrid.js" />
+    <None Remove="Scripts\dblupdf.js" />
+    <None Remove="Scripts\emailinarrivo.js" />
+    <None Remove="Scripts\emailprocessate.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\Action\Partials\Form\EditorAllegato.cshtml" />
+  </ItemGroup>
+  
+
+  <ItemGroup>
+    <PackageReference Include="ExtCore.Mvc.Infrastructure" Version="5.1.0" />
+    <PackageReference Include="Telerik.Documents.Core" Version="2020.3.915" />
+    <PackageReference Include="Telerik.Documents.Fixed" Version="2020.3.915" />
+    <PackageReference Include="Telerik.Documents.Flow" Version="2020.3.915" />
+    <PackageReference Include="Telerik.Documents.Flow.FormatProviders.Pdf" Version="2020.3.915" />
+    <PackageReference Include="Telerik.Zip" Version="2020.3.915" />
+  
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\" />
+    <Folder Include="Class\" />
+    <Folder Include="Components\" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Library\dblu.Docs\dblu.Docs.csproj" />
+    <ProjectReference Include="..\dblu.Portale.Core.Infrastructure\dblu.Portale.Core.Infrastructure.csproj" />
+    <ProjectReference Include="..\dblu.Portale.Plugin.TaskListBase\dblu.Portale.Plugin.TaskListBase.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Scripts\dblugrid.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Scripts\dblupdf.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Scripts\emailinarrivo.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Scripts\emailprocessate.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,33 @@
+﻿
+@using dblu.Portale.Plugin.Docs.ViewModels
+
+@{
+
+
+}
+
+
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="box box-info">
+                <div class="box-header with-border">
+                </div>
+                <div class="box-body">
+                    @{await Html.RenderPartialAsync("/Pages/Action/Partials/Form/emailview.cshtml", new MailVM
+                        {
+
+                            isInsideTask = Model.isInsideTask,
+                            id = Model.id
+                        });
+
+                    }
+                </div>
+            </div>
+            <!-- /.box -->
+        </div>
+    </div>
+</section>
+
+
+
