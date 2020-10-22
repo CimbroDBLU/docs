@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Syncfusion.Blazor.CircularGauge.Internal;
 using Syncfusion.Blazor.PdfViewerServer;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace dblu.Portale.Plugin.Docs.Models
         CaricaRiepilogo =1 ,
         Salva = 2,
         UnisciPdf = 3 ,  
+        Ricarica = 4 ,
         CancellaPagina = 10,
         RuotaPagina90 = 11,
         RuotaPagina270 = 12,
@@ -21,11 +23,23 @@ namespace dblu.Portale.Plugin.Docs.Models
     }
     public class PdfEditAction
     {
+        private string filePdf="";
 
         public string TipoAllegato { get; set; }
         public string IdAllegato { get; set; }
         public string IdElemento { get; set; }
-        public string FilePdf { get; set; }
+
+        [JsonIgnore]
+        public string TempFolder { get; set; }
+        public string FilePdf { 
+            get {
+                if (string.IsNullOrEmpty(filePdf))
+                   filePdf = System.IO.Path.Combine(TempFolder, $"{IdAllegato}.pdf");
+                return filePdf; 
+            }
+
+            set => filePdf = value; 
+        }
         public int Pagina { get; set; }
         public string AggiungiFilePdf{ get; set; }
         public int NuovaPosizione { get; set; }
@@ -33,8 +47,10 @@ namespace dblu.Portale.Plugin.Docs.Models
         [JsonIgnore]
         public Azioni Azione { get; set; }
 
-        public int iAzione {
-            get {
+        public int iAzione
+        {
+            get
+            {
                 return (int)Azione;
             }
             set
@@ -42,5 +58,34 @@ namespace dblu.Portale.Plugin.Docs.Models
                 this.Azione = (Azioni)value;
             }
         }
+
+        [JsonIgnore]
+        public string FilePdfInModifica
+        {
+            get
+            {
+                return $"{FilePdf}.tmp";
+            }
+        }
+
+        [JsonIgnore]
+        public string FilePdfModificato
+        {
+            get
+            {
+                return $"{FilePdf}.sav";
+            }
+        }
+
+        [JsonIgnore]
+        public string FileAnnotazioni
+        {
+            get
+            {
+                return $"{FilePdf}.json";
+            }
+        }
+
+
     }
 }

@@ -4,8 +4,8 @@
     <UserSecretsId>dotnet-dbluMailService-27524BD6-24FC-42F1-AF45-3019153FAF86</UserSecretsId>
     <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-    <AssemblyVersion>1.3.3.0</AssemblyVersion>
-    <Version>1.3.3.0000</Version>
+    <AssemblyVersion>1.3.4.0</AssemblyVersion>
+    <Version>1.3.4.0000</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
@@ -20,8 +20,8 @@
     <PackageReference Include="NLog.Extensions.Logging" Version="1.6.5" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\dblu.Portale_3\Library\dblu.CamundaClient\dblu.CamundaClient.csproj" />
-    <ProjectReference Include="..\dblu.Portale_3\Library\dblu.Docs\dblu.Docs.csproj" />
+    <ProjectReference Include="..\..\dblubpm\dblu.CamundaClient\dblu.CamundaClient.csproj" />
+    <ProjectReference Include="..\dblu.Docs\dblu.Docs.csproj" />
   </ItemGroup>
   <Target Name="AfterCompile">
     <Exec Command="echo &quot;&quot;" />

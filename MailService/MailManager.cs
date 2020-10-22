@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Dynamic;
 using System.IO;
@@ -109,8 +110,20 @@ namespace dbluMailService
 
                                     try
                                     {
+                                        IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0],true,cancel);
+
+                                        //
+                                        archivio = mf.Where(c => c.Name == s.CartellaArchivio).FirstOrDefault();
+                                        if (archivio == null) {
+                                            mf = inbox.GetSubfolders(true, cancel);
+                                            archivio = mf.Where(c => c.Name == s.CartellaArchivio).FirstOrDefault();
+                                        }
+                                        if (archivio == null)
+                                        {
                                         archivio = client.GetFolder(s.CartellaArchivio, cancel);
                                     }
+
+                                        }
                                     catch {
                                         try
                                         {
@@ -154,11 +167,18 @@ namespace dbluMailService
                                             all = allMan.Get(all.Id);
 
                                         var newall = false;
+                                        var descr = "";
+                                        if (!string.IsNullOrEmpty(message.Subject)) {
+                                            descr = message.Subject;
+                                        }
+                                        if (descr.Length > 250) {
+                                            descr = descr.Substring(0, 250);
+                                        }
                                     if (all == null)
                                     {
                                         all = new Allegati()
                                         {
-                                            Descrizione = message.Subject,
+                                                Descrizione = descr,
                                             NomeFile = Nomefile,
                                             Tipo = tipo.Codice,
                                             TipoNavigation = tipo,
@@ -169,9 +189,12 @@ namespace dbluMailService
                                             //context.Allegati.Add(all);
                                             newall = true;
                                     }
+                                        else {
+                                            all.Descrizione = descr;
+                                        }
                                         if (all.elencoAttributi == null) { all.elencoAttributi = tipo.Attributi; }
 
-                                    string emailmitt = this.RemoveSpecialChars(message.From.Mailboxes.First().Address);
+                                        string emailmitt = message.From.Mailboxes.First().Address;
 
                                     all.SetAttributo("Mittente", emailmitt);
                                     all.SetAttributo("Data", message.Date.UtcDateTime);

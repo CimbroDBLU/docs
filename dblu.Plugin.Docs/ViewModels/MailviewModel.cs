@@ -129,20 +129,40 @@ namespace dblu.Portale.Plugin.Docs.ViewModels
  
     }
 
-    public class EmailElementi  {
+    //public class EmailElementi  {
 
-        public Guid Id { get; set; }
-        public short Revisione { get; set; }
-        public string Tipo { get; set; }
-        public string Descrizione { get; set; }
-        public StatoElemento Stato { get; set; }
-        public Guid IdFascicolo { get; set; }
-        public string Chiave1 { get; set; }
-        public string Chiave2 { get; set; }
-        public string Chiave3 { get; set; }
-        public string Chiave4 { get; set; }
-        public string Chiave5 { get; set; }
-        public string DescrizioneTipo  { get; set; }
+    //    public Guid Id { get; set; }
+    //    public short Revisione { get; set; }
+    //    public string Tipo { get; set; }
+    //    public string Descrizione { get; set; }
+    //    public StatoElemento Stato { get; set; }
+    //    public Guid IdFascicolo { get; set; }
+    //    public string Chiave1 { get; set; }
+    //    public string Chiave2 { get; set; }
+    //    public string Chiave3 { get; set; }
+    //    public string Chiave4 { get; set; }
+    //    public string Chiave5 { get; set; }
+    //    public string DescrizioneTipo  { get; set; }
+    //    public bool Ultimo { get; set; }
+    //    //public Guid IdAllegato { get; set; }
+    //    public string IsUltimo
+    //    {
+    //        get
+    //        {
+    //            return Ultimo ? "Si" : "";
+    //        }
+    //        set
+    //        {
+
+    //        }
+    //    }
+
+    //    public TipoOperazione LastOp { get; set; }
+    //}
+
+    public class EmailElementi : viewElementi
+    {
+
         public bool Ultimo { get; set; }
         //public Guid IdAllegato { get; set; }
         public string IsUltimo
@@ -156,11 +176,17 @@ namespace dblu.Portale.Plugin.Docs.ViewModels
 
             }
         }
-
         public TipoOperazione LastOp { get; set; }
+
+        public string Id
+        {
+            get
+            {
+                return base.IdElemento.ToString();
     }
 
-
+        }
+    }
 
 
 }

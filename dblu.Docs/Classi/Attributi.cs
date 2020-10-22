@@ -248,7 +248,7 @@ namespace dblu.Docs.Classi
                     this.Valori = new Dictionary<string, Attributo>();
                 }
             } 
-            catch
+            catch(Exception ex)
             {
                 bres = false;
             }

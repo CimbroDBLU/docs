@@ -67,6 +67,8 @@ namespace dblu.Portale.Plugin.Docs.Class
                 var ListaPdf = new List<MemoryStream>();
                 //FileStream pdfstream = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite);
 
+             
+
                 PdfDocument document = new PdfDocument();
                 HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
                 WebKitConverterSettings settings = new WebKitConverterSettings();
@@ -114,13 +116,23 @@ namespace dblu.Portale.Plugin.Docs.Class
                             {
                                 htxt = $"<body>{htxt}</body>";
                             }
-                            htxt = htxt.Replace("<body>", $"<body><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.DateTime}<br></div>");
+                            //htxt = htxt.Replace("color: #3333ff", "color: #000000");
+                            // htxt = htxt.Replace("<small>", "<br>").Replace("</small>", "");
+                            // htxt = htxt.Replace("<big>", "<br>").Replace("</big>", "");
+                            // htxt = htxt.Replace("data-mce-style", "style");
+                            htxt = htxt.Replace("'MS Sans Serif'", "sans-serif");
+                            
 
+                            htxt = htxt.Replace("<body>", $"<body><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.DateTime}<br></div>");
+                            //htxt = htxt.Replace("<body>", $"<body><div><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.DateTime}<br></div>");
+                            //htxt = htxt.Replace("</body>", $"</div></body>");
+
+                            //File.WriteAllText(NomePdf + ".html", htxt);
+                            //htxt = File.ReadAllText(NomePdf + ".html");
                             //string baseUrl = @"D:/temp/pdf/test";
                             string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
 
                             //Set WebKit path
-                            //settings.WebKitPath = @"C:/d.blu/SF/HTMLConverter/18.1.0.42/QtBinariesDotNetCore/";
                             settings.WebKitPath = _config["Docs:PercorsoWebKit"];
                             settings.EnableJavaScript = false;
                             settings.EnableHyperLink = false;
@@ -252,8 +264,6 @@ namespace dblu.Portale.Plugin.Docs.Class
                             case ".png":
                                 try
                                 {
-                                    document = new PdfDocument();
-                                    //PdfSection section = document.Sections.Add();
                                     
                                     PdfImage image = new PdfBitmap(m);
                                     //graphics.DrawImage(image, 0, 0);
@@ -262,6 +272,11 @@ namespace dblu.Portale.Plugin.Docs.Class
                                     float shrinkFactor;
                                     float myWidth = image.Width;
                                     float myHeight = image.Height;
+
+                                    if (myWidth > 320 && myHeight > 320)
+                                    {
+                                        document = new PdfDocument();
+                                        //PdfSection section = document.Sections.Add();
 
                                     if (image.Width > image.Height)
                                     {
@@ -302,6 +317,11 @@ namespace dblu.Portale.Plugin.Docs.Class
                                     //Close the document
                                     ListaPdf.Add(pdfstream);
                                     incluso = true;
+                                }
+                                    else {
+                                        incluso = false;
+                                    }
+
                                 }
                                 catch (Exception ex)
                                 {

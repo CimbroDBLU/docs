@@ -493,6 +493,38 @@ namespace dblu.Portale.Plugin.Docs.Services
             return null;
         }
 
+        internal Allegati GetPdfAllegatoAElemento(PdfEditAction pdf) {
+            Allegati all = null;
+            if (!string.IsNullOrEmpty(pdf.IdElemento))
+            {
+                using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                {
+                    var sql = "SELECT * FROM allegati f WHERE f.idelemento = @idelemento and f.Tipo = 'FILE' and f.NomeFile =  @idallegato + '.pdf' ";
+                    all = cn.QueryFirstOrDefault<Allegati>(sql, new { idelemento = pdf.IdElemento, idallegato = pdf.IdAllegato });
+                }
+            }
+            else
+            {
+                all = _allMan.Get(pdf.IdAllegato);
+            }
+
+            return all;
+        }
+
+        internal string GetNote2(PdfEditAction pdf)
+        {
+            string id = pdf.IdAllegato;
+            Allegati allegato  = GetPdfAllegatoAElemento(pdf);
+            if (allegato != null && allegato.jNote != null)
+            {
+                return allegato.jNote.ToString();
+            }
+            return null;
+        }
+
+
+
+
         //get document name
         public string getName(Guid id)
         {
@@ -652,6 +684,18 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
 
         }
+        internal void SaveNoteString( PdfEditAction pdf, string json)
+        {
+            var allegato = GetPdfAllegatoAElemento(pdf);
+            if (allegato != null)
+            {
+
+                allegato.jNote = JObject.Parse(json);
+                _allMan.Salva(allegato, false);
+            }
+
+        }
+
 
         internal void SaveNoteString(Dictionary<string, string> jsonObject, string json)
         {

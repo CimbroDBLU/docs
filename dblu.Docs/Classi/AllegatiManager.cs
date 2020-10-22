@@ -669,13 +669,13 @@ namespace dblu.Docs.Classi
                 {
                     if (NomeServer.Length == 0)
                     {
-                        l = cn.Query<Allegati>("Select *,(select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC) LastOp FROM Allegati A where Tipo=@Tipo and Stato >= @Stato",
-                        new { Tipo = Tipo, Stato = StatoAllegato.Chiuso }).ToList();
+                        l = cn.Query<Allegati>("Select *,(select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC) LastOp FROM Allegati A where Tipo=@Tipo and Stato in (@Chiuso, @Ann ) ",
+                        new { Tipo = Tipo, Chiuso = StatoAllegato.Chiuso , Ann= StatoAllegato.Annullato}).ToList();
                     }
                     else
                     {
-                        l = cn.Query<Allegati>("Select *,isnull((select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC),0) LastOp FROM Allegati A where Tipo=@Tipo and Stato >= @Stato and Origine = @origine",
-                        new { Tipo = Tipo, Stato = StatoAllegato.Chiuso, origine = NomeServer }).ToList();
+                        l = cn.Query<Allegati>("Select *,isnull((select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC),0) LastOp FROM Allegati A where Tipo=@Tipo and Stato in (@Chiuso, @Ann ) and Origine = @origine",
+                        new { Tipo = Tipo, Chiuso = StatoAllegato.Chiuso, Ann = StatoAllegato.Annullato, origine = NomeServer }).ToList();
                     }
                 }
 
@@ -731,6 +731,40 @@ namespace dblu.Docs.Classi
 
             }
             return bres;
+        }
+        public List<AllegatoEmail> GetEmailInviate(string Tipo, string NomeServer)
+        {
+            if (NomeServer == null) NomeServer = "";
+            List<AllegatoEmail> l = new List<AllegatoEmail>();
+            try
+            {
+                //l = _context.Allegati
+                //    .Where(a => (a.Tipo == Tipo && a.Stato < StatoAllegato.Chiuso))
+                //    .ToList<Allegati>();
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    if (NomeServer.Length == 0)
+                    {
+                        l = cn.Query<AllegatoEmail>("Select *,(select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC) LastOp, " +
+                            " JSON_VALUE(Attributi,'$.Mittente') Mittente, JSON_VALUE(Attributi,'$.Destinatario') Destinatario " +
+                            " FROM Allegati A where Tipo=@Tipo and Stato = @Stato",
+                        new { Tipo = Tipo, Stato = StatoAllegato.Spedito }).ToList();
+                    }
+                    else
+                    {
+                        l = cn.Query<AllegatoEmail>("Select *,isnull((select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC),0) LastOp," +
+                            "JSON_VALUE(Attributi, '$.Mittente') Mittente, JSON_VALUE(Attributi, '$.Destinatario') Destinatario " +
+                            " FROM Allegati A where Tipo=@Tipo and Stato = @Stato and Origine = @origine",
+                        new { Tipo = Tipo, Stato = StatoAllegato.Spedito, origine = NomeServer }).ToList();
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetEmailInviate: {ex.Message}");
+            }
+            return l;
         }
 
     }

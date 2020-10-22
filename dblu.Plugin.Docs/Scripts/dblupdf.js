@@ -107,3 +107,16 @@
         }
     }
 });
+
+
+const docsAzioniPdf = {
+    Carica : 0,
+    CaricaRiepilogo : 1,
+    Salva : 2,
+    UnisciPdf : 3,
+    Ricarica : 4,
+    CancellaPagina: 10,
+    RuotaPagina90: 11,
+    RuotaPagina270: 12,
+    SpostaPagina: 13 
+}

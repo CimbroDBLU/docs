@@ -377,6 +377,9 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     _mailService._logMan.Salva(log, true);
                     //-------- Memorizzo l'operazione----------------------
 
+                    _mailService.PulisciFileTemp(Id);
+
+                    
                     _toastNotification.AddSuccessToastMessage("Email processata.");
                     return Json(true);
                 }
@@ -539,7 +542,8 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
            string cc,
            string oggetto,
            string testo,
-           bool allegaMail)
+           bool allegaEmail,
+           bool chiudiEmail)
 
         {
             RisultatoAzione r = new RisultatoAzione();
@@ -552,7 +556,8 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     cc,
                     oggetto,
                     testo,
-                    allegaMail,
+                    allegaEmail,
+                     chiudiEmail ,
                     User);
             }
             else
@@ -658,6 +663,11 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             return View();
         }
 
+        [HasPermission("50.1.3")]
+        public ActionResult emailInviate()
+        {
+            return View();
+        }
      
         [HasPermission("50.1.3")]
         public ActionResult Processate_Read([DataSourceRequest] DataSourceRequest request, string Tipo, string NomeServer = "")
@@ -765,6 +775,14 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                 _toastNotification.AddErrorToastMessage(res.Messaggio);
             }
             return BadRequest(res);
+        }
+
+        [HasPermission("50.1.3")]
+        public ActionResult Inviate_Read([DataSourceRequest] DataSourceRequest request, string Tipo, string NomeServer = "")
+        {
+
+            IEnumerable<AllegatoEmail> lista = _mailService._allMan.GetEmailInviate(Tipo, NomeServer);
+            return Json(lista.ToDataSourceResult(request));
         }
 
 }

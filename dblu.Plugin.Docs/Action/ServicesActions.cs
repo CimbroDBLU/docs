@@ -34,6 +34,9 @@ namespace dblu.Portale.Plugin.Docs.Actions
             services.AddScoped<ServerMailService>();
             services.AddScoped<ZipService>();
             services.AddScoped<PdfEditService>();
+
+            //services.AddTelerikBlazor();
+
         }
     }
 }

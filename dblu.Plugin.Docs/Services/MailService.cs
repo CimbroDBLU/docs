@@ -1213,6 +1213,22 @@ namespace dblu.Portale.Plugin.Docs.Services
                    
                     if (AllegaEmail )
                     {  //file pdf completo
+                            MemoryStream mpdf = new MemoryStream();
+                            PdfEditAction pdfed = new PdfEditAction();
+                            pdfed.IdAllegato = Mail.Id.ToString();
+                            pdfed.TempFolder = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
+                            
+                            if (File.Exists(pdfed.FilePdfModificato)) {
+                                using (FileStream fileStream = File.OpenRead(pdfed.FilePdfModificato))
+                                {
+                                    mpdf.SetLength(fileStream.Length);
+                                    //read file to MemoryStream
+                                    fileStream.Read(mpdf.GetBuffer(), 0, (int)fileStream.Length);
+                                }
+                                _allMan.Salva(Mail, false);
+
+                            }
+                            else { 
                         var l =  await GetTmpPdfCompletoAsync(Mail, null, daEmail); 
 
                         Mail.SetAttributo("jAllegati", JToken.FromObject(l));
@@ -1220,8 +1236,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                         _allMan.Salva(Mail, false);
 
                         //prende il file tmp appena creato
-                            MemoryStream mpdf = await GetPdfCompletoAsync(Mail.Id.ToString(),null, daEmail);
-
+                                mpdf = await GetPdfCompletoAsync(Mail.Id.ToString(), null, daEmail);
+                            }
                             //var all = _context.Allegati
                             //    .Where(a => (a.Tipo == "FILE" && a.IdElemento == Mail.IdElemento && a.NomeFile == fileName))
                             //    .FirstOrDefault();
@@ -1242,7 +1258,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 TipoNavigation = tipoAll,
                                 Stato = StatoAllegato.Attivo,
                                 IdFascicolo = Mail.IdFascicolo,
-                                IdElemento = Mail.IdElemento
+                                    IdElemento = Mail.IdElemento,
+                                    jNote = Mail.jNote
                             };
                                 //_context.Add(all);
                                 isNewAll = true;
@@ -1260,6 +1277,13 @@ namespace dblu.Portale.Plugin.Docs.Services
                         all.SetAttributo("Oggetto", Messaggio.Subject);
                         all.SetAttributo("MessageId", Messaggio.MessageId);
 
+                            
+                            if (File.Exists(pdfed.FileAnnotazioni))
+                            {
+                                var note = File.ReadAllText(pdfed.FileAnnotazioni);
+                                all.jNote = JObject.Parse(note);
+                            }
+                            
                         all = await _allMan.SalvaAsync(all, mpdf, isNewAll);
 
 
@@ -2237,7 +2261,8 @@ namespace dblu.Portale.Plugin.Docs.Services
             string cc,
             string Oggetto, 
             string Testo, 
-            bool allegaMail, 
+            bool allegaEmail, 
+            bool chiudiEmail,
             ClaimsPrincipal User)
          
         {
@@ -2326,42 +2351,55 @@ namespace dblu.Portale.Plugin.Docs.Services
                             // now to create our body...
                             var builder = new BodyBuilder();
                             
-                            if (message.HtmlBody == null || !allegaMail )
+
+                            //testo
+                            if (string.IsNullOrEmpty(Testo))
                             {
-                                if (Testo == null) { 
-                                    builder.TextBody = "Da : " + message.From + "\nA : " + message.To + "\nInviato : " + message.Date.DateTime + "\nOggetto : " + message.Subject + "\n" + message.TextBody;
+                                Testo = "Da : " + message.From + "\nA : " + message.To + "\nInviato : " + message.Date.DateTime + "\nOggetto : " + message.Subject + "\n" + message.TextBody;
+                            }
+
+
+                            if (allegaEmail) {
+                                Testo = $"{Testo} \n\n{message.TextBody}";
                                 }
-                                else
-                                {
+
                                     builder.TextBody = Testo;
-                                }
-                            }
-                            else
-                            {
-                                var htxt = message.HtmlBody;
-                                if (!htxt.Contains("<body>"))
-                                {
-                                    htxt = $"<body>{htxt}</body>";
-                                }
 
-                                if (Testo == null) { 
-                                    string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
-                                    string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
-                                    builder.HtmlBody = htxt.Replace("<body>", $"<body><div><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></div><br>");
-                                    }
-                                else
-                                {
-                                    builder.HtmlBody = htxt.Replace("<body>", $"<body><div>{Testo}<br><br></div><br>");
-                                }
-                            }
+                            //if (message.HtmlBody == null || !allegaMail )
+                            //{
+                            //    if (Testo == null) { 
+                            //        builder.TextBody = "Da : " + message.From + "\nA : " + message.To + "\nInviato : " + message.Date.DateTime + "\nOggetto : " + message.Subject + "\n" + message.TextBody;
+                            //    }
+                            //    else
+                            //    {
+                            //        builder.TextBody = Testo;
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    var htxt = message.HtmlBody;
+                            //    if (!htxt.Contains("<body>"))
+                            //    {
+                            //        htxt = $"<body>{htxt}</body>";
+                            //    }
 
+                            //    if (Testo == null) { 
+                            //        string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
+                            //        string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
+                            //        builder.HtmlBody = htxt.Replace("<body>", $"<body><div><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></div><br>");
+                            //        }
+                            //    else
+                            //    {
+                            //        builder.HtmlBody = htxt.Replace("<body>", $"<body><div>{Testo}<br><br></div><br>");
+                            //    }
+                            //}
 
-                            string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
-                            NomePdf = Path.Combine(NomePdf, $"riepilogo_{IdAllegato}.pdf.sav");
-                            if (File.Exists(NomePdf))
-                            {
-                                builder.Attachments.Add(NomePdf);
-                            }
+                            //string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
+                            //NomePdf = Path.Combine(NomePdf, $"riepilogo_{IdAllegato}.pdf.sav");
+                            //if (File.Exists(NomePdf))
+                            //{
+                            //    builder.Attachments.Add(NomePdf);
+                            //}
                             
                             newmessage.Body = builder.ToMessageBody();
                             await client.SendAsync(newmessage, c);
@@ -2417,9 +2455,25 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             
                             MemoryStream file = new MemoryStream();
-                            await message.WriteToAsync(file);
+                            await newmessage.WriteToAsync(file);
                             newall = await _allMan.SalvaAsync(newall, file, true);
 
+                            if (chiudiEmail) {
+                                al.Stato = StatoAllegato.Chiuso;
+                                if (_allMan.Salva(al, false)) {
+                                    LogDoc logC = new LogDoc()
+                                    {
+                                        Data = DateTime.Now,
+                                        IdOggetto = al.Id,
+                                        TipoOggetto = TipiOggetto.ALLEGATO,
+                                        Operazione = TipoOperazione.Chiuso,
+                                        Utente = User.Identity.Name
+                                    };
+                                    _logMan.Salva(logC, true);
+                                }
+
+                            }
+                            
                         }
                         else
                         {
@@ -2503,7 +2557,12 @@ namespace dblu.Portale.Plugin.Docs.Services
                         //    + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.id and am.tipo = 'EMAIL' "
                         //    + " WHERE (e.IdFascicolo = @IdFascicolo)";
 
-                         var sqlEl = " SELECT distinct  e.IdElemento Id, e.Revisione, e.TipoElemento Tipo, e.DscElemento Descrizione, e.Campo1 Chiave1, e.Campo2 Chiave2, e.Campo3 Chiave3, e.Campo4 Chiave4, e.Campo5 Chiave5, e.DscTipoElemento AS DescrizioneTipo, e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, "
+                         //var sqlEl = " SELECT distinct  e.IdElemento Id, e.Revisione, e.TipoElemento Tipo, e.DscElemento Descrizione, e.Campo1 Chiave1, e.Campo2 Chiave2, e.Campo3 Chiave3, e.Campo4 Chiave4, e.Campo5 Chiave5, e.DscTipoElemento AS DescrizioneTipo, e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, "
+                         //    + "(select top 1 Operazione from LogDoc where IdOggetto=e.IdElemento Order by Data DESC) LastOp "
+                         //   + " FROM vListaElementi AS e "
+                         //   + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'EMAIL' "
+                         //   + " WHERE (e.IdFascicolo = @IdFascicolo)";
+                        var sqlEl = " SELECT distinct  e.IdElemento, e.Revisione, e.TipoElemento, e.DscElemento, e.Campo1, e.Campo2, e.Campo3 , e.Campo4 , e.Campo5, e.DscTipoElemento , e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, "
                              + "(select top 1 Operazione from LogDoc where IdOggetto=e.IdElemento Order by Data DESC) LastOp "
                             + " FROM vListaElementi AS e "
                             + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'EMAIL' "
@@ -2591,8 +2650,23 @@ namespace dblu.Portale.Plugin.Docs.Services
                         float curpos = 20;
                         float etiHeight = page.Size.Height * (float) .05;
                         int i = 0;
-                        foreach (Elementi e in el)
+                        //foreach (Elementi e in el)
+                        int nrpag = (int)Math.Round(el.Count() / 13.0+0.5,0,MidpointRounding.AwayFromZero) ;
+
+                        for(int p=0; p< nrpag; p++) {
+                            if (p > 0) {
+                                page = document.Pages.Add();
+                                graphics = page.Graphics;
+                                curpos = 20;
+                            }
+                            for (i=0; i< 13;i++)
                         {
+                                int j = p * 13 + i;
+                                if (j >= el.Count())
+                                    break;
+                                
+                                Elementi e = el[j];
+
                             e.TipoNavigation = _elmMan.GetTipoElemento(e.Tipo);
                             e.elencoAttributi = e.TipoNavigation.Attributi;
                             e.elencoAttributi.SetValori(e.Attributi);
@@ -2604,9 +2678,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 reportSource.Parameters.Add(a.Nome, a.Valore == null ? "" : a.Valore);
                             }
                         }
-                            i++;
-                            reportSource.Parameters.Add("NPag", 1);
-                            reportSource.Parameters.Add("TPag", pdftmp.Pages.Count+1);
+                                //i++;
+                                reportSource.Parameters.Add("NPag", p+1);
+                                reportSource.Parameters.Add("TPag", pdftmp.Pages.Count + nrpag );
 
                             RenderingResult curEti = reportProcessor.RenderReport("PDF", reportSource, null);
 
@@ -2634,6 +2708,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                             pdfEti.Close();
 
                     }
+                        }
                
                         i = 1;
                         foreach (Syncfusion.Pdf.PdfLoadedPage lptmp in pdftmp.Pages) {
@@ -2949,6 +3024,38 @@ namespace dblu.Portale.Plugin.Docs.Services
             return pdf;
         }
 
+        public bool PulisciFileTemp(string IdAllegato) {
+
+            try
+            {
+                PdfEditAction pdf = new PdfEditAction();
+
+                pdf.IdAllegato = IdAllegato;
+                pdf.TempFolder = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
+                if (System.IO.File.Exists(pdf.FilePdfInModifica))
+                {
+                    System.IO.File.Delete(pdf.FilePdfInModifica);
+                }
+                if (System.IO.File.Exists(pdf.FilePdfModificato))
+                {
+                    System.IO.File.Delete(pdf.FilePdfModificato);
+                }
+                if (System.IO.File.Exists(pdf.FileAnnotazioni))
+                {
+                    System.IO.File.Delete(pdf.FileAnnotazioni);
+                }
+                if (System.IO.File.Exists(pdf.FilePdf))
+                {
+                    System.IO.File.Delete(pdf.FilePdf);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Pulisci File Temp: {ex.Message}");
+            }
+            return false;
+        }
 
     }
 }

@@ -17,10 +17,10 @@ namespace dblu.Portale.Plugin.Docs.Services
             bool res = false;
             try
             {
-                if (System.IO.File.Exists(azione.FilePdf))
+                if (System.IO.File.Exists(azione.FilePdfInModifica))
                 {
                     PdfLoadedDocument loadedDocument = null;
-                    using (FileStream fsSource = new FileStream(azione.FilePdf, FileMode.Open, FileAccess.ReadWrite))
+                    using (FileStream fsSource = new FileStream(azione.FilePdfInModifica, FileMode.Open, FileAccess.ReadWrite))
                     {
                         loadedDocument = new PdfLoadedDocument(fsSource);
                    

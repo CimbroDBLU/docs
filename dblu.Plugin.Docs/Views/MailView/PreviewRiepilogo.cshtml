@@ -74,6 +74,8 @@
         var param = "riepilogo;" + id;
         emailpdfviewer.load(param);
         emailpdfviewer.downloadFileName = nome;
+        
+
     }
     function importAnnotations() {
 
@@ -94,7 +96,7 @@
 
     function documentLoaded(args) {
         //alert("The document" + args.fileName + "is ready to view");
-        importAnnotations()
+        importAnnotations();
     }
 
 </script>

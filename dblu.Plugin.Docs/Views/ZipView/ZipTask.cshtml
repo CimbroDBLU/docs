@@ -449,11 +449,13 @@ $(document).ready(function () {
                                             {
                                                 columns.Bound(p => p.Id).Title("Id").Hidden(true);
                                                 columns.Bound(p => p.IsUltimo).Title("Ult.").Width("5%");
-                                                columns.Bound(p => p.DescrizioneTipo).Title("Tipo").Width("15%");
-                                                columns.Bound(p => p.Descrizione).Title("Descrizione").Width("40%");
-                                                columns.Bound(p => p.Chiave1).Title(ElCols.ElementAt(0).Des).Visible(ElCols.ElementAt(0).Visible).Width(50);
-                                                columns.Bound(p => p.Chiave2).Title(ElCols.ElementAt(1).Des).Visible(ElCols.ElementAt(1).Visible).Width(50);
-                                                columns.Bound(p => p.Chiave3).Title(ElCols.ElementAt(2).Des).Visible(ElCols.ElementAt(2).Visible).Width(50);
+                                                columns.Bound(p => p.DscTipoElemento).Title("Tipo").Width("15%");
+                                                columns.Bound(p => p.DscElemento).Title("Descrizione").Width("40%");
+                                                columns.Bound(p => p.Campo1).Title(ElCols.ElementAt(0).Des).Visible(ElCols.ElementAt(0).Visible).Width(50);
+                                                columns.Bound(p => p.Campo2).Title(ElCols.ElementAt(1).Des).Visible(ElCols.ElementAt(1).Visible).Width(50);
+                                                columns.Bound(p => p.Campo3).Title(ElCols.ElementAt(2).Des).Visible(ElCols.ElementAt(2).Visible).Width(50);
+                                                columns.Bound(p => p.Campo4).Title(ElCols.ElementAt(3).Des).Visible(ElCols.ElementAt(3).Visible).Width(50);
+                                                columns.Bound(p => p.Campo5).Title(ElCols.ElementAt(4).Des).Visible(ElCols.ElementAt(4).Visible).Width(50);
                                                 columns.Command(command =>
                                                 {
                                                     command.Custom("ApriElemento").Text("Apri").Click("ApriElementoGrid").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:70px" });

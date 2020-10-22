@@ -31,6 +31,7 @@ using Syncfusion.Pdf.Grid;
 using System.Data;
 using Syncfusion.Pdf.Interactive;
 using dblu.Portale.Plugin.Docs.Models;
+using Telerik.Windows.Documents.Flow.Model;
 
 namespace dblu.Portale.Plugin.Documenti
 {
@@ -86,9 +87,137 @@ namespace dblu.Portale.Plugin.Documenti
             {
                 if (bool.Parse(jsonObject["isFileName"]))
                 {
-                    string documentPath = GetDocumentPath(jsonObject["document"]);
+
+                    string documentPath = jsonObject["document"];
                     if (!string.IsNullOrEmpty(documentPath))
                     {
+                        if (documentPath.StartsWith("{"))
+                        {
+                            PdfEditAction pdf = new PdfEditAction();
+
+                            pdf = JsonConvert.DeserializeObject<PdfEditAction>(documentPath);
+                            pdf.TempFolder = Path.Combine(_hostingEnvironment.WebRootPath, "_tmp");
+                            byte[] bytes = null;
+                            switch (pdf.Azione)
+                            {
+                                case Azioni.Carica:
+                                    if (System.IO.File.Exists(pdf.FilePdfInModifica))
+                                    {
+                                        System.IO.File.Delete(pdf.FilePdfInModifica);
+                                    }
+                                    if (System.IO.File.Exists(pdf.FilePdfModificato))
+                                    {
+                                        bytes = System.IO.File.ReadAllBytes(pdf.FilePdfModificato);
+                                        stream = new MemoryStream(bytes);
+                                        _toastNotification.AddWarningToastMessage("Il file pdf contiene delle modifiche. Resettare per visualizzare la mail originale.");
+                                        if (System.IO.File.Exists(pdf.FilePdf))
+                                        {
+                                            System.IO.File.Delete(pdf.FilePdf);
+                                        }
+                                    }
+                                    else {
+                                        if (System.IO.File.Exists(pdf.FilePdf))
+                                        {
+                                            System.IO.File.Delete(pdf.FilePdf);
+                                        }
+                                       
+                                        if (!string.IsNullOrEmpty(pdf.IdElemento)){
+                                            Allegati ae = _allegatiService.GetPdfAllegatoAElemento(pdf);
+                                            stream = await _mailService._allMan.GetFileAsync(ae.Id.ToString());
+                                        } else { 
+                                            pdf = await _mailService.GetFilePdfCompletoAsync(pdf, true);
+                                            bytes = System.IO.File.ReadAllBytes(pdf.FilePdf);
+                                            stream = new MemoryStream(bytes);
+                                            System.IO.File.Delete(pdf.FilePdf);                                        
+                                        }
+
+                                    }
+                                    break;
+                                case Azioni.CaricaRiepilogo:
+                                    break;
+                                case Azioni.Ricarica:
+                                    if (System.IO.File.Exists(pdf.FilePdfInModifica))
+                                    {
+                                        System.IO.File.Delete(pdf.FilePdfInModifica);
+                                    }
+                                    if (System.IO.File.Exists(pdf.FilePdfModificato))
+                                    {
+                                        System.IO.File.Delete(pdf.FilePdfModificato);
+                                    }
+                                    if (System.IO.File.Exists(pdf.FileAnnotazioni))
+                                    {
+                                        System.IO.File.Delete(pdf.FileAnnotazioni);
+                                    }
+
+                                    if (!string.IsNullOrEmpty(pdf.IdElemento)){
+                                        Allegati ae = _allegatiService.GetPdfAllegatoAElemento(pdf);
+                                        stream = await _mailService._allMan.GetFileAsync(ae.Id.ToString());
+                                    }
+                                    else
+                                    {
+                                        if (!System.IO.File.Exists(pdf.FilePdf))
+                                        {
+                                            pdf = await _mailService.GetFilePdfCompletoAsync(pdf, true);
+                                        }
+                                        bytes = System.IO.File.ReadAllBytes(pdf.FilePdf);
+                                        stream = new MemoryStream(bytes);
+                                        if (string.IsNullOrEmpty(pdf.IdElemento))
+                                        {
+                                            System.IO.File.Delete(pdf.FilePdf);
+                                        }
+                                    }
+
+                                    break;
+                                case Azioni.RuotaPagina90:
+                                case Azioni.RuotaPagina270:
+                                case Azioni.CancellaPagina:
+                                    if (!System.IO.File.Exists(pdf.FilePdfInModifica))
+                                    {
+                                        if (System.IO.File.Exists(pdf.FilePdfModificato))
+                                        {
+                                            System.IO.File.Copy(pdf.FilePdfModificato, pdf.FilePdfInModifica, true);
+                                        }
+                                        else
+                                        {
+                                            if (!System.IO.File.Exists(pdf.FilePdf))
+                                            {
+                                                pdf = await _mailService.GetFilePdfCompletoAsync(pdf, false);
+                                            }
+                                            System.IO.File.Move(pdf.FilePdf, pdf.FilePdfInModifica, true);
+                                        }
+                                    }
+                                    if (_pdfsvc.Modifica(pdf))
+                                    {
+                                        bytes = System.IO.File.ReadAllBytes(pdf.FilePdfInModifica);
+                                        stream = new MemoryStream(bytes);
+                                    }
+                                    break;
+                                case Azioni.Salva:
+                                    if(System.IO.File.Exists(pdf.FilePdfInModifica))
+                                    {
+                                        System.IO.File.Move(pdf.FilePdfInModifica, pdf.FilePdfModificato, true);
+                                    }
+                                    else
+                                    {
+                                        pdf = await _mailService.GetFilePdfCompletoAsync(pdf, false);
+                                        System.IO.File.Move(pdf.FilePdf, pdf.FilePdfModificato, true);
+                                    }
+                                    bytes = System.IO.File.ReadAllBytes(pdf.FilePdfModificato);
+                                    stream = new MemoryStream(bytes);
+                                    if (!string.IsNullOrEmpty(pdf.IdElemento)) {
+                                        Allegati ae = _allegatiService.GetPdfAllegatoAElemento(pdf);
+                                        await _allegatiService._allMan.SalvaFileAsync(ae.Id.ToString(), stream);
+                                        System.IO.File.Delete(pdf.FilePdfModificato);
+                                        stream.Position = 0;
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            documentPath = GetDocumentPath(jsonObject["document"]);
                         if (documentPath.Contains("\\")  && System.IO.File.Exists(documentPath))
                         {
                             byte[] bytes = System.IO.File.ReadAllBytes(documentPath);
@@ -108,13 +237,7 @@ namespace dblu.Portale.Plugin.Documenti
                             }
                             stream = m;
                         }
-         
-                         //var m = _mailService._allMan.GetFileAsync(id).Result;
-
-                        //byte[] bytes = System.IO.File.ReadAllBytes(documentPath);
-                        // new MemoryStream(bytes);
-                        //byte[] bytes = System.IO.File.ReadAllBytes("D:\\progetti\\dblu\\work\\dblu.Portale_3\\dblu.Portale\\dblu.Portale_3.1\\wwwroot\\_tmp\\eeb155dc-4ff9-4cad-ab78-b1a815b6ccfb.pdf");
-                        //stream =  new MemoryStream(bytes);
+                        }
                     }
                     else
                     {
@@ -269,7 +392,26 @@ namespace dblu.Portale.Plugin.Documenti
             {
                 PdfRenderer pdfviewer = new PdfRenderer(_cache);
                 jsonResult = pdfviewer.GetAnnotations(jsonObject);
+                if (jsonObject != null && jsonObject.ContainsKey("document"))
+                {
+                    string documentPath = GetDocumentPath(jsonObject["document"]);
+                    if(!string.IsNullOrEmpty(documentPath))
+                    {
+                        if (documentPath.StartsWith("{"))
+                        {
+                            PdfEditAction pdf = new PdfEditAction();
+                            pdf = JsonConvert.DeserializeObject<PdfEditAction>(documentPath);
+                            pdf.TempFolder = Path.Combine(_hostingEnvironment.WebRootPath, "_tmp");
+                            byte[] b = Convert.FromBase64String(jsonResult.Split(",")[1]);
+                            var json = System.Text.Encoding.UTF8.GetString(b);
 
+                            _allegatiService.SaveNoteString(pdf , json );
+
+                            //System.IO.File.WriteAllText(pdf.FileAnnotazioni, json);
+
+                        }
+                        else
+                        {
 #if TEST
                 var path = Path.Combine(_hostingEnvironment.WebRootPath, notepath);
                 if (!Directory.Exists(path))
@@ -285,20 +427,18 @@ namespace dblu.Portale.Plugin.Documenti
 
                 _allegatiService.SaveNoteString(jsonObject, json);
                 _toastNotification.AddSuccessToastMessage("Note esportate correttamente!");
+
+                        }                    
+                    }
             }
-            catch (Exception)
+
+            }
+            catch (Exception ex)
             {
                 _toastNotification.AddErrorToastMessage("Errore in esportazione delle note!");
             
         }
-
-
-#if TEST
-            return Content(jsonResult);
-#else
             return Ok();
-#endif
-
         }
 
 
@@ -314,8 +454,25 @@ namespace dblu.Portale.Plugin.Documenti
             
                 if (jsonObject != null && jsonObject.ContainsKey("document"))
                 {
-
+                    string documentPath = jsonObject["document"];
+                    if (documentPath.StartsWith("{"))
+                    {
+                        PdfEditAction pdf = new PdfEditAction();
+                        pdf = JsonConvert.DeserializeObject<PdfEditAction>(documentPath);
+                        pdf.TempFolder = Path.Combine(_hostingEnvironment.WebRootPath, "_tmp");
+                        //byte[] b = Convert.FromBase64String(jsonResult.Split(",")[1]);
+                        //var json = System.Text.Encoding.UTF8.GetString(b);
+                        if (System.IO.File.Exists(pdf.FileAnnotazioni)) { 
+                            jsonResult = System.IO.File.ReadAllText(pdf.FileAnnotazioni);
+                        }
+                        else { 
+                            jsonResult = _allegatiService.GetNote2(pdf);
+                        }
+                    }
+                    else
+                    {
                    jsonResult =  _allegatiService.GetNote2(jsonObject);
+                    }
 
                 }
             }
@@ -559,6 +716,10 @@ namespace dblu.Portale.Plugin.Documenti
         public async Task<PdfEditAction> EditorPdf(string param)
         {
             PdfEditAction pdf = new PdfEditAction();
+
+            //PdfRenderer pdfviewer = new PdfRenderer(_cache);
+            //var pdfstring = pdfviewer.GetDocumentAsBase64(new Dictionary<string, string>());
+
             try
             {
                 if (!string.IsNullOrEmpty(param)) {
@@ -592,10 +753,19 @@ namespace dblu.Portale.Plugin.Documenti
                             if (!string.IsNullOrEmpty(spdf.FilePdf) && System.IO.File.Exists(spdf.FilePdf)) {
                                 System.IO.File.Delete(spdf.FilePdf);
                             }
-                                    
                         }
+                        if (System.IO.File.Exists(pdf.FilePdfInModifica))
+                        {
+                            System.IO.File.Delete(pdf.FilePdfInModifica);
+                        }                       
+                        if (System.IO.File.Exists(pdf.FilePdfModificato))
+                        {
+                            System.IO.File.Copy(pdf.FilePdfModificato, pdf.FilePdf, true);
+                            _toastNotification.AddWarningToastMessage("Il file pdf contiene delle modifiche. Resettare per visualizzare la mail originale.");
+                        }
+                        if (!System.IO.File.Exists(pdf.FilePdf)) { 
                         pdf = await _mailService.GetFilePdfCompletoAsync(pdf, false);
-
+                        }
 
                         break;
                     case Azioni.CaricaRiepilogo :
@@ -603,8 +773,23 @@ namespace dblu.Portale.Plugin.Documenti
                     case Azioni.RuotaPagina90:
                     case Azioni.RuotaPagina270:
                     case Azioni.CancellaPagina:
+                        if (!System.IO.File.Exists(pdf.FilePdfInModifica))
+                        {
+                            if (System.IO.File.Exists(pdf.FilePdfModificato))
+                            {
+                                System.IO.File.Copy(pdf.FilePdfModificato, pdf.FilePdfInModifica, true);
+                            }
                         
+                            {}
+                        }
                         _pdfsvc.Modifica(pdf);
+                        System.IO.File.Copy(pdf.FilePdfInModifica, pdf.FilePdf, true);
+                        break;
+                    case Azioni.Salva:
+                        if (System.IO.File.Exists(pdf.FilePdfInModifica))
+                        {
+                            System.IO.File.Move(pdf.FilePdfInModifica, pdf.FilePdfModificato, true);
+                        }
                         break;
                     default:
                         break;

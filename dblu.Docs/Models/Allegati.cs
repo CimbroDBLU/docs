@@ -154,6 +154,19 @@ namespace dblu.Docs.Models
             }
             return dflt;
         }
+
+        [Write(false)]
+        [JsonProperty("AttributiJSON")]
+        public JObject jAttributi
+        {
+            get
+            {
+                return JsonConvert.DeserializeObject<JObject>(Attributi);
+            }
+
+            set { Attributi = JsonConvert.SerializeObject(value); }
+        }
+
     }
 
 

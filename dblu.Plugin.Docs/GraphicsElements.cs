@@ -47,8 +47,8 @@ namespace dblu.Portale.Plugin.Documenti
                     new MenuItem("50.1.1", 1, "Docs/Categorie", "Categorie", "fa-table", null),
                     new MenuItem("50.1.1", 2, "Docs/TipiElementi", "Tipi elementi", "fa-table", null),
                     new MenuItem("50.1.1", 3, "Docs/TipiAllegati", "Tipi allegati", "fa-table", null),
-                    new MenuItem("50.1.1", 3, "Docs/ConfigGrid", "Configurazione griglie", "fa-table", null),
-                    new MenuItem("50.1.3", 4, "Docs/ServersEmail", "Servers Email", "fa-table", null),
+                    new MenuItem("50.1.1", 4, "Docs/ConfigGrid", "Configurazione griglie", "fa-table", null),
+                    new MenuItem("50.1.3", 5, "Docs/ServersEmail", "Servers Email", "fa-table", null),
                 };
  			var subItemF = new MenuItem[]
                 {
@@ -60,9 +60,10 @@ namespace dblu.Portale.Plugin.Documenti
                     new MenuItem("50.1.1", 1, "Docs/Tabelle", "Tabelle", "fa-file", subItemT),
                     new MenuItem("50.1.2", 1, "Docs/Fascicoli", "Fascicoli", "fa-file", subItemF),
                     new MenuItem("50.1.3", 1, "MailView/InArrivo", "Email in arrivo", "fa-table", null),
-                    new MenuItem("50.1.3", 1, "MailView/emailProcessate", "Email processate", "fa-table", null),
+                    new MenuItem("50.1.3", 2, "MailView/emailProcessate", "Email processate", "fa-table", null),
+                    new MenuItem("50.1.3", 3, "MailView/emailInviate", "Email inviate", "fa-table", null),
+                    new MenuItem("50.1.3", 4, "ZipView/ZipTask", "File in arrivo", "fa-table", null),
                     new MenuItem("50.2", 1, "Docs/Logs", "Gestione Log", "fa-table", null),
-                    new MenuItem("50.1.3", 1, "ZipView/ZipTask", "File in arrivo", "fa-table", null),
                 };
             }
         }

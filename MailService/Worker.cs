@@ -47,7 +47,11 @@ namespace dbluMailService
                 mailMan.Bpm_User = _conf.GetValue<string>("Camunda:User");
                 mailMan.Bpm_Password = _conf.GetValue<string>("Camunda:Password");
 
+                //await mailMan.ResetMail(stoppingToken);
+                //await mailMan.TestProcess("msg_assegna_cliente_email", "056673AF-2760-4F5C-8F6D-5F89AC6FCE9F", stoppingToken);
+
                 _logger.LogDebug($"Processa server di posta");
+               // _logger.LogDebug(mailMan.RemoveSpecialChars("\\systemadmin@cccoco")  );
 
                 await mailMan.ProcessaEmail( stoppingToken);
                 await Task.Delay(intervallo, stoppingToken);

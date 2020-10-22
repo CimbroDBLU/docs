@@ -201,6 +201,29 @@
 <section class="content">
     <div class="row">
         <div class="col-xs-5">
+
+
+            @*
+                 <script>
+                    var isTestClick = false;
+                    function TestClick(e) {
+                        //e.preventDefault();
+                        $(this).off(e);
+                        if (isTestClick == false) {
+                            isTestClick = true;
+                            $(this).prop('disabled', true);
+                            var tx = $("#testlabel").val() + 'x';
+                            $("#testlabel").val(tx);
+                            $(this).prop('disabled', false);
+                            alert(tx);
+                            isTestClick = false;
+                        }
+                    }
+                </script>
+
+                    <button id="testbutton" type="button" onclick="TestClick()" class="b btn btn-info">test </button>
+                    <input type="text" id="testlabel" style="font-size:12px" />
+            *@
             <label class="control-label col-md-4" style="font-size:12px">Casella di posta:</label>
             <div class="col-md-6">
                 @(Html.Kendo().ComboBox()
@@ -327,6 +350,7 @@
                         .ToolBar(toolbar =>    { toolbar.Search(); })
                         .Search(s=> { s.Field(c => c.Descrizione ); s.Field(c => c.Chiave1); s.Field(c => c.Chiave3); s.Field(c => c.Chiave4); })
                             .PersistSelection()
+                            .Height(900)
                         )
                     </div>
                 </div>
@@ -491,11 +515,13 @@
                                     {
                                         columns.Bound(p => p.Id).Title("Id").Hidden(true);
                                                 columns.Bound(p => p.IsUltimo).Title("Ult.").Width(30);
-                                                columns.Bound(p => p.DescrizioneTipo).Title("Tipo").Width(60);
-                                        columns.Bound(p => p.Descrizione).Title("Descrizione").Width("40%");
-                                        columns.Bound(p => p.Chiave1).Title(ElCols.ElementAt(0).Des).Visible(ElCols.ElementAt(0).Visible).Width(50);
-                                        columns.Bound(p => p.Chiave2).Title(ElCols.ElementAt(1).Des).Visible(ElCols.ElementAt(1).Visible).Width(50);
-                                        columns.Bound(p => p.Chiave3).Title(ElCols.ElementAt(2).Des).Visible(ElCols.ElementAt(2).Visible).Width(50);
+                                                columns.Bound(p => p.DscTipoElemento).Title("Tipo").Width(60);
+                                                columns.Bound(p => p.DscElemento).Title("Descrizione").Width("40%");
+                                                columns.Bound(p => p.Campo1 ).Title(ElCols.ElementAt(0).Des).Visible(ElCols.ElementAt(0).Visible).Width(50);
+                                                columns.Bound(p => p.Campo2).Title(ElCols.ElementAt(1).Des).Visible(ElCols.ElementAt(1).Visible).Width(50);
+                                                columns.Bound(p => p.Campo3).Title(ElCols.ElementAt(2).Des).Visible(ElCols.ElementAt(2).Visible).Width(50);
+                                                columns.Bound(p => p.Campo4 ).Title(ElCols.ElementAt(3).Des).Visible(ElCols.ElementAt(3).Visible).Width(50);
+                                                columns.Bound(p => p.Campo5 ).Title(ElCols.ElementAt(4).Des).Visible(ElCols.ElementAt(4).Visible).Width(50);
                                         //columns.Bound(p => p.Chiave4).Title(ElCols.ElementAt(3).Des).Visible(ElCols.ElementAt(3).Visible).Width(50);
                                         //columns.Bound(p => p.Chiave5).Title(ElCols.ElementAt(4).Des).Visible(ElCols.ElementAt(4).Visible).Width(50);
                                         ////columns.Bound(p => p.Stato).Title("Stato").Hidden(true);
@@ -511,7 +537,7 @@
                                     })
                                     .DataSource(dataSource => dataSource
                                         .Ajax()
-                                        .PageSize(5)
+                                                .PageSize(4)
                                         .Batch(false)
                                         .ServerOperation(true)
                                         .AutoSync(true)
@@ -522,6 +548,7 @@
                                         })
                                         .Read(read => read.Action("ListaEmailElementi", "MailView").Data("getFascicolo"))
                                     )
+                                            .Pageable()
                                     .Groupable(false)
                                             .Selectable()
                                     .HtmlAttributes(new { style = "font-size:10" })
@@ -681,7 +708,7 @@
                         buttons.Add().Text("Canc.").Id("tbcanc").Icon("delete").Group("toolbar").Toggle("tbpdf_click");
                     });
            )
-
+                            *@
            @(Html.Kendo().ToolBar()
                .Name("pdfToolBar")
                .Items(items =>
@@ -691,11 +718,12 @@
                    items.Add().Type(CommandType.Button).Id("tbcanc").Text("Canc.").Icon("delete");
                    items.Add().Type(CommandType.Separator);
                    items.Add().Type(CommandType.Button).Id("tbrefresh").Text("Ricarica").Icon("refresh");
-
+                                           items.Add().Type(CommandType.Separator);
+                                           items.Add().Type(CommandType.Button).Id("tbsalva").Text("Salva").Icon("save");
                })
                .Events(e => e.Click("tbpdf_click"))
 
-        )*@
+                                   )
 
                                 <ejs-pdfviewer id="emailpdfviewer" serviceUrl="/api/mailPdfViewer" documentPath=""
                                                enablePrint="true"
@@ -703,15 +731,18 @@
                                                documentLoad="documentLoaded"
                                                annotationAdd="annotationAdd"
                                                enableStampAnnotations="false"
+                                           d
                                                locale="it-IT"
-                                           downloadFileName="@string.Concat("",".pdf")" height="1200px"
+                                           downloadFileName="@string.Concat("",".pdf")" height="900px"
                                                toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
                                                 
                                 </ejs-pdfviewer>
 
+                            @*
                             <div class="col-md-12" style="width:80%" id="anteprimajpg" hidden>
                                 <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
                             </div>
+                            *@
                         </div>
                     </div>
                 </div>
@@ -860,6 +891,9 @@
                                 <input type="checkbox" checked  id="chkemailRispondi" title="Allega originale">
                                 <label class="control-label col-md-3" >Allega originale</label>
                             </div>
+                            <div class="form-group col-md-10" >
+                                <input type="checkbox" checked  id="chkemailRispondiChiudi" title="Chiudi email">
+                                <label class="control-label col-md-3" >Chiudi email</label>                            </div>
                         </div>
                         </form>
                     </div>
