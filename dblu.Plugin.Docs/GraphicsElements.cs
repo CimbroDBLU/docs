@@ -72,9 +72,21 @@ namespace dblu.Portale.Plugin.Documenti
         {
             get
             {
+                // MAIL
+                var myMail = new IndexItem("1.1.3", 1, "", "Mail", "MailDash", "");
+                myMail.Size = new System.Drawing.Size(2, 6);
+                myMail.ElementType = OBJECT_TYPE.TEMPLATE;
+                myMail.Template = "TemplateMail";
+                // MAIL
+                var myFile = new IndexItem("1.1.4", 2, "", "File", "FileDash", "");
+                myFile.Size = new System.Drawing.Size(2, 6);
+                myFile.ElementType = OBJECT_TYPE.TEMPLATE;
+                myFile.Template = "TemplateFile";
+
                 return new IndexItem[]
                 {
-                  new IndexItem("50.1.3", 1,  "", "Index", "DocsDash", "")
+                    myMail, myFile
+                 // new IndexItem("50.1.3", 1,  "", "Index", "DocsDash", "")
                 };
             }
         }

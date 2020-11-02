@@ -19,6 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\Docs\Components\DocDashViewComponent.cs" />
+    <Compile Remove="Areas\Docs\Components\EditAttributiViewComponent.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="Components\PdfEditor.razor" />
     <Content Remove="Views\Docs\EditorPdf.cshtml" />
     <Content Remove="Views\ZipView\ZipDaFare.cshtml" />
@@ -27,6 +32,8 @@
 
   <ItemGroup>
     <EmbeddedResource Remove="Views\Docs\EditorPdf.cshtml" />
+    <EmbeddedResource Remove="Views\Shared\Components\FileDash\Default.cshtml" />
+    <EmbeddedResource Remove="Views\Shared\Components\MailDash\Default.cshtml" />
     <EmbeddedResource Remove="Views\ZipView\PreviewRiepilogo.cshtml" />
   </ItemGroup>
 

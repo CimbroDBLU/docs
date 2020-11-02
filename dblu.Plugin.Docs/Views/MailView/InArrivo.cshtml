@@ -296,26 +296,36 @@
                         {
                             columns.Bound(p => p.Id).Title("Id").Width(0).Hidden();
                             columns.Bound(p => p.Chiave4).Title("Nome").Width(0).Hidden();
-                                columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.DescrizioneChiave("Chiave1")).Width(120)
+                            columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.DescrizioneChiave("Chiave1")).Width(250)
                                         .ClientTemplate("<span> cliente #: Chiave3# </span> <br/>"
                                             + "<span><b> #: Chiave4# </b></span>"
                                             + "<span> #: Chiave1# </span><br/>");
                                 columns.Bound(p => p.Descrizione).Title("Oggetto").Width(200);
-                                columns.Bound(p => p.DataC).Title("Data").Width(60).Format("{0:dd/MM/yy HH:mm}");
+                            columns.Bound(p => p.DataC).Title("Data").Width(80).Format("{0:dd/MM/yy HH:mm}");
                                 //columns.Bound(p => p.Chiave1).Title("chiave1").Width(0).Hidden();
-                            columns.Command(command =>
-                            {
+                            //columns.Command(command =>
+                            //{
 
-                                command.Custom("Inoltra").Text("").Click("InoltraEmail").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:70px" });
-                                command.Custom("Sposta").Text("").Click("SpostaEmail").IconClass("k-icon my-icon-class-sposta").HtmlAttributes(new { style = "width:70px " });
-                                command.Custom("Rispondi").Text("Risp.").Click("RispondiEmail").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:70px" });
-                                // command.Custom("*Elimina*").Click("DeleteEmail");
-                                    command.Destroy().Text("Canc.").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:70px"});
-                                }).Width(90);
+                            //    command.Custom("Inoltra").Text("").Click("InoltraEmail").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:70px" });
+                            //    command.Custom("Sposta").Text("").Click("SpostaEmail").IconClass("k-icon my-icon-class-sposta").HtmlAttributes(new { style = "width:70px " });
+                            //    command.Custom("Rispondi").Text("Risp.").Click("RispondiEmail").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:70px" });
+                            //    // command.Custom("*Elimina*").Click("DeleteEmail");
+                            //    command.Destroy().Text("Canc.").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:70px"});
+                            //}).Width(90);
                             //columns.Bound(p => p.Stato).Width(50).ClientTemplate("#if (data.Stato == 3){#<span class='k-icon k-i-printer'></span>#} else if (data.Stato==2){#<span class='k-icon k-i-file-add'></span>#}#");
                                 columns.Bound(p => p.LastOp).Width(75).Title("Operaz.").ClientTemplate("#= xIconLastOp(data) #");
                                 columns.Command(command => command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewHistory").IconClass("k-icon ").HtmlAttributes(new { style = "width:30px " })).Hidden();
                         })
+                             .ToolBar(toolbar =>
+                             {
+                                 // toolbar.ClientTemplateId("GridToolbarTemplate");
+                                 toolbar.Custom().Text("Inoltra").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:75px", onclick = "InoltraEmail()" });
+                                 toolbar.Custom().Text("Sposta").IconClass("k-icon my-icon-class-sposta").HtmlAttributes(new { style = "width:75px", onclick = "SpostaEmail()" });
+                                 toolbar.Custom().Text("Rispondi").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:90px", onclick = "RispondiEmail()" });
+                                 toolbar.Custom().Text("Canc.").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:70px", onclick = "CancellaEmail()" });
+                                 toolbar.Search();
+})
+                        .Selectable()
                         .Pageable()
                         .Sortable()
                                     .Scrollable(s => s.Height("auto"))

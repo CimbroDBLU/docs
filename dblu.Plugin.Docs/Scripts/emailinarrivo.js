@@ -5,6 +5,10 @@ var idItem = "";
 var tipoItem = null;
 var TipiOggetto = null;
 var gridEmailCurrentRow = null;
+var mailId = null;
+var mailChiave1 = null;
+var mailDescrizione = null;
+var mailItem = null;
 
 var PdfCorrente = {
     TipoAllegato : "EMAIL",
@@ -19,10 +23,12 @@ var PdfCorrente = {
 
 function SpostaEmail(e) {
 
-    e.preventDefault();
+   // e.preventDefault();
 
-    var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-    $("#IdAllegato").val(dataItem.Id);
+    //var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+   // $("#IdAllegato").val(dataItem.Id);
+
+    $("#IdAllegato").val(mailId);
 
     var dialog = $("#wSposta").data("kendoWindow");
     dialog.center().open();
@@ -32,7 +38,10 @@ function SpostaEmail(e) {
 gridEmailOnChange = function (e) {
     gridEmailCurrentRow = this.select();
     var data = this.dataItem(this.select());
-
+    mailItem = data;
+    mailId = data.Id;
+    mailChiave1 = data.Chiave1;
+    mailDescrizione = data.Descrizione;
     PulisciDettaglio();
 
     $("#IdAllegato").val(data.Id);
@@ -87,11 +96,11 @@ function CaricaElemento(elemento) {
 
 
 function InoltraEmail(e) {
-    e.preventDefault();
+    //e.preventDefault();
 
-    var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-    $("#IdAllegato").val(dataItem.Id);
-
+    //var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+    //$("#IdAllegato").val(dataItem.Id);
+    $("#IdAllegato").val(mailId);
     var dialog = $("#wInoltra").data("kendoWindow");
 
     dialog.center().open();
@@ -136,20 +145,48 @@ function inoltraOnClick(e) {
 }
 
 function RispondiEmail(e) {
-    e.preventDefault();
+ //   e.preventDefault();
 
-    var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+ //   var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
     //alert(JSON.stringify(dataItem));
 
-    $("#IdAllegato").val(dataItem.Id);
-    $("#destinatarioRisposta").val(dataItem.Chiave1);
+    $("#IdAllegato").val(mailId);
+    $("#destinatarioRisposta").val(mailChiave1);
     $("#ccRisposta").val("");
-    $("#oggettoRisposta").val("R: " + dataItem.Descrizione);
+    $("#oggettoRisposta").val("R: " + mailDescrizione);
     $("#testoRisposta").val("");
     var dialog = $("#wRispondi").data("kendoWindow");
 
     dialog.center().open();
 
+}
+function CancellaEmail(e) {
+    //   e.preventDefault();
+
+    //   var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+    //alert(JSON.stringify(dataItem));
+    var grid = $("#gridEmail").data("kendoGrid").dataSource.remove(mailItem);
+    /*
+    $("#IdAllegato").val(mailId);
+    var obj = {
+        IdAllegato: $("#IdAllegato").val()
+    };
+    $.ajax({
+        url: UrlActions.MailView_InArrivo_Cencella,
+        type: 'POST',
+        cache: false,
+        data: obj,
+        success: function (data) {
+            alert("mail cancellata correttamente");
+            grid.dataSource.read();
+            grid.dataSource.read();
+            grid.dataSource.read();
+        },
+        error: function (data) {
+            var ok = $.parseJSON(data);
+        }
+    });
+    */
 }
 function rispondiOnClick(e) {
     e.preventDefault();
@@ -979,15 +1016,19 @@ function OpenEmail(e) {
 }
 
 function OnRemove(e) {
-    $("#IdAllegato").val(e.model.Id);
+    $("#IdAllegato").val(mailId);
     $.ajax({
         url: UrlActions.MailView_InArrivo_Cancella,
         type: 'POST',
         cache: false,
-        data: { Id: e.model.Id },
+        data: { Id: mailId },
         success: function (data) {
             var ok = $.parseJSON(data);
             PulisciDettaglio();
+            var grid = $("#gridEmail").data("kendoGrid");
+            grid.dataSource.read();
+            grid.dataSource.read();
+            grid.dataSource.read();
 
         },
         error: function (data) {
