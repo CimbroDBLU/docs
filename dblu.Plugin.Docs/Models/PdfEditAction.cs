@@ -28,12 +28,14 @@ namespace dblu.Portale.Plugin.Docs.Models
         public string TipoAllegato { get; set; }
         public string IdAllegato { get; set; }
         public string IdElemento { get; set; }
+        public string IdAllegatoAElemento { get; set; }
+        public string Descrizione { get; set; }
 
         [JsonIgnore]
         public string TempFolder { get; set; }
         public string FilePdf { 
             get {
-                if (string.IsNullOrEmpty(filePdf))
+                if (!string.IsNullOrEmpty(TempFolder) && string.IsNullOrEmpty(filePdf)  )
                    filePdf = System.IO.Path.Combine(TempFolder, $"{IdAllegato}.pdf");
                 return filePdf; 
             }
@@ -86,6 +88,10 @@ namespace dblu.Portale.Plugin.Docs.Models
             }
         }
 
+        public PdfEditAction(){
 
+            Azione = Azioni.Carica;
+            TipoAllegato = "";
+        }
     }
 }

@@ -77,7 +77,7 @@ namespace dblu.Portale.Plugin.Documenti
                 myMail.Size = new System.Drawing.Size(2, 6);
                 myMail.ElementType = OBJECT_TYPE.TEMPLATE;
                 myMail.Template = "TemplateMail";
-                // MAIL
+                // FILE
                 var myFile = new IndexItem("1.1.4", 2, "", "File", "FileDash", "");
                 myFile.Size = new System.Drawing.Size(2, 6);
                 myFile.ElementType = OBJECT_TYPE.TEMPLATE;

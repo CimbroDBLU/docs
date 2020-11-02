@@ -105,6 +105,14 @@ namespace dblu.Portale.Plugin.Documenti
                                     {
                                         System.IO.File.Delete(pdf.FilePdfInModifica);
                                     }
+
+                                    if (!string.IsNullOrEmpty(pdf.IdElemento))
+                                    {
+                                        Allegati ae = _allegatiService.GetPdfAllegatoAElemento(pdf);
+                                        stream = await _mailService._allMan.GetFileAsync(ae.Id.ToString());
+                                    }
+                                    else
+                                    {
                                     if (System.IO.File.Exists(pdf.FilePdfModificato))
                                     {
                                         bytes = System.IO.File.ReadAllBytes(pdf.FilePdfModificato);
@@ -115,23 +123,20 @@ namespace dblu.Portale.Plugin.Documenti
                                             System.IO.File.Delete(pdf.FilePdf);
                                         }
                                     }
-                                    else {
+                                        else
+                                        {
                                         if (System.IO.File.Exists(pdf.FilePdf))
                                         {
                                             System.IO.File.Delete(pdf.FilePdf);
                                         }
                                        
-                                        if (!string.IsNullOrEmpty(pdf.IdElemento)){
-                                            Allegati ae = _allegatiService.GetPdfAllegatoAElemento(pdf);
-                                            stream = await _mailService._allMan.GetFileAsync(ae.Id.ToString());
-                                        } else { 
                                             pdf = await _mailService.GetFilePdfCompletoAsync(pdf, true);
                                             bytes = System.IO.File.ReadAllBytes(pdf.FilePdf);
                                             stream = new MemoryStream(bytes);
                                             System.IO.File.Delete(pdf.FilePdf);                                        
                                         }
-
                                     }
+
                                     break;
                                 case Azioni.CaricaRiepilogo:
                                     break;

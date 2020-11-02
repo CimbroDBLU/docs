@@ -383,13 +383,15 @@ namespace dblu.Portale.Plugin.Docs.Services
                 //   .FirstOrDefault();
                 TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
                 LogDoc log;
+                int i = 0;
                 foreach (var attachment in Messaggio.Allegati())
                 {
-                    var fileName = "";
+                    i++;
+                    var fileName = attachment.NomeAllegato(i);
                     m = new MemoryStream();
                     if (attachment is MessagePart)
                     {
-                        fileName = attachment.ContentDisposition?.FileName;
+                        //fileName = attachment.ContentDisposition?.FileName;
                         var rfc822 = (MessagePart)attachment;
 
                         if (string.IsNullOrEmpty(fileName))
@@ -401,7 +403,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     else
                     {
                         var part = (MimePart)attachment;
-                        fileName = part.FileName;
+                        //fileName = part.FileName;
 
                         //using (var stream = File.Create(fileName))
                         part.Content.DecodeTo(m);
@@ -474,8 +476,11 @@ namespace dblu.Portale.Plugin.Docs.Services
             var Messaggio = MimeKit.MimeMessage.Load(m, cancel);
             
             var mpdf = new MemoryStream();
+            int i = 0;
             foreach (var attachment in Messaggio.Allegati())
             {
+                i++;
+                var NomeAllegato = attachment.NomeAllegato(i);
                 var fileName = "";
                 if (attachment is MessagePart)
                 {
@@ -485,7 +490,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     if (string.IsNullOrEmpty(fileName))
                         fileName = "email-allegata.eml";
 
-                    if (string.Compare(fileName, NomeFile, true) == 0)
+                    if (string.Compare(fileName, NomeFile, true) == 0 || string.Compare(NomeAllegato, NomeFile, true) == 0)
                     {
                         rfc822.Message.WriteTo(mpdf);
                         break;
@@ -496,7 +501,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     var part = (MimePart)attachment;
                     fileName = part.FileName;
 
-                    if (string.Compare(fileName, NomeFile, true) == 0)
+                    if (string.Compare(fileName, NomeFile, true) == 0  || string.Compare(NomeAllegato, NomeFile, true) == 0)
                     {
                         part.Content.DecodeTo(mpdf);
                         break;
@@ -516,8 +521,11 @@ namespace dblu.Portale.Plugin.Docs.Services
             var Messaggio = MimeKit.MimeMessage.Load(m, cancel);
 
             var mpdf = new MemoryStream();
+            int i = 0;
             foreach (var attachment in Messaggio.Allegati())
             {
+                i++;
+                var NomeAllegato = attachment.NomeAllegato(i);
                 var fileName = "";
                 if (attachment is MessagePart)
                 {
@@ -527,7 +535,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     if (string.IsNullOrEmpty(fileName))
                         fileName = "email-allegata.eml";
 
-                    if (string.Compare(fileName, NomeFile, true) == 0)
+                    if (string.Compare(fileName, NomeFile, true) == 0 || string.Compare(NomeAllegato, NomeFile, true) == 0)
                     {
                         rfc822.Message.WriteTo(mpdf);
                         break;
@@ -538,7 +546,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     var part = (MimePart)attachment;
                     fileName = part.FileName;
 
-                    if (string.Compare(fileName, NomeFile, true) == 0)
+                    if (string.Compare(fileName, NomeFile, true) == 0 || string.Compare(NomeAllegato, NomeFile, true) == 0)
                     {
                         part.Content.DecodeTo(mpdf);
                         break;
@@ -655,22 +663,24 @@ namespace dblu.Portale.Plugin.Docs.Services
                 }
                 catch
                 {
+                    int i = 0;
                     foreach (var attachment in Messaggio.Allegati())
                     {
-                        var fileName = "";
-                        if (attachment is MessagePart)
-                        {
-                            fileName = attachment.ContentDisposition?.FileName;
-                            var rfc822 = (MessagePart)attachment;
+                        i++;
+                        var fileName = attachment.NomeAllegato(i);
+                        //if (attachment is MessagePart)
+                        //{
+                        //    fileName = attachment.ContentDisposition?.FileName;
+                        //    var rfc822 = (MessagePart)attachment;
 
-                            if (string.IsNullOrEmpty(fileName))
-                                fileName = "email-allegata.eml";
-            }
-                        else
-                        {
-                            var part = (MimePart)attachment;
-                            fileName = part.FileName;
-                        }
+                        //    if (string.IsNullOrEmpty(fileName))
+                        //        fileName = "email-allegata.eml";
+                        //}
+                        //else
+                        //{
+                        //    var part = (MimePart)attachment;
+                        //    fileName = part.FileName;
+                        //}
                         var incluso = false;
                         switch (System.IO.Path.GetExtension(fileName).ToLower())
                         {
@@ -803,25 +813,26 @@ namespace dblu.Portale.Plugin.Docs.Services
                 }
 
                 Size A4 = PaperTypeConverter.ToSize(PaperTypes.A4);
+                int i = 0;
                 foreach (var attachment in Messaggio.Allegati())
                 {
-                    var fileName = "";
+                    i++;
+                    var fileName = attachment.NomeAllegato(i);
                     var m = new MemoryStream();
                     var incluso = false;
 
                     if (attachment is MessagePart)
                     {
-                        fileName = attachment.ContentDisposition?.FileName;
+                        //fileName = attachment.ContentDisposition?.FileName;
+                        //if (string.IsNullOrEmpty(fileName))
+                        //    fileName = "email-allegata.eml";
                         var rfc822 = (MessagePart)attachment;
-
-                        if (string.IsNullOrEmpty(fileName))
-                            fileName = "email-allegata.eml";
                         rfc822.Message.WriteTo(m);
                     }
                     else
                     {
                         var part = (MimePart)attachment;
-                        fileName = part.FileName;
+                        //fileName = part.FileName;
 
                         part.Content.DecodeTo(m);
                     }
@@ -1351,18 +1362,19 @@ namespace dblu.Portale.Plugin.Docs.Services
                     if (!string.IsNullOrEmpty(ElencoFile))
                     {
                 var listafile = ElencoFile.Split(";").ToList();
-
+                            int i = 0;
                             foreach (var attachment in Messaggio.Allegati())
                 {
-                                fileName = "";
+                                i++;
+                                fileName = attachment.NomeAllegato(i);
                     m = new MemoryStream();
                     if (attachment is MessagePart)
                     {
-                        fileName = attachment.ContentDisposition?.FileName;
-                        var rfc822 = (MessagePart)attachment;
+                                    //fileName = attachment.ContentDisposition?.FileName;
+                                    //if (string.IsNullOrEmpty(fileName))
+                                    //  fileName = "email-allegata.eml";                                    
 
-                        if (string.IsNullOrEmpty(fileName))
-                            fileName = "email-allegata.eml";
+                        var rfc822 = (MessagePart)attachment;
 
                         //using (var stream = File.Create(fileName))
                         rfc822.Message.WriteTo(m);
@@ -1370,7 +1382,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     else
                     {
                         var part = (MimePart)attachment;
-                        fileName = part.FileName;
+                                    //fileName = part.FileName;
 
                         //using (var stream = File.Create(fileName))
                         part.Content.DecodeTo(m);
@@ -2562,11 +2574,11 @@ namespace dblu.Portale.Plugin.Docs.Services
                          //   + " FROM vListaElementi AS e "
                          //   + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'EMAIL' "
                          //   + " WHERE (e.IdFascicolo = @IdFascicolo)";
-                        var sqlEl = " SELECT distinct  e.IdElemento, e.Revisione, e.TipoElemento, e.DscElemento, e.Campo1, e.Campo2, e.Campo3 , e.Campo4 , e.Campo5, e.DscTipoElemento , e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, "
+                        var sqlEl = " SELECT distinct  e.IdElemento, e.Revisione, e.TipoElemento, e.DscElemento, e.Campo1, e.Campo2, e.Campo3 , e.Campo4 , e.Campo5, e.DscTipoElemento , e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, e.DataC, "
                              + "(select top 1 Operazione from LogDoc where IdOggetto=e.IdElemento Order by Data DESC) LastOp "
                             + " FROM vListaElementi AS e "
                             + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'EMAIL' "
-                        + " WHERE (e.IdFascicolo = @IdFascicolo)";
+                          + " WHERE (e.IdFascicolo = @IdFascicolo) ORDER BY Ultimo DESC, e.DataC DESC ";
 
                     res = cn.Query<EmailElementi>(sqlEl, new { IdFascicolo = IdFascicolo }).ToList();
                 }

@@ -16,30 +16,32 @@ namespace dblu.Docs.Extensions
             List<string> esclusi= new List<string>();
             try
             {
+                int i = 0;
                 foreach (MimeEntity all in message.Attachments)
                 {
+                    i++;
                     if (all.IsAttachment)
                     {
                         if (all.GetType() == typeof(MimeKit.Tnef.TnefPart))
                         {
-                            esclusi.Add(all.NomeAllegato());
+                            esclusi.Add(all.NomeAllegato(i));
                             
                             var t = (MimeKit.Tnef.TnefPart)all;
                             foreach (var all1 in t.ExtractAttachments())
                             {
                                 if (all1.IsAttachment) { 
-                                    elenco.Add(all1.NomeAllegato(), all1);
+                                    elenco.Add(all1.NomeAllegato(i), all1);
                                 }
                             }
                         }
                         else {
                             
-                            elenco.Add(all.NomeAllegato(), all);
+                            elenco.Add(all.NomeAllegato(i), all);
                         } 
                     }
                     else
                     {
-                        esclusi.Add(all.NomeAllegato());
+                        esclusi.Add(all.NomeAllegato(i));
                         //elenco.Add(all.NomeAllegato(), all);
                     }
                 }
@@ -47,7 +49,7 @@ namespace dblu.Docs.Extensions
                 IEnumerable<MimeEntity> att = message.BodyParts.Where(x => x.ContentType.Name != null).ToList();
                 foreach (MimeEntity all in att)
                 {
-                    var nome = all.NomeAllegato();
+                    var nome = all.NomeAllegato(i);
                     if ( all.GetType() != typeof(MimeKit.Tnef.TnefPart) 
                         && !elenco.ContainsKey(nome) 
                         && !esclusi.Contains(nome) )
@@ -63,9 +65,9 @@ namespace dblu.Docs.Extensions
         }
 
 
-        public static string NomeAllegato(this MimeEntity attachment)
+        public static string NomeAllegato(this MimeEntity attachment, int Index)
         {
-            string fileName = "non definito";
+            string fileName = $"non definito_{Index}";
             if (attachment is MessagePart)
             {
                 fileName = attachment.ContentDisposition?.FileName;
@@ -76,7 +78,21 @@ namespace dblu.Docs.Extensions
             {
                 var part = (MimePart)attachment;
                 if(part.FileName!=null)
-                fileName = part.FileName;
+                {
+                    var nome = Path.GetFileNameWithoutExtension(part.FileName);
+                    var ext = Path.GetExtension(part.FileName).ToLower();
+                    List<string> myExt = new List<string>{ ".pdf", ".jpg", ".jpeg", ".png" };
+
+                    if (!myExt.Contains(ext) && !string.IsNullOrEmpty(part.ContentType.MediaSubtype)){
+                        List<string> myTypes = new List<string> { "pdf", "jpeg" };
+                        if (myTypes.Contains(part.ContentType.MediaSubtype))
+                        { 
+                            nome = part.FileName;
+                            ext = "." + part.ContentType.MediaSubtype;                    
+                        }
+                    }
+                     fileName = $"{nome}_{Index}{ext}";
+                }
             }
             return fileName;
             }
