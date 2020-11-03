@@ -666,7 +666,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     int i = 0;
                     foreach (var attachment in Messaggio.Allegati())
                     {
-                        i++;
+                         i++;
                         var fileName = attachment.NomeAllegato(i);
                         //if (attachment is MessagePart)
                         //{

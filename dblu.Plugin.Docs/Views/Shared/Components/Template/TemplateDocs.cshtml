@@ -58,6 +58,41 @@ else
     <div class="row">
 
         <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box bg-aqua">
+                <div class="inner">
+                    <h3>@numeroEmail</h3>
+                    <p>email in arrivo</p>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-stats-bars"></i>
+                </div>
+                <a href="~/MailView/InArrivo" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
+                @*
+                    <a href="~/Docs/EditorPdf" class="small-box-footer">Test editor<i class="fa fa-arrow-circle-right"></i></a>
+                *@
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-xs-6">
+            <!-- small box -->
+            <div class="small-box bg-aqua">
+                <div class="inner">
+                    <h3>@numeroFile</h3>
+                    <p>documenti in arrivo</p>
+                </div>
+                <div class="icon">
+                    <i class="ion ion-stats-bars"></i>
+                </div>
+                <a href="~/ZipView/ZipTask" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
+            </div>
+        </div>
+
+    </div>
+}
+@*<div class="row">
+
+        <div class="col-lg-3 col-xs-6">
 
             <div class="small-box @Model.Colore">
                 <div class="inner">
@@ -69,5 +104,5 @@ else
                 <a href="@Model.Link" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
             </div>
         </div>
-    </div>
-}
+    </div>*@
+

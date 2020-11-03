@@ -363,7 +363,7 @@
                          )
                          .Resizable(resize => resize.Columns(true))
                          .HtmlAttributes(new { Height = "100%", style = "font-size:10" })
-                        .ToolBar(toolbar =>    { toolbar.Search(); })
+                        //.ToolBar(toolbar =>    { toolbar.Search(); })
                         .Search(s=> { s.Field(c => c.Descrizione ); s.Field(c => c.Chiave1); s.Field(c => c.Chiave3); s.Field(c => c.Chiave4); })
                             .PersistSelection()
                             .Height(900)
