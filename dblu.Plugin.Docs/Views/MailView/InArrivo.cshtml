@@ -250,7 +250,44 @@
             </div>
         </div>
     </div>
-
+    <div>
+        @(Html.Kendo().Dialog()
+        .Name("dialog")
+        .Title("Eliminazione")
+        .Content("<p>Sei sicuro di eliminare <strong>completamente</strong> l'email?<p>")
+        .Width(400)
+        .Modal(false)
+        .Visible(false)
+        .Actions(actions =>
+        {
+            actions.Add()
+            .Text("Annulla")
+            .Action("onAnnulla");
+            actions.Add().Text("Elimina")
+            .Primary(true)
+            .Action("onElimina");
+        })
+    )
+    </div>
+    <div>
+        @(Html.Kendo().Dialog()
+        .Name("dialogElemento")
+        .Title("Eliminazione")
+        .Content("<p>Sei sicuro di eliminare <strong>completamente</strong> l'elemento?<p>")
+        .Width(400)
+        .Modal(false)
+        .Visible(false)
+        .Actions(actions =>
+        {
+            actions.Add()
+            .Text("Annulla")
+            .Action("onAnnullaElemento");
+            actions.Add().Text("Elimina")
+            .Primary(true)
+            .Action("onEliminaElemento");
+        })
+    )
+    </div>
     <div class="row">
         <div class="col-xs-5">
             <div class="box box-solid box-default">
@@ -302,12 +339,12 @@
                         {
                             columns.Bound(p => p.Id).Title("Id").Width(0).Hidden();
                             columns.Bound(p => p.Chiave4).Title("Nome").Width(0).Hidden();
-                            columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.DescrizioneChiave("Chiave1")).Width(250)
+                            columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.DescrizioneChiave("Chiave1")).Width(300)
                                         .ClientTemplate("<span> cliente #: Chiave3# </span> <br/>"
                                             + "<span><b> #: Chiave4# </b></span>"
                                             + "<span> #: Chiave1# </span><br/>");
-                                columns.Bound(p => p.Descrizione).Title("Oggetto").Width(200);
-                            columns.Bound(p => p.DataC).Title("Data").Width(80).Format("{0:dd/MM/yy HH:mm}");
+                            columns.Bound(p => p.Descrizione).Title("Oggetto").Width(150);
+                            columns.Bound(p => p.DataC).Title("Data").Width(100).Format("{0:dd/MM/yy HH:mm}");
                                 //columns.Bound(p => p.Chiave1).Title("chiave1").Width(0).Hidden();
                             //columns.Command(command =>
                             //{
@@ -543,6 +580,7 @@
                                         ////columns.Bound(p => p.Stato).Title("Stato").Hidden(true);
                                                 columns.Bound(p => p.LastOp).Width(50).Title("Operaz.").ClientTemplate("#= xIconLastOp(data) #");
                                         columns.Command(command => command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewHistoryEl").IconClass("k-icon ").HtmlAttributes(new { style = "width:30px " })).Hidden();
+                                                    @*
                                         columns.Command(command =>
                                         {
                                                     command.Custom("ApriElemento").Text("Apri").Click("ApriElementoGrid").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:70px" });
@@ -550,6 +588,15 @@
                                                     command.Custom("CancellaElemento").Text("Canc.").Click("RimuoviElementoGrid").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:70px" });
 
                                                 }).Width(75);
+                                                        *@
+                                                })
+                                                    .ToolBar(toolbar =>
+                                                    {
+                                                        // toolbar.ClientTemplateId("GridToolbarTemplate");
+                                                        toolbar.Custom().Text("Apri").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:75px", onclick = "ApriElementoGrid()" });
+                                                        toolbar.Custom().Text("Agg.").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:75px", onclick = "AggiungiElementoGrid()" });
+                                                        toolbar.Custom().Text("Canc.").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaElemento()" });
+                                                        toolbar.Search();
                                     })
                                     .DataSource(dataSource => dataSource
                                         .Ajax()

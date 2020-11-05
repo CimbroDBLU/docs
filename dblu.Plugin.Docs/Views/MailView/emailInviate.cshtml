@@ -136,7 +136,25 @@
             </div>
         </div>
     </div>
-
+    <div>
+        @(Html.Kendo().Dialog()
+        .Name("dialog")
+        .Title("Eliminazione")
+        .Content("<p>Sei sicuro di eliminare <strong>completamente</strong> l'email?<p>")
+        .Width(400)
+        .Modal(false)
+        .Visible(false)
+        .Actions(actions =>
+        {
+            actions.Add()
+            .Text("Annulla")
+            .Action("onAnnulla");
+            actions.Add().Text("Elimina")
+            .Primary(true)
+            .Action("onElimina");
+        })
+    )
+    </div>
     <div class="row">
         <div class="col-xs-5">
             <div class="box box-solid box-default">
@@ -149,11 +167,12 @@
                         {
                             columns.Bound(p => p.Id).Title("Id").Width(0).Hidden();
                             columns.Bound(p => p.Chiave4).Title("Nome").Width(0).Hidden();
-                            columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.Descrizione("Destinatario")).Width(150)
+                            columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.Descrizione("Destinatario")).Width(300)
                                 .ClientTemplate("<span> cliente #: Chiave3# </span> <br/>"
                                     + "<span><b> #: Destinatario# </b></span>" );
-                            columns.Bound(p => p.Descrizione).Title("Oggetto").Width(250);
-                            columns.Bound(p => p.DataC).Title("Data").Width(50).Format("{0:dd/MM/yy HH:mm}");
+                            columns.Bound(p => p.Descrizione).Title("Oggetto").Width(150);
+                            columns.Bound(p => p.DataC).Title("Data").Width(100).Format("{0:dd/MM/yy HH:mm}");
+                            @*
                             columns.Command(command =>
                             {
                                 command.Custom("Inoltra").Text("").Click("InoltraEmail").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:80px" });
@@ -164,9 +183,17 @@
                                 //columns.Bound(p => p.Stato).Width(50).ClientTemplate("#if (data.Stato == 3){#<span class='k-icon k-i-printer'></span>#} else if (data.Stato==2){#<span class='k-icon k-i-file-add'></span>#}#");
                                 //command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewHistory").HtmlAttributes(new { style = " hidden: 'hidden' " }) ;
                             }).Width(90);
+                             *@
                             columns.Bound(p => p.LastOp).Width(50).Title("Operaz.").ClientTemplate("#= xIconLastOp(data) #").Width(80);
                             columns.Command(command => command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewHistory")).Width(100).Hidden();
                             //columns.Bound(p => p.Stato).Width(50).ClientTemplate("#if (data.Stato == 5){#<span class='k-icon k-i-check-outline' style='color: green;'></span>#} else if (data.Stato==9){#<span class='k-icon k-i-close-outline' style='color: red;'></span>#}#");
+                        })
+                        .ToolBar(toolbar =>
+                        {
+                        // toolbar.ClientTemplateId("GridToolbarTemplate");
+                        toolbar.Custom().Text("Inoltra").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:75px", onclick = "InoltraMail()" });
+                        toolbar.Custom().Text("Elimina").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:80px", onclick = "CancellaMail()" });
+                        toolbar.Search();
                         })
                         .Pageable()
                         .Sortable()
@@ -193,7 +220,7 @@
                          )
                          .Resizable(resize => resize.Columns(true))
                          .HtmlAttributes(new { Height = "100%", style = "font-size:10" })
-                         .ToolBar(toolbar => { toolbar.Search(); })
+                       //  .ToolBar(toolbar => { toolbar.Search(); })
                          .Search(s => { s.Field(c => c.Descrizione); s.Field(c => c.Chiave1); s.Field(c => c.Chiave3); s.Field(c => c.Chiave4); })
                         )
                     </div>

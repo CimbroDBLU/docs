@@ -4,10 +4,11 @@ var NomeServer = null;
 var idItem = "";
 var TipoAll = null;
 var TipiOggetto = null;
+var mailItem = null;
 // eventi
 gridEmailOnChange = function (e) {
     var data = this.dataItem(this.select());
-
+    mailItem = data;
     PulisciDettaglio();
 
     $("#IdAllegato").val(data.Id);
@@ -25,6 +26,26 @@ gridEmailOnChange = function (e) {
 
         }
     });
+}
+function InoltraMail() {
+    if (mailItem != null) {
+        $("#IdAllegato").val(mailItem.Id);
+
+        var dialog = $("#wInoltra").data("kendoWindow");
+        dialog.center().open();
+    }
+} 
+function CancellaMail() {
+    if (mailItem != null) {
+        $("#dialog").data("kendoDialog").open();
+    }
+
+}
+function onAnnulla() {
+    $("#dialog").data("kendoDialog").close();
+}
+function onElimina() {
+    var grid = $("#gridEmail").data("kendoGrid").dataSource.remove(mailItem);
 }
 
 function gridEmailOnRemove(e) {
