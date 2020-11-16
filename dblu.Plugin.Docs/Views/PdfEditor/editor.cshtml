@@ -38,6 +38,21 @@
     window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js';
 
 </script>
+<style>
+    .pdf-editor-section {
+        padding: 0px 0px;
+    }
+
+    .k-window-content-pdf {
+        padding: 2px 2px;
+        height: 100%;
+        box-sizing: border-box;
+        overflow: auto;
+        position: relative;
+        outline: 0;
+    }
+
+</style>
 
 <script>
 
@@ -177,9 +192,9 @@
 </script>
 
 
-<section class="content">
+<section class="pdf-editor-section">
     <!-- Main row -->
-    <div class="box-body">
+    <div >
         @(Html.Kendo().ToolBar()
                 .Name("pdfEditorToolBar")
                 .Items(items =>

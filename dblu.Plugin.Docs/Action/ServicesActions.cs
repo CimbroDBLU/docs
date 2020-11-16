@@ -19,9 +19,9 @@ namespace dblu.Portale.Plugin.Docs.Actions
         public void Execute(IServiceCollection services, IServiceProvider serviceProvider)
         {
 
-            IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
-               .SetBasePath(serviceProvider.GetService<IWebHostEnvironment>().ContentRootPath)
-               .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            //IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
+            //   .SetBasePath(serviceProvider.GetService<IWebHostEnvironment>().ContentRootPath)
+            //   .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
             //services.AddDbContext<dbluDocsContext>(
             //      options => options.UseSqlServer(configurationBuilder.Build().GetConnectionString("dblu.Docs"))

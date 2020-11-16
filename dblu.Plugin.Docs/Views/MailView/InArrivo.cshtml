@@ -1090,7 +1090,7 @@
         .Content("")
         .Scrollable(true)
         .Modal(true)
-        .Events(e => e.Close("wPdfEditorClose"))
-    )
+                .Events(e => e.Close("wPdfEditorClose").Open("wPdfEditorOpen"))
+        ); 
 
 <ejs-scripts></ejs-scripts>

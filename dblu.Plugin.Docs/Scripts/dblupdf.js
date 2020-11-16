@@ -120,3 +120,11 @@ const docsAzioniPdf = {
     RuotaPagina270: 12,
     SpostaPagina: 13 
 }
+
+
+function wPdfEditorOpen(e) {
+
+    //alert("");
+    $('#wPdfEditor').addClass('k-window-content-pdf');
+
+}
