@@ -257,9 +257,18 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
 
         [HasPermission("50.1.3")]
-        public ActionResult InArrivo()
+        public IActionResult InArrivo(string Ruolo)
         {
-            return View();
+
+      
+            return View(
+                 new inArrivoView
+                 {
+                     Ruolo = Ruolo
+                 }
+                );
+
+
         }
 
         public ActionResult<int> InArrivo_Count([DataSourceRequest] DataSourceRequest request, string Tipo, string NomeServer= "")

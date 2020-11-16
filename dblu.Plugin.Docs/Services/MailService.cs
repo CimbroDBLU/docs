@@ -170,6 +170,54 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
 
+        public List<String> getRuoli(List<string> Ruoli, string NomeServer)
+        {
+            List<string> l = new List<string>();
+
+
+            if (NomeServer != "")
+            {
+
+                //string xRol = "'";
+                //foreach (Claim x in Roles)
+                //{
+                //    if (x.Type == ClaimTypes.Role) xRol = xRol + x.Value + "','";
+                //}
+                //xRol = xRol.Substring(0, xRol.Length - 2);
+                try
+                {
+
+                    using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                    {
+
+                        string sql = "Select RoleID FROM [ServersInRole] where [RoleID] IN ('" + string.Join("','", Ruoli) + "') and [idServer]='" + NomeServer + "'";
+                        l = cn.Query<string>(sql).ToList();
+
+                    }
+                }
+
+                catch (Exception ex)
+                {
+                    _logger.LogError($"getRuoli: {ex.Message}");
+                }
+
+            }
+            else
+            {
+                //foreach (Claim x in Roles)
+                //{
+                //    if (x.Type == ClaimTypes.Role) l.Add(x.Value);
+                //}
+                l = Ruoli;
+            }
+
+            return l;
+
+
+
+
+        }
+
         public int CountEmailInArrivo(string Tipo, IEnumerable<Claim> Roles)
         {
 

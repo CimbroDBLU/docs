@@ -18,6 +18,14 @@ namespace dblu.Portale.Plugin.Docs.ViewModels
 
     }
 
+    public class inArrivoView
+    {
+       
+        //public string Server { get; set; }
+        public string Ruolo { get; set; }
+    }
+
+
     public class EmailAttachments
     {
         public string Id { get; set; }

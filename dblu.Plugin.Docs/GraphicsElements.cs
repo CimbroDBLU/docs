@@ -60,6 +60,7 @@ namespace dblu.Portale.Plugin.Documenti
                     new MenuItem("50.1.1", 1, "Docs/Tabelle", "Tabelle", "fa-file", subItemT),
                     new MenuItem("50.1.2", 1, "Docs/Fascicoli", "Fascicoli", "fa-file", subItemF),
                     new MenuItem("50.1.3", 1, "MailView/InArrivo", "Email in arrivo", "fa-table", null),
+                    new MenuItem("50.1.3", 1, "MailView/InArrivo?ruolo=Resi", "Email resi", "fa-table", null),
                     new MenuItem("50.1.3", 2, "MailView/emailProcessate", "Email processate", "fa-table", null),
                     new MenuItem("50.1.3", 3, "MailView/emailInviate", "Email inviate", "fa-table", null),
                     new MenuItem("50.1.3", 4, "ZipView/ZipTask", "File in arrivo", "fa-table", null),

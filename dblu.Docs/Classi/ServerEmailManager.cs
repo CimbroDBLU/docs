@@ -134,6 +134,33 @@ namespace dblu.Docs.Classi
             return l;
         }
 
+
+        public List<EmailServer> GetServersEmailinRoles(List<string> Ruoli)
+        {
+        //    string xRol = "'";
+        //    foreach (Claim x in Roles)
+        //    {
+        //        if (x.Type == ClaimTypes.Role) xRol = xRol + x.Value + "','";
+        //    }
+        //    xRol = xRol.Substring(0, xRol.Length - 2);
+            List<EmailServer> l = new List<EmailServer>();
+            try
+            {
+
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+
+                    string sql = "Select * FROM [EmailServer] where InUscita = 0 AND [Nome] IN (Select idServer from[ServersInRole] where [RoleId] IN ('" + string.Join("','", Ruoli) + "') Group by idServer)";
+                    l = cn.Query<EmailServer>(sql).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetServersEmailinRoles: {ex.Message}");
+            }
+            return l;
+        }
+
         public bool SalvaServerEmail(EmailServer obj)
         {
             var bres = false;

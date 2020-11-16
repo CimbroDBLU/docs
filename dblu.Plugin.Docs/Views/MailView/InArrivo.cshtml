@@ -1,4 +1,7 @@
-﻿@model dblu.Docs.Models.Allegati
+﻿@*@model dblu.Docs.Models.Allegati*@
+
+@model dblu.Portale.Plugin.Docs.ViewModels.inArrivoView 
+
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
 @inject dblu.Portale.Plugin.Docs.Services.MailService _mailservice
@@ -17,20 +20,39 @@
     List<dblu.Docs.Models.TipiElementi> ListaTipiElementi ;
     List<dblu.Docs.Models.TipiElementi> ListaTipiElementiServ ;
     TipiAllegati TipoAll = _mailservice._allMan.GetTipoAllegato("EMAIL");
-    var ListaServer = _mailservice._serMan.GetServersEmailinRoles(Context.User.Claims);
-    var ListaServerIngresso = _mailservice._serMan.GetServerEmailInIngresso();
-    var ListaRuoli = _mailservice.getRuoli(Context.User.Claims, "");
-    ListaTipiElementi = _mailservice._elmMan.GetAllTipiElementi(ListaRuoli);
+    List<string> ListaRuoli = null;
 
+    if (Model.Ruolo != null)
+    {
+        ListaRuoli = new List<string>();
+        ListaRuoli.Add(Model.Ruolo);
+
+    }
+    else
+    {
+        ListaRuoli = _mailservice.getRuoli(Context.User.Claims, "");
+    }
+
+    ListaTipiElementi = _mailservice._elmMan.GetAllTipiElementi(ListaRuoli);
+    var ListaServer = _mailservice._serMan.GetServersEmailinRoles(ListaRuoli);
+
+    //var ListaServer = _mailservice._serMan.GetServersEmailinRoles(Context.User.Claims);
+    var ListaServerIngresso = _mailservice._serMan.GetServerEmailInIngresso();
     if (ListaServer != null)
     {
-        var ListaRuoliServ = _mailservice.getRuoli(Context.User.Claims, ListaServer.ElementAt(0).Nome);
+        //var ListaRuoliServ = _mailservice.getRuoli(Context.User.Claims, ListaServer.ElementAt(0).Nome);
+        var ListaRuoliServ = _mailservice.getRuoli(ListaRuoli, ListaServer.ElementAt(0).Nome);
         ListaTipiElementiServ = _mailservice._elmMan.GetAllTipiElementi(ListaRuoliServ);
     }
     else
     {
         ListaTipiElementiServ = ListaTipiElementi;
     }
+    bool mostraSposta = ListaServerIngresso.Count > 1;
+
+
+
+
 
     //var ListaTipiElementi = await _mailservice._elmMan.GetAllTipiElementiAsync();
     // TipiElementi Tipoelemento = _mailservice..GetTipoAllegato("EMAIL");
@@ -40,7 +62,6 @@
     //attr.Valori = "{\"Mittente\":\"roberta@miottomobili.it\",\"Data\":\"2019-12-13T09:41:10Z\",\"CodiceSoggetto\":\"aaa\",\"Oggetto\":\"CONFERMA\",\"MessageId\":\"CAK_jKF0R_JhvOJG4zjWTvgGhW1HAspKLDTN1zFYcUjV3-vgfdg@mail.gmail.com\",\"CodiceCliente\":\"21351\",\"NomeServer\":\"Test\"}";
 
     //};
-    bool mostraSposta = ListaServerIngresso.Count > 1;
 
     List<dblu.Docs.Models.Colonna> ElCols = _allservice.GetColonne("vELEMENTO");
 
@@ -66,6 +87,7 @@
         padding-top: 0em;
         padding-bottom: 0em;
     }
+
     #gridSoggettoElementiAperti td {
         font-size: 12px;
         padding-top: 0em;
@@ -79,7 +101,6 @@
     .new-tab-opener {
         display: none;
     }
-
 </style>
 <style>
     .my-icon-class-inoltra:before {
@@ -206,7 +227,7 @@
 
 <!-- Main content -->
 <section class="content">
-    <div class="row">
+    <div class="row" hidden="@(ListaServer.Count == 1)">
         <div class="col-xs-5">
 
 
@@ -231,6 +252,7 @@
                     <button id="testbutton" type="button" onclick="TestClick()" class="b btn btn-info">test </button>
                     <input type="text" id="testlabel" style="font-size:12px" />
             *@
+          
             <label class="control-label col-md-4" style="font-size:12px">Casella di posta:</label>
             <div class="col-md-6">
                 @(Html.Kendo().ComboBox()
