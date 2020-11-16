@@ -19,12 +19,12 @@
     bool isEdit = Model.IsEdit();
 }
 
-@* Syncfusion Essential JS 2 Styles *@
+@* Syncfusion Essential JS 2 Styles
 <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
-
-@* Syncfusion Essential JS 2 Scripts *@
+*@
+@* Syncfusion Essential JS 2 Scripts
 <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
-
+*@
 <script src="~/Scripts/dblupdf.js"></script>
 
 <script>
@@ -37,30 +37,34 @@
         Pagina: 0,
         AggiungiFilePdf: "",
         NuovaPosizione: 0,
-        iAzione: 0
+        iAzione: 0,
+        IdAllegatoAElemento: "",
+        Descrizione: "",
+        FileAllegati: null
     }
 
     $(document).ready(function () {
 
         //$("#pdfviewer_comment").remove();
         var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
-        pdfViewer.stickyNotesSettings.author = '@User.Identity.Name' //'@User.Identity.Name.Replace('.', ' ')';
+        pdfViewer.stickyNotesSettings.author = '@User.Identity.Name';
         pdfViewer.strikethroughSettings.author = '@User.Identity.Name';
         pdfViewer.underlineSettings.author = '@User.Identity.Name';
         pdfViewer.highlightSettings.author = '@User.Identity.Name';
         pdfViewer.annotationSettings.author = '@User.Identity.Name';
+        pdfViewer.annotationSettings.color = '#ff0000';
         pdfViewer.freeTextSettings.author = '@User.Identity.Name';
-
-        //pdfViewer.measurementSettings.displayUnit = "mm";
-        //pdfViewer.measurementSettings.conversionUnit = "mm";
-
+        pdfViewer.freeTextSettings.fontColor = '#ff0000';
+        pdfViewer.freeTextSettings.fontSize = '20';
+        pdfViewer.author = '@User.Identity.Name';
+        pdfViewer.enableAnnotationToolbar = true;
 
     });
 
      function importAnnotations() {
         var IdAllegato = $("#IdAllegato").val();
         var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
-        pdfViewer.importAnnotations(IdAllegato);
+        pdfViewer.importAnnotations(JSON.stringify(PdfCorrente));
     }
 
     function annotationAdd(e) {
@@ -75,12 +79,23 @@
 
     function documentLoaded(args) {
         //alert("The document" + args.fileName + "is ready to view");
-        importAnnotations()
+       // importAnnotations()
+        var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
+        try {
+            pdfViewer.navigation.goToFirstPage();
+            if (PdfCorrente.Pagina > 1) {
+                pdfViewer.navigation.goToPage(PdfCorrente.Pagina);
+            }
+        }
+        catch (err) {
+
+    }
+        pdfViewer.importAnnotations(JSON.stringify(PdfCorrente));
     }
 
-       function CaricaPdf(pdfviewer, nome ){
+    function CaricaPdf(pdfViewer, nome ){
 
-        $.ajax({
+        @*$.ajax({
             url: "@(Url.Action("EditorPdf", "PdfViewer"))",
             type: 'POST',
             cache: false,
@@ -99,13 +114,29 @@
             error: function (data) {
                 pdfviewer.load('');
             }
-        });
+        });*@
+        var flLoad=false;
+        if (pdfViewer.annotationCollection != undefined  &&  pdfViewer.annotationCollection.length > 0) {
+            var myPromise = pdfViewer.exportAnnotationsAsObject();
+            myPromise.then(response => {
+                pdfViewer.load(JSON.stringify(PdfCorrente))
+                pdfViewer.downloadFileName = nome;
+            },
+                () => {
+                    alert("Errore nel documento, riprovare.");
+                }
+            );
+        }
+        else {
+            pdfViewer.load(JSON.stringify(PdfCorrente))
+            pdfViewer.downloadFileName = nome;
+        }
     }
 
     function tbpdf_click(e) {
 
         var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
-        pdfViewer.exportAnnotations();
+        //pdfViewer.exportAnnotations();
 
         PdfCorrente.IdAllegato = $("#IdAllegato").val();
         PdfCorrente.Pagina = pdfViewer.currentPageNumber;
@@ -113,22 +144,33 @@
         var nome = $("#NomeAllegato").val();
 
         if (e.id == "tbruotadx") {
-            PdfCorrente.iAzione = 11;
+            PdfCorrente.iAzione = docsAzioniPdf.RuotaPagina90;;
         } else if (e.id == "tbruotasx") {
-            PdfCorrente.iAzione = 12;
+            PdfCorrente.iAzione = docsAzioniPdf.RuotaPagina270;
         } else if (e.id == "tbcanc") {
-            PdfCorrente.iAzione = 10;
+            PdfCorrente.iAzione = docsAzioniPdf.CancellaPagina;
         } else if (e.id == "tbrefresh") {
-            PdfCorrente.iAzione = 0;
+            PdfCorrente.iAzione = docsAzioniPdf.Ricarica;
         } else if (e.id == "tbsalva") {
-
-            PdfCorrente.iAzione = 2;
+            PdfCorrente.iAzione = docsAzioniPdf.Salva;
         } else {
 
-            PdfCorrente.iAzione = 0;
+            PdfCorrente.iAzione = docsAzioniPdf.Carica;
         }
-        CaricaPdf(pdfViewer, nome);
 
+        if (e.id == "tbespandi") {
+
+            var pdfWindow = $("#wPdfEditor").data("kendoWindow");
+            pdfWindow.refresh({
+                url: '@Url.Action("Editor", "PdfEditor")',
+                type: "Post",
+                data: { pdf: JSON.stringify(PdfCorrente) }
+            });
+            pdfWindow.open().maximize();;
+
+        } else {
+        CaricaPdf(pdfViewer, nome);
+        }
     }
 
 </script>
@@ -174,13 +216,13 @@
             $("#IdAllegato").val(IdAllegato);
             var nome = dataItem.NomeFile.toLowerCase();
             $("#NomeAllegato").val(nome);
-            var pdfviewer = document.getElementById('pdfviewer').ej2_instances[0];
+            var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
 
             PdfCorrente.IdAllegato = $("#IdAllegato").val();
             PdfCorrente.IdElemento = "";
             PdfCorrente.iAzione = 0;
 
-            CaricaPdf(pdfviewer, nome);
+            CaricaPdf(pdfViewer, nome);
 
             //var IdAllegato = dataItem.Id;
             //$("#IdAllegato").val(IdAllegato);
@@ -227,6 +269,19 @@
                 }
         });
     }
+
+    function wPdfEditorClose(e) {
+
+        if (MustReloadPdf) {
+
+            PdfCorrente.iAzione = docsAzioniPdf.Ricarica;
+            var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
+            pdfViewer.load(JSON.stringify(PdfCorrente));
+            pdfViewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
+        }
+
+    }
+
 </script>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"></script>
@@ -531,25 +586,27 @@
                                 .Name("pdfToolBar")
                                 .Items(items =>
                                                         {
-                                    items.Add().Type(CommandType.Button).Id("tbruotadx").Text("+90°").Icon("redo");
                                     items.Add().Type(CommandType.Button).Id("tbruotasx").Text("-90°").Icon("undo");
+                                    items.Add().Type(CommandType.Button).Id("tbruotadx").Text("+90°").Icon("redo");
                                     items.Add().Type(CommandType.Button).Id("tbcanc").Text("Canc.").Icon("delete");
                                     items.Add().Type(CommandType.Separator);
                                     items.Add().Type(CommandType.Button).Id("tbrefresh").Text("Ricarica").Icon("refresh");
                                     items.Add().Type(CommandType.Separator);
                                     items.Add().Type(CommandType.Button).Id("tbsalva").Text("Salva").Icon("save");
+                                    items.Add().Type(CommandType.Separator);
+                                    items.Add().Type(CommandType.Button).Id("tbespandi").Text("Espandi").Icon("zoom-in");
 
                                                         })
                                 .Events(e => e.Click("tbpdf_click"))
                                                     )
 
-                                    <ejs-pdfviewer id="pdfviewer" serviceUrl="/api/PdfViewer" documentPath=""
+                            <ejs-pdfviewer id="pdfviewer" serviceUrl="/api/PdfEditor" documentPath=""
                                                    enablePrint="true"
                                                    documentLoad="documentLoaded"
                                                    annotationAdd="annotationAdd"
                                                    enableStampAnnotations="false"
                                                    locale="it-IT"
-                                                   downloadFileName="@string.Concat("",".pdf")" height="900px">
+                                           downloadFileName="@string.Concat("",".pdf")" height="1000px">
                                     </ejs-pdfviewer>
 
 
@@ -693,5 +750,16 @@
 
         </section>
 
+@(Html.Kendo().Window()
+        .Name("wPdfEditor")
+        .Size("auto")
+        .Title("Editor")
+        .Visible(false)
+        .Actions(actions => actions.Refresh().Close())
+        .Content("")
+        .Scrollable(true)
+        .Modal(true)
+        .Events(e => e.Close("wPdfEditorClose"))
+    )
 
         <ejs-scripts></ejs-scripts>

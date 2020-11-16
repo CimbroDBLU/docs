@@ -89,8 +89,8 @@ namespace dblu.Portale.Plugin.Docs.Class
                 HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
                 WebKitConverterSettings settings = new WebKitConverterSettings();
 
-                if (txt.Trim().Length > 5 || htxt.Trim().Length > 10 || Messaggio.Allegati().Count() == 0)
-                {
+                //if (txt.Trim().Length > 0 || htxt.Trim().Length > 10 || Messaggio.Allegati().Count() == 0)
+                //{
                     if (Messaggio.HtmlBody == null)
                     {
                         if (txt != null)
@@ -174,7 +174,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                     }
                     //pdfstream.Close();
                     ListaPdf.Add(pdfstream);
-                }
+                //}
 
                 int i = 0;
                 foreach (var attachment in Messaggio.Allegati())
@@ -235,7 +235,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                                         var flAnn = false; 
                                         var flResize = false;
                                         foreach (PdfPageBase p in ld.Pages) { 
-                                            if (p.Size.Width > A4Size.Width || p.Size.Height > A4Size.Height) {
+                                            if (p.Size.Width > (A4Size.Width + 1f) || p.Size.Height > (A4Size.Height + 1f)) {
                                                 flResize = true;
                                             }
                                             if (p.Annotations.Count > 0) { 
@@ -252,6 +252,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                                             foreach (PdfPageBase p in ld.Pages)
                                             {
                                                 PdfPage page = doc1.Pages.Add();
+                                                page.Section.PageSettings.Margins.All = 0f;
         
                                                 PdfGraphics g = page.Graphics;
                                                 PdfTemplate template = p.CreateTemplate();
@@ -360,7 +361,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                                     float myWidth = image.Width;
                                     float myHeight = image.Height;
 
-                                    if (myWidth > 200 && myHeight > 200)
+                                    if (myWidth > 100 && myHeight > 100)
                                     {
                                         document = new PdfDocument();
                                         //PdfSection section = document.Sections.Add();
@@ -657,6 +658,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                         ListaPdf.Add(pdfstream);
                     }
 
+                    
                     if (ListaPdf.Count() > 0)
                     {
                         //PdfDocument finalDoc = new PdfDocument();

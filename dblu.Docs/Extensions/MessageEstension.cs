@@ -13,35 +13,40 @@ namespace dblu.Docs.Extensions
         public static IEnumerable<MimeEntity> Allegati(this MimeMessage message)
         { 
             Dictionary<string,MimeEntity> elenco = new Dictionary<string, MimeEntity>();
+            List<string> inclusi = new List<string>();
             List<string> esclusi= new List<string>();
             try
             {
                 int i = 0;
                 foreach (MimeEntity all in message.Attachments)
                 {
-                    i++;
+                    
                     if (all.IsAttachment)
                     {
                         if (all.GetType() == typeof(MimeKit.Tnef.TnefPart))
                         {
-                            esclusi.Add(all.NomeAllegato(i));
+                            esclusi.Add(all.IdAllegato());
                             
                             var t = (MimeKit.Tnef.TnefPart)all;
                             foreach (var all1 in t.ExtractAttachments())
                             {
-                                if (all1.IsAttachment) { 
+                                if (all1.IsAttachment || all1.ContentType.MediaType=="image") { 
+                                    i++;
+                                    inclusi.Add(all1.IdAllegato());
                                     elenco.Add(all1.NomeAllegato(i), all1);
                                 }
                             }
                         }
                         else {
-                            
+                            i++;
+                            inclusi.Add(all.IdAllegato());
                             elenco.Add(all.NomeAllegato(i), all);
                         } 
                     }
                     else
                     {
-                        esclusi.Add(all.NomeAllegato(i));
+                        //esclusi.Add(all.NomeAllegato(i));
+                        esclusi.Add(all.IdAllegato());
                         //elenco.Add(all.NomeAllegato(), all);
                     }
                 }
@@ -49,12 +54,14 @@ namespace dblu.Docs.Extensions
                 IEnumerable<MimeEntity> att = message.BodyParts.Where(x => x.ContentType.Name != null).ToList();
                 foreach (MimeEntity all in att)
                 {
-                    var nome = all.NomeAllegato(i);
+                    //var nome = all.NomeAllegato(i);
+                    var nome = all.IdAllegato();
                     if ( all.GetType() != typeof(MimeKit.Tnef.TnefPart) 
-                        && !elenco.ContainsKey(nome) 
+                        && !inclusi.Contains(nome) 
                         && !esclusi.Contains(nome) )
                     {
-                        elenco.Add(nome, all);
+                        i++;
+                        elenco.Add(all.NomeAllegato(i), all);
                     }
                 }
             }
@@ -65,7 +72,7 @@ namespace dblu.Docs.Extensions
         }
 
 
-        public static string NomeAllegato(this MimeEntity attachment, int Index)
+        public static string NomeAllegato(this MimeEntity attachment, int Index=-1)
         {
             string fileName = $"non definito_{Index}";
             if (attachment is MessagePart)
@@ -91,11 +98,24 @@ namespace dblu.Docs.Extensions
                             ext = "." + part.ContentType.MediaSubtype;                    
                         }
                     }
+                    if (Index>=0)
                      fileName = $"{nome}_{Index}{ext}";
+                    else
+                        fileName = $"{nome}{ext}";
                 }
             }
             return fileName;
             }
+
+
+        public static string IdAllegato(this MimeEntity attachment)
+        {
+            if (attachment.ContentId == null)
+            {
+                return attachment.NomeAllegato();
+            }
+            return attachment.ContentId;
+        }
 
     }
 

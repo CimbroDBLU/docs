@@ -1,0 +1,213 @@
+﻿
+@using Kendo.Mvc.UI
+@using Syncfusion.EJ2
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using Syncfusion.EJ2.Navigations;
+@using Newtonsoft.Json;
+
+@addTagHelper *, Kendo.Mvc
+@addTagHelper *, Syncfusion.EJ2
+@model dblu.Portale.Plugin.Docs.Models.PdfEditAction
+@{
+    Layout = "";
+
+    var azione = JsonConvert.SerializeObject(Model);
+}
+
+<link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
+
+<script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+
+@*
+    <script>
+        $(document).ready(function () {
+
+            var pdfEditorViewer = document.getElementById('pdfEditorViewer').ej2_instances[0];
+            pdfEditorViewer.stickyNotesSettings.author = '@User.Identity.Name' //'@User.Identity.Name.Replace('.',' ')';
+            pdfEditorViewer.strikethroughSettings.author = '@User.Identity.Name';
+            pdfEditorViewer.underlineSettings.author = '@User.Identity.Name';
+            pdfEditorViewer.highlightSettings.author = '@User.Identity.Name';
+            pdfEditorViewer.annotationSettings.author = '@User.Identity.Name';
+            pdfEditorViewer.freeTextSettings.author = '@User.Identity.Name';
+
+        });
+    </script>
+*@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"></script>
+<script>
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js';
+
+</script>
+
+<script>
+
+    var CurrentPdf = {
+        TipoAllegato : "@Model.TipoAllegato",
+        IdAllegato: "@Model.IdAllegato",
+        IdElemento : "@Model.IdElemento",
+        FilePdf : "",
+        Pagina : 0,
+        AggiungiFilePdf : "",
+        NuovaPosizione : 0,
+        iAzione: 0,
+        IdAllegatoAElemento: "",
+        Descrizione: "",
+        FileAllegati: null
+    }
+
+    var firstTime = true;
+    var MustReloadPdf = false;
+
+    function pdf_importAnnotations() {
+
+        var pdfEditorViewer = document.getElementById('pdfEditorViewer').ej2_instances[0];
+        pdfEditorViewer.importAnnotations();
+    }
+
+    function pdf_annotationAdd(e) {
+        // alert("The signature is added to the PDF document successfully");
+    }
+
+
+    function  pdf_saveAnnotations() {
+
+        var pdfEditorViewer = document.getElementById('pdfEditorViewer').ej2_instances[0];
+        pdfEditorViewer.exportFileName = JSON.stringify(CurrentPdf);
+        pdfEditorViewer.exportAnnotations();
+    }
+
+    function pdf_documentLoaded(args) {
+       
+        var pdfEditorViewer = document.getElementById('pdfEditorViewer').ej2_instances[0];
+
+        if (firstTime == true || firstTime === undefined) {
+            firstTime = false;
+            pdfEditorViewer.stickyNotesSettings.author = '@User.Identity.Name';
+            pdfEditorViewer.strikethroughSettings.author = '@User.Identity.Name';
+            pdfEditorViewer.underlineSettings.author = '@User.Identity.Name';
+            pdfEditorViewer.highlightSettings.author = '@User.Identity.Name';
+            pdfEditorViewer.annotationSettings.author = '@User.Identity.Name';
+            pdfEditorViewer.annotationSettings.color = '#ff0000';
+            pdfEditorViewer.freeTextSettings.author = '@User.Identity.Name';
+            pdfEditorViewer.freeTextSettings.fontColor = '#ff0000';
+            pdfEditorViewer.freeTextSettings.fontSize = '20';
+            pdfEditorViewer.arrowSettings.author = '@User.Identity.Name';
+            pdfEditorViewer.enableAnnotationToolbar = true;
+            //pdfEditorViewer.thumbnailView.openThumbnailPane();
+        }
+
+        //riposiziono la pagina
+        try {
+            pdfEditorViewer.navigation.goToFirstPage();
+            if (CurrentPdf.Pagina > 1) {
+                pdfEditorViewer.navigation.goToPage(CurrentPdf.Pagina);
+            }
+        }
+        catch (err) {
+
+        }
+
+        pdfEditorViewer.importAnnotations(JSON.stringify(CurrentPdf));
+
+    }
+
+
+    function pdf_documentPrinted() {
+
+        @*$.ajax({
+            url: UrlActions.MailView_InArrivo_Stampato,
+            type: 'POST',
+            cache: false,
+            data: { IdAllegato: '@Model.IdAllegato', IdElemento: '@Model.IdElemento' },
+            success: function (data) {
+
+                var grid = $("#gridEmail").data("kendoGrid");
+                gridRefresLastOp(grid, docsTipiOperazioni.STAMPATO);
+
+            }
+        });*@
+    }
+
+    function pdfEditorToolBar_click(e) {
+
+
+        //alert(e.id);
+        var pdfEditorViewer = document.getElementById('pdfEditorViewer').ej2_instances[0];
+
+        CurrentPdf.Pagina = pdfEditorViewer.currentPageNumber;
+
+        if (e.id == "pdftbruotadx") {
+            CurrentPdf.iAzione = docsAzioniPdf.RuotaPagina90;
+            MustReloadPdf = true;
+        } else if (e.id == "pdftbruotasx") {
+            CurrentPdf.iAzione = docsAzioniPdf.RuotaPagina270;
+            MustReloadPdf = true;
+        } else if (e.id == "pdftbcanc") {
+            CurrentPdf.iAzione = docsAzioniPdf.CancellaPagina;
+            MustReloadPdf = true;
+        } else if (e.id == "pdftbrefresh") {
+            CurrentPdf.iAzione = docsAzioniPdf.Ricarica;
+        } else if (e.id == "pdftbsalva") {
+            CurrentPdf.iAzione = docsAzioniPdf.Salva;
+            MustReloadPdf = true;
+        } else {
+            CurrentPdf.iAzione = docsAzioniPdf.Carica;
+        }
+
+
+        if (pdfEditorViewer.annotationCollection != undefined && pdfEditorViewer.annotationCollection.length > 0) {
+            var myPromise = pdfEditorViewer.exportAnnotationsAsObject();
+            myPromise.then(response => {
+                pdfEditorViewer.load(JSON.stringify(CurrentPdf))
+                pdfEditorViewer.downloadFileName = CurrentPdf.IdAllegato + ".pdf";
+            },
+                () => {
+                    alert("Errore nel documento, riprovare.");
+                }
+            );
+        }
+        else {
+            pdfEditorViewer.load(JSON.stringify(CurrentPdf))
+            pdfEditorViewer.downloadFileName = CurrentPdf.IdAllegato + ".pdf";
+        }
+    }
+
+
+
+</script>
+
+
+<section class="content">
+    <!-- Main row -->
+    <div class="box-body">
+        @(Html.Kendo().ToolBar()
+                .Name("pdfEditorToolBar")
+                .Items(items =>
+                {
+                    items.Add().Type(CommandType.Button).Id("pdftbruotasx").Text("-90°").Icon("undo");
+                    items.Add().Type(CommandType.Button).Id("pdftbruotadx").Text("+90°").Icon("redo");
+                    items.Add().Type(CommandType.Button).Id("pdftbcanc").Text("Canc.").Icon("delete");
+                    items.Add().Type(CommandType.Separator);
+                    items.Add().Type(CommandType.Button).Id("pdftbrefresh").Text("Ricarica").Icon("refresh");
+                    items.Add().Type(CommandType.Separator);
+                    items.Add().Type(CommandType.Button).Id("pdftbsalva").Text("Salva").Icon("save");
+                    items.Add().Type(CommandType.Separator);
+                    items.Add().Template("<label id='tbdescrizione' class='k-label' style='font-size:16px;font-weight:400;padding-top:6px' >  " + Model.Descrizione + "</label>");
+                })
+                .Events(e => e.Click("pdfEditorToolBar_click"))
+        )
+
+        <ejs-pdfviewer id="pdfEditorViewer" serviceUrl="/api/PdfEditor" documentPath="@azione"
+            enablePrint="false"
+            printEnd="pdf_documentPrinted"
+            documentLoad="pdf_documentLoaded"
+            annotationAdd="pdf_annotationAdd"
+            locale="it-IT" 
+            downloadFileName="@string.Concat("",".pdf")" height="900px"
+            toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
+        </ejs-pdfviewer>
+    </div>
+</section>
+
+
+<ejs-scripts></ejs-scripts>

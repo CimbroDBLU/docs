@@ -32,9 +32,10 @@ namespace dblu.Portale.Plugin.Docs.Services
 
         public IEnumerable<Role> GetAllRolesForServer(string ServerName)
         {
-            IEnumerable<Role> tmpRuoli;
+            IEnumerable<Role> tmpRuoli = new List<Role>();
             IEnumerable<string> xx;
 
+            if (!string.IsNullOrEmpty(ServerName)) { 
             using (IDbConnection cn = new SqlConnection(_connDocs))
             {
                 string sql = "SELECT RoleId FROM ServersInRole where idServer='" + ServerName + "'";
@@ -46,6 +47,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             if (xx.Count() !=0) { codici = "'" + string.Join("','", xx) + "'"; };
            
             tmpRuoli = _usr.GetAllRolesIN(codici);
+            }
             return tmpRuoli;
 
         }

@@ -1,5 +1,10 @@
-﻿@page "/Components"
+﻿@page "/Components/pdfeditor"
 @using dblu.Portale.Plugin.Docs.Models;
+@*
+
+    @using Syncfusion.Blazor.Navigations;
+
+*@
 @inject dblu.Portale.Plugin.Docs.Services.PdfEditService  pdfsvc
 @inherits ComponentBase
 
@@ -45,18 +50,34 @@
 @code {
 
     [Parameter]
-    public string DocumentID { get; set; } = "2865659e-a5d9-46dd-b809-e6e074398f55";
+    public string TipoAllegato { get; set; }
 
-    private string DocumentPath { get; set; } = ""; //"wwwroot/_tmp/b0a6c447-183b-4352-9179-12dfdc1fae57.pdf";
+    [Parameter]
+    public string IdAllegato { get; set; }
+
+    [Parameter]
+    public string IdElemento { get; set; }
+
+    [Parameter]
+    public bool AbilitaSalva { get; set; }
+
+
+    public string DocumentID { get; set; } = "8866d58c-08ac-498d-ae9d-04df4bdd4a88";
+
+    private string DocumentPath { get; set; } = "wwwroot/_tmp/8866d58c-08ac-498d-ae9d-04df4bdd4a88.pdf";
     private string AnnotationPath { get; set; } = "";
     SfPdfViewerServer pdfViewer;
     private object PageData;
 
     private void LoadPdf()
     {
-
+        try
+        {
         DocumentPath = $"wwwroot/_tmp/{DocumentID}.pdf";
         AnnotationPath = $"wwwroot/_tmp/{DocumentID}.json";
+
+    }
+        catch { }
 
     }
 
@@ -146,7 +167,7 @@
     protected override void OnParametersSet()
     {
 
-        LoadPdf();
+      //  LoadPdf();
     }
 
     protected override void OnAfterRender(bool firstRender)

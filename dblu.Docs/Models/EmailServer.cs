@@ -16,11 +16,11 @@ namespace dblu.Docs.Models
         public bool Ssl { get; set; }
         public string Utente { get; set; }
         public string Password { get; set; }
-        public int Intervallo { get; set; }
+        public int Intervallo { get; set; } = 60000;
         public bool Attivo { get; set; }
-        public string Cartella { get; set; }
+        public string Cartella { get; set; } = "";
         public bool InUscita { get; set; }
-        public string NomeProcesso { get; set; }
+        public string NomeProcesso { get; set; } = "";
         public string CartellaArchivio { get; set; } = "";
         public string NomeServerInUscita { get; set; } = "";
 

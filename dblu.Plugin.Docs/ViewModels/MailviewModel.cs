@@ -1,4 +1,5 @@
 ﻿using BPMClient;
+using dblu.Docs.Extensions;
 using dblu.Docs.Interfacce;
 using dblu.Docs.Models;
 using Newtonsoft.Json;
@@ -115,7 +116,36 @@ namespace dblu.Portale.Plugin.Docs.ViewModels
         }
         public ISoggetti Soggetto { get; set; }
 
-        public IEnumerable<EmailAttachments> FileAllegati { get; set; }
+        public IEnumerable<EmailAttachments> FileAllegati {
+            get
+            {
+                List<EmailAttachments> res = new List<EmailAttachments>();
+                if (Messaggio != null)
+                {
+                    int i = 0;
+                    foreach (var attachment in Messaggio.Allegati())
+                    {
+                        i++;
+                        var fileName = attachment.NomeAllegato(i);
+
+                        var incluso = false;
+                        switch (System.IO.Path.GetExtension(fileName).ToLower())
+                        {
+                            case ".pdf":
+                            case ".jpg":
+                            case ".jpeg":
+                            case ".png":
+                                incluso = true;
+                                break;
+                        }
+                        var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = incluso };
+                        res.Add(a);
+                    }
+                }
+                return res;
+            }
+        }
+
         //public IEnumerable<EmailElementi> ListaEmailElementi { get; set; }
     }
 

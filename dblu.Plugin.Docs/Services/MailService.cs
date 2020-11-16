@@ -254,35 +254,13 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (mv.Soggetto == null)
                 { mv.Soggetto = new Soggetti(); }
 
+
+                
                 var m = await _allMan.GetFileAsync(mv.IdAllegato);
                 mv.Messaggio = MimeKit.MimeMessage.Load(m, new CancellationToken());
-                //var l = new List<EmailAttachments>();
 
-                //foreach (var attachment in mv.Messaggio.Allegati())
-                //{
-                //    var fileName = attachment.NomeAllegato();
-                //    var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = false };
-                //    l.Add(a);
-                //}
+                //mv.FileAllegati = await GetTmpPdfCompletoAsync(mv.Allegato, mv.Messaggio, false);
 
-                //mv.FileAllegati = l;
-                mv.FileAllegati = await GetTmpPdfCompletoAsync(mv.Allegato,mv.Messaggio, false);
-                //if (string.IsNullOrEmpty(mv.IdFascicolo))
-                //{
-                //    mv.ListaEmailElementi = new List<EmailElementi>();
-                //}
-                //else {
-                //    using (SqlConnection cn = new SqlConnection(_context.Connessione)) { 
-                //        var sqlEl = " SELECT  e.Id, e.Revisione, e.Tipo, e.Descrizione, e.Chiave1, e.Chiave2, e.Chiave3, e.Chiave4, e.Chiave5, te.Descrizione AS DescrizioneTipo, e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo" 
-                //            + " FROM Elementi AS e INNER JOIN TipiElementi AS te ON te.Codice = e.Tipo " 
-                //            + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.id and am.tipo = 'EMAIL' " 
-                //            + " WHERE (e.IDFascicolo = @IdFascicolo)";
-
-                //        mv.ListaEmailElementi = cn.Query<EmailElementi>(sqlEl, new { IdFascicolo = mv.IdFascicolo.ToString() }).ToList();
-
-                //    }
-                //}
-                
             }
             catch (Exception ex)
             {
@@ -316,34 +294,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                 
                 var m = await _allMan.GetFileAsync(mv.IdAllegato);
                 mv.Messaggio = MimeKit.MimeMessage.Load(m, new CancellationToken());
-                //var l = new List<EmailAttachments>();
-                //foreach (var attachment in mv.Messaggio.Allegati())
-                //{
-                //    var fileName = "";
-                //    if (attachment is MessagePart)
-                //    {
-                //        fileName = attachment.ContentDisposition?.FileName;
-                //        var rfc822 = (MessagePart)attachment;
 
-                //        if (string.IsNullOrEmpty(fileName))
-                //            fileName = "email-allegata.eml";
-
-                //        //using (var stream = File.Create(fileName))
-                //        //    rfc822.Message.WriteTo(stream);
-                //    }
-                //    else
-                //    {
-                //        var part = (MimePart)attachment;
-                //        fileName = part.FileName;
-
-
-                //        //using (var stream = File.Create(fileName))
-                //        //    part.Content.DecodeTo(stream);
-                //    }
-                //    var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false };
-                //    l.Add(a);
-                //}
-                mv.FileAllegati = await GetTmpPdfCompletoAsync(mv.Allegato, mv.Messaggio,false);
+               // mv.FileAllegati = await GetTmpPdfCompletoAsync(mv.Allegato, mv.Messaggio, false);
                     }
             catch (Exception ex)
             {
@@ -3028,7 +2980,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             if (!File.Exists(NomePdf))
             {
                 Allegati all = _allMan.Get(pdf.IdAllegato);
-                var l = await GetTmpPdfCompletoAsync(all, null, daEmail);
+                pdf.FileAllegati = await GetTmpPdfCompletoAsync(all, null, daEmail);
             }
             if (File.Exists(NomePdf))
                 pdf.FilePdf = NomePdf;

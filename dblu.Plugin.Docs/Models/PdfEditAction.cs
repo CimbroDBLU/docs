@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using dblu.Portale.Plugin.Docs.ViewModels;
+using Microsoft.VisualBasic.CompilerServices;
+using Newtonsoft.Json;
 using Syncfusion.Blazor.CircularGauge.Internal;
 using Syncfusion.Blazor.PdfViewerServer;
 using System;
@@ -31,8 +33,13 @@ namespace dblu.Portale.Plugin.Docs.Models
         public string IdAllegatoAElemento { get; set; }
         public string Descrizione { get; set; }
 
+        // spostato elenco allegati email/zip per evitare doppia lettura
+        public IEnumerable<EmailAttachments> FileAllegati { get; set; }
+
         [JsonIgnore]
         public string TempFolder { get; set; }
+        
+        [JsonIgnore]
         public string FilePdf { 
             get {
                 if (!string.IsNullOrEmpty(TempFolder) && string.IsNullOrEmpty(filePdf)  )
@@ -45,6 +52,7 @@ namespace dblu.Portale.Plugin.Docs.Models
         public int Pagina { get; set; }
         public string AggiungiFilePdf{ get; set; }
         public int NuovaPosizione { get; set; }
+        //public string Annotazioni { get; set; }
         
         [JsonIgnore]
         public Azioni Azione { get; set; }
@@ -88,10 +96,21 @@ namespace dblu.Portale.Plugin.Docs.Models
             }
         }
 
+        [JsonIgnore]
+        public string CacheEntry
+        {
+            get
+            {
+                return $"PdfEditAction_{IdAllegato}";
+            }
+        }
+
         public PdfEditAction(){
 
             Azione = Azioni.Carica;
             TipoAllegato = "";
+            FileAllegati = new List<EmailAttachments>();
+
         }
     }
 }

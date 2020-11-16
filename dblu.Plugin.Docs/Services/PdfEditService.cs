@@ -6,12 +6,76 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using dblu.Portale.Plugin.Docs.Models;
+using dblu.Docs.Models;
 
 namespace dblu.Portale.Plugin.Docs.Services
 {
     public class PdfEditService
     {
 
+        private AllegatiService _allegatiService;
+        private MailService _mailService;
+
+
+        public PdfEditService (
+            AllegatiService allegatiService,
+            MailService mailService
+        )
+        {
+            _allegatiService = allegatiService;
+            _mailService = mailService;
+        }
+
+        public async Task<MemoryStream> GetPdf(PdfEditAction pdf)
+        {
+            MemoryStream stream = new MemoryStream();
+
+            var flLoadMail = true;
+            if (!string.IsNullOrEmpty(pdf.IdElemento))
+            {
+                Allegati ae = _allegatiService.GetPdfAllegatoAElemento(pdf);
+                if (ae != null) {
+                    stream = await _allegatiService._allMan.GetFileAsync(ae.Id.ToString());
+                    if (System.IO.File.Exists(pdf.FilePdfModificato))
+                    {
+                        System.IO.File.Delete(pdf.FilePdfModificato);
+                    }
+                    flLoadMail = false;
+                }
+            }
+            if (flLoadMail) 
+            {
+                byte[] bytes = null;
+                if (System.IO.File.Exists(pdf.FilePdfModificato))
+                {
+                    bytes = System.IO.File.ReadAllBytes(pdf.FilePdfModificato);
+                    stream = new MemoryStream(bytes);
+                }
+                else
+                {
+                    if (System.IO.File.Exists(pdf.FilePdf))
+                    {
+                        System.IO.File.Delete(pdf.FilePdf);
+                    }
+                    if (pdf.TipoAllegato == "FILE")
+                    {
+                        stream = await _allegatiService._allMan.GetFileAsync(pdf.IdAllegato.ToString());
+                    }
+                    else
+                    {
+                        pdf = await _mailService.GetFilePdfCompletoAsync(pdf, true);
+                        bytes = System.IO.File.ReadAllBytes(pdf.FilePdf);
+                        stream = new MemoryStream(bytes);
+                    }
+                    //System.IO.File.Delete(pdf.FilePdf);
+                }
+                if (System.IO.File.Exists(pdf.FilePdf))
+                {
+                    System.IO.File.Delete(pdf.FilePdf);
+                }
+            }
+            return stream;
+        }
         public bool Modifica(PdfEditAction azione)
         {
             bool res = false;

@@ -178,10 +178,11 @@
         MailView_CreaElementoFascicolo: '@Url.Action("CreaElementoFascicolo","MailView")',
         MailView_StampaRiepilogo: '@Url.Action("StampaRiepilogo","MailView" )',
         MailView_CancellaElemento: '@Url.Action("CancellaElemento", "MailView" )',
+        MailView_InArrivo_Stampato: '@Url.Action("InArrivo_Stampato", "MailView")',
         sggservice_UrlServizio: '@_sggservice.UrlServizio()',
         sggservice_UrlServizioRicercaElementi: '@_sggservice.UrlServizioRicercaElementi()',
         MailPdfViewer_EditorPdf: '@Url.Action("EditorPdf", "MailPdfViewer")',
-        MailView_InArrivo_Stampato: '@Url.Action("InArrivo_Stampato", "MailView")',
+        MailPdfViewer_GetPdfEditAction: '@Url.Action("GetPdfEditAction", "MailPdfViewer")',
         Pdf_Editor: '@Url.Action("Editor", "PdfEditor")'
     };
 
@@ -254,7 +255,7 @@
         @(Html.Kendo().Dialog()
         .Name("dialog")
         .Title("Eliminazione")
-        .Content("<p>Sei sicuro di eliminare <strong>completamente</strong> l'email?<p>")
+        .Content("<p>Sei sicuro di eliminare l'email?<p>")
         .Width(400)
         .Modal(false)
         .Visible(false)
@@ -448,6 +449,23 @@
                                                 .Content("Associa Elemento")
                                                 .Events(e => e.Click("AssociaElementoOnClick"))
                                         )
+                                        @*         
+  <input type="button" value="Open" onclick="window.open('@Url.Action("testdownload", "sgGea")')" />
+
+
+                                            <script>
+        function testLikGea() {
+
+            $.ajax({
+                url: '@Url.Action("testdownload", "sgGea")',
+                type: 'GET',
+                success: function (data) {
+                    $("testLikGea").text = "ok";
+                }
+            });
+        }
+         </script>
+                                        *@
                                 </div>
                             </div>
                         </div>
@@ -616,9 +634,10 @@
                                             .Selectable()
                                     .HtmlAttributes(new { style = "font-size:10" })
                                             .Events(events => events
-                                                .Change("gridemailElementionChange"))
-                                )
+                                                .Change("gridemailElementionChange")
 
+                                )
+                                        )
                                     </div>
                                 </div>
                             </div>

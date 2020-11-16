@@ -21,7 +21,7 @@
         }
         else { vModel = await _mailservice.GetMailViewModel(Model.id); }
 
-        TempData.Put("FileAllegati", vModel.FileAllegati);
+       // TempData.Put("FileAllegati", vModel.FileAllegati);
     }
     catch (Exception)
     {
@@ -575,7 +575,7 @@
                                                columns.Bound(p => p.Id).Visible(false);
                                                columns.Bound(p => p.NomeFile).Title("Nome file");
                                            })
-                                            .BindTo(vModel.FileAllegati)
+                                                       // .BindTo(vModel.FileAllegati)
                                                     )
 
                                                     <script>
@@ -815,7 +815,7 @@
                                                                 columns.Bound(p => p.Id).Visible(false);
                                                                 columns.Bound(p => p.NomeFile).Title("Nome file");
                                                             })
-                                                             .BindTo(vModel.FileAllegati)
+                                                            // .BindTo(vModel.FileAllegati)
                                                             )
                                                         </div><br /><br />
                                                     </div>
