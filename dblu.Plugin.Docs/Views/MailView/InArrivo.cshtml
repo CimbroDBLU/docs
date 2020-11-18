@@ -22,7 +22,7 @@
     TipiAllegati TipoAll = _mailservice._allMan.GetTipoAllegato("EMAIL");
     List<string> ListaRuoli = null;
 
-    if (Model.Ruolo != null)
+    if (!string.IsNullOrEmpty(Model.Ruolo))
     {
         ListaRuoli = new List<string>();
         ListaRuoli.Add(Model.Ruolo);
@@ -38,7 +38,7 @@
 
     //var ListaServer = _mailservice._serMan.GetServersEmailinRoles(Context.User.Claims);
     var ListaServerIngresso = _mailservice._serMan.GetServerEmailInIngresso();
-    if (ListaServer != null)
+    if (ListaServer != null  && ListaServer.Count>0)
     {
         //var ListaRuoliServ = _mailservice.getRuoli(Context.User.Claims, ListaServer.ElementAt(0).Nome);
         var ListaRuoliServ = _mailservice.getRuoli(ListaRuoli, ListaServer.ElementAt(0).Nome);
@@ -227,7 +227,7 @@
 
 <!-- Main content -->
 <section class="content">
-    <div class="row" hidden="@(ListaServer.Count == 1)">
+    <div class="row" hidden="@(ListaServer.Count <= 1)">
         <div class="col-xs-5">
 
 

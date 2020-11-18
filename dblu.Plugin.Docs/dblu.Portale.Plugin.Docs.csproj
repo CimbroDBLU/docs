@@ -30,13 +30,6 @@
     <EmbeddedResource Remove="Views\ZipView\PreviewRiepilogo.cshtml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="Scripts\dblugrid.js" />
-    <None Remove="Scripts\dblupdf.js" />
-    <None Remove="Scripts\emailinarrivo.js" />
-    <None Remove="Scripts\emailinviate.js" />
-    <None Remove="Scripts\emailprocessate.js" />
-  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Pages\Action\Partials\Form\EditorAllegato.cshtml" />

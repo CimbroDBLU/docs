@@ -1,8 +1,8 @@
 ﻿using dblu.Portale.Plugin.Docs.ViewModels;
 using Microsoft.VisualBasic.CompilerServices;
 using Newtonsoft.Json;
-using Syncfusion.Blazor.CircularGauge.Internal;
-using Syncfusion.Blazor.PdfViewerServer;
+//using Syncfusion.Blazor.CircularGauge.Internal;
+//using Syncfusion.Blazor.PdfViewerServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;

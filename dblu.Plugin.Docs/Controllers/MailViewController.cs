@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 using MimeKit;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
-using Telerik.Web.PDF;
+//using Telerik.Web.PDF;
 using dblu.Docs.Classi;
 using System.Threading;
 using System.Linq;
@@ -260,7 +260,6 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         public IActionResult InArrivo(string Ruolo)
         {
 
-      
             return View(
                  new inArrivoView
                  {
