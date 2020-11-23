@@ -428,7 +428,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             }
             m.ListaTipiElementi = mvModel.ListaTipiElementi;
             //m.ListaEmailElementi =  mvModel.ListaEmailElementi;
-
+            _toastNotification.AddSuccessToastMessage("dettaglio caricato");
             return m;
         }
 
