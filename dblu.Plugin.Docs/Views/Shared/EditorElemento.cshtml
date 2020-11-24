@@ -95,48 +95,31 @@
 
     function CaricaPdf(pdfViewer, nome ){
 
-        @*$.ajax({
-            url: "@(Url.Action("EditorPdf", "PdfViewer"))",
-            type: 'POST',
-            cache: false,
-            data: { param: JSON.stringify(PdfCorrente) },
-            success: function (data) {
-                PdfCorrente = data;
-                var param = PdfCorrente.FilePdf;
-                if (param.indexOf(".pdf") > 0) {
-                    pdfviewer.load(param);
-                    pdfViewer.downloadFileName = nome;
+        var flLoad=false;
+        if ((PdfCorrente.iAzione == docsAzioniPdf.Salva && pdfViewer.annotationCollection != undefined  &&  pdfViewer.annotationCollection.length > 0) {
+
+            pdfViewer.exportAnnotations(JSON.stringify(PdfCorrente));
                 }
                 else {
-                    pdfviewer.load('');
-                }
-            },
-            error: function (data) {
-                pdfviewer.load('');
-            }
-        });*@
-        var flLoad=false;
-        if (pdfViewer.annotationCollection != undefined  &&  pdfViewer.annotationCollection.length > 0) {
-            var myPromise = pdfViewer.exportAnnotationsAsObject();
-            myPromise.then(response => {
                 pdfViewer.load(JSON.stringify(PdfCorrente))
                 pdfViewer.downloadFileName = nome;
-            },
-                () => {
-                    alert("Errore nel documento, riprovare.");
                 }
-            );
         }
-        else {
-            pdfViewer.load(JSON.stringify(PdfCorrente))
-            pdfViewer.downloadFileName = nome;
+
+    function exportSuccess(args) {
+
+        if (PdfCorrente.iAzione == docsAzioniPdf.Salva) {
+
+            var pdfEditorViewer = document.getElementById('pdfviewer').ej2_instances[0];
+            pdfEditorViewer.load(JSON.stringify(PdfCorrente))
+            pdfEditorViewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
+
         }
     }
 
     function tbpdf_click(e) {
 
         var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
-        //pdfViewer.exportAnnotations();
 
         PdfCorrente.IdAllegato = $("#IdAllegato").val();
         PdfCorrente.Pagina = pdfViewer.currentPageNumber;
@@ -604,6 +587,7 @@
                                                    enablePrint="true"
                                                    documentLoad="documentLoaded"
                                                    annotationAdd="annotationAdd"
+                                           exportSuccess="exportSuccess"
                                                    enableStampAnnotations="false"
                                                    locale="it-IT"
                                            downloadFileName="@string.Concat("",".pdf")" height="1000px">

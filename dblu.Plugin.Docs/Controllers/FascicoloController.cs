@@ -420,6 +420,33 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
           
         }
       
+        [HttpPost]
+        [Authorize]
+        [HasPermission("50.1.2", 1)]
+        public IActionResult CancellaAllegato(string IdAllegato)
+        {
+            try
+            {
+                if (IdAllegato is null)
+                    return BadRequest();
+
+                if (!_doc._allMan.Cancella(IdAllegato)) {
+                    return BadRequest();
+                }
+
+            }
+            catch (Exception)
+            {
+                 return BadRequest();
+            }
+
+
+            return Ok();
+
+
+        }
+
+
         #region NOTE 
         //-------------------------------------------------------------------------------------------------------------------------
         /// GESTIONE NOTE NELLA VIEW DELL'ALLEGATO

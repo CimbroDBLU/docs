@@ -143,6 +143,17 @@
         });*@
     }
 
+    function pdf_exportSuccess(args) {
+
+        if (CurrentPdf.iAzione == docsAzioniPdf.Salva) {
+
+            var pdfEditorViewer = document.getElementById('pdfEditorViewer').ej2_instances[0];
+            pdfEditorViewer.load(JSON.stringify(CurrentPdf))
+            pdfEditorViewer.downloadFileName = CurrentPdf.IdAllegato + ".pdf";
+
+        }
+    }
+
     function pdfEditorToolBar_click(e) {
 
 
@@ -169,17 +180,18 @@
             CurrentPdf.iAzione = docsAzioniPdf.Carica;
         }
 
+        if (CurrentPdf.iAzione == docsAzioniPdf.Salva && pdfEditorViewer.annotationCollection != undefined && pdfEditorViewer.annotationCollection.length > 0) {
 
-        if (pdfEditorViewer.annotationCollection != undefined && pdfEditorViewer.annotationCollection.length > 0) {
-            var myPromise = pdfEditorViewer.exportAnnotationsAsObject();
-            myPromise.then(response => {
-                pdfEditorViewer.load(JSON.stringify(CurrentPdf))
-                pdfEditorViewer.downloadFileName = CurrentPdf.IdAllegato + ".pdf";
-            },
-                () => {
-                    alert("Errore nel documento, riprovare.");
-                }
-            );
+            pdfEditorViewer.exportAnnotations(JSON.stringify(CurrentPdf));
+            //var myPromise = pdfEditorViewer.exportAnnotationsAsObject();
+            //myPromise.then(response => {
+            //    pdfEditorViewer.load(JSON.stringify(CurrentPdf))
+            //    pdfEditorViewer.downloadFileName = CurrentPdf.IdAllegato + ".pdf";
+            //},
+            //    () => {
+            //        alert("Errore nel documento, riprovare.");
+            //    }
+            //);
         }
         else {
             pdfEditorViewer.load(JSON.stringify(CurrentPdf))
@@ -217,6 +229,7 @@
             printEnd="pdf_documentPrinted"
             documentLoad="pdf_documentLoaded"
             annotationAdd="pdf_annotationAdd"
+            exportSuccess="pdf_exportSuccess"
             locale="it-IT" 
             downloadFileName="@string.Concat("",".pdf")" height="900px"
             toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">

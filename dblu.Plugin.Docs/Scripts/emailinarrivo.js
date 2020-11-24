@@ -1366,9 +1366,16 @@ function documentPrinted() {
     });
 }
 
+function exportSuccess(args) {
 
+    if (PdfCorrente.iAzione == docsAzioniPdf.Salva) {
 
+        var pdfEditorViewer = document.getElementById('emailpdfviewer').ej2_instances[0];
+        pdfEditorViewer.load(JSON.stringify(PdfCorrente))
+        pdfEditorViewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 
+    }
+}
 
 function tbpdf_click(e) {
 
@@ -1376,7 +1383,7 @@ function tbpdf_click(e) {
     var gridEl = $("#gridemailElementi").data("kendoGrid");
 
     PdfCorrente.IdAllegato = $("#IdAllegato").val();
-    PdfCorrente.IdElemento = $("#IdElemento").val();
+    //PdfCorrente.IdElemento = $("#IdElemento").val();
     PdfCorrente.Pagina = emailpdfviewer.currentPageNumber;
 
     if (e.id == "tbruotadx") {
@@ -1408,17 +1415,18 @@ function tbpdf_click(e) {
         //emailpdfviewer.fileName = JSON.stringify(PdfCorrente);
         //emailpdfviewer.exportFileName = JSON.stringify(PdfCorrente);
         //emailpdfviewer.exportAnnotationFileName = JSON.stringify(PdfCorrente);
-        if (emailpdfviewer.annotationCollection != undefined &&  emailpdfviewer.annotationCollection.length > 0) {
-            var myPromise = emailpdfviewer.exportAnnotationsAsObject();
-            myPromise.then(response => {
-                emailpdfviewer.load(JSON.stringify(PdfCorrente))
+        if (PdfCorrente.iAzione == docsAzioniPdf.Salva && emailpdfviewer.annotationCollection != undefined &&  emailpdfviewer.annotationCollection.length > 0) {
 
-    emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato +".pdf";
-            },
-                () => {
-                    alert("Errore nel documento, riprovare.");
-                }
-            );
+            emailpdfviewer.exportAnnotations(JSON.stringify(PdfCorrente));
+            //var myPromise = emailpdfviewer.exportAnnotationsAsObject();
+            //myPromise.then(response => {
+            //    emailpdfviewer.load(JSON.stringify(PdfCorrente))
+            //    emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
+            //},
+            //    () => {
+            //        alert("Errore nel documento, riprovare.");
+            //    }
+            //);
         }
         else {
             emailpdfviewer.load(JSON.stringify(PdfCorrente))

@@ -489,7 +489,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers
                 _toastNotification.AddErrorToastMessage("Errore in esportazione delle note!");
 
             }
-            return Content(jsonResult);
+            return Ok();
         }
 
 
