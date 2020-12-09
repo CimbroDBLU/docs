@@ -26,7 +26,3 @@ GO
 
 CREATE INDEX [IX_LogDoc_id_data] ON [dbo].[LogDoc] (IdOggetto,[Data] DESC)
 
-GO
-CREATE NONCLUSTERED INDEX [IX_LogDoc_Column]
-    ON [dbo].[LogDoc]([IdOggetto] ASC, [Data] DESC);
-

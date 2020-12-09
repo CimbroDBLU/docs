@@ -77,13 +77,13 @@ namespace dblu.Docs.Classi
                 //    .ToList<EmailServer>();
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
-                        string sql = "Select * FROM [EmailServer] where InUscita = 0 ";
+                        string sql = $"Select * FROM [EmailServer] where TipoRecord = {(int)TipiRecordServer.CartellaMail} and InUscita = 0 ";
                         l = cn.Query<EmailServer>(sql).ToList();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"GetAllServersEmail: {ex.Message}");
+                _logger.LogError($"GetServerEmailInIngresso: {ex.Message}");
             }
             return l;
         }
@@ -98,18 +98,18 @@ namespace dblu.Docs.Classi
                 //    .ToList<EmailServer>();
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
-                    string sql = "Select * FROM [EmailServer] where InUscita = 1 ";
+                    string sql = $"Select * FROM [EmailServer] where  TipoRecord = {(int)TipiRecordServer.CartellaMail} and InUscita = 1 ";
                     l = cn.Query<EmailServer>(sql).ToList();
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"GetAllServersEmail: {ex.Message}");
+                _logger.LogError($"GetServerEmailInUscita: {ex.Message}");
             }
             return l;
         }
 
-        public List<EmailServer> GetServersEmailinRoles(IEnumerable<Claim> Roles)
+        public List<EmailServer> GetServersEmailinRoles(IEnumerable<Claim> Roles, TipiRecordServer Tipo)
         {
             string xRol = "'";
             foreach (Claim x in Roles)
@@ -123,7 +123,7 @@ namespace dblu.Docs.Classi
                
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
-                    string sql = "Select * FROM [EmailServer] where InUscita = 0 AND [Nome] IN (Select idServer from[ServersInRole] where [RoleId] IN(" + xRol + ") Group by idServer)";
+                    string sql = $"Select * FROM [EmailServer] where  TipoRecord = {(int)Tipo} and InUscita = 0 AND [Nome] IN (Select idServer from[ServersInRole] where [RoleId] IN(" + xRol + ") Group by idServer)";
                     l = cn.Query<EmailServer>(sql).ToList();
                 }
             }
@@ -135,7 +135,7 @@ namespace dblu.Docs.Classi
         }
 
 
-        public List<EmailServer> GetServersEmailinRoles(List<string> Ruoli)
+        public List<EmailServer> GetServersEmailinRoles(List<string> Ruoli, TipiRecordServer Tipo)
         {
         //    string xRol = "'";
         //    foreach (Claim x in Roles)
@@ -150,7 +150,7 @@ namespace dblu.Docs.Classi
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
 
-                    string sql = "Select * FROM [EmailServer] where InUscita = 0 AND [Nome] IN (Select idServer from[ServersInRole] where [RoleId] IN ('" + string.Join("','", Ruoli) + "') Group by idServer)";
+                    string sql = $"Select * FROM [EmailServer] where  TipoRecord = {(int)Tipo} and InUscita = 0 AND [Nome] IN (Select idServer from[ServersInRole] where [RoleId] IN ('" + string.Join("','", Ruoli) + "') Group by idServer)";
                     l = cn.Query<EmailServer>(sql).ToList();
                 }
             }

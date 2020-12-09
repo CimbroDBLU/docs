@@ -224,7 +224,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             int l = 0;
             try
             {
-                List<EmailServer> ListaServer = _serMan.GetServersEmailinRoles(Roles);
+                List<EmailServer> ListaServer = _serMan.GetServersEmailinRoles(Roles,TipiRecordServer.CartellaMail);
 
                 if (ListaServer != null && ListaServer.Count > 0)
                 {
@@ -1716,8 +1716,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (tipoAll != null && f != null & e != null)
                 {
                     //if (Allegato.IdFascicolo == null)
- 
-
                     Allegato.IdFascicolo = f.Id;
                     //if (Allegato.IdElemento == null)
                     Allegato.IdElemento = e.Id; 

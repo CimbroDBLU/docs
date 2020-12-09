@@ -15,15 +15,17 @@ namespace dblu.Portale.Plugin.Docs.Services
 
         private AllegatiService _allegatiService;
         private MailService _mailService;
-
+        private ZipService _zipSvc;
 
         public PdfEditService (
             AllegatiService allegatiService,
-            MailService mailService
+            MailService mailService,
+             ZipService zipService
         )
         {
             _allegatiService = allegatiService;
             _mailService = mailService;
+            _zipSvc = zipService;
         }
 
         public async Task<MemoryStream> GetPdf(PdfEditAction pdf)
@@ -60,6 +62,12 @@ namespace dblu.Portale.Plugin.Docs.Services
                     if (pdf.TipoAllegato == "FILE")
                     {
                         stream = await _allegatiService._allMan.GetFileAsync(pdf.IdAllegato.ToString());
+                    }
+                    else if(pdf.TipoAllegato == "ZIP")
+                    {
+                        pdf = await _zipSvc.GetFilePdfCompletoAsync(pdf, true);
+                        bytes = System.IO.File.ReadAllBytes(pdf.FilePdf);
+                        stream = new MemoryStream(bytes);
                     }
                     else
                     {

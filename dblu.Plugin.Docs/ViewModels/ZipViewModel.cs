@@ -59,6 +59,7 @@ namespace dblu.Portale.Plugin.Docs.ViewModels
         public string DescrizioneElemento { get; set; }
         public StatoElemento Stato { get; set; }
         public IEnumerable<EmailAttachments> FileAllegati { get; set; }
+        
         public IEnumerable<TipiElementi> ListaTipiElementi { get; set; }
 
         public DateTime DataC
@@ -77,4 +78,12 @@ namespace dblu.Portale.Plugin.Docs.ViewModels
 
 
     }
+
+
+    public class ZipInArrivoViewModel
+    {
+
+        public string Ruolo { get; set; }
+    }
+
 }

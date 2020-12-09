@@ -13,6 +13,7 @@
     [NomeProcesso] NVARCHAR (255) DEFAULT '' NULL,
     [CartellaArchivio] NVARCHAR(50) NOT NULL DEFAULT '', 
     [NomeServerInUscita] NVARCHAR(50) NOT NULL DEFAULT '', 
+    [TipoRecord] SMALLINT NULL DEFAULT 0, 
     CONSTRAINT [PK_EmailCaselle] PRIMARY KEY CLUSTERED ([Nome] ASC)
 );
 

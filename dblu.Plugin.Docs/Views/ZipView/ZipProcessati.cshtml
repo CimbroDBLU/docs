@@ -1,7 +1,7 @@
 ﻿@model dblu.Docs.Models.Allegati
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
-@inject dblu.Portale.Plugin.Docs.Services.MailService _mailservice
+@inject dblu.Portale.Plugin.Docs.Services.ZipService _zipservice
 @inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
 
 @using Kendo.Mvc.UI
@@ -10,36 +10,24 @@
 @addTagHelper *, Kendo.Mvc
 
 @{
-    ViewData["Title"] = "Email processate";
+    ViewData["Title"] = "Documenti processati";
     List<dblu.Docs.Models.TipiElementi> ListaTipiElementi;
-    List<dblu.Docs.Models.TipiElementi> ListaTipiElementiServ;
-    TipiAllegati TipoAll = _mailservice._allMan.GetTipoAllegato("EMAIL");
+    TipiAllegati TipoAll = _zipservice._allMan.GetTipoAllegato("ZIP");
+    List<SelectListItem> ListaRuoliZip = null;
 
-    //-----OK--------
-    var ListaServer = _mailservice._serMan.GetServersEmailinRoles(Context.User.Claims);
-    //---------------
-    var ListaRuoli = _mailservice.getRuoli(Context.User.Claims, "");
-    ListaTipiElementi = _mailservice._elmMan.GetAllTipiElementi(ListaRuoli);
 
-    if (ListaServer != null)
+    ListaRuoliZip = _zipservice.GetRuoliZip(Context.User.Claims);
+    if (ListaRuoliZip.Count() == 0)
     {
-        var ListaRuoliServ = _mailservice.getRuoli(Context.User.Claims, ListaServer.ElementAt(0).Nome);
-        ListaTipiElementiServ = _mailservice._elmMan.GetAllTipiElementi(ListaRuoliServ);
+        ListaRuoliZip.Add(new SelectListItem("(nessuno)", ".."));
     }
-    else
-    {
-        ListaTipiElementiServ = ListaTipiElementi;
-    }
+    List<string> ListaRuoli = new List<string>();
+    foreach (SelectListItem s in ListaRuoliZip)
+        ListaRuoli.Add(s.Value);
 
-    //var s = Url.Action("~");
-    //var ListaTipiElementi = await _mailservice._elmMan.GetAllTipiElementiAsync();
-    // TipiElementi Tipoelemento = _mailservice..GetTipoAllegato("EMAIL");
-    //var attr = new dblu.Portale.Plugin.Docs.ViewModels.AttributiViewModel();
-    //attr.Attributi = TipoAll.Attributi;
-    //attr.NomeView = TipoAll.ViewAttributi;
-    //attr.Valori = "{\"Mittente\":\"roberta@miottomobili.it\",\"Data\":\"2019-12-13T09:41:10Z\",\"CodiceSoggetto\":\"aaa\",\"Oggetto\":\"CONFERMA\",\"MessageId\":\"CAK_jKF0R_JhvOJG4zjWTvgGhW1HAspKLDTN1zFYcUjV3-vgfdg@mail.gmail.com\",\"CodiceCliente\":\"21351\",\"NomeServer\":\"Test\"}";
+    ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoli);
+    var ListaServer = _zipservice._serMan.GetServersEmailinRoles(Context.User.Claims, TipiRecordServer.CartellaFile);
 
-    //};
 
 }
 
@@ -81,26 +69,25 @@
 
 <section class="content-header">
     <h1>
-        Email processate
+        Documenti processati
     </h1>
     <ol class="breadcrumb">
         <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
-        <li class="active">Email processate</li>
+        <li class="active">Documenti processati</li>
     </ol>
 </section>
 
 <script src="~/Scripts/dblugrid.js"></script>
-<script src="~/Scripts/emailprocessate.js"></script>
+<script src="~/Scripts/zipprocessati.js"></script>
 
 
 <script>
 
     UrlActions = {
-        MailView_InArrivoCaricaDettaglio: '@Url.Action("InArrivoCaricaDettaglio", "MailView")',
-        MailView_ApriFile: '@Url.Action("ApriFile","MailView" )',
-        MailView_InArrivo_Inoltra: '@Url.Action("InArrivo_Inoltra","MailView" )',
-        MailView_Processate_Riapri: '@Url.Action("Processate_Riapri", "MailView" )',
-        MailView_Processate_Cancella:'@Url.Action("Processate_Cancella", "MailView" )'
+        ZipView_InArrivoCaricaDettaglio: '@Url.Action("InArrivo_CaricaDettaglio", "ZipView")',
+        ZipView_ApriFile: '@Url.Action("ApriFile", "ZipView")',
+        ZipView_Processati_Riapri: '@Url.Action("Processati_Riapri", "ZipView")',
+        ZipView_Processati_Cancella:'@Url.Action("Processati_Cancella", "ZipView")'
     };
 
     TipoAll = {
@@ -119,17 +106,17 @@
             <label class="control-label col-md-4" style="font-size:12px">Casella di posta:</label>
             <div class="col-md-6">
                 @(Html.Kendo().ComboBox()
-                    .Name("emailServer")
-                    .Placeholder("Seleziona Server...")
+                    .Name("cmbCartelleZip")
+                    .Placeholder("Seleziona cartella...")
                     .DataTextField("Nome")
-                    .DataValueField("Nome")
+                    .DataValueField("Cartella")
                     .BindTo(ListaServer)
                     .SelectedIndex(0)
                     .Suggest(true)
                     .HtmlAttributes(new { style = "width:100%;" })
                     .Events(e =>
                     {
-                        e.Select("onSelectServer");
+                        e.Select("onSelectCartella");
                     })
 
                 )
@@ -144,30 +131,25 @@
                 <div class="box-body">
                     <div class="k-grid">
                         @(Html.Kendo().Grid<dblu.Docs.Models.Allegati>()
-                        .Name("gridEmail")
+                        .Name("gridZip")
                         .Columns(columns =>
                         {
                             columns.Bound(p => p.Id).Title("Id").Width(0).Hidden();
                             columns.Bound(p => p.Chiave4).Title("Nome").Width(0).Hidden();
-                            columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.DescrizioneChiave("Chiave1")).Width(150)
+                            columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.DescrizioneChiave("Chiave1")).Width(300)
                                 .ClientTemplate("<span> cliente #: Chiave3# </span> <br/>"
                                     + "<span><b> #: Chiave4# </b></span>"
                                     + "<span> #: Chiave1# </span><br/>");
-                            columns.Bound(p => p.Descrizione).Title("Oggetto").Width(250);
-                            columns.Bound(p => p.DataC).Title("Data").Width(50).Format("{0:dd/MM/yy HH:mm}");
-                            columns.Command(command =>
-                            {
-                                command.Custom("Inoltra").Text("").Click("InoltraEmail").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:80px" });
-                                command.Custom("Riapri").Text("").Click("RiapriEmail").IconClass("k-icon my-icon-class-undo").HtmlAttributes(new { style = "width:80px" });
-                                command.Custom("Elimina").Text("").Click("gridEmailOnRemove").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:80px" });
-                                //command.Custom("*Elimina*").Click("DeleteEmail");
-                                //command.Destroy().Text("Cancella").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:80px" });
-                                //columns.Bound(p => p.Stato).Width(50).ClientTemplate("#if (data.Stato == 3){#<span class='k-icon k-i-printer'></span>#} else if (data.Stato==2){#<span class='k-icon k-i-file-add'></span>#}#");
-                                //command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewHistory").HtmlAttributes(new { style = " hidden: 'hidden' " }) ;
-                            }).Width(90);
+                            columns.Bound(p => p.Descrizione).Title("Oggetto").Width(150);
+                            columns.Bound(p => p.DataC).Title("Data").Width(100).Format("{0:dd/MM/yy HH:mm}");
                             columns.Bound(p => p.LastOp).Width(50).Title("Operaz.").ClientTemplate("#= xIconLastOp(data) #").Width(80);
-                            columns.Command(command => command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewHistory")).Width(100).Hidden();
-                            //columns.Bound(p => p.Stato).Width(50).ClientTemplate("#if (data.Stato == 5){#<span class='k-icon k-i-check-outline' style='color: green;'></span>#} else if (data.Stato==9){#<span class='k-icon k-i-close-outline' style='color: red;'></span>#}#");
+                            columns.Command(command => command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewZipHistory")).Width(100).Hidden();
+                         })
+                        .ToolBar(toolbar =>
+                            {
+                            toolbar.Custom().Text("Riapri").IconClass("k-icon my-icon-class-undo").HtmlAttributes(new { style = "width:75px", onclick = "RiapriZip()", id = "btnRiapri" });
+                            toolbar.Custom().Text("Elimina").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaZip()", id = "btnCancella" });
+                            toolbar.Search();
                         })
                         .Pageable()
                         .Sortable()
@@ -186,15 +168,14 @@
                                 model.Id(p => p.Id);
                             })
                             .Sort(sort => sort.Add(p => p.DataC))
-                            .Read(read => read.Action("Processate_Read", "MailView").Data("getEmails"))
+                            .Read(read => read.Action("Processati_Read", "ZipView").Data("getOrigine"))
 
                          )
                          .Events(events => events
-                            .Change("gridEmailOnChange")
+                            .Change("gridZipOnChange")
                          )
                          .Resizable(resize => resize.Columns(true))
                          .HtmlAttributes(new { Height = "100%", style = "font-size:10" })
-                         .ToolBar(toolbar => { toolbar.Search(); })
                          .Search(s => { s.Field(c => c.Descrizione); s.Field(c => c.Chiave1); s.Field(c => c.Chiave3); s.Field(c => c.Chiave4); })
                         )
                     </div>
@@ -226,9 +207,9 @@
                 <div class="box-body">
                     <div class="form-group">
                         <div class="form-row">
-                            <label class="control-label col-md-2" style="font-size:12px">Testo</label>
+                            <label class="control-label col-md-2" style="font-size:12px">Descrizione</label>
                             <div style="width:95%">
-                                <textarea class="form-control" id="TestoEmail" name="TestoEmail" rows="10" style="width:100%" readonly="readonly"></textarea>
+                                <textarea class="form-control" id="TestoZip" name="TestoZip" rows="2" style="width:100%" readonly="readonly"></textarea>
                             </div>
                         </div>
                     </div>
@@ -237,13 +218,13 @@
                         <label class="control-label col-md-2" style="font-size:12px">Allegati </label>
                         <div class="col-md-12" style="width:100%">
                             @(Html.Kendo().Grid<EmailAttachments>()
-                            .Name("emailAttachments")
+                            .Name("zipAttachments")
                             .PersistSelection()
                             .Columns(columns =>{
                                 columns.Bound(p => p.NomeFile).Title("Nome ").Width("90%");
                                 columns.Command(command =>
                                     {
-                                        command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon my-icon-class-download");
+                                        command.Custom("download").Text(" ").Click("ScaricaFile").IconClass("k-icon my-icon-class-download");
                                     }).Width("10%");
                             })
                             .DataSource(dataSource => dataSource
@@ -262,39 +243,6 @@
 </section>
 
 
-@(Html.Kendo().Window()
-    .Name("wInoltra")
-    .Size("auto")
-    .Title("Inoltra a:")
-    .Visible(false)
-    .Actions(actions => actions.Close())
-    .Content(@<text>
-        <div class="box-body">
-            <form>
-                <div class="form-group">
-                    @*              <label class="control-label col-md-1" style="font-size:14px">indirizzo</label>*@
-                    <div class="form-group col-md-8">
-                        @(Html.Kendo().TextBox()
-                        .Name("emailInoltro")
-                        .Value("")
-                        .HtmlAttributes(new { style = "width: 100%" } )
-                        )
-                    </div>
-                    <div class="form-group col-md-2">
-                        @(Html.Kendo().Button()
-                        .Name("okinoltra")
-                        .Content("Invia")
-                        .Events(ev => ev.Click("inoltraOnClick"))
-                        )
-                    </div>
-                </div>
-            </form >
-        </div >
-    </text>)
-    .Width(600)
-    .Height(120)
-    .Modal(true)
-)
 @(Html.Kendo().Window()
     .Name("wHistory")
     .Size("auto")
@@ -328,25 +276,19 @@
     .Modal(true)
 )
 @(Html.Kendo().Dialog()
-    .Name("wCancella")
-    .Title("Elimina email")
+        .Name("wElimina")
+        .Title("Eliminazione")
+        .Content("<p>Confermi l'eliminazione del file?<p>")
+        .Width(400)
+        .Modal(false)
     .Visible(false)
-    .Actions(actions => {
-        actions.Add().Text("Annulla").Action("wCancellaIgnora");
-        actions.Add().Text("Solo archivio").Action("wCancellaOk1");
-        actions.Add().Text("Archivio e casella posta").Action("wCancellaOk2");
+        .Actions(actions =>
+        {
+            actions.Add()
+            .Text("Annulla")
+            .Action("onAnnulla");
+            actions.Add().Text("Elimina")
+            .Primary(true)
+            .Action("onElimina");
     })
-    .Content("<p>Scegliere se eliminare la mail solo dall'archivio o anche dalla casella di posta</p>")
-    .Width(600)
-    .Height(200)
-    .Modal(true)
-)
-@*            <form>
-        <div class='form-group'>
-            <div class='form-group col-md-10'>
-                <input type='checkbox'  id='chkemailElimina'  >
-                <label for='chkemailElimina' class='control-label col-md-6' >Elimina anche dalla casella di posta</label>
-            </div>
-        </div>
-    </form >
-*@
+    )

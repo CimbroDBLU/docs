@@ -32,23 +32,24 @@
                             .Columns(columns =>
                             {
                                 columns.Bound(p => p.IdFascicolo).Width(130).Visible(false);
-                                columns.Bound(p => p.DscFascicolo).Title("Descrizione").Width(100);
-                                columns.Bound(p => p.Campo1).Title(Cols.ElementAt(0).Des).Visible(Cols.ElementAt(0).Visible);
-                                columns.Bound(p => p.Campo2).Title(Cols.ElementAt(1).Des).Visible(Cols.ElementAt(1).Visible);
+                                columns.Bound(p => p.DscFascicolo).Title("Descrizione").Width(120);
+                                columns.Bound(p => p.Campo1).Title(Cols.ElementAt(0).Des).Visible(Cols.ElementAt(0).Visible).Width(120); ;
+                                columns.Bound(p => p.Campo2).Title(Cols.ElementAt(1).Des).Visible(Cols.ElementAt(1).Visible).Width(120); ;
                                 columns.Bound(p => p.Campo3).Title(Cols.ElementAt(2).Des).Visible(Cols.ElementAt(2).Visible).Width(120);
                                 columns.Bound(p => p.Campo4 ).Title(Cols.ElementAt(3).Des).Visible(Cols.ElementAt(3).Visible).Width(120);
                                 columns.Bound(p => p.Campo5 ).Title(Cols.ElementAt(4).Des).Visible(Cols.ElementAt(4).Visible).Width(120);
                                 columns.Bound(p => p.Campo6).Title(Cols.ElementAt(5).Des).Visible(Cols.ElementAt(5).Visible).Width(120);
                                 columns.Bound(p => p.Campo7).Title(Cols.ElementAt(6).Des).Visible(Cols.ElementAt(6).Visible).Width(120);
                                 columns.Bound(p => p.Campo8).Title(Cols.ElementAt(7).Des).Visible(Cols.ElementAt(7).Visible).Width(120);
-                                columns.Bound(p => p.Campo9 ).Title(Cols.ElementAt(8).Des).Visible(Cols.ElementAt(8).Visible);
-                                columns.Bound(p => p.Campo10 ).Title(Cols.ElementAt(9).Des).Visible(Cols.ElementAt(9).Visible);
+                                columns.Bound(p => p.Campo9 ).Title(Cols.ElementAt(8).Des).Visible(Cols.ElementAt(8).Visible).Width(120); ;
+                                columns.Bound(p => p.Campo10 ).Title(Cols.ElementAt(9).Des).Visible(Cols.ElementAt(9).Visible).Width(120); ;
                                 columns.Command(command =>
                                 {
                                     command.Custom("Apri").Click("goFascicolo");
                                 }).Width(120);
 
                             })
+                            .Resizable(r => r.Columns(true))
                             .HtmlAttributes(new { style = "height: 1000px;" })
                             .ToolBar(toolbar => {
                                 toolbar.ClientTemplateId("GridToolbarTemplate");
@@ -81,7 +82,6 @@
                                     model.Id(p => p.IdFascicolo);
                                 })
                                 .Read("GetFascicoliV", "Fascicolo")
-                                
                             )
                             .Events(events => events
                                 .DataBound("GridonDataBound")
@@ -200,10 +200,10 @@
 
 
     function GridonDataBound(arg) {
-        var grid = $("#Grid").data("kendoGrid");
-        for (var i = 0; i < grid.columns.length; i++) {
-            grid.autoFitColumn(i);
-        }
+       // var grid = $("#Grid").data("kendoGrid");
+       // for (var i = 0; i < grid.columns.length; i++) {
+       //     grid.autoFitColumn(i);
+       // }
     }
 </script>
 

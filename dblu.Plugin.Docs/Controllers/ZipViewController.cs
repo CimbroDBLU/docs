@@ -67,7 +67,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
         [AcceptVerbs("Post")]
-        [HasPermission("50.1.3")]
+        [HasPermission("50.1.3|50.1.4")]
         public async Task<ZipViewModel> CaricaDettaglio(string Id)
         {
             ZipViewModel m = await _zipsvc.GetZipViewModel(Id);
@@ -75,7 +75,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             return m;
         }
 
-        [HasPermission("50.1.3")]
+        [HasPermission("50.1.3|50.1.4")]
         public ActionResult ListaZipElementi([DataSourceRequest] DataSourceRequest request, string IdFascicolo)
         {
             List<EmailElementi> lista = _zipsvc.ListaElementiZip(IdFascicolo);
@@ -83,14 +83,14 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
         [AcceptVerbs("Post")]
-        [HasPermission("50.1.3")]
+        [HasPermission("50.1.3|50.1.4")]
 
         public async Task<ActionResult<bool>> ZipFileCompleto(string IdTask, string IdAllegato)
         {
 
             bool res = false;
 
-            if (string.IsNullOrEmpty(IdAllegato) == false && string.IsNullOrEmpty(IdTask) == false)
+            if (string.IsNullOrEmpty(IdAllegato) == false)
             {
                 var all = _zipsvc._allMan.Get(IdAllegato);
                 if (all != null)
@@ -114,6 +114,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     //-------- Memorizzo l'operazione----------------------
 
                 }
+            }
 
                 if (string.IsNullOrEmpty(IdTask) == false)
                 {
@@ -124,7 +125,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     res = tsk.SubmitTaskForm(_zipsvc._bpm._eng, IdTask, fVars);
 
                 }
-            }
+
             if (res) {
                 _toastNotification.AddSuccessToastMessage("Documento completato.");
             }
@@ -136,7 +137,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
         [AcceptVerbs("Post")]
-        [HasPermission("50.1.3")]
+        [HasPermission("50.1.3|50.1.4")]
         public IActionResult editDettaglioElemento(Guid IdElemento)
         {
 
@@ -156,7 +157,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
         [AcceptVerbs("Post")]
-        [HasPermission("50.1.3")]
+        [HasPermission("50.1.3|50.1.4")]
         public async Task<ActionResult<bool>> AllegaAElementoFascicolo(
              string IdAllegato,
              string IdFascicolo,
@@ -173,7 +174,8 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     elencoFile,
                     AllegaEmail,
                     Descrizione,
-                    User);
+                    User, 
+                    null );
 
                 if (fl)
                 {
@@ -200,7 +202,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
         [AcceptVerbs("Post")]
-        [HasPermission("50.1.3")]
+        [HasPermission("50.1.3|50.1.4")]
         public async Task<bool> NotificaAssociazione(string CodiceSoggetto, string IdAllegato)
         {
             bool res = false;
@@ -216,7 +218,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
         [AcceptVerbs("Post")]
-        [HasPermission("50.1.3")]
+        [HasPermission("50.1.3|50.1.4")]
 
         public async Task<ActionResult<bool>> ZipFileAnnulla(string IdTask)  //, string IdAllegato
         {
@@ -291,7 +293,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             return Json(res);
         }
 
-        [HasPermission("50.1.3")]
+        [HasPermission("50.1.3|50.1.4")]
         public async Task<ActionResult> SoggettoElementiAperti([DataSourceRequest] DataSourceRequest request, string CodiceSoggetto)
         {
             List<ISoggettoElementiAperti> lista = await _soggetti.GetElementiAperti(CodiceSoggetto);
@@ -343,7 +345,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }    
         
         
-        [HasPermission("50.1.3")]
+        [HasPermission("50.1.3|50.1.4")]
         [HttpGet]
         public ActionResult StampaRiepilogo(string IdAllegato)
         {
@@ -355,7 +357,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
 
         [AcceptVerbs("Post")]
-        [HasPermission("50.1.3")]
+        [HasPermission("50.1.3|50.1.4")]
         public async Task<ActionResult<RisultatoAzione>> CancellaElemento(string IdElemento, short Revisione)
         {
             RisultatoAzione res = new RisultatoAzione();
@@ -378,6 +380,221 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             return BadRequest(res);
         }
 
+        #region ZipInArrivo
+        
+        [HasPermission("50.1.4")]
+        public ActionResult ZipInArrivo(string Ruolo)
+        {
+            return View(new ZipInArrivoViewModel
+                {
+                    Ruolo = Ruolo
+                }
+            );
+        }
+
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.4")]
+        public async Task<ZipViewModel> InArrivo_CaricaDettaglio(string Id)
+        {
+            ZipViewModel m = await _zipsvc.GetZipViewModel("", Id);
+            //_toastNotification.AddSuccessToastMessage("dettaglio caricato");
+            return m;
+        }
+
+        [HasPermission("50.1.4")]
+        public ActionResult InArrivo_Read([DataSourceRequest] DataSourceRequest request, string Tipo, string Origine = "")
+        {
+
+            IEnumerable<Allegati> lista = _zipsvc._allMan.GetZipInArrivo(Tipo, Origine);
+            return Json(lista.ToDataSourceResult(request));
+        }
+
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.4")]
+        public ActionResult<bool> InArrivo_Cancella(string Id)
+        {
+            if (Id != null && ModelState.IsValid)
+            {
+                // if (_mailService._allMan.Cancella(Id)) {
+                var all = _zipsvc._allMan.Get(Id);
+                if (all != null)
+                {
+                    all.Stato = StatoAllegato.Annullato;
+                    _zipsvc._allMan.Salva(all, false);
+
+                    //-------- Memorizzo l'operazione----------------------
+                    LogDoc log = new LogDoc()
+                    {
+                        Data = DateTime.Now,
+                        IdOggetto = Guid.Parse(Id),
+                        TipoOggetto = TipiOggetto.ALLEGATO,
+                        Utente = User.Identity.Name,
+                        Operazione = TipoOperazione.Cancellato
+                    };
+                    _zipsvc._logMan.Salva(log, true);
+                    //-------- Memorizzo l'operazione----------------------
+
+                    _toastNotification.AddSuccessToastMessage("Documento eliminato.");
+                    return Json(true);
+                }
+            }
+            return Json(false);
+        }
+
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.4")]
+        public async Task<ActionResult<bool>> InArrivo_Sposta(
+           string IdAllegato,
+           string Cartella)
+        {
+            RisultatoAzione r = new RisultatoAzione();
+            if (!string.IsNullOrEmpty(IdAllegato) && Cartella!=null)
+            {
+                r = await Task.FromResult(_zipsvc.SpostaZip(
+                    IdAllegato,
+                    Cartella,
+                    User));
+            }
+            else
+            {
+                r.Successo = false;
+                r.Messaggio = "Cartella non valida";
+            }
+            if (r.Successo)
+            {
+                _toastNotification.AddSuccessToastMessage("Documento spostato.");
+            }
+            else
+            {
+                _toastNotification.AddErrorToastMessage($"Spostamento fallito: {r.Messaggio}");
+            }
+            return Json(r.Successo);
+        }
+
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.4")]
+        public async Task<ActionResult<bool>> InArrivo_Stampato(
+            string IdAllegato,
+            string IdElemento)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(IdAllegato))
+                    _zipsvc._logMan.Salva(new LogDoc()
+                    {
+                        Data = DateTime.Now,
+                        IdOggetto = Guid.Parse(IdAllegato),
+                        TipoOggetto = TipiOggetto.ALLEGATO,
+                        Utente = User.Identity.Name,
+                        Operazione = TipoOperazione.Stampato
+                    }, true);
+
+                if (!string.IsNullOrEmpty(IdElemento))
+                    _zipsvc._logMan.Salva(new LogDoc()
+                    {
+                        Data = DateTime.Now,
+                        IdOggetto = Guid.Parse(IdElemento),
+                        TipoOggetto = TipiOggetto.ELEMENTO,
+                        Utente = User.Identity.Name,
+                        Operazione = TipoOperazione.Stampato
+                    }, true);
+            }
+            catch (Exception ex)
+            {
+                _zipsvc._logger.LogError($"InArrivo_Stampato: {ex.Message}");
+                return await Task.FromResult(false);
+            }
+            return await Task.FromResult(true);
+        }
+
+        [HttpGet]
+        [HasPermission("50.1.4")]
+        public async Task<FileResult> ApriFile(string IdAllegato, string NomeFile)
+        {
+
+            MemoryStream ff = await _zipsvc.GetFileFromZipAsync(IdAllegato, NomeFile);
+            string t = _zipsvc._allMan.GetContentType(NomeFile);
+            if (string.IsNullOrEmpty(t))
+            {
+                t = "text/csv";
+                NomeFile = NomeFile + ".txt";
+            }
+            return File(ff, t, NomeFile);
+        }
+
+        #endregion
+
+
+        #region   Zip Processati
+
+        [HasPermission("50.1.4")]
+        public ActionResult ZipProcessati()
+        {
+            return View();
+        }
+
+
+        [HasPermission("50.1.4")]
+        public ActionResult Processati_Read([DataSourceRequest] DataSourceRequest request, string Tipo, string Origine = "")
+        {
+
+            IEnumerable<Allegati> lista = _zipsvc._allMan.GetEmailProcessate(Tipo, Origine);
+            return Json(lista.ToDataSourceResult(request));
+        }
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.4")]
+        public async Task<ActionResult<RisultatoAzione>> Processati_Riapri(
+             string IdAllegato)
+        {
+            RisultatoAzione r = new RisultatoAzione();
+            if (!string.IsNullOrEmpty(IdAllegato))
+            {
+                r = await Task.FromResult(_zipsvc.RiapriZip(IdAllegato, User));
+            }
+            else
+            {
+                r.Successo = false;
+                r.Messaggio = "File non valido";
+            }
+            if (r.Successo)
+            {
+                _toastNotification.AddSuccessToastMessage("Documento riaperto.");
+            }
+            else
+            {
+                _toastNotification.AddErrorToastMessage($"Riapertura fallita: {r.Messaggio}");
+            }
+            return Ok(r);
+        }
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.4")]
+        public async Task<ActionResult<RisultatoAzione>> Processati_Cancella(string IdAllegato)
+        {
+            RisultatoAzione res = new RisultatoAzione();
+            if (IdAllegato != null && ModelState.IsValid)
+            {
+                res = await _zipsvc.CancellaZip(IdAllegato, User);
+                _toastNotification.AddSuccessToastMessage("File eliminato.");
+                return Ok(res);
+            }
+            else
+            {
+                res.Successo = false;
+                res.Messaggio = "File non valido.";
+                _toastNotification.AddErrorToastMessage(res.Messaggio);
+
+            }
+            return BadRequest(res);
+        }
+
+
+        #endregion
     }
 
 

@@ -21,8 +21,6 @@
   <ItemGroup>
     <Content Remove="Components\PdfEditor.razor" />
     <Content Remove="Views\Docs\EditorPdf.cshtml" />
-    <Content Remove="Views\ZipView\ZipDaFare.cshtml" />
-    <Content Remove="Views\ZipView\zipProcessati.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -76,6 +74,12 @@
     </EmbeddedResource>
     <EmbeddedResource Update="Scripts\emailprocessate.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Scripts\zipinarrivo.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Scripts\zipprocessati.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
 

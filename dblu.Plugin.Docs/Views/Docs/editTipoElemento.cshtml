@@ -5,7 +5,9 @@
 
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using Kendo.Mvc.UI
+@*
 @using dblu.Portale.Plugin.UsersManagement.Areas.Controllers
+*@
 
     <section class="content-header">
         <h1>
@@ -31,7 +33,8 @@
                                    name="Codice"
                                    class="form-control" value="@Model.Codice" />
                         </div>
-                        @if (Model.Codice != "") { 
+                    @if (Model.Codice != "")
+                    {
                         <div class="col-md-2">
                             <button formaction="/Docs/duplicaTipoElemento" method="post" type="submit" margin class="btn btn-info pull-left">Duplica</button>    
                         </div>

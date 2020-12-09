@@ -46,6 +46,8 @@ namespace dblu.Portale.Plugin.Docs.Services
         public readonly AllegatiManager _allMan;
         public readonly FascicoliManager _fasMan;
         public readonly ElementiManager _elmMan;
+        public readonly ServerEmailManager _serMan;
+
         public readonly LogDocManager _logMan;
         //        private readonly SoggettiManager _sggMan;
         public IConfiguration _config { get; }
@@ -70,6 +72,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             _allMan = new AllegatiManager(_context.Connessione, _logger);
             _fasMan = new FascicoliManager(_context.Connessione, _logger);
             _elmMan = new ElementiManager(_context.Connessione, _logger);
+            _serMan = new ServerEmailManager(_context.Connessione, _logger);
             _logMan = new LogDocManager(_context.Connessione, _logger);
             _config = config;
             _usrManager = usrManager;
@@ -275,6 +278,52 @@ namespace dblu.Portale.Plugin.Docs.Services
             return l;
         }
 
+        public int CountZipInArrivo(string Tipo, IEnumerable<Claim> Roles)
+        {
+
+            int l = 0;
+            try
+            {
+                List<EmailServer> ListaServer = _serMan.GetServersEmailinRoles(Roles, TipiRecordServer.CartellaFile);
+
+                if (ListaServer != null && ListaServer.Count > 0)
+                {
+                    string xServer = "'";
+                    foreach (EmailServer x in ListaServer)
+                    {
+                        xServer = xServer + x.Cartella + "','";
+                    }
+                    xServer = xServer.Substring(0, xServer.Length - 2);
+                    //xServer = "'" + xServer +"'";
+
+
+                    using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                    {
+                        l = cn.ExecuteScalar<int>("Select count(*) from Allegati where Tipo=@Tipo and Stato IN (1,2,3 ) and Origine IN (" + xServer + ")",
+                            new { Tipo = Tipo });
+                    }
+                }
+                else
+                {
+                    using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                    {
+                        l = cn.ExecuteScalar<int>("Select count(*) from Allegati where Tipo=@Tipo and Stato IN (1,2,3 ) ",
+                            new { Tipo = Tipo });
+
+                    }
+                }
+
+
+            }
+
+            catch (Exception ex)
+            {
+                _logger.LogError($"CountZipInArrivo: {ex.Message}");
+            }
+
+            return l;
+        }
+
         public List<ZipViewModel> GetFileTask(string Ruolo, int firstResult, int maxResults)
         {
 
@@ -298,20 +347,29 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
 
-        public async Task<ZipViewModel> GetZipViewModel(string IdTask)
+        
+        public async Task<ZipViewModel> GetZipViewModel(string IdTask, string IdAllegato = "")
         {
             ZipViewModel zm = new ZipViewModel();
             try
             {
                 zm.id = IdTask;
 
+                //da task
+                if (string.IsNullOrEmpty(IdAllegato))
+                {
                 BPMClient.BPMVariable var = new BPMClient.BPMVariable();
                 Dictionary<string, BPMClient.VariableValue> variables = var.GetAll(_bpm._eng, IdTask).Result;
+                    if (variables.ContainsKey("_IdAllegato"))
+                    {
+                        IdAllegato = variables["_IdAllegato"].GetValue<string>();
+                    }
+                }
 
 
-                if (variables.ContainsKey("_IdAllegato"))
+                if (!string.IsNullOrEmpty(IdAllegato))
                 {
-                    zm.IdAllegato = variables["_IdAllegato"].GetValue<string>();
+                    zm.IdAllegato = IdAllegato;
                     Allegati all = _allMan.Get(zm.IdAllegato);
                     if (all != null && all.Tipo == "ZIP") { 
                         zm.CodiceSoggetto = all.GetAttributo("CodiceSoggetto","");
@@ -319,8 +377,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         zm.IdFascicolo = all.IdFascicolo.ToString();
                         zm.IdElemento = all.IdElemento.ToString();
                         zm.DescrizioneElemento = all.Descrizione;
-                        //zm.FileAllegati = await this.GetZipFilesAsync(zm.IdAllegato);
-                        zm.FileAllegati = await this.GetTmpPdfCompletoAsync(all, null, false);
+                        zm.FileAllegati = await this.GetListaFileZippatiAsync(all,null);
 
                         Elementi el = null;
                         if (zm.IdElemento != null)
@@ -364,10 +421,16 @@ namespace dblu.Portale.Plugin.Docs.Services
                         //    + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.id and am.tipo = 'ZIP' "
                         //    + " WHERE (e.IdFascicolo = @IdFascicolo)";
 
-                        var sqlEl = " SELECT distinct  e.IdElemento Id, e.Revisione, e.TipoElemento Tipo, e.DscElemento Descrizione, e.Campo1 Chiave1, e.Campo2 Chiave2, e.Campo3 Chiave3, e.Campo4 Chiave4, e.Campo5 Chiave5, e.DscTipoElemento AS DescrizioneTipo, e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo "
+                        //var sqlEl = " SELECT distinct  e.IdElemento Id, e.Revisione, e.TipoElemento Tipo, e.DscElemento Descrizione, e.Campo1 Chiave1, e.Campo2 Chiave2, e.Campo3 Chiave3, e.Campo4 Chiave4, e.Campo5 Chiave5, e.DscTipoElemento AS DescrizioneTipo, e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo "
+                        //   + " FROM vListaElementi AS e "
+                        //   + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'ZIP' "
+                        //   + " WHERE (e.IdFascicolo = @IdFascicolo)";
+
+                        var sqlEl = " SELECT distinct  e.IdElemento, e.Revisione, e.TipoElemento, e.DscElemento, e.Campo1, e.Campo2, e.Campo3 , e.Campo4 , e.Campo5, e.DscTipoElemento , e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, e.DataC, "
+                           + "(select top 1 Operazione from LogDoc where IdOggetto=e.IdElemento Order by Data DESC) LastOp "
                            + " FROM vListaElementi AS e "
-                           + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'EMAIL' "
-                            + " WHERE (e.IdFascicolo = @IdFascicolo)";
+                          + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'ZIP' "
+                          + " WHERE (e.IdFascicolo = @IdFascicolo) ORDER BY Ultimo DESC, e.DataC DESC ";
 
                         res = cn.Query<EmailElementi>(sqlEl, new { IdFascicolo = IdFascicolo }).ToList();
                     }
@@ -380,8 +443,8 @@ namespace dblu.Portale.Plugin.Docs.Services
 
 
             return res;
-
         }
+
 
         public async Task<MemoryStream> GetPdfCompletoAsync(string IdAllegato, string IdElemento, bool daZip)
         {
@@ -410,6 +473,26 @@ namespace dblu.Portale.Plugin.Docs.Services
             mpdf.Position = 0;
             return mpdf;
         }
+
+        public async Task<PdfEditAction> GetFilePdfCompletoAsync(PdfEditAction pdf, bool daZip)
+        {
+            pdf.FilePdf = "";
+            string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
+            if (!Directory.Exists(NomePdf))
+            {
+                Directory.CreateDirectory(NomePdf);
+            }
+            NomePdf = Path.Combine(NomePdf, $"{pdf.IdAllegato}.pdf");
+            if (!File.Exists(NomePdf))
+            {
+                Allegati all = _allMan.Get(pdf.IdAllegato);
+                pdf.FileAllegati = await GetTmpPdfCompletoAsync(all, null, daZip);
+            }
+            if (File.Exists(NomePdf))
+                pdf.FilePdf = NomePdf;
+            return pdf;
+        }
+
 
         public async Task<List<EmailAttachments>> GetTmpPdfCompletoAsync(Allegati Allegato, ZipArchive FileZip, bool daZip)
         {
@@ -499,6 +582,35 @@ namespace dblu.Portale.Plugin.Docs.Services
             return res;
         }
         
+        public async Task<List<EmailAttachments>> GetListaFileZippatiAsync(Allegati Allegato, ZipArchive FileZip)
+        {
+            List<EmailAttachments> res = new List<EmailAttachments>();
+
+            var m = await _allMan.GetFileAsync(Allegato.Id.ToString());
+            if (FileZip == null)
+                FileZip = new ZipArchive(m, ZipArchiveMode.Read);
+
+            foreach (ZipArchiveEntry entry in FileZip.Entries)
+            {
+                string fileName = entry.Name;
+                var incluso = false;
+                switch (System.IO.Path.GetExtension(fileName).ToLower())
+                {
+                    case ".pdf":
+                    case ".jpg":
+                    case ".jpeg":
+                    case ".png":
+                        incluso = true;
+                        break;
+                }
+                var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = incluso };
+                res.Add(a);
+            }
+
+            return res;
+        }
+
+
                 public async Task<bool> RemoveFileFromZipAsync(string IdAllegato, string NomeFile)
         {
             bool res = false;
@@ -570,7 +682,8 @@ namespace dblu.Portale.Plugin.Docs.Services
             string ElencoFile,
             bool AllegaZip,
             string Descrizione,
-            ClaimsPrincipal User)
+            ClaimsPrincipal User,
+            Dictionary<string, VariableValue> variabili)
         {
             try
             {
@@ -601,13 +714,13 @@ namespace dblu.Portale.Plugin.Docs.Services
                         Operazione = TipoOperazione.Elaborato
                     }, true);
 
-                    //estrae i file dalla mail presenti in lista e li assegna all'elemento
+                    //estrae i file dallo zip presenti in lista e li assegna all'elemento
                     Allegati all = await EstraiAllegatiZip(Allegato, ElencoFile, AllegaZip, Descrizione, tipoAll, true, cancel);
 
                     var estrai = all != null;
                     var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
                     estrai = estrai && await sfdpf.MarcaAllegatoSF(all, e.elencoAttributi);
-                    estrai = estrai && AvviaProcesso(e);
+                    estrai = estrai && AvviaProcesso(e, variabili);
                     return estrai;
                 }
             }
@@ -741,7 +854,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             return all;
         }
 
-        public bool AvviaProcesso(Elementi el)
+        public bool AvviaProcesso(Elementi el, Dictionary<string, VariableValue> variabili)
         {
             bool res = true;
             try
@@ -750,7 +863,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                 {
 
                     var pd = new BPMProcessDefinition(_bpm._eng);
-                    Dictionary<string, VariableValue> variabili = new Dictionary<string, VariableValue>();
+                    if (variabili == null)
+                        variabili = new Dictionary<string, VariableValue>();
+
                     VariableValue v = VariableValue.FromObject(el.Id.ToString());
                     variabili.Add("IdElemento", v);
                     v = VariableValue.FromObject(el);
@@ -1159,5 +1274,117 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
             return res;
         }
+
+        public RisultatoAzione SpostaZip(string IdAllegato, string Cartella, ClaimsPrincipal User)
+        {
+            RisultatoAzione res = new RisultatoAzione();
+            try
+            {
+
+                using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                {
+                    var n = cn.Execute("UPDATE allegati SET Origine=@Origine WHERE Id=@Id ",
+                        new { Origine = Cartella, Id = IdAllegato });
+                    if (n > 0)
+                    {
+                        res.Successo = true;
+                        res.Messaggio = $"Documento spostato in {Cartella}.";
+                    }
+                    else
+                    {
+                        res.Successo = false;
+                        res.Messaggio = $"parametri non validi";
+                    }
+                }
+
+                //-------- Memorizzo l'operazione----------------------
+                LogDoc log = new LogDoc()
+                {
+                    IdOggetto = Guid.Parse(IdAllegato),
+                    TipoOggetto = TipiOggetto.ALLEGATO,
+                    Operazione = TipoOperazione.Spostato,
+                    Utente = User.Identity.Name
+                };
+                _logMan.Salva(log, true);
+                //-------- Memorizzo l'operazione----------------------
+            }
+            catch (Exception ex)
+            {
+                res.Successo = false;
+                res.Messaggio = ex.Message;
+                _logger.LogError($"SpostaZip : {ex.Message}");
+            }
+            return res;
+        }
+
+
+        public RisultatoAzione RiapriZip(string IdAllegato, ClaimsPrincipal User)
+        {
+            RisultatoAzione res = new RisultatoAzione();
+            try
+            {
+                Allegati al = _allMan.Get(IdAllegato);
+                if (al.IdElemento == null)
+                {
+                    al.Stato = StatoAllegato.Attivo;
+                }
+                else
+                {
+                    al.Stato = StatoAllegato.Elaborato;
+                }
+                res.Successo = _allMan.Salva(al, false);
+
+                //-------- Memorizzo l'operazione----------------------
+                LogDoc log = new LogDoc()
+                {
+                    IdOggetto = Guid.Parse(IdAllegato),
+                    TipoOggetto = TipiOggetto.ALLEGATO,
+                    Utente = User.Identity.Name
+                };
+                log.Operazione = TipoOperazione.Riaperto;
+                _logMan.Salva(log, true);
+                //-------- Memorizzo l'operazione----------------------
+
+            }
+            catch (Exception ex)
+            {
+                res.Successo = false;
+                res.Messaggio = ex.Message;
+                _logger.LogError($"RiapriZip : {ex.Message}");
+            }
+            return res;
+        }
+
+
+        public async Task<RisultatoAzione> CancellaZip(string IdAllegato, ClaimsPrincipal User)
+        {
+            RisultatoAzione res = new RisultatoAzione();
+            try
+            {
+
+                if (_allMan.Cancella(IdAllegato))
+                {
+                    res.Successo = true;
+                    //-------- Memorizzo l'operazione----------------------
+                    _logMan.Salva(new LogDoc
+                    {
+                        IdOggetto = Guid.Parse(IdAllegato),
+                        TipoOggetto = TipiOggetto.ALLEGATO,
+                        Operazione = TipoOperazione.Cancellato,
+                        Utente = User.Identity.Name
+                    }, true);
+                    //-------- Memorizzo l'operazione----------------------
+                }
+
+            }
+            catch (Exception ex)
+            {
+                res.Successo = false;
+                res.Messaggio = ex.Message;
+                _logger.LogError($"CancellaZip : {ex.Message}");
+            }
+            return await Task.FromResult(res);
+        }
+
     }
 }

@@ -133,7 +133,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers
         [HttpPost]
         [Route("api/[controller]/Load")]
         [Authorize]
-        [HasPermission("50.1.2")]
+        [HasPermission("50.1.2|50.1.3|50.1.4")]
         public async Task<IActionResult> Load([FromBody] Dictionary<string, string> jsonObject)
         {
             PdfRenderer pdfviewer = new PdfRenderer(_cache);
@@ -276,6 +276,10 @@ namespace dblu.Portale.Plugin.Docs.Controllers
                                 default:
                                     break;
                             }
+
+                            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                .SetSlidingExpiration(TimeSpan.FromSeconds(20));
+                            _cache.Set(pdf.CacheEntry, pdf, cacheEntryOptions);
                         }
                         else
                         {
@@ -604,6 +608,32 @@ namespace dblu.Portale.Plugin.Docs.Controllers
                 documentPath = document;
             }
             return documentPath;
+        }
+
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.3|50.1.4")]
+        public async Task<PdfEditAction> GetPdfEditAction(string param)
+        {
+            PdfEditAction pdf = new PdfEditAction();
+            try
+            {
+                if (!string.IsNullOrEmpty(param))
+                {
+                    pdf = JsonConvert.DeserializeObject<PdfEditAction>(param);
+
+                    PdfEditAction chpdf;
+                    if (_cache.TryGetValue(pdf.CacheEntry, out chpdf))
+                    {
+                        pdf = chpdf;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetPdfEditAction: {ex.Message}");
+            }
+            return await Task.FromResult(pdf);
         }
 
     }

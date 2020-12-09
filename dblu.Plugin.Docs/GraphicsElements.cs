@@ -31,6 +31,7 @@ namespace dblu.Portale.Plugin.Documenti
                 new ModuleItem( "50.1.1", "Tabelle" ),
                 new ModuleItem( "50.1.2", "Fascicoli" ),
                 new ModuleItem( "50.1.3", "Email in arrivo" ),
+                new ModuleItem( "50.1.4", "File in arrivo" ),
                 new ModuleItem( "50.2", "Amministrazione Docs" )
             };
 
@@ -63,7 +64,8 @@ namespace dblu.Portale.Plugin.Documenti
 //                    new MenuItem("50.1.3", 1, "MailView/InArrivo?ruolo=Resi", "Email resi", "fa-table", null),
                     new MenuItem("50.1.3", 2, "MailView/emailProcessate", "Email processate", "fa-table", null),
                     new MenuItem("50.1.3", 3, "MailView/emailInviate", "Email inviate", "fa-table", null),
-                    new MenuItem("50.1.3", 4, "ZipView/ZipTask", "File in arrivo", "fa-table", null),
+                    new MenuItem("50.1.4", 4, "ZipView/ZipInArrivo", "File in arrivo", "fa-table", null),
+                    new MenuItem("50.1.4", 5, "ZipView/ZipProcessati", "File processati", "fa-table", null),
                     new MenuItem("50.2", 1, "Docs/Logs", "Gestione Log", "fa-table", null),
                 };
             }
@@ -79,7 +81,7 @@ namespace dblu.Portale.Plugin.Documenti
                 myMail.ElementType = OBJECT_TYPE.TEMPLATE;
                 myMail.Template = "TemplateMail";
                 // FILE
-                var myFile = new IndexItem("50.1.3", 2, "", "File", "FileDash", "");
+                var myFile = new IndexItem("50.1.4", 2, "", "File", "FileDash", "");
                 myFile.Size = new System.Drawing.Size(2, 6);
                 myFile.ElementType = OBJECT_TYPE.TEMPLATE;
                 myFile.Template = "TemplateFile";

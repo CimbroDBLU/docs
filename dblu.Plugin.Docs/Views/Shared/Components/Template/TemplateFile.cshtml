@@ -11,7 +11,7 @@
 
     var dinamica = Convert.ToInt32(@Configuration.GetSection("Portale")["DashBoardDinamica"]);
 
-    var numeroFile = _zipservice.CountFileTask("ZIP", User.Claims);
+    var numeroFile = _zipservice.CountZipInArrivo("ZIP", User.Claims);
 }
 
 @if (dinamica == 1)
@@ -23,13 +23,13 @@
             <div class="small-box bg-maroon">
                 <div class="inner">
                     <h3>@numeroFile</h3>
-                    <p>documenti in arrivo</p>
+                    <p>Documenti in arrivo</p>
                     <br />
                 </div>
                 <div class="icon">
                     <i class="fa fa-file-text-o"></i>
                 </div>
-                <a href="~/ZipView/ZipTask" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
+                <a href="~/ZipView/ZipInArrivo" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
             </div>
         </div>
 
@@ -49,7 +49,7 @@ else
                 <div class="icon">
                     <i class="fa fa-file-text-o"></i>
                 </div>
-                <a href="~/ZipView/ZipTask" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
+                <a href="~/ZipView/ZipInArrivo" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
             </div>
         </div>
 

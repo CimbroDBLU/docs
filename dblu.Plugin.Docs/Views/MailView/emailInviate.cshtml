@@ -16,7 +16,7 @@
     TipiAllegati TipoAll = _mailservice._allMan.GetTipoAllegato("EMAIL");
 
     //-----OK--------
-    var ListaServer = _mailservice._serMan.GetServersEmailinRoles(Context.User.Claims);
+    var ListaServer = _mailservice._serMan.GetServersEmailinRoles(Context.User.Claims, TipiRecordServer.CartellaMail);
     //---------------
     var ListaRuoli = _mailservice.getRuoli(Context.User.Claims, "");
     ListaTipiElementi = _mailservice._elmMan.GetAllTipiElementi(ListaRuoli);

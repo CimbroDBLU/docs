@@ -34,7 +34,7 @@
     }
 
     ListaTipiElementi = _mailservice._elmMan.GetAllTipiElementi(ListaRuoli);
-    var ListaServer = _mailservice._serMan.GetServersEmailinRoles(ListaRuoli);
+    var ListaServer = _mailservice._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaMail);
 
     //var ListaServer = _mailservice._serMan.GetServersEmailinRoles(Context.User.Claims);
     var ListaServerIngresso = _mailservice._serMan.GetServerEmailInIngresso();

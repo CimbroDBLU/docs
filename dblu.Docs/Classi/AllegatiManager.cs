@@ -446,8 +446,8 @@ namespace dblu.Docs.Classi
                     {".tiff", "image/tiff"},
                     {".tif", "image/tiff"},
                     {".csv", "text/csv"},
-                    {".html", "text/html"},
-                    {".htm", "text/html"},
+                    {".html", "text/plain"},
+                    {".htm", "text/plain"},
                     {".dat", "application/dat"},
                     {".svg", "image/svg+xml"},
                     {".eml", "application/eml"},
@@ -633,6 +633,28 @@ namespace dblu.Docs.Classi
             return l;
         }
 
+        public List<Allegati> GetZipInArrivo(string Tipo, string Origine)
+        {
+            if (Origine == null) Origine = "";
+            List<Allegati> l = new List<Allegati>();
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+
+                        l = cn.Query<Allegati>("Select A.*,(select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC) LastOp FROM Allegati A WHERE Tipo=@Tipo and Stato in (1,2,3) and Origine = @origine",
+                        new { Tipo = Tipo, origine = Origine }).ToList();
+       
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetZipInArrivo: {ex.Message}");
+            }
+            return l;
+        }
+
+
         public int CountEmailInArrivo(string Tipo)
         {
             int l = 0;
@@ -667,7 +689,7 @@ namespace dblu.Docs.Classi
                 //    .ToList<Allegati>();
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
-                    if (NomeServer.Length == 0)
+                    if (NomeServer.Length == 0 && Tipo != "ZIP")
                     {
                         l = cn.Query<Allegati>("Select *,(select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC) LastOp FROM Allegati A where Tipo=@Tipo and Stato in (@Chiuso, @Ann ) ",
                         new { Tipo = Tipo, Chiuso = StatoAllegato.Chiuso , Ann= StatoAllegato.Annullato}).ToList();
@@ -682,7 +704,7 @@ namespace dblu.Docs.Classi
             }
             catch (Exception ex)
             {
-                _logger.LogError($"GetEmailInArrivo: {ex.Message}");
+                _logger.LogError($"GetEmailProcessate: {ex.Message}");
             }
             return l;
         }

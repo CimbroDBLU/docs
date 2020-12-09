@@ -185,7 +185,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
         [HttpGet]
-        [HasPermission("50.1.3|50.1.2")]
+        [HasPermission("50.1.2|50.1.3")]
         public async Task<FileResult> DownloadFile(string IdAllegato, string NomeFile)
         {
             MemoryStream ff = await _mailService._allMan.GetFileAsync(IdAllegato);
