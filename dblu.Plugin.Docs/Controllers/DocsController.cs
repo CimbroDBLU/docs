@@ -80,6 +80,16 @@ namespace dblu.Portale.Controllers
              return View();
 
         }
+        [HttpGet("/Docs/Tabelle")]
+        [Authorize]
+        [HasPermission("50.1.1")]
+
+        public ActionResult Tabelle()
+        {
+
+            return View();
+
+        }
 
 
         public ActionResult Categorie_Read([DataSourceRequest] DataSourceRequest request)
@@ -456,18 +466,35 @@ namespace dblu.Portale.Controllers
         {
             ViewBag.Message = "Tipo Elemento Salvato";
             TipiElementi c = obj;
+
+
+           
             try
             {
                 string sc = HttpContext.Session.GetString("TipoElemento");
                 if (!string.IsNullOrEmpty(sc))
                 {
                     c = JsonConvert.DeserializeObject<TipiElementi>(sc);
-                    c.Codice = !string.IsNullOrEmpty(obj.Codice) ? obj.Codice : c.Codice;
-                    c.Categoria= !string.IsNullOrEmpty(obj.Categoria) ? obj.Categoria : c.Categoria;
-                    c.Descrizione = !string.IsNullOrEmpty(obj.Descrizione) ? obj.Descrizione : c.Descrizione;
-                    c.Processo = !string.IsNullOrEmpty(obj.Processo) ? obj.Processo : c.Processo;
-                    c.ViewAttributi = !string.IsNullOrEmpty(obj.ViewAttributi) ? obj.ViewAttributi : c.ViewAttributi;
-                    c.AggregaAElemento =  obj.AggregaAElemento;
+
+                 foreach (var item in Request.Form)
+              {
+           
+                if(item.Key == "Codice") c.Codice = !string.IsNullOrEmpty(item.Value.ToString()) ? item.Value.ToString() : c.Codice;
+                if(item.Key == "CategoriaList") c.Categoria = !string.IsNullOrEmpty(item.Value.ToString()) ? item.Value.ToString() : c.Categoria;
+                if (item.Key == "Descrizione") c.Descrizione = !string.IsNullOrEmpty(item.Value.ToString()) ? item.Value.ToString() : c.Descrizione;
+                if (item.Key == "Processo") c.Processo = !string.IsNullOrEmpty(item.Value.ToString()) ? item.Value.ToString() : c.Processo;
+                if (item.Key == "ViewAttributi") c.ViewAttributi = !string.IsNullOrEmpty(item.Value.ToString()) ? item.Value.ToString() : c.ViewAttributi;
+                if (item.Key == "Ruoli") c.RuoliCandidati = !string.IsNullOrEmpty(item.Value.ToString()) ? item.Value.ToString() : c.RuoliCandidati;
+                if (item.Key == "Candidati") c.UtentiCandidati = !string.IsNullOrEmpty(item.Value.ToString()) ? item.Value.ToString() : c.UtentiCandidati;
+                if (item.Key == "AggregaAElemento") c.AggregaAElemento = c.AggregaAElemento = Boolean.Parse(item.Value);
+                    }
+                    //c.Categoria= !string.IsNullOrEmpty(obj.Categoria) ? obj.Categoria : c.Categoria;
+                    //c.Descrizione = !string.IsNullOrEmpty(obj.Descrizione) ? obj.Descrizione : c.Descrizione;
+                    //c.Processo = !string.IsNullOrEmpty(obj.Processo) ? obj.Processo : c.Processo;
+                    //c.ViewAttributi = !string.IsNullOrEmpty(obj.ViewAttributi) ? obj.ViewAttributi : c.ViewAttributi;
+                    //c.RuoliCandidati = !string.IsNullOrEmpty(obj.RuoliCandidati) ? obj.RuoliCandidati : c.RuoliCandidati;
+                    //c.UtentiCandidati = !string.IsNullOrEmpty(obj.UtentiCandidati) ? obj.UtentiCandidati : c.UtentiCandidati;
+                    //c.AggregaAElemento =  obj.AggregaAElemento;
                     if (_eleMan.SalvaTipoElemento(c))
                     {
                         HttpContext.Session.SetString("TipoElemento", JsonConvert.SerializeObject(c));
@@ -999,6 +1026,7 @@ namespace dblu.Portale.Controllers
         public IActionResult editServerEmail()
         {
             string Nome = Request.Query["Nome"];
+            string Tipo = Request.Query["Tipo"];
             EmailServer model;
             if (Nome != null && Nome != "undefined")
             {

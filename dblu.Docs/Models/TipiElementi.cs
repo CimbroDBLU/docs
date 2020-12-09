@@ -24,6 +24,8 @@ namespace dblu.Docs.Models
         public string Descrizione { get; set; }
 
         public string Processo { get; set; }
+        public string RuoliCandidati { get; set; }
+        public string UtentiCandidati { get; set; }
         public bool AggregaAElemento { get; set; }
 
         //[NotMapped]

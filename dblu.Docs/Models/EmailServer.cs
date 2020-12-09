@@ -4,6 +4,11 @@ using System.Collections.Generic;
 
 namespace dblu.Docs.Models
 {
+    public enum TipiRecordServer
+    {
+        CartellaMail = 0,
+        CartellaFile = 1
+    }
     [Table("EmailServer")]
     public partial class EmailServer
     {
@@ -23,6 +28,7 @@ namespace dblu.Docs.Models
         public string NomeProcesso { get; set; } = "";
         public string CartellaArchivio { get; set; } = "";
         public string NomeServerInUscita { get; set; } = "";
+        public TipiRecordServer TipoRecord { get; set; } = TipiRecordServer.CartellaMail;
 
     }
 }

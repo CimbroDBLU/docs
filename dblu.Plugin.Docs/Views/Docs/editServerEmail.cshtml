@@ -6,9 +6,9 @@
 
   
 <section class="content-header">
-    <h1>
-        Dettaglio server mail:  @(Model.Nome)
-    </h1>
+        @if (Model.TipoRecord == dblu.Docs.Models.TipiRecordServer.CartellaMail)
+        { <h1>Dettaglio server mail:  @(Model.Nome)</h1>}
+        else{  <h1>Dettaglio cartella:  @(Model.Nome)</h1>}
     <ol class="breadcrumb">
         <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
         <li><a href="/Docs/ServersEmail">Server Email</a></li>
@@ -28,6 +28,8 @@
                                class="form-control" value="@Model.Nome" />
                     </div>
                 </div>
+                @if (Model.TipoRecord == dblu.Docs.Models.TipiRecordServer.CartellaMail)
+                {
                 <div class="form-group">
                     <label class="control-label col-md-2">Email</label>
                     <div class="col-md-10" style="width:50%">
@@ -98,14 +100,6 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="control-label col-md-2">Cartella</label>
-                    <div class="col-md-10" style="width:50%">
-                        <input type="text"
-                               name="Cartella"
-                               class="form-control" value="@Model.Cartella" />
-                    </div>
-                </div>
-                <div class="form-group">
                     <label class="control-label col-md-2">Cartella Archivio</label>
                     <div class="col-md-10" style="width:50%">
                         <input type="text"
@@ -156,7 +150,18 @@
                         <button formaction="/Docs/SalvaEmailServer" method="post" type="submit" margin class="btn btn-info pull-left">Salva</button>
                     </div>
                 </div>
-
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Cartella</label>
+                        <div class="col-md-10" style="width:50%">
+                            <input type="text"
+                                   name="Cartella"
+                                   class="form-control" value="@Model.Cartella" />
+                        </div>
+                    </div>
+                }
 
 
                 <div class="form-group">

@@ -38,6 +38,7 @@
                 columns.Bound(p => p.Cartella).Width(200);
                 columns.Bound(p => p.CartellaArchivio).Width(200);
                 columns.Bound(p => p.NomeServerInUscita).Width(200);
+                columns.Bound(p => p.TipoRecord);
                 columns.Command(command => command.Custom("Modifica").Click("showEditor")).Width(150);
                 columns.Command(command => command.Destroy().Text("Elimina")).Width(150);
           
@@ -56,6 +57,7 @@
                 .Ajax()
                 .PageSize(20)
                 .Events(events => events.Error("error_handler"))
+                .Group(groups => groups.Add(p => p.TipoRecord))
                 .Model(model =>
                 {
                     model.Id(p => p.Nome);
@@ -87,7 +89,7 @@
     function showEditor(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        window.location.href = '/Docs/editServerEmail?Nome=' + dataItem.Nome;
+        window.location.href = '/Docs/editServerEmail?Nome=' + dataItem.Nome + '&Tipo='+ dataItem.TipoRecord;
 
         
         //$("#EmailServer").val(dataItem.Nome);
