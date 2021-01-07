@@ -44,9 +44,12 @@ namespace dblu.Portale.Plugin.Docs.Services
                 cn.Close();
             }
             string codici = null;
-            if (xx.Count() !=0) { codici = "'" + string.Join("','", xx) + "'"; };
+            if (xx.Count() !=0) { 
+               codici = "'" + string.Join("','", xx) + "'";
+               tmpRuoli = _usr.GetAllRolesIN(codici);
+            };
            
-            tmpRuoli = _usr.GetAllRolesIN(codici);
+           
             }
             return tmpRuoli;
 

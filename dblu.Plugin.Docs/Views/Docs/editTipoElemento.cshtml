@@ -168,10 +168,19 @@
                                //columns.Bound(p => p.Tipo).Width(200);
                                columns.Bound(p => p.Obbligatorio).ClientTemplate("<input type='checkbox' #= Obbligatorio ? checked='checked':'' # class='chkbxW' disabled />").Width(100);
                                columns.ForeignKey(p => p.Visibilità, (System.Collections.IEnumerable)ViewData["Visibilita"], "Id", "Des").Width(150);
-                               //columns.Bound(p => p.Visibilità).Width(100);
-               //columns.Bound(p => p.ValorePredefinito).Width(200);
-               // columns.Bound(p => p.ValorePredefinito).ClientTemplateId("predefinitoTemplate").Width(200);
-               //columns.Bound(p => p.ValorePredefinito).ClientTemplate("<input  #= Tipo=='Data' ? <h4>ciao</h4> : <h4></h4>").Width(200);
+               columns.Bound(p => p.ValorePredefinito).ClientTemplate(
+                   "#if (Tipo ==='System.DateTime')"
+                   + "{#" + " <input type='date' id='birthday'>"
+                   + " #}else{ "
+                   + "if(Tipo ==='System.Boolean'){#"
+                   + " <input type='checkbox' id='check'>"
+                   + "# }else{"
+                   + "if(Tipo ==='System.Double'){#"
+                   + "<input type='number' id='number' value=ValorePredefinito>"
+                   + "#}else{#"
+                  + "<input type='text' id='text'>"
+                   + "#} } }#"
+                   ).Width(200);
                                columns.Bound(p => p.Sequenza).Width(100);
                                columns.Command(command =>
                                {
@@ -179,6 +188,11 @@
                                    command.Destroy().Text("Elimina");
                                }).Width(500);
                            })
+           //.ClientRowTemplate(
+           // //if ("'#: data.Tipo #" == "Data") {
+           // //        " < h4 > data </ h4 >"
+           // //    }
+           // )
                            .ToolBar(toolbar => toolbar.Create())
                            .Editable(editable => editable.Mode(GridEditMode.InLine))
                            .Pageable()
@@ -191,7 +205,7 @@
                                 .Model(model =>
                                 {
                                     model.Id(p => p.Nome);
-                    model.Field(p => p.ValorePredefinito).Editable(true);
+                   // model.Field(p => p.ValorePredefinito).Editable(true);
                                 })
                                 .Create(update => update.Action("AttributiTipoElemento_Create", "Docs"))
                                 .Read(read => read.Action("AttributiTipoElemento_Read", "Docs"))

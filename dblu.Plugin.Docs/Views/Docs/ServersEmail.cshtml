@@ -38,7 +38,7 @@
                 columns.Bound(p => p.Cartella).Width(200);
                 columns.Bound(p => p.CartellaArchivio).Width(200);
                 columns.Bound(p => p.NomeServerInUscita).Width(200);
-                columns.Bound(p => p.TipoRecord);
+                columns.Bound(p => p.TipoRecord).Hidden();
                 columns.Command(command => command.Custom("Modifica").Click("showEditor")).Width(150);
                 columns.Command(command => command.Destroy().Text("Elimina")).Width(150);
           
