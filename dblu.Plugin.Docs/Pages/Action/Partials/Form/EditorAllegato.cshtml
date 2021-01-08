@@ -317,7 +317,7 @@
     }
 
     function CompletaOnClick(e) {
-
+       // e.preventDefault();
         var form = $("#formcompleta");
         var validator = form.data("kendoValidator");
         var validationSummary = $("#validation-summary");
@@ -325,17 +325,29 @@
 
         if (validator.validate()) {
 
-            //e.preventDefault(); // avoid to execute the actual submit of the form.
+            //,window.location.origin + '/Action/TaskView/Complete/@taskId'
 
+            try {
+
+                var obj = {
+                    IdTask: '@taskId',
+                    RuoliCandidati: $("#zRuoliCandidati").val()
+                };
             $.ajax({
                 type: "POST",
-                url: window.location.origin + '/Action/TaskView/Complete/@taskId',
-                data: form.serialize(), 
+                    url:  '@(Url.Action("CompletaZip", "Allegato"))',
+                    cache: false,
+                    data: obj,
                 success: function (data) {
                     //alert(data); 
-                    window.location = window.location.origin +"/Action/ListaAttivita";
+                        window.location = "/Action/ListaAttivita";
                 }
             });
+            }
+            catch {
+
+            }
+           
         } else {
             validationSummary.html("<div class='k-messagebox k-messagebox-error'>Inserire i campi obbligatori.</div>");
         }
@@ -609,12 +621,12 @@
 
                             @if (flAnnulla)
                             {
-                                <input name="_Annulla" type="hidden" value="false">
-                                <button type="button" class="btn margin btn-info pull-right" id="bAnnulla" onclick="AnnullaOnClick()">Annulla</button>
+                                <button type="button" id="bAnnulla" class="btn margin btn-info pull-right" onclick="AnnullaOnClick()">Annulla</button>
                             }
                             @*<button formaction="/Action/TaskView/Complete/@taskId" method="post" type="submit" class="btn margin btn-info pull-right">Completa</button>
                             *@
-                            <button onclick="CompletaOnClick()" id="bCompleta"  method="post" type="submit"  class="btn margin btn-info pull-right">Completa</button>
+                            <input name="_Annulla" type="hidden" value="false">
+                            <button type="button" id="bCompleta" class="btn margin btn-info pull-right" onclick="CompletaOnClick()">Completa</button>
 
 
                             <div id="validation-summary">

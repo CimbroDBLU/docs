@@ -58,6 +58,7 @@ namespace dblu.Portale.Plugin.Docs.ViewModels
         public string IdElemento { get; set; }
         public string DescrizioneElemento { get; set; }
         public StatoElemento Stato { get; set; }
+        public StatoAllegato StatoZip { get; set; }
         public IEnumerable<EmailAttachments> FileAllegati { get; set; }
         
         public IEnumerable<TipiElementi> ListaTipiElementi { get; set; }

@@ -59,11 +59,11 @@ function RiapriMail() {
         });
     }
 } 
-function CancellaMail() {
-    if (mailItem != null) {
-        $("#dialog").data("kendoDialog").open();
-    }
-}
+//function CancellaMail() {
+//    if (mailItem != null) {
+//        $("#dialog").data("kendoDialog").open();
+//    }
+//}
 function onAnnulla() {
     $("#dialog").data("kendoDialog").close();
 }
@@ -303,15 +303,18 @@ function InoltraEmail(e) {
 
 }
 
-function CancellaEmail(e) {
-    e.preventDefault();
 
-    var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-    $("#IdAllegato").val(dataItem.Id);
 
-    var dialog = $("#wCancella").data("kendoWindow");
-    dialog.center().open();
+function CancellaEmail() {
+    //e.preventDefault();   
+    //var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
+    if (mailItem != null) {
+        $("#IdAllegato").val(mailItem.Id);
+
+        var dialog = $("#wCancella").data("kendoDialog");
+        dialog.open();
+    }
 }
 
 // Dettaglio

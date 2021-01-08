@@ -417,6 +417,15 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
          
             m.IdFascicolo = mvModel.IdFascicolo.ToString();
             m.IdElemento = mvModel.IdElemento.ToString();
+            if (mvModel.Fascicolo == null)
+            {
+                m.DescrizioneFascicolo = "";
+            }
+            else
+            {
+                m.DescrizioneFascicolo = mvModel.Fascicolo.Descrizione;
+            }
+
             if (mvModel.Elemento == null)
             {
                 m.DescrizioneElemento = "";
@@ -428,7 +437,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             }
             m.ListaTipiElementi = mvModel.ListaTipiElementi;
             //m.ListaEmailElementi =  mvModel.ListaEmailElementi;
-            _toastNotification.AddSuccessToastMessage("dettaglio caricato");
+            //_toastNotification.AddSuccessToastMessage("dettaglio caricato");
             return m;
         }
 
@@ -473,7 +482,6 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
 
         /*
-         
                 IdAllegato: $("#allegaIdAllegato").val(),
                 IdFascicolo: $("#allegaIdFascicolo").val(),
                 IdElemento: $("#allegaIdElemento").val(),

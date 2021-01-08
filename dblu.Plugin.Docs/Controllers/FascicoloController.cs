@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using dblu.Docs.Interfacce;
 using dblu.Docs.Models;
 using dblu.Portale.Core.Infrastructure;
+using dblu.Portale.Core.Infrastructure.Class;
 using dblu.Portale.Plugin.Docs.Data;
 using dblu.Portale.Plugin.Docs.Extensions;
 using dblu.Portale.Plugin.Docs.Models;
@@ -632,6 +633,18 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
 
         #endregion
+
+        [HttpPost("cerca")]
+        public ActionResult<dResult> Cerca(Fascicoli Fascicolo)
+        {
+
+            dResult r = new dResult();
+            List<Fascicoli> la = _doc._fasMan.CercaFascicoli(Fascicolo);
+            r.Success = la.Count > 0;
+            r.ReturnData = la;
+
+            return r;
+        }
 
         //[HttpGet("/Docs/Test")]
         //public IActionResult Test()

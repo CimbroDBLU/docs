@@ -49,7 +49,7 @@ namespace dblu.Docs.Classi
         }
         public Visibilita_Attributi Visibilità { get; set; }
         public bool Obbligatorio { get; set; }
-        public string ValorePredefinito { get; set; }
+        public dynamic ValorePredefinito { get; set; }
         public string Sequenza { get; set; }
 
 

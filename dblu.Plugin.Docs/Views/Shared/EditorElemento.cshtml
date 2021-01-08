@@ -19,12 +19,10 @@
     bool isEdit = Model.IsEdit();
 }
 
-@* Syncfusion Essential JS 2 Styles
-<link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
-*@
-@* Syncfusion Essential JS 2 Scripts
-<script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
-*@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"></script>
+<script>
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js';
+</script>
 <script src="~/Scripts/dblupdf.js"></script>
 
 <script>
@@ -56,7 +54,7 @@
         pdfViewer.freeTextSettings.author = '@User.Identity.Name';
         pdfViewer.freeTextSettings.fontColor = '#ff0000';
         pdfViewer.freeTextSettings.fontSize = '20';
-        pdfViewer.author = '@User.Identity.Name';
+        pdfViewer.arrowSettings.author = '@User.Identity.Name';
         pdfViewer.enableAnnotationToolbar = true;
 
     });
@@ -96,7 +94,9 @@
     function CaricaPdf(pdfViewer, nome ){
 
         var flLoad=false;
-        if ((PdfCorrente.iAzione == docsAzioniPdf.Salva && pdfViewer.annotationCollection != undefined  &&  pdfViewer.annotationCollection.length > 0) {
+        if ((PdfCorrente.iAzione == docsAzioniPdf.Salva
+            && pdfViewer.annotationCollection != undefined
+            && pdfViewer.annotationCollection.length > 0)) {
 
             pdfViewer.exportAnnotations(JSON.stringify(PdfCorrente));
                 }
@@ -111,7 +111,7 @@
         if (PdfCorrente.iAzione == docsAzioniPdf.Salva) {
 
             var pdfEditorViewer = document.getElementById('pdfviewer').ej2_instances[0];
-            pdfEditorViewer.load(JSON.stringify(PdfCorrente))
+            pdfEditorViewer.load(JSON.stringify(PdfCorrente));
             pdfEditorViewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 
         }
@@ -127,7 +127,7 @@
         var nome = $("#NomeAllegato").val();
 
         if (e.id == "tbruotadx") {
-            PdfCorrente.iAzione = docsAzioniPdf.RuotaPagina90;;
+            PdfCorrente.iAzione = docsAzioniPdf.RuotaPagina90;
         } else if (e.id == "tbruotasx") {
             PdfCorrente.iAzione = docsAzioniPdf.RuotaPagina270;
         } else if (e.id == "tbcanc") {
@@ -156,9 +156,6 @@
         }
     }
 
-</script>
-
-<script>
     //Attachments_OnRowSelect = function (e) {
 
     function SubmitForm(frm, caller) {
@@ -267,10 +264,6 @@
 
 </script>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"></script>
-        <script>
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js';
-        </script>
 
         <style>
 
