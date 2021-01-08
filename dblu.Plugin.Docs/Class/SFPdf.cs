@@ -240,10 +240,10 @@ namespace dblu.Portale.Plugin.Docs.Class
                                             }
                                             if (p.Annotations.Count > 0) { 
                                                 foreach (PdfAnnotation nn in p.Annotations) {
-                                                    if (!string.IsNullOrEmpty(nn.Text)){
+                                                    //if (!string.IsNullOrEmpty(nn.Text)){
                                                         nn.Flatten = true;
                                                 flAnn = true;
-                                            }
+                                                    //}
                                                 }
                                             }
                                         };

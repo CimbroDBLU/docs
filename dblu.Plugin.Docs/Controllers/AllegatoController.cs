@@ -10,6 +10,7 @@ using dblu.Docs.Models;
 using dblu.Portale.Core.Infrastructure;
 using dblu.Portale.Plugin.Docs.Services;
 using dblu.Portale.Plugin.Docs.ViewModels;
+using dblu.Portale.Services.Camunda;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -187,9 +188,8 @@ namespace dblu.Portale.Plugin.Docs.Controllers
                     res = tsk.SubmitTaskForm(_zipService._bpm._eng, IdTask, fVars);
                 }
             }
-            catch (Exception ex)
+            catch 
             {
-                
                 return BadRequest();
             }
             if (res)
@@ -303,7 +303,6 @@ namespace dblu.Portale.Plugin.Docs.Controllers
             try
             {
              
-            
                 if ( string.IsNullOrEmpty(IdAllegato))
                     return BadRequest();
 
@@ -320,7 +319,8 @@ namespace dblu.Portale.Plugin.Docs.Controllers
                             all.SetAttributo(nome, attr.Get(n));
                         
                         }
-                                      
+                        all.DataUM = DateTime.Now;
+                        all.UtenteUM = User.Identity.Name;
                         _zipService._allMan.Salva(all, false);
                         //-------- Memorizzo l'operazione----------------------
                         LogDoc log = new LogDoc()
@@ -329,7 +329,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers
                             IdOggetto = Guid.Parse(IdAllegato),
                             TipoOggetto = TipiOggetto.ALLEGATO,
                             Utente = User.Identity.Name,
-                            Operazione = TipoOperazione.Annullato
+                            Operazione = TipoOperazione.Modificato
                         };
                         _zipService._logMan.Salva(log, true);
                         //-------- Memorizzo l'operazione----------------------
@@ -353,6 +353,34 @@ namespace dblu.Portale.Plugin.Docs.Controllers
             }
         }
 
+        [HttpPost]
+        [Authorize]
+        [HasPermission("50.1.2")]
+        public async Task<IActionResult> CompletaZip(string IdTask , string RuoliCandidati)
+        {
 
+            bool res = false;
+            try
+            {
+                if (string.IsNullOrEmpty(IdTask) )
+                    return BadRequest();
+
+                BPMTask tsk = new BPMTask();
+                Dictionary<string, BPMClient.VariableValue> fVars = await tsk.GetTaskFormVariables(_zipService._bpm._eng, IdTask);
+                BPMTaskDto tdto = tsk.Get(_zipService._bpm._eng, IdTask);
+                fVars["_Annulla"].SetTypedValue(false);
+                fVars["_RuoliCandidati"].SetTypedValue(RuoliCandidati);
+                res = tsk.SubmitTaskForm(_zipService._bpm._eng, IdTask, fVars);
+
+            }
+            catch 
+            {
+                return BadRequest();
+            }
+            if (res)
+                return Ok();
+            else
+                return BadRequest();
+        }
     }
 }

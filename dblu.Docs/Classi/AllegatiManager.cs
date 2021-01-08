@@ -5,11 +5,14 @@ using Microsoft.Data.SqlClient;
 //using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -788,6 +791,84 @@ namespace dblu.Docs.Classi
             }
             return l;
         }
+
+
+        public List<Allegati> CercaAllegati(Allegati queryObj)
+        {
+            List<Allegati> l = new List<Allegati>();
+            try
+            {
+
+                if (queryObj.Id != null && queryObj.Id != Guid.Empty)
+                {
+                    Allegati a = Get(queryObj.Id);
+                    if (a != null)
+                    {
+                        l.Add(a);
+                    }
+                }
+                else
+                {
+                    using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                    {
+                        StringBuilder sb = new StringBuilder("SELECT * FROM Allegati WHERE 1=1 ");
+                        DynamicParameters pp = new DynamicParameters();
+                        if (!string.IsNullOrEmpty(queryObj.Tipo))
+                        {
+                            sb.Append(" AND Tipo = @Tipo ");
+                            pp.Add("@Tipo", queryObj.Tipo);
+                        }
+                        if (!string.IsNullOrEmpty(queryObj.NomeFile))
+                        {
+                            sb.Append(" AND NomeFile =  @NomeFile ");
+                            pp.Add("@NomeFile", queryObj.NomeFile);
+                        }
+                        if (!string.IsNullOrEmpty(queryObj.Descrizione))
+                        {
+                            sb.Append(" AND Descrizione like @Descrizione ");
+                            pp.Add("@Descrizione", queryObj.Descrizione);
+                        }
+                        if (!string.IsNullOrEmpty(queryObj.UtenteC))
+                        {
+                            sb.Append(" AND UtenteC = @UtenteC ");
+                            pp.Add("@UtenteC", queryObj.UtenteC);
+                        }
+                        if (!string.IsNullOrEmpty(queryObj.UtenteUM))
+                        {
+                            sb.Append(" AND UtenteUM = @UtenteUM ");
+                            pp.Add("@UtenteUM", queryObj.UtenteUM);
+                        }
+                        if (queryObj.IdElemento != null)
+                        {
+                            sb.Append(" AND IdElemento = @IdElemento ");
+                            pp.Add("@IdElemento", queryObj.IdElemento);
+                        }
+                        if (queryObj.IdFascicolo != null)
+                        {
+                            sb.Append(" AND IdFascicolo = @IdFascicolo ");
+                            pp.Add("@IdFascicolo", queryObj.IdFascicolo);
+                        }
+                        
+                        if (!string.IsNullOrEmpty(queryObj.Attributi)){
+                            var values = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(queryObj.Attributi);
+                            foreach (KeyValuePair<string, dynamic> d in values)
+                            {
+                                sb.Append($" and JSON_VALUE(attributi,'$.{d.Key}') = @attr_{d.Key}");
+                                pp.Add($"@attr_{d.Key}", d.Value);
+                            }
+                        }
+                        l = cn.Query<Allegati>(sb.ToString(), pp).ToList();
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CercaAllegati: {ex.Message}");
+            }
+            return l;
+        }
+
 
     }
 }

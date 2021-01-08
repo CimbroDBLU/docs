@@ -180,7 +180,16 @@ namespace dblu.Portale.Plugin.Docs.Controllers
             return r;
         }
 
+        [HttpPost("cerca")]
+        public ActionResult<dResult> Cerca(Elementi Elemento)
+        {
     
+            dResult r = new dResult();
+            List<Elementi> la = _AllegatiService._elmMan.CercaElementi(Elemento);
+            r.Success = la.Count > 0;
+            r.ReturnData = la;
+            return r;
+        }
 
     }
 }

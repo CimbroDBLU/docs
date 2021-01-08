@@ -378,6 +378,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         zm.IdElemento = all.IdElemento.ToString();
                         zm.DescrizioneElemento = all.Descrizione;
                         zm.FileAllegati = await this.GetListaFileZippatiAsync(all,null);
+                        zm.StatoZip = all.Stato;
 
                         Elementi el = null;
                         if (zm.IdElemento != null)

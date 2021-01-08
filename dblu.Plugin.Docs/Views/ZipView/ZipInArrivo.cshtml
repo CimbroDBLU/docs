@@ -221,10 +221,12 @@
                             {
                                 columns.Bound(p => p.Id).Title("Id").Width(0).Hidden();
                                 columns.Bound(p => p.Chiave4).Title("Nome").Width(0).Hidden();
-                                columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.DescrizioneChiave("Chiave1")).Width(300)
+                                columns.Bound(p => p.Chiave3).Title(TipoAll.Attributi.DescrizioneChiave("Chiave3")).Width(300)
                                 .ClientTemplate("<span> cliente #: Chiave3# </span> <br/>"
                                     + "<span><b> #: Chiave4# </b></span>");
-                                columns.Bound(p => p.Descrizione).Title("Descrizione").Width(150);
+                                columns.Bound(p => p.Descrizione).Title("Descrizione").Width(150)
+                                .ClientTemplate("<span> #: Descrizione# </span> <br/>"
+                                    + "<span><b> rif. #: Chiave5# </b></span>");
                                 columns.Bound(p => p.DataC).Title("Data").Width(100).Format("{0:dd/MM/yy HH:mm}");
                                 columns.Bound(p => p.LastOp).Width(75).Title("Operaz.").ClientTemplate("#= xIconLastOp(data) #");
                                 columns.Command(command => command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewZipHistory").IconClass("k-icon ").HtmlAttributes(new { style = "width:30px " })).Hidden();
@@ -414,7 +416,7 @@
                                             {
                                                 // toolbar.ClientTemplateId("GridToolbarTemplate");
                                                 toolbar.Custom().Text("Apri").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:75px", onclick = "ApriElementoGrid()" });
-                                                toolbar.Custom().Text("Agg.").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:75px", onclick = "AggiungiElementoGrid()" });
+                                                toolbar.Custom().Text("Agg.").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:75px", onclick = "AggiungiAElementoGrid()" });
                                                 toolbar.Custom().Text("Canc.").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaElemento()" });
                                                 toolbar.Search();
                                             })
@@ -448,17 +450,12 @@
                                     <div class="grid-container">
                                         @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
     {
+                                            @if (item.AggregaAElemento == false)
+                                            {
                                             <div class="grid-item">
                                                 <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info">@item.Descrizione </button>
-                                                @*if (ListaTipiElementiServ.Contains(item))
-                                                    {
-                                                        <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info">@item.Descrizione </button>
+                                                </div>
                                                     }
-                                                    else
-                                                    {
-                                                        <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info" disabled >@item.Descrizione </button>
-                                                    }*@
-                                            </div>
                                         }
                                         <style>
                                             .grid-container {

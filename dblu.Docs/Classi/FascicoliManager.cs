@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -357,5 +358,73 @@ namespace dblu.Docs.Classi
 
 
         }
+
+        public List<Fascicoli> CercaFascicoli(Fascicoli queryObj)
+        {
+            List<Fascicoli> l = new List<Fascicoli>();
+            try
+            {
+
+                if (queryObj.Id != null && queryObj.Id != Guid.Empty)
+                {
+                    Fascicoli a = Get(queryObj.Id);
+                    if (a != null)
+                    {
+                        l.Add(a);
+                    }
+                }
+                else
+                {
+                    using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                    {
+                        StringBuilder sb = new StringBuilder("SELECT * FROM Fascicoli WHERE 1=1 ");
+                        DynamicParameters pp = new DynamicParameters();
+                        if (!string.IsNullOrEmpty(queryObj.Categoria))
+                        {
+                            sb.Append(" AND Tipo = @Tipo ");
+                            pp.Add("@Tipo", queryObj.Categoria);
+                        }
+                        if (!string.IsNullOrEmpty(queryObj.Descrizione))
+                        {
+                            sb.Append(" AND Descrizione like @Descrizione ");
+                            pp.Add("@Descrizione", queryObj.Descrizione);
+                        }
+                        if (!string.IsNullOrEmpty(queryObj.CodiceSoggetto))
+                        {
+                            sb.Append(" AND CodiceSoggetto like @CodiceSoggetto ");
+                            pp.Add("@CodiceSoggetto", queryObj.CodiceSoggetto);
+                        }
+                        if (!string.IsNullOrEmpty(queryObj.UtenteC))
+                        {
+                            sb.Append(" AND UtenteC = @UtenteC ");
+                            pp.Add("@UtenteC", queryObj.UtenteC);
+                        }
+                        if (!string.IsNullOrEmpty(queryObj.UtenteUM))
+                        {
+                            sb.Append(" AND UtenteUM = @UtenteUM ");
+                            pp.Add("@UtenteUM", queryObj.UtenteUM);
+                        }
+
+                        if (!string.IsNullOrEmpty(queryObj.Attributi))
+                        {
+                            var values = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(queryObj.Attributi);
+                            foreach (KeyValuePair<string, dynamic> d in values)
+                            {
+                                sb.Append($" and JSON_VALUE(attributi,'$.{d.Key}') = @attr_{d.Key}");
+                                pp.Add($"@attr_{d.Key}", d.Value);
+                            }
+                        }
+                        l = cn.Query<Fascicoli>(sb.ToString(), pp).ToList();
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CercaFascicoli: {ex.Message}");
+            }
+            return l;
+        }
+
     }
 }

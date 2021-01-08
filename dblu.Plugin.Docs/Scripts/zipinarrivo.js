@@ -249,7 +249,7 @@ function MostraDettaglio(dettaglio) {
 
     if (dettaglio.IdFascicolo != '') {
         $('#divElemento').show();
-        if (dettaglio.Stato > 1) {
+        if (dettaglio.StatoZip > 1) {
             $('#Completa').show();
             $('#StampaRiepilogo').show();
         }
@@ -400,10 +400,10 @@ function AggiungiAElementoGrid() {
                     data: obj,
                     success: function (res) {
                         if (res) {
-                            $("#IdElemento").val(data.Id);
+                            //$("#IdElemento").val(data.Id);
                             $('#Completa').show();
                             $('#StampaRiepilogo').show();
-                            MostraPdfCompleto(data.Id);
+                            MostraPdfCompleto(idElemento);
                         }
                     },
                     error: function () {

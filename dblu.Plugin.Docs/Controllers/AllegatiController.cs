@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using dblu.Docs.Classi;
 using dblu.Docs.Models;
 using dblu.Portale.Core.Infrastructure.Class;
 using dblu.Portale.Plugin.Docs.Services;
@@ -111,7 +113,17 @@ namespace dblu.Portale.Plugin.Docs.Controllers
         }
 
 
+        [HttpPost("cerca")]
+        public ActionResult<dResult> Cerca( Allegati Allegato)
+        {
 
+            dResult r = new dResult();
+            List<Allegati> la = _allService._allMan.CercaAllegati(Allegato);
+            r.Success = la.Count > 0;
+            r.ReturnData = la;
+
+            return r;
+        }
 
 
     }
