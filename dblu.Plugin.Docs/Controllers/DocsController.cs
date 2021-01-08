@@ -486,7 +486,7 @@ namespace dblu.Portale.Controllers
                 if (item.Key == "ViewAttributi") c.ViewAttributi = !string.IsNullOrEmpty(item.Value.ToString()) ? item.Value.ToString() : c.ViewAttributi;
                 if (item.Key == "Ruoli") c.RuoliCandidati = !string.IsNullOrEmpty(item.Value.ToString()) ? item.Value.ToString() : c.RuoliCandidati;
                 if (item.Key == "Candidati") c.UtentiCandidati = !string.IsNullOrEmpty(item.Value.ToString()) ? item.Value.ToString() : c.UtentiCandidati;
-                if (item.Key == "AggregaAElemento") c.AggregaAElemento = c.AggregaAElemento = Boolean.Parse(item.Value);
+                   
                     }
                     //c.Categoria= !string.IsNullOrEmpty(obj.Categoria) ? obj.Categoria : c.Categoria;
                     //c.Descrizione = !string.IsNullOrEmpty(obj.Descrizione) ? obj.Descrizione : c.Descrizione;
@@ -495,6 +495,7 @@ namespace dblu.Portale.Controllers
                     //c.RuoliCandidati = !string.IsNullOrEmpty(obj.RuoliCandidati) ? obj.RuoliCandidati : c.RuoliCandidati;
                     //c.UtentiCandidati = !string.IsNullOrEmpty(obj.UtentiCandidati) ? obj.UtentiCandidati : c.UtentiCandidati;
                     //c.AggregaAElemento =  obj.AggregaAElemento;
+					c.AggregaAElemento = obj.AggregaAElemento;
                     if (_eleMan.SalvaTipoElemento(c))
                     {
                         HttpContext.Session.SetString("TipoElemento", JsonConvert.SerializeObject(c));

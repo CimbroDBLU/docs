@@ -242,11 +242,43 @@ namespace dblu.Docs.Classi
                     var c = cn.Get<TipiElementi>(obj.Codice);
                 if (c == null)
                 {
-                        bres = cn.Insert<TipiElementi>(obj) > 0;
+                         cn.Query("insert into[TipiElementi]" +
+                            "(Codice, Descrizione, ViewAttributi, ListaAttributi, Categoria, Processo, AggregaAElemento, RuoliCandidati, UtentiCandidati)" +
+                            "values(@cod, @des, @va, @la, @ca, @pr, @agg, @rc, @uc)", new {
+                                cod = obj.Codice,
+                                des = obj.Descrizione,
+                                va = obj.ViewAttributi,
+                                la = obj.ListaAttributi,
+                                ca = obj.Categoria,
+                                pr = obj.Processo,
+                                agg = obj.AggregaAElemento.ToString(),
+                                rc = obj.RuoliCandidati,
+                                uc = obj.UtentiCandidati
+                            });
                 }
                 else
                 {
-                        cn.Update<TipiElementi>(obj);
+                        cn.Query("UPDATE [TipiElementi]" +
+                            "set Descrizione = @des," +
+                            "viewattributi = @va," +
+                            "ListaAttributi = @la," +
+                            "Categoria = @ca," +
+                            "Processo = @pr," +
+                            "AggregaAElemento = @agg," +
+                            "RuoliCandidati = @rc," +
+                            "UtentiCandidati = @uc " +
+                            "WHERE codice = @cod ", new
+                            {
+                                cod = obj.Codice,
+                                des = obj.Descrizione,
+                                va = obj.ViewAttributi,
+                                la = obj.ListaAttributi,
+                                ca = obj.Categoria,
+                                pr = obj.Processo,
+                                agg = obj.AggregaAElemento.ToString(),
+                                rc = obj.RuoliCandidati,
+                                uc = obj.UtentiCandidati
+                            });
                 }
                 }
                 bres = true;
