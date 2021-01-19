@@ -8,7 +8,13 @@
 @*
 @using dblu.Portale.Plugin.UsersManagement.Areas.Controllers
 *@
+@{ 
+    if(  Model.UtentiCandidati == null)
+        Model.UtentiCandidati = "";
+    if (Model.RuoliCandidati == null)
+        Model.RuoliCandidati = "";
 
+}
     <section class="content-header">
         <h1>
             Dettaglio Tipo di Elemento :  @(Model.Descrizione)
@@ -110,7 +116,7 @@
         .PageSize(80)
         .Read("Utenti_Read", "Grid");
 })
-.Value(@Model.UtentiCandidati.Split(","))
+                            .Value(Model.UtentiCandidati.Split(","))
                 )
 
 
