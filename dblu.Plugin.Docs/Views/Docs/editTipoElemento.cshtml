@@ -174,19 +174,7 @@
                                //columns.Bound(p => p.Tipo).Width(200);
                                columns.Bound(p => p.Obbligatorio).ClientTemplate("<input type='checkbox' #= Obbligatorio ? checked='checked':'' # class='chkbxW' disabled />").Width(100);
                                columns.ForeignKey(p => p.Visibilità, (System.Collections.IEnumerable)ViewData["Visibilita"], "Id", "Des").Width(150);
-               columns.Bound(p => p.ValorePredefinito).ClientTemplate(
-                   "#if (Tipo ==='System.DateTime')"
-                   + "{#" + " <input type='date' id='birthday'>"
-                   + " #}else{ "
-                   + "if(Tipo ==='System.Boolean'){#"
-                   + " <input type='checkbox' id='check'>"
-                   + "# }else{"
-                   + "if(Tipo ==='System.Double'){#"
-                   + "<input type='number' id='number' value=ValorePredefinito>"
-                   + "#}else{#"
-                  + "<input type='text' id='text'>"
-                   + "#} } }#"
-                   ).Width(200);
+               columns.Bound(p => p.ValorePredefinito).ClientTemplate("#= colonnaValorePredefinito(data) #").Width(200);
                                columns.Bound(p => p.Sequenza).Width(100);
                                columns.Command(command =>
                                {
@@ -194,11 +182,6 @@
                                    command.Destroy().Text("Elimina");
                                }).Width(500);
                            })
-           //.ClientRowTemplate(
-           // //if ("'#: data.Tipo #" == "Data") {
-           // //        " < h4 > data </ h4 >"
-           // //    }
-           // )
                            .ToolBar(toolbar => toolbar.Create())
                            .Editable(editable => editable.Mode(GridEditMode.InLine))
                            .Pageable()
@@ -341,6 +324,33 @@
         <script type="text/javascript">
 
     
+
+        function colonnaValorePredefinito(dato) {
+            var html;
+            if (dato.Tipo === 'System.DateTime') {
+                if (dato.ValorePredefinito == null) html = kendo.format("<input type='text' class='chkbxW' disabled value='aaaa-mm-gg' > ");
+                else html = kendo.format("<input type='date' class='chkbxW' disabled value="+dato.ValorePredefinito+" > ");
+            }
+            if (dato.Tipo === 'System.Boolean') {
+                if (dato.ValorePredefinito == null || dato.ValorePredefinito == false) {
+                    html = kendo.format("<input type='checkbox' class='chkbxW' disabled checked=false >");
+                } else {
+                    html = kendo.format("<input type='checkbox' class='chkbxW' disabled checked=true >");
+                }
+            }
+            if (dato.Tipo === 'System.Double') {
+                if (dato.ValorePredefinito == null) html = kendo.format("<input type='text' class='chkbxW' disabled value='' > ");
+                else html = kendo.format(" <input type='number' class='chkbxW' disabled value=" + dato.ValorePredefinito + " > ");
+               
+            }
+            if (dato.Tipo === 'System.String') {
+                if (dato.ValorePredefinito == null) html = kendo.format("<input type='text' class='chkbxW' disabled value='' > ");
+                else html = kendo.format("<input type='text' class='chkbxW' disabled value=" + dato.ValorePredefinito + " > ");
+            }
+               
+            return html;
+}
+
         function multiselectUC_OnChange() {
             var multiselect = $("#Ruoli").data("kendoMultiSelect");
            multiselect.value($("#hidUC").val().split(","));

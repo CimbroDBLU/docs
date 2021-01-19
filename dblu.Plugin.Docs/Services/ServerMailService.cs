@@ -138,10 +138,19 @@ namespace dblu.Portale.Plugin.Docs.Services
                 cn.Close();
             }
             string codici = null;
-            if (xx.Count() != 0) { codici = "'" + string.Join("','", xx) + "'"; };
+            if (xx.Count() != 0) {
+                codici = "'" + string.Join("','", xx) + "'";
 
             tmpRuoli = _usr.GetAllRolesIN(codici);
             return tmpRuoli;
+            }
+            else
+            {
+                tmpRuoli = _usr.GetAllRoles();
+                return tmpRuoli.Take(0);
+            }
+
+
 
         }
 
@@ -211,10 +220,19 @@ namespace dblu.Portale.Plugin.Docs.Services
                 cn.Close();
             }
             string codici = null;
-            if (xx.Count() != 0) { codici = "'" + string.Join("','", xx) + "'"; };
+            if (xx.Count() != 0) { 
+                codici = "'" + string.Join("','", xx) + "'";
 
             tmpRuoli = _usr.GetAllRolesIN(codici);
             return tmpRuoli;
+            }
+            else
+            {
+                tmpRuoli = _usr.GetAllRoles();
+                return tmpRuoli.Take(0);
+            }
+
+
 
         }
 
