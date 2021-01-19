@@ -49,7 +49,7 @@ namespace dblu.Docs.Classi
         }
         public Visibilita_Attributi Visibilità { get; set; }
         public bool Obbligatorio { get; set; }
-        public dynamic ValorePredefinito { get; set; }
+        public string ValorePredefinito { get; set; }
         public string Sequenza { get; set; }
 
 
@@ -221,6 +221,13 @@ namespace dblu.Docs.Classi
                             case "System.Double":
                                 a.Valore = System.Convert.ToDouble(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
                                 break;
+                            case "System.Int32":
+                                a.Valore = System.Convert.ToInt32(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+                                break;
+                             case "System.Int64":
+                                a.Valore = System.Convert.ToInt64(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+                                break;
+
                             default:
                                 break;
                         }
