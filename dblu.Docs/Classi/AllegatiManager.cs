@@ -618,13 +618,44 @@ namespace dblu.Docs.Classi
                 {
                     if (NomeServer.Length == 0)
                     {
-                    l = cn.Query<Allegati>("Select *,(select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC) LastOp FROM Allegati A where Tipo=@Tipo and Stato < @Stato",
+                    l = cn.Query<Allegati>("Select *,(select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC) LastOp FROM Allegati A where Tipo=@Tipo and Stato < @Stato and Stato >=0 ",
                         new { Tipo = Tipo, Stato = StatoAllegato.Chiuso }).ToList();
                     }
                     else
                     {
-                        l = cn.Query<Allegati>("Select A.*,(select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC) LastOp FROM Allegati A WHERE Tipo=@Tipo and Stato < @Stato and Origine = @origine",
+                        l = cn.Query<Allegati>("Select A.*,(select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC) LastOp FROM Allegati A WHERE Tipo=@Tipo and Stato < @Stato and Stato >=0 and Origine = @origine",
                         new { Tipo = Tipo, Stato = StatoAllegato.Chiuso, origine = NomeServer }).ToList();
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetEmailInArrivo: {ex.Message}");
+            }
+            return l;
+        }
+
+        public List<Allegati> GetEmailDaSmistare(string Tipo, string NomeServer)
+        {
+            if (NomeServer == null) NomeServer = "";
+            List<Allegati> l = new List<Allegati>();
+            try
+            {
+                //l = _context.Allegati
+                //    .Where(a => (a.Tipo == Tipo && a.Stato < StatoAllegato.Chiuso))
+                //    .ToList<Allegati>();
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    if (NomeServer.Length == 0)
+                    {
+                        l = cn.Query<Allegati>("Select *,(select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC) LastOp FROM Allegati A where Tipo=@Tipo and Stato = @Stato ",
+                            new { Tipo = Tipo, Stato = StatoAllegato.Chiuso }).ToList();
+                    }
+                    else
+                    {
+                        l = cn.Query<Allegati>("Select A.*,(select top 1 Operazione from LogDoc where IdOggetto=A.ID Order by Data DESC) LastOp FROM Allegati A WHERE Tipo=@Tipo and Stato = @Stato and Origine = @origine",
+                        new { Tipo = Tipo, Stato = StatoAllegato.DaSmistare, origine = NomeServer }).ToList();
                     }
                 }
 
@@ -712,7 +743,7 @@ namespace dblu.Docs.Classi
             return l;
         }
 
-        public bool Salva(Allegati all, bool isNew)
+        public bool Salva(Allegati all, bool isNew, bool cambiaStato= true)
         {
             var bres = false;
             try
@@ -736,7 +767,7 @@ namespace dblu.Docs.Classi
                     all.DataUM = DateTime.Now;
                     all.Attributi = all.elencoAttributi.GetValori();
                     all.Note = all.Note == null ? "" : all.Note;
-                    if (all.Stato == StatoAllegato.Attivo) all.Stato = StatoAllegato.Elaborato;
+                    if (all.Stato == StatoAllegato.Attivo && cambiaStato) all.Stato = StatoAllegato.Elaborato;
                     // _context.SaveChanges();
                     if (isNew)
                     {

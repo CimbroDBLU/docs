@@ -10,6 +10,7 @@ namespace dblu.Docs.Models
 {
     public enum StatoAllegato
     {
+        DaSmistare = -1,
         Attivo = 1,
         Elaborato = 2,
         Stampato = 3,

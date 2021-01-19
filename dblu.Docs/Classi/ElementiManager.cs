@@ -137,6 +137,44 @@ namespace dblu.Docs.Classi
             return bres;
         }
 
+        public Elementi Nuovo(string Tipo)
+        {
+            Elementi elemento = new Elementi()
+            {
+                //DataC = DateTime.Now,
+                Tipo = Tipo,
+                //UtenteC = User.Identity.Name,
+                //UtenteUM = User.Identity.Name,
+                //DataUM = DateTime.Now,
+                //Revisione = 0,
+            };
+            
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    if (elemento.TipoNavigation == null)
+                    {
+                        //elemento.TipoNavigation = _context.TipiElementi.Single(t => t.Codice == elemento.Tipo);
+                        elemento.TipoNavigation = cn.Get<TipiElementi>(elemento.Tipo);
+                        elemento.elencoAttributi = elemento.TipoNavigation.Attributi;
+
+                    }
+                    
+                    //  elemento.DataUM = DateTime.Now;
+                    elemento.Attributi = elemento.elencoAttributi.GetValori();
+                    // _context.SaveChanges();
+                    
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Salva Elementi: {ex.Message}");
+
+            }
+            return elemento;
+        }
+
         public async Task<List<TipiElementi>> GetAllTipiElementiAsync()
         {
             List<TipiElementi> l = new List<TipiElementi>();

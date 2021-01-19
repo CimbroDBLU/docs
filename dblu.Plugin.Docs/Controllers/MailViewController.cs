@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.Authorization;
 using dblu.Portale.Core.Infrastructure;
 using dblu.Docs.Extensions;
 using dblu.Portale.Plugin.Docs.Models;
+using System.Web;
 
 namespace dblu.Portale.Plugin.Documenti.Controllers
 {
@@ -482,6 +483,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
 
         /*
+         
                 IdAllegato: $("#allegaIdAllegato").val(),
                 IdFascicolo: $("#allegaIdFascicolo").val(),
                 IdElemento: $("#allegaIdElemento").val(),
@@ -801,7 +803,122 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             return Json(lista.ToDataSourceResult(request));
         }
 
-}
+        #region Smistamento
+        [HasPermission("50.1.5")]
+        public IActionResult Smistamento()
+        {
+            
+            return View(
+                 new inArrivoView_new
+                 {
+                     Modulo = "50.1.5"
+                 }
+                );
+        }
+
+        [HasPermission("50.1.5")]
+        public ActionResult Smistamento_Read([DataSourceRequest] DataSourceRequest request, string Tipo, string NomeServer = "")
+        {
+
+            IEnumerable<Allegati> lista = _mailService._allMan.GetEmailDaSmistare(Tipo, NomeServer);
+            return Json(lista.ToDataSourceResult(request));
+        }
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.5")]
+
+        public IActionResult AggiornaAllegato(Guid IdAllegato, string TipoElemento)
+        {
+
+            string NomeView = "EditAttributi";
+            var e = new AttributiViewModel();
+            //var e = _mailService.CreaElementoVuoto(User, IdAllegato, TipoElemento);
+            var elemento = _mailService._elmMan.Nuovo(TipoElemento);
+            if (elemento != null)
+            {
+                //var x = _mailService.MarcaAllegati(e);
+                //e.IdFascicoloNavigation = _mailService._fasMan.Get(e.IdFascicolo);
+                e.Attributi = elemento.elencoAttributi;
+                if (!string.IsNullOrEmpty(elemento.TipoNavigation.ViewAttributi))
+                {
+                    NomeView = elemento.TipoNavigation.ViewAttributi;
+                    //NomeView = "EditorElemento";
+                }
+            }
+            return PartialView(NomeView, e);
+        }
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.5")]
+
+        public IActionResult SalvaAttributiAggiuntivi(string IdAllegato, string form)
+        {
+                bool res = false;
+
+                try
+                {
+
+                    if (string.IsNullOrEmpty(IdAllegato))
+                        return BadRequest();
+
+                    Allegati all = _mailService._allMan.Get(IdAllegato);
+                    if (all != null)
+                    {
+                        if (!string.IsNullOrEmpty(form))
+                        {
+                            var attr = HttpUtility.ParseQueryString(form);
+                            foreach (string n in attr.Keys)
+                            {
+                                if (n != "__RequestVerificationToken") {
+                                    Attributo xx = new Attributo();
+                                    xx.Nome = n;
+                                    if (n.StartsWith("ctl_"))
+                                        xx.Nome = n.Substring(4);
+
+                                    xx.Valore = attr.Get(n);
+                                    all.elencoAttributi.Add(xx);
+                                    //all.SetAttributo(nome, attr.Get(n));
+                                }
+                            }
+                            all.Stato = StatoAllegato.Attivo;
+                            all.DataUM = DateTime.Now;
+                            all.UtenteUM = User.Identity.Name;
+                            _mailService._allMan.Salva(all, false, false);
+                            ////-------- Memorizzo l'operazione----------------------
+                            //LogDoc log = new LogDoc()
+                            //{
+                            //    Data = DateTime.Now,
+                            //    IdOggetto = Guid.Parse(IdAllegato),
+                            //    TipoOggetto = TipiOggetto.ALLEGATO,
+                            //    Utente = User.Identity.Name,
+                            //    Operazione = TipoOperazione.Modificato
+                            //};
+                            //_mailService._logMan.Salva(log, true);
+                            ////-------- Memorizzo l'operazione----------------------
+                            res = true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _toastNotification.AddErrorToastMessage($"Allegato non inoltrato: {ex.Message}");
+                    return BadRequest();
+                }
+                if (res)
+                {
+                    _toastNotification.AddSuccessToastMessage("Allegato inoltrato");
+                    return Ok();
+                }
+                else
+                {
+
+                    return BadRequest();
+                }
+   
+        }
+        #endregion
+
+    }
 
 }
 

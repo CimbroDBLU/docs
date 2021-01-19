@@ -502,8 +502,9 @@ namespace dblu.Portale.Controllers
 
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError($"SalvaTipoElemento: {ex.Message}");
 
             }
 
