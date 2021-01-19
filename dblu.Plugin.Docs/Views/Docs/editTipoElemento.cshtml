@@ -110,7 +110,7 @@
         .PageSize(80)
         .Read("Utenti_Read", "Grid");
 })
-.Value(new int[] { 10265, 10289 })
+.Value(@Model.UtentiCandidati.Split(","))
                 )
 
 
@@ -133,7 +133,7 @@
         .PageSize(80)
         .Read("Ruoli_Read", "Grid");
 })
-.Value(new int[] { 10265, 10289 })
+.Value(@Model.RuoliCandidati.Split(","))
                 )
 
 
