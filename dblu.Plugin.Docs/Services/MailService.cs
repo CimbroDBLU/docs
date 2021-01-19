@@ -58,6 +58,7 @@ using MimeKit.Utils;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
+using dblu.Portale.Core.Infrastructure.Identity.Class;
 
 namespace dblu.Portale.Plugin.Docs.Services
 {
@@ -217,6 +218,57 @@ namespace dblu.Portale.Plugin.Docs.Services
 
 
         }
+
+        public List<String> getRuoli(string Modulo, string NomeServer)
+        {
+            List<string> l = new List<string>();
+            IEnumerable<Role> Roles;
+            Roles = _usrManager.GetAllRolesForModule(Modulo);
+
+            if (NomeServer != "")
+            {
+
+                string xRol = "'";
+                foreach (Role x in Roles)
+                {
+                      xRol = xRol + x.Code + "','";
+                }
+          
+                xRol = xRol.Substring(0, xRol.Length - 2);
+                try
+                {
+
+                    using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                    {
+
+                        string sql = "Select RoleID FROM [ServersInRole] where [RoleID] IN (" + xRol + ") and [idServer]='" + NomeServer + "'";
+                        l = cn.Query<string>(sql).ToList();
+
+                    }
+                }
+
+                catch (Exception ex)
+                {
+                    _logger.LogError($"getRuoli: {ex.Message}");
+                }
+
+            }
+            else
+            {
+
+                foreach (Role x in Roles)
+                {
+                    l.Add(x.Code);
+                }
+            }
+
+            return l;
+
+
+
+
+        }
+
 
         public int CountEmailInArrivo(string Tipo, IEnumerable<Claim> Roles)
         {

@@ -25,6 +25,10 @@ namespace dblu.Portale.Plugin.Docs.ViewModels
         public string Ruolo { get; set; }
     }
 
+    public class inArrivoView_new
+    {
+        public string Modulo { get; set; }
+    }
 
     public class EmailAttachments
     {
