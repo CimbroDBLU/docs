@@ -53,7 +53,7 @@
                            columns.ForeignKey(p => p.Tipo, (System.Collections.IEnumerable)ViewData["Tipi"], "Id", "Des").Width(180);
                            columns.Bound(p => p.Obbligatorio).ClientTemplate("<input type='checkbox' #= Obbligatorio ? checked='checked':'' # class='chkbxW'  disabled />").Width(80);
                            //columns.Bound(p => p.Visibilità).Width(100);
-                           columns.Bound(p => p.ValorePredefinito).Width(200);
+                           columns.Bound(p => p.ValorePredefinito).ClientTemplate("#= colonnaValorePredefinito(data) #").Width(200);
                            columns.ForeignKey(p => p.Visibilità,(System.Collections.IEnumerable)ViewData["Visibilita"], "Id","Des").Width(150);
                            columns.Bound(p => p.Sequenza).Width(100);
                            columns.Command(command =>

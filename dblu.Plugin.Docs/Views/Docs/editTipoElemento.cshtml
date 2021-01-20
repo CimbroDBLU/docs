@@ -338,12 +338,16 @@
                     html = kendo.format("<input type='checkbox' class='chkbxW' disabled checked=true >");
                 }
             }
-            if (dato.Tipo === 'System.Double') {
+            if (dato.Tipo === 'System.Double' || dato.Tipo === 'System.Int32') {
                 if (dato.ValorePredefinito == null) html = kendo.format("<input type='text' class='chkbxW' disabled value='' > ");
                 else html = kendo.format(" <input type='number' class='chkbxW' disabled value=" + dato.ValorePredefinito + " > ");
                
             }
             if (dato.Tipo === 'System.String') {
+                if (dato.ValorePredefinito == null) html = kendo.format("<input type='text' class='chkbxW' disabled value='' > ");
+                else html = kendo.format("<input type='text' class='chkbxW' disabled value=" + dato.ValorePredefinito + " > ");
+            }
+            if (dato.Tipo === 'System.Object') {
                 if (dato.ValorePredefinito == null) html = kendo.format("<input type='text' class='chkbxW' disabled value='' > ");
                 else html = kendo.format("<input type='text' class='chkbxW' disabled value=" + dato.ValorePredefinito + " > ");
             }
