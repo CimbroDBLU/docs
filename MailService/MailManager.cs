@@ -34,7 +34,7 @@ namespace dbluMailService
         public string Bpm_url { get; set; }
         public string Bpm_User { get; set; }
         public string Bpm_Password { get; set; }
-
+        public dblu.Docs.Models.StatoAllegato  StatoIniziale { get; set; }
         //'private static readonly NLog.Logger _nlogger = NLog.LogManager.GetCurrentClassLogger();
         public MailManager(ILogger logger, IConfiguration conf)
         {
@@ -182,7 +182,7 @@ namespace dbluMailService
                                             NomeFile = Nomefile,
                                             Tipo = tipo.Codice,
                                             TipoNavigation = tipo,
-                                            Stato = StatoAllegato.Attivo,
+                                                Stato = this.StatoIniziale,
                                             Origine = s.Nome
                                         };
                                             all.elencoAttributi = tipo.Attributi;

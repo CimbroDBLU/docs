@@ -5,7 +5,7 @@
     [ListaAttributi] NVARCHAR (MAX) DEFAULT ('') NOT NULL,
     [Categoria]      NVARCHAR (20)  DEFAULT (NULL) NULL,
     [Processo]       NVARCHAR (255) NULL,
-    [AggregaAElemento] BIT NULL DEFAULT 0, 
+    [AggregaAElemento] SMALLINT NULL DEFAULT 0, 
     [RuoliCandidati] NVARCHAR(MAX) NULL, 
     [UtentiCandidati] NVARCHAR(MAX) NULL, 
     CONSTRAINT [PK_TipiElementi] PRIMARY KEY CLUSTERED ([Codice] ASC),

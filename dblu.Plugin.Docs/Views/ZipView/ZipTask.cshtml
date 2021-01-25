@@ -15,7 +15,8 @@
 
     List<dblu.Docs.Models.TipiElementi> ListaTipiElementi;
     List<SelectListItem> ListaRuoliZip = _zipservice.GetRuoliZip(Context.User.Claims);
-    if (ListaRuoliZip.Count() == 0) {
+    if (ListaRuoliZip.Count() == 0)
+    {
         ListaRuoliZip.Add(new SelectListItem("(nessuno)", ".."));
     }
 
@@ -87,12 +88,12 @@
     }
 </style>
 
-@* Syncfusion Essential JS 2 Styles *@
+@* Syncfusion Essential JS 2 Styles
 <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
-
-@* Syncfusion Essential JS 2 Scripts *@
+*@
+@* Syncfusion Essential JS 2 Scripts
 <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
-
+*@
 <script src="~/Scripts/dblupdf.js"></script>
 <script src="~/Scripts/ziptaskview.js"></script>
 

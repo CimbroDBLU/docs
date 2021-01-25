@@ -29,6 +29,7 @@ using dblu.Portale.Core.Infrastructure;
 using dblu.Docs.Extensions;
 using dblu.Portale.Plugin.Docs.Models;
 using System.Web;
+using Microsoft.AspNetCore.Hosting;
 
 namespace dblu.Portale.Plugin.Documenti.Controllers
 {
@@ -40,15 +41,19 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         private MailService _mailService;
         private IConfiguration _config;
         private ISoggettiService _soggetti;
+        private readonly IWebHostEnvironment _hostingEnvironment;
+
         public MailViewController(MailService mailservice,
             IToastNotification toastNotification,
             IConfiguration config ,
-            ISoggettiService soggetti)
+            ISoggettiService soggetti,
+            IWebHostEnvironment hostingEnvironment )
         {
             _mailService = mailservice;
             _toastNotification = toastNotification;
             _config = config;
             _soggetti = soggetti;
+            _hostingEnvironment = hostingEnvironment;
         }
 
        
@@ -869,17 +874,38 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                             var attr = HttpUtility.ParseQueryString(form);
                             foreach (string n in attr.Keys)
                             {
-                                if (n != "__RequestVerificationToken") {
-                                    Attributo xx = new Attributo();
+                            if (n != "__RequestVerificationToken")
+                            {
+                                Attributo xx = new Attributo();
+
                                     xx.Nome = n;
                                     if (n.StartsWith("ctl_"))
                                         xx.Nome = n.Substring(4);
 
+                                if (all.elencoAttributi.Valori.ContainsKey(xx.Nome))
+                                {
+                                    all.elencoAttributi.Valori[xx.Nome].Valore = attr.Get(n);
+                                }
+                                else
+                                {
                                     xx.Valore = attr.Get(n);
                                     all.elencoAttributi.Add(xx);
+                                }
                                     //all.SetAttributo(nome, attr.Get(n));
+                                if (xx.Nome.ToLower() == "origine")
+                                {
+                                    all.Origine = attr.Get(n);
+                                }
                                 }
                             }
+                        PdfEditAction pdfed = new PdfEditAction();
+                        pdfed.IdAllegato = IdAllegato;
+                        pdfed.TempFolder = Path.Combine(_hostingEnvironment.WebRootPath, "_tmp");
+                        if (System.IO.File.Exists(pdfed.FileAnnotazioni))
+                        {
+                            all.Note = System.IO.File.ReadAllText(pdfed.FileAnnotazioni);
+                        }
+
                             all.Stato = StatoAllegato.Attivo;
                             all.DataUM = DateTime.Now;
                             all.UtenteUM = User.Identity.Name;

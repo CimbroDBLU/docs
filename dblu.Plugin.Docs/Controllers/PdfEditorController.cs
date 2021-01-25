@@ -448,6 +448,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers
             {
                 PdfRenderer pdfviewer = new PdfRenderer(_cache);
                 jsonResult = pdfviewer.GetAnnotations(jsonObject);
+                //jsonResult = pdfviewer.ExportAnnotation(jsonObject);
                 if (jsonObject != null && jsonObject.ContainsKey("document"))
                 {
                     string documentPath = GetDocumentPath(jsonObject["document"]);

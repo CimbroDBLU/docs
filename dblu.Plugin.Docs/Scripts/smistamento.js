@@ -11,6 +11,7 @@ var mailChiave1 = null;
 var mailDescrizione = null;
 var mailItem = null;
 var elementoItem = null;
+var TipoElemento = null;
 
 var PdfCorrente = {
     TipoAllegato : "EMAIL",
@@ -64,7 +65,6 @@ gridEmailOnChange = function (e) {
             //forzo visualizzazione della mail originale
             //alert("gridEmailOnChange " + IdNuovoElemento);
             if (IdNuovoElemento != null) {
-                
                 $("#IdElemento").val(IdNuovoElemento);
                 IdNuovoElemento = null;
             }
@@ -83,7 +83,6 @@ gridEmailOnChange = function (e) {
 
 
 function CaricaElemento(elemento) {
-    alert("CaricaElemento:" + elemento);
     $('#IdFascicolo').val(elemento.IdFascicolo);
     $('#IdElemento').val(elemento.Id);
     IdNuovoElemento = elemento.Id;
@@ -409,7 +408,7 @@ function AggiungiElementoGrid() {
 }
 function ApriElementoGrid() {
     if (elementoItem != null) {
-        alert("ApriElementoGrid:" +elemetoItem);
+        //alert("ApriElementoGrid:" +elemetoItem);
         $('body').addClass('waiting');
         $("#divFascicolo").find(":input").prop("disabled", true);
         $("#CollapseFascicolo").prop("disabled", false);
@@ -525,7 +524,7 @@ function PulisciDettaglio() {
     //$('#Completa').hide();
     //$('#StampaRiepilogo').hide();
     $('#gridemailElementi').data('kendoGrid').dataSource.data("{}");
-    $('#AssociaElemento').hide();
+    //$('#AssociaElemento').hide();
     try {
         //    var pdfViewer = $("#pdfviewer").data("kendoPDFViewer");
         //    pdfViewer.fromFile("");
@@ -553,13 +552,13 @@ function MostraDettaglio(dettaglio) {
     if (dettaglio.CodiceSoggetto != '') {
         //$('#divFascicolo').show();
         if (dettaglio.CodiceSoggetto != soggettoPrec) {
-            $('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.read();
-            $('#divSoggettoElementiAperti').show();
+            //$('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.read();
+            //$('#divSoggettoElementiAperti').show();
         }
     }
     else {
-        $('#divSoggettoElementiAperti').hide();
-        $('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.data("{}");
+        //$('#divSoggettoElementiAperti').hide();
+        //$('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.data("{}");
     };
 
     $('#IdFascicolo').val(dettaglio.IdFascicolo);
@@ -582,24 +581,11 @@ function MostraDettaglio(dettaglio) {
 }
 
 function MostraPdfCompleto(idElemento) {
-    //        pdfjsProcessing: {
-    //            file: ""
-    //        },
-    //        width: "100%",
-    //        height: 500
-    //    }).data("kendoPDFViewer");
-    //}
-    //pdfViewer.width = "100%";
-    //pdfViewer.height = 800;
-    //var url = "IdAllegato=" + IdAllegato + "&IdElemento=" + IdElemento ;
-    //var pdfHandlerUrl = "/MailView/GetPdfCompleto/data?" + url;
-    //pdfViewer.fromFile(pdfHandlerUrl);
 
     PdfCorrente.IdAllegato = $("#IdAllegato").val();
     PdfCorrente.IdElemento = idElemento; // $("#IdElemento").val();
     PdfCorrente.iAzione = docsAzioniPdf.Carica;
     var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
-                //emailpdfviewer.downloadFileName = nome;
     PdfCorrente.Pagina = 1;
     emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
     emailpdfviewer.fileName = JSON.stringify(PdfCorrente);
@@ -638,34 +624,6 @@ function FascicoliData() {
     }
 }
 
-
-function NuovoElemento(e) {
-
-  
-    //e, Categoria, TipoElemento, Aggrega
-    var Aggrega = this.element.attr("aggrega");
-    var Categoria = this.element.attr("categoria");
-    var TipoElemento = this.element.attr("codice");
-
-    var fNameDiv = "div" + TipoElemento;
-
-    alert("NuovoElemento");
-    $('body').addClass('waiting');
-    if (Aggrega === 'True') {
-        $('#divSoggetto').show();
-        $('#divElemento').show();
-        $('#divFascicolo').show();
-        $('body').removeClass('waiting')
-    }
-    else {
-        $('#' + fNameDiv).show();
-    }
-    var r = true;
-    if (r) {
-    
-    }
-
-}
 
 function AggiungiAElementoOnClick(e) {
 
@@ -777,7 +735,7 @@ function AssociaElementoOnClick(e) {
     myWindow.refresh({
         url: UrlActions.sggservice_UrlServizioRicercaElementi,
         type: "Post",
-        data: { soggetto: codSoggetto, associa: true}
+        data: { soggetto: codSoggetto, associa: true, tipoelemento: TipoElemento }
     });
     //myWindow.height = window.innerHeight * 0.9 ;
     //myWindow.width = window.innerWidth * 0.9;
@@ -986,12 +944,12 @@ function CercaSoggettiOnClick(e) {
 function CaricaSoggetto(codice) {
     if (codice == '') {
         $('#divFascicolo').hide();
-        $('#divSoggettoElementiAperti').hide();
+        //$('#divSoggettoElementiAperti').hide();
     }
     else {
-        $('#divFascicolo').show();
-        $('#divSoggettoElementiAperti').show();
-        $('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.read();
+        //$('#divFascicolo').show();
+        //$('#divSoggettoElementiAperti').show();
+        //$('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.read();
 
     }
     //$.post(window.location.origin + '/MailView/GetSoggetto?codice=' + codice, function (data, status) {
@@ -1168,7 +1126,7 @@ function documentLoaded(args) {
 
     }
 
-    //emailpdfviewer.importAnnotations(JSON.stringify(PdfCorrente));
+    emailpdfviewer.importAnnotations(JSON.stringify(PdfCorrente));
 
 }
 
@@ -1308,9 +1266,41 @@ function wPdfEditorClose(e) {
 
 }
 
+function NuovoElemento(e) {
+
+    if (mailItem == null) {
+        alert("Seleziona una mail");
+    }
+    //e, Categoria, TipoElemento, Aggrega
+    var Aggrega = this.element.attr("aggrega");
+    var Categoria = this.element.attr("categoria");
+    TipoElemento = this.element.attr("codice");
+
+    var fNameDiv = "div" + TipoElemento;
+    listaTipiElementi.forEach(function (tipo) {
+        if (tipo.AggregaAElemento == false) {
+            $('#div' + tipo.Codice).hide();
+        }
+    });
+    $('body').addClass('waiting');
+    if (Aggrega === 'True') {
+        $('#divSoggetto').show();
+        $('#divElemento').show();
+        //$('#divFascicolo').show();
+    }
+    else {
+        $('#divSoggetto').hide();
+        $('#divElemento').hide();
+        //$('#divFascicolo').hide();
+        $('#' + fNameDiv).show();
+    }
+    $('body').removeClass('waiting')
+}
+
+
 function SalvaAttributi(caller) {
     //caller.preventDefault();
-    var TipoElemento = this.element.attr("codice");
+    //TipoElemento = this.element.attr("codice");
     var fNameForm = "form" + TipoElemento;
     var frm = $("#" + fNameForm);
     var obj = {
@@ -1325,8 +1315,8 @@ function SalvaAttributi(caller) {
             data: obj,
             success: function (data) {
                 var grid = $("#gridEmail").data("kendoGrid");
-                var rows = grid.select();
-                grid.select(rows[0]);
+                PulisciDettaglio();
+                grid.dataSource.read();
             },
             error: function (data) {
                 alert(data);

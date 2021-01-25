@@ -270,7 +270,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
 
-        public int CountEmailInArrivo(string Tipo, IEnumerable<Claim> Roles)
+        public int CountEmailInArrivo(string Tipo, IEnumerable<Claim> Roles, StatoAllegato stato = StatoAllegato.Elaborato)
         {
 
             int l = 0;
@@ -291,8 +291,8 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                     using (SqlConnection cn = new SqlConnection(_context.Connessione))
                     {
-                        l = cn.ExecuteScalar<int>("Select count(*) from Allegati where Tipo=@Tipo and Stato < @Stato and Origine IN (" + xServer + ")",
-                            new { Tipo = Tipo, Stato = StatoAllegato.Chiuso });
+                        l = cn.ExecuteScalar<int>("Select count(*) from Allegati where Tipo=@Tipo and Stato <= @Stato and Origine IN (" + xServer + ")",
+                            new { Tipo = Tipo, Stato = stato });
 
                     }
                 }
@@ -300,8 +300,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                 {
                     using (SqlConnection cn = new SqlConnection(_context.Connessione))
                     {
-                        l = cn.ExecuteScalar<int>("Select count(*) from Allegati where Tipo=@Tipo and Stato < @Stato",
-                            new { Tipo = Tipo, Stato = StatoAllegato.Chiuso });
+                        l = cn.ExecuteScalar<int>("Select count(*) from Allegati where Tipo=@Tipo and Stato <= @Stato",
+                            new { Tipo = Tipo, Stato = stato });
 
                     }
                 }
@@ -2126,7 +2126,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                     var pi = pd.Start("", el.TipoNavigation.Processo, el.Id.ToString(), variabili);
 
-                    res = (pi != null);
+                    res = (pi != null && pi.Result != null );
 
                 }
             }

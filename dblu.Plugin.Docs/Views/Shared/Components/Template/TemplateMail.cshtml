@@ -12,6 +12,12 @@
     var dinamica = Convert.ToInt32(@Configuration.GetSection("Portale")["DashBoardDinamica"]);
 
     var numeroEmail = _mailservice.CountEmailInArrivo("EMAIL", User.Claims);
+#if DEBUG
+    var InDebug = true;
+#else
+    var InDebug = false;
+#endif
+
 }
 
 @if (dinamica == 1)
@@ -31,9 +37,12 @@
                     <i class="fa fa-envelope"></i>
                 </div>
                 <a href="~/MailView/InArrivo" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
+ @if (InDebug) {
+                   <a href="~/Test/Test" class="small-box-footer">*** <i class="fa fa-arrow-circle-right"></i></a>
                 @*
                     <a href="~/Docs/EditorPdf" class="small-box-footer">Test editor<i class="fa fa-arrow-circle-right"></i></a>
                 *@
+ }     
             </div>
         </div>
 

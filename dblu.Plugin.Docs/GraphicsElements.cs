@@ -93,11 +93,15 @@ namespace dblu.Portale.Plugin.Documenti
                 myFascicoli.ElementType = OBJECT_TYPE.TEMPLATE;
                 myFascicoli.Template = "TemplateFascicoli";
 
-
+                // Smistamento
+                var mySmista = new IndexItem("50.1.5", 4, "", "Smistamento", "MailDash", "");
+                mySmista.Size = new System.Drawing.Size(2, 6);
+                mySmista.ElementType = OBJECT_TYPE.TEMPLATE;
+                mySmista.Template = "TemplateSmistamento";
 
                 return new IndexItem[]
                 {
-                    myMail, myFile, myFascicoli
+                    myMail, myFile, myFascicoli, mySmista
                  // new IndexItem("50.1.3", 1,  "", "Index", "DocsDash", "")
                 };
             }

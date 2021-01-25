@@ -227,8 +227,11 @@ namespace dblu.Docs.Classi
                              case "System.Int64":
                                 a.Valore = System.Convert.ToInt64(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
                                 break;
-
+                            case "System.String":
+                                a.Valore = valore.ToString();
+                                break;
                             default:
+                                a.Valore = valore.ToString();
                                 break;
                         }
                     }

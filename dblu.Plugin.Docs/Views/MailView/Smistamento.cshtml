@@ -117,12 +117,12 @@
 
 
 
-@* Syncfusion Essential JS 2 Styles *@
+@* Syncfusion Essential JS 2 Styles
 <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
-
-@* Syncfusion Essential JS 2 Scripts *@
+*@
+@* Syncfusion Essential JS 2 Scripts
 <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
-
+*@
 
 <script>
 
@@ -145,7 +145,7 @@
         emailpdfviewer.enableAnnotationToolbar=true;
     });
 
-
+    var listaTipiElementi  = @Json.Serialize(ListaTipiElementi);
 </script>
 
 <section class="content-header">
@@ -158,10 +158,12 @@
     </ol>
 </section>
 
+@*
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"></script>
 <script>
     window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js';
 </script>
+*@
 
 <script src="~/Scripts/dblupdf.js"></script>
 <script src="~/Scripts/dblugrid.js"></script>
@@ -351,119 +353,6 @@
             </div>
         </div>
         <div class="col-xs-7">
-            <div class="box box-default">
-                <div class="box-header with-border">
-                    <i class="ion ion-folder"></i>
-                    <h4 class="box-title">Allegati</h4>
-                    <div class="box-tools pull-right">
-                        <button type="button" class="btn btn-box-tool" data-widget="collapse" id="CollapseContenuto">
-                            <i class="fa fa-minus"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="box-body">
-                    <form>
-                        <div class="form-group" hidden>
-                            <label class="control-label col-md-2" style="font-size:12px">Testo</label>
-                            <div class="col-md-12" style="width:100%">
-                                <textarea class="form-control" id="TestoEmail" name="TestoEmail" rows="5" style="width:100%" readonly="readonly"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-md-2" style="font-size:12px" hidden>Allegati da includere</label>
-                            <div class="col-md-12" style="width:100%">
-                                @(Html.Kendo().Grid<EmailAttachments>()
-                            .Name("emailAttachments")
-                            .PersistSelection()
-                            .Columns(columns =>
-                            {
-                                columns.Select().Width(50).Title("Allega");
-                                columns.Bound(p => p.NomeFile).Title("Nome ").Width("50%");
-                                columns.Bound(p => p.IsIncluso).Title("Incluso nel pdf").Width("20%");
-                                columns.Command(command =>
-                                {
-                                    command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon my-icon-class-download");
-                                }).Width("10%");
-                            })
-                            .DataSource(dataSource => dataSource
-                                .Ajax()
-                                .Model(model => model.Id(p => p.Id))
-                                )
-                            .HtmlAttributes(new { style = "font-size:12" })
-                            )
-                                @*
-                             .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
-                             .Events(events => events.Change("Attachments_OnRowSelect"))
-                            .Events(ev => ev.Change("xxonChange"))*@
-                            </div><br /><br />
-                        </div>
-
-                        <div class="form-group" style="margin-top:10px" hidden>
-                            <div class="col-md-10" style="font-size:15px">
-                                @(Html.Kendo().CheckBox().Name("allegamail")
-                                .Checked(true).Label("Allega il testo della Mail")
-                            )
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class="box box-default">
-                <div class="box-header">
-                    <h4 class="box-title">Anteprima</h4>
-                    <div class="box-tools pull-right">
-                        <button type="button" class="btn btn-box-tool" data-widget="collapse">
-                            <i class="fa fa-minus"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="box-body">
-                    <div class="form-group">
-
-                        <div class="col-md-12" style="width:100%; margin-top:10px" id="anteprimapdf">
-
-                            @(Html.Kendo().ToolBar()
-               .Name("pdfToolBar")
-               .Items(items =>
-               {
-                                           items.Add().Type(CommandType.Button).Id("tbruotasx").Text("-90°").Icon("undo");
-                   items.Add().Type(CommandType.Button).Id("tbruotadx").Text("+90°").Icon("redo");
-                   items.Add().Type(CommandType.Button).Id("tbcanc").Text("Canc.").Icon("delete");
-                   items.Add().Type(CommandType.Separator);
-                   items.Add().Type(CommandType.Button).Id("tbrefresh").Text("Ricarica").Icon("refresh");
-                                           items.Add().Type(CommandType.Separator);
-                                           items.Add().Type(CommandType.Button).Id("tbsalva").Text("Salva").Icon("save");
-                                           items.Add().Type(CommandType.Separator);
-                                           items.Add().Type(CommandType.Button).Id("tbespandi").Text("Espandi").Icon("zoom-in");
-                                           items.Add().Type(CommandType.Separator);
-                                           items.Add().Template("<label id='tbdescrizione' class='k-label' style='font-size:16px;font-weight:400;padding-top:6px' ></label>");
-               })
-               .Events(e => e.Click("tbpdf_click"))
-
-                                   )
-
-                            <ejs-pdfviewer id="emailpdfviewer" serviceUrl="/api/mailPdfViewer" documentPath=""
-                                           enablePrint="true"
-                                           printEnd="documentPrinted"
-                                           documentLoad="documentLoaded"
-                                           annotationAdd="annotationAdd"
-                                           enableStampAnnotations="false"
-                                           exportSuccess="exportSuccess"
-                                           locale="it-IT"
-                                           downloadFileName="@string.Concat("",".pdf")" height="900px"
-                                           toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
-
-                            </ejs-pdfviewer>
-
-                            @*
-                        <div class="col-md-12" style="width:80%" id="anteprimajpg" hidden>
-                            <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
-                        </div>
-                            *@
-                        </div>
-                    </div>
-                </div>
-            </div>
             <div class="box box-default" id="divSmistamento">
                 <div class="box-header">
                     <i class="ion ion-person"></i>
@@ -531,30 +420,15 @@
                                         @(Html.Kendo().Button()
                                                 .Name("AssociaElemento")
                                                 .HtmlAttributes(new { type = "button", @class = "k-primary" })
-                                                .Content("Associa Elemento")
+                                                .Content("Associa ordine")
                                                 .Events(e => e.Click("AssociaElementoOnClick"))
                                         )
-                                        @*
-                                    <input type="button" value="Open" onclick="window.open('@Url.Action("testdownload", "sgGea")')" />
 
-
-                                                                              <script>
-                                          function testLikGea() {
-
-                                              $.ajax({
-                                                  url: '@Url.Action("testdownload", "sgGea")',
-                                                  type: 'GET',
-                                                  success: function (data) {
-                                                      $("testLikGea").text = "ok";
-                                                  }
-                                              });
-                                          }
-                                           </script>
-                                        *@
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        @*
                         <div class="row" id="divSoggettoElementiAperti" hidden>
                             <div class="form-group col-md-12" style="width:80%">
                                 @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggettoElementiAperti>()
@@ -589,6 +463,7 @@
                                 )
                             </div>
                         </div>
+                        *@
                     </form>
                 </div>
 
@@ -722,6 +597,8 @@
                                         <form class="form-horizontal" role="form" method="post" id="@{@fNameForm}" autocomplete="off">
                                             <div class="box-body">
 
+                                                @if (item.ViewAttributi == "")
+                                                {
                                                 @foreach (var attributo in item.Attributi.ToList().OrderBy(a => a.Sequenza).ToList())
                                                 {
 
@@ -739,7 +616,7 @@
                                                             case "System.Boolean":
                                                                 @(Html.Kendo().CheckBox()
                                                                             .Name($"ctl_{attributo.Nome}")
-                                                                            .Checked(attributo.ValorePredefinito)
+                                                                                .Checked(System.Convert.ToBoolean(attributo.ValorePredefinito))
                                                             )
                                                                 break;
                                                             default:
@@ -753,12 +630,19 @@
                                                         }
                                                     </div>
                                                 }
+                                                }
+                                                else
+                                                {
+                                                    Html.RenderPartial($"Smistamento/{item.ViewAttributi}", item);
+                                                }
                                             </div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
-
+                            <div class="form-group col-md-4">
+                            </div>
+                            <div class="form-group col-md-2">
                             @(Html.Kendo().Button()
                                         .Name($"btn_{item.Codice}")
                                         .HtmlAttributes(new { type = "button", @class = "k-primary k-button", categoria = item.Categoria, codice = item.Codice, aggrega= item.AggregaAElemento })
@@ -767,8 +651,122 @@
                                     )
                         </div>
                     </div>
+                    </div>
                 }
             }
+            <div class="box box-default">
+                <div class="box-header">
+                    <h4 class="box-title">Anteprima</h4>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <div class="form-group">
+
+                        <div class="col-md-12" style="width:100%; margin-top:10px" id="anteprimapdf">
+
+                            @(Html.Kendo().ToolBar()
+                                       .Name("pdfToolBar")
+                                       .Items(items =>
+                                       {
+                                            items.Add().Type(CommandType.Button).Id("tbruotasx").Text("-90°").Icon("undo");
+                                            items.Add().Type(CommandType.Button).Id("tbruotadx").Text("+90°").Icon("redo");
+                                            items.Add().Type(CommandType.Button).Id("tbcanc").Text("Canc.").Icon("delete");
+                                            items.Add().Type(CommandType.Separator);
+                                            items.Add().Type(CommandType.Button).Id("tbrefresh").Text("Ricarica").Icon("refresh");
+                                            items.Add().Type(CommandType.Separator);
+                                            items.Add().Type(CommandType.Button).Id("tbsalva").Text("Salva").Icon("save");
+                                            items.Add().Type(CommandType.Separator);
+                                            items.Add().Type(CommandType.Button).Id("tbespandi").Text("Espandi").Icon("zoom-in");
+                                            items.Add().Type(CommandType.Separator);
+                                            items.Add().Template("<label id='tbdescrizione' class='k-label' style='font-size:16px;font-weight:400;padding-top:6px' ></label>");
+                                       })
+                                       .Events(e => e.Click("tbpdf_click"))
+                                )
+
+                            <ejs-pdfviewer id="emailpdfviewer" serviceUrl="/api/mailPdfViewer" documentPath=""
+                                           enablePrint="true"
+                                           printEnd="documentPrinted"
+                                           documentLoad="documentLoaded"
+                                           annotationAdd="annotationAdd"
+                                           enableStampAnnotations="false"
+                                           exportSuccess="exportSuccess"
+                                           locale="it-IT"
+                                           downloadFileName="@string.Concat("",".pdf")" height="900px"
+                                           toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
+
+                            </ejs-pdfviewer>
+
+                            @*
+                        <div class="col-md-12" style="width:80%" id="anteprimajpg" hidden>
+                            <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
+                        </div>
+                            *@
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="box box-default">
+                <div class="box-header with-border">
+                    <i class="ion ion-folder"></i>
+                    <h4 class="box-title">Allegati</h4>
+                    <div class="box-tools pull-right">
+                        <button type="button" class="btn btn-box-tool" data-widget="collapse" id="CollapseContenuto">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="box-body">
+                    <form>
+                        <div class="form-group" hidden>
+                            <label class="control-label col-md-2" style="font-size:12px">Testo</label>
+                            <div class="col-md-12" style="width:100%">
+                                <textarea class="form-control" id="TestoEmail" name="TestoEmail" rows="5" style="width:100%" readonly="readonly"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-md-2" style="font-size:12px" hidden>Allegati da includere</label>
+                            <div class="col-md-12" style="width:100%">
+                                @(Html.Kendo().Grid<EmailAttachments>()
+                            .Name("emailAttachments")
+                            .PersistSelection()
+                            .Columns(columns =>
+                            {
+                                columns.Select().Width(50).Title("Allega");
+                                columns.Bound(p => p.NomeFile).Title("Nome ").Width("50%");
+                                columns.Bound(p => p.IsIncluso).Title("Incluso nel pdf").Width("20%");
+                                columns.Command(command =>
+                                {
+                                    command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon my-icon-class-download");
+                                }).Width("10%");
+                            })
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .Model(model => model.Id(p => p.Id))
+                                )
+                            .HtmlAttributes(new { style = "font-size:12" })
+                            )
+                                @*
+                             .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
+                             .Events(events => events.Change("Attachments_OnRowSelect"))
+                            .Events(ev => ev.Change("xxonChange"))*@
+                            </div><br /><br />
+                        </div>
+
+                        <div class="form-group" style="margin-top:10px" hidden>
+                            <div class="col-md-10" style="font-size:15px">
+                                @(Html.Kendo().CheckBox().Name("allegamail")
+                                .Checked(true).Label("Allega il testo della Mail")
+                            )
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
             @*<div id="divViewAttributi" class="box box-success" hidden>
             <div class="box-body no-padding">
