@@ -206,27 +206,27 @@ namespace dblu.Portale.Plugin.Docs.Class
                             case ".pdf":
                                 try
                                 {
-                                    MemoryStream m1 = new MemoryStream();
-                                    m.Position = 0;
-                                    m.CopyTo(m1);
-                                    PdfDocumentAnalyzer analyzer = new PdfDocumentAnalyzer(m1);
+                                    //MemoryStream m1 = new MemoryStream();
+                                    //m.Position = 0;
+                                    //m.CopyTo(m1);
+                                    //PdfDocumentAnalyzer analyzer = new PdfDocumentAnalyzer(m1);
                                     //Get the syntax errors
-                                    SyntaxAnalyzerResult anRes = analyzer.AnalyzeSyntax();
-                                    //Check whether the document is corrupted or not
-                                    if (anRes.IsCorrupted)
-                                    {
-                                        //Get syntax error details from results.error
-                                        StringBuilder builder = new StringBuilder();
-                                        //builder.AppendLine("The PDF document is corrupted.");
-                                        int count = 1;
-                                        foreach (PdfException exception in anRes.Errors)
-                                        {
-                                            builder.AppendLine(count++.ToString() + ": " + exception.Message);
-                                        }
-                                        _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il file {fileName}. {builder.ToString()}");
-                                    }
-                                    else
-                                    {
+                                    //SyntaxAnalyzerResult anRes = analyzer.AnalyzeSyntax();
+                                    ////Check whether the document is corrupted or not
+                                    //if (anRes.IsCorrupted)
+                                    //{
+                                    //    //Get syntax error details from results.error
+                                    //    StringBuilder builder = new StringBuilder();
+                                    //    //builder.AppendLine("The PDF document is corrupted.");
+                                    //    int count = 1;
+                                    //    foreach (PdfException exception in anRes.Errors)
+                                    //    {
+                                    //        builder.AppendLine(count++.ToString() + ": " + exception.Message);
+                                    //    }
+                                    //    _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il file {fileName}. {builder.ToString()}");
+                                    //}
+                                    //else
+                                    //{
                                         //No syntax error found in the provided PDF document
                                         m.Position = 0;
                                         //  appiattisco le note 
@@ -336,10 +336,10 @@ namespace dblu.Portale.Plugin.Docs.Class
                                         }
                                         }
                                         incluso = true;
-                                    }
-                                    m1.Close();
-                                    m1.Dispose();
-                                    analyzer.Close();
+                                    //}
+                                    //m1.Close();
+                                    //m1.Dispose();
+                                    //analyzer.Close();
 
                                 }
                                 catch (Exception ex)
