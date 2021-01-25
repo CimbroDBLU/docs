@@ -220,10 +220,10 @@
                 else html = kendo.format("<input type='date' class='chkbxW' disabled value=" + dato.ValorePredefinito + " > ");
             }
             if (dato.Tipo === 'System.Boolean') {
-                if (dato.ValorePredefinito == null || dato.ValorePredefinito == false) {
-                    html = kendo.format("<input type='checkbox' class='chkbxW' disabled checked=false >");
+                if (dato.ValorePredefinito == null || dato.ValorePredefinito == "0") {
+                    html = kendo.format("<input type='checkbox' class='chkbxW' disabled>");
                 } else {
-                    html = kendo.format("<input type='checkbox' class='chkbxW' disabled checked=true >");
+                    html = kendo.format("<input type='checkbox' class='chkbxW' disabled checked>");
                 }
             }
             if (dato.Tipo === 'System.Double' || dato.Tipo === 'System.Int32') {
