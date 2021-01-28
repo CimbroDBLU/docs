@@ -291,6 +291,7 @@
                         .Name("gridEmail")
                         .Columns(columns =>
                         {
+                            //columns.Select().Width(50);
                             columns.Bound(p => p.Id).Title("Id").Width(0).Hidden();
                             columns.Bound(p => p.Chiave4).Title("Nome").Width(0).Hidden();
                             columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.DescrizioneChiave("Chiave1")).Width(300)
@@ -299,7 +300,7 @@
                                             + "<span> #: Chiave1# </span><br/>");
                             columns.Bound(p => p.Descrizione).Title("Oggetto").Width(150);
                             columns.Bound(p => p.DataC).Title("Data").Width(100).Format("{0:dd/MM/yy HH:mm}");
-                              
+
                         })
                              .ToolBar(toolbar =>
                              {
@@ -309,14 +310,16 @@
                                  toolbar.Custom().Text("Rispondi").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:90px", onclick = "RispondiEmail()" });
                                  toolbar.Custom().Text("Canc.").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:70px", onclick = "CancellaEmail()" });
                                  toolbar.Search();
-})
-                        .Selectable()
+                             })
+                        //.Selectable()
+                        .Selectable(selectable => selectable.Mode(GridSelectionMode.Multiple).Type(GridSelectionType.Row))
                         .Pageable()
                         .Sortable()
-                                    .Scrollable(s => s.Height("auto"))
+                        .Scrollable(s => s.Height("auto"))
+                        .PersistSelection()
                         .Filterable()
                         .Groupable(false)
-                        .Selectable()
+                        //.Selectable()
                         .DataSource(dataSource => dataSource
                             .Ajax()
                                         .PageSize(20)

@@ -856,17 +856,18 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         [AcceptVerbs("Post")]
         [HasPermission("50.1.5")]
 
-        public IActionResult SalvaAttributiAggiuntivi(string IdAllegato, string form)
+        public IActionResult SalvaAttributiAggiuntivi(string[] IdAllegato, string form)
         {
                 bool res = false;
 
                 try
                 {
-
-                    if (string.IsNullOrEmpty(IdAllegato))
+                    foreach (string item in IdAllegato )
+                    {
+                    if (string.IsNullOrEmpty(item))
                         return BadRequest();
 
-                    Allegati all = _mailService._allMan.Get(IdAllegato);
+                    Allegati all = _mailService._allMan.Get(item);
                     if (all != null)
                     {
                         if (!string.IsNullOrEmpty(form))
@@ -898,13 +899,13 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                                 }
                                 }
                             }
-                        PdfEditAction pdfed = new PdfEditAction();
-                        pdfed.IdAllegato = IdAllegato;
-                        pdfed.TempFolder = Path.Combine(_hostingEnvironment.WebRootPath, "_tmp");
-                        if (System.IO.File.Exists(pdfed.FileAnnotazioni))
-                        {
-                            all.Note = System.IO.File.ReadAllText(pdfed.FileAnnotazioni);
-                        }
+                            PdfEditAction pdfed = new PdfEditAction();
+                            pdfed.IdAllegato = item;
+                            pdfed.TempFolder = Path.Combine(_hostingEnvironment.WebRootPath, "_tmp");
+                            if (System.IO.File.Exists(pdfed.FileAnnotazioni))
+                            {
+                                all.Note = System.IO.File.ReadAllText(pdfed.FileAnnotazioni);
+                            }
 
                             all.Stato = StatoAllegato.Attivo;
                             all.DataUM = DateTime.Now;
@@ -924,6 +925,68 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                             res = true;
                         }
                     }
+                }
+                    //if (string.IsNullOrEmpty(IdAllegato))
+                    //    return BadRequest();
+
+                    //Allegati all = _mailService._allMan.Get(IdAllegato);
+                    //if (all != null)
+                    //{
+                    //    if (!string.IsNullOrEmpty(form))
+                    //    {
+                    //        var attr = HttpUtility.ParseQueryString(form);
+                    //        foreach (string n in attr.Keys)
+                    //        {
+                    //        if (n != "__RequestVerificationToken")
+                    //        {
+                    //            Attributo xx = new Attributo();
+
+                    //                xx.Nome = n;
+                    //                if (n.StartsWith("ctl_"))
+                    //                    xx.Nome = n.Substring(4);
+
+                    //            if (all.elencoAttributi.Valori.ContainsKey(xx.Nome))
+                    //            {
+                    //                all.elencoAttributi.Valori[xx.Nome].Valore = attr.Get(n);
+                    //            }
+                    //            else
+                    //            {
+                    //                xx.Valore = attr.Get(n);
+                    //                all.elencoAttributi.Add(xx);
+                    //            }
+                    //                //all.SetAttributo(nome, attr.Get(n));
+                    //            if (xx.Nome.ToLower() == "origine")
+                    //            {
+                    //                all.Origine = attr.Get(n);
+                    //            }
+                    //            }
+                    //        }
+                    //    PdfEditAction pdfed = new PdfEditAction();
+                    //    pdfed.IdAllegato = IdAllegato;
+                    //    pdfed.TempFolder = Path.Combine(_hostingEnvironment.WebRootPath, "_tmp");
+                    //    if (System.IO.File.Exists(pdfed.FileAnnotazioni))
+                    //    {
+                    //        all.Note = System.IO.File.ReadAllText(pdfed.FileAnnotazioni);
+                    //    }
+
+                    //        all.Stato = StatoAllegato.Attivo;
+                    //        all.DataUM = DateTime.Now;
+                    //        all.UtenteUM = User.Identity.Name;
+                    //        _mailService._allMan.Salva(all, false, false);
+                    //        ////-------- Memorizzo l'operazione----------------------
+                    //        //LogDoc log = new LogDoc()
+                    //        //{
+                    //        //    Data = DateTime.Now,
+                    //        //    IdOggetto = Guid.Parse(IdAllegato),
+                    //        //    TipoOggetto = TipiOggetto.ALLEGATO,
+                    //        //    Utente = User.Identity.Name,
+                    //        //    Operazione = TipoOperazione.Modificato
+                    //        //};
+                    //        //_mailService._logMan.Salva(log, true);
+                    //        ////-------- Memorizzo l'operazione----------------------
+                    //        res = true;
+                    //    }
+                    //}
                 }
                 catch (Exception ex)
                 {

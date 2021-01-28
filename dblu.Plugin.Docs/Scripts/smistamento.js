@@ -39,12 +39,13 @@ function SpostaEmail() {
 
 // eventi
 gridEmailOnChange = function (e) {
-    gridEmailCurrentRow = this.select();
-    var data = this.dataItem(this.select());
-    mailItem = data;
-    mailId = data.Id;
-    mailChiave1 = data.Chiave1;
-    mailDescrizione = data.Descrizione;
+    if (this.select().length === 1) {
+        gridEmailCurrentRow = this.select();
+        var data = this.dataItem(this.select());
+        mailItem = data;
+        mailId = data.Id;
+        mailChiave1 = data.Chiave1;
+        mailDescrizione = data.Descrizione;
 
     elementoItem = null;
     
@@ -75,9 +76,11 @@ gridEmailOnChange = function (e) {
         },
         error: function (data) {
 
-        }
-        
-    });
+            }
+
+        });
+    }
+    
     
 }
 
@@ -1299,14 +1302,36 @@ function NuovoElemento(e) {
 
 
 function SalvaAttributi(caller) {
-    //caller.preventDefault();
-    //TipoElemento = this.element.attr("codice");
+
     var fNameForm = "form" + TipoElemento;
     var frm = $("#" + fNameForm);
-    var obj = {
-        IdAllegato: $("#IdAllegato").val(),
-        form: frm.serialize()
-    };
+
+    var items = [];
+    var grid = $("#gridEmail").data("kendoGrid");
+
+
+    if (grid === undefined) {
+
+    }
+    else {
+        var selectedElements = grid.select();
+        for (var j = 0; j < selectedElements.length; j++) {
+            var item = grid.dataItem(selectedElements[j]);
+            items[j] = item.Id;
+            
+        }
+
+        var obj = {
+            IdAllegato: items,
+            form: frm.serialize()
+        };
+    }
+  
+
+    //var obj = {
+    //    IdAllegato: $("#IdAllegato").val(),
+    //    form: frm.serialize()
+    //};
     $.ajax(
         {
             url: UrlActions.Spostamento_salvaAttAgg,
@@ -1314,7 +1339,7 @@ function SalvaAttributi(caller) {
             cache: false,
             data: obj,
             success: function (data) {
-                var grid = $("#gridEmail").data("kendoGrid");
+                //var grid = $("#gridEmail").data("kendoGrid");
                 PulisciDettaglio();
                 grid.dataSource.read();
             },
