@@ -77,7 +77,7 @@
     function pdf_importAnnotations() {
 
         var pdfEditorViewer = document.getElementById('pdfEditorViewer').ej2_instances[0];
-        pdfEditorViewer.importAnnotations();
+        pdfEditorViewer.importAnnotation();
     }
 
     function pdf_annotationAdd(e) {
@@ -89,7 +89,7 @@
 
         var pdfEditorViewer = document.getElementById('pdfEditorViewer').ej2_instances[0];
         pdfEditorViewer.exportFileName = JSON.stringify(CurrentPdf);
-        pdfEditorViewer.exportAnnotations();
+        pdfEditorViewer.exportAnnotation();
     }
 
     function pdf_documentLoaded(args) {
@@ -123,7 +123,7 @@
 
         }
 
-        pdfEditorViewer.importAnnotations(JSON.stringify(CurrentPdf));
+        pdfEditorViewer.importAnnotation(JSON.stringify(CurrentPdf));
 
     }
 
@@ -183,7 +183,7 @@
 
         if (CurrentPdf.iAzione == docsAzioniPdf.Salva && pdfEditorViewer.annotationCollection != undefined && pdfEditorViewer.annotationCollection.length > 0) {
 
-            pdfEditorViewer.exportAnnotations(JSON.stringify(CurrentPdf));
+            pdfEditorViewer.exportAnnotation(JSON.stringify(CurrentPdf));
             //var myPromise = pdfEditorViewer.exportAnnotationsAsObject();
             //myPromise.then(response => {
             //    pdfEditorViewer.load(JSON.stringify(CurrentPdf))

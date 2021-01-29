@@ -752,7 +752,7 @@ GridElementi_OnRowSelect = function (e) {
     myWindow.close();
     $("#IdFascicolo").val($.trim(data.IdFascicolo));
     //$("#IdElemento").val($.trim(data.IdElemento));
-    $("#DescrizioneElemento").val($.trim(data.DscElemento));
+    //$("#DescrizioneElemento").val($.trim(data.DscElemento));
 }
 
 
@@ -971,11 +971,10 @@ function CaricaSoggetto(codice) {
 
 GridSoggetti_OnRowSelect = function (e) {
         var data = this.dataItem(this.select());
-        var myWindow = $("#cercasoggetti").data("kendoWindow");
-        myWindow.close();
         $('#CodiceSoggetto').val(data.Codice);
         $('#NomeSoggetto').val(data.Nome);
-
+        var myWindow = $("#cercasoggetti").data("kendoWindow");
+        myWindow.close();
         CaricaSoggetto(data.Codice);
         NotificaAssociazione(data.Codice);
 }
@@ -1082,7 +1081,7 @@ function importAnnotations() {
     //emailpdfviewer.fileName = JSON.stringify(PdfCorrente);
     //emailpdfviewer.importAnnotations('');
     //emailpdfviewer.exportFileName = JSON.stringify(PdfCorrente);
-    emailpdfviewer.importAnnotations();
+    emailpdfviewer.importAnnotation();
 }
 
 function annotationAdd(e) {
@@ -1094,7 +1093,7 @@ function saveAnnotations() {
 
     var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
     emailpdfviewer.exportFileName = JSON.stringify(PdfCorrente);
-    emailpdfviewer.exportAnnotations();
+    emailpdfviewer.exportAnnotation();
 }
 
 function documentLoaded(args) {
@@ -1129,7 +1128,7 @@ function documentLoaded(args) {
 
     }
 
-    emailpdfviewer.importAnnotations(JSON.stringify(PdfCorrente));
+    emailpdfviewer.importAnnotation(JSON.stringify(PdfCorrente));
 
 }
 
@@ -1211,7 +1210,7 @@ function tbpdf_click(e) {
         //emailpdfviewer.exportAnnotationFileName = JSON.stringify(PdfCorrente);
         if (PdfCorrente.iAzione == docsAzioniPdf.Salva && emailpdfviewer.annotationCollection != undefined &&  emailpdfviewer.annotationCollection.length > 0) {
 
-            emailpdfviewer.exportAnnotations(JSON.stringify(PdfCorrente));
+            emailpdfviewer.exportAnnotation(JSON.stringify(PdfCorrente));
             //var myPromise = emailpdfviewer.exportAnnotationsAsObject();
             //myPromise.then(response => {
             //    emailpdfviewer.load(JSON.stringify(PdfCorrente))
@@ -1278,18 +1277,28 @@ function NuovoElemento(e) {
     var Aggrega = this.element.attr("aggrega");
     var Categoria = this.element.attr("categoria");
     TipoElemento = this.element.attr("codice");
+    var view = this.element.attr("viewattributi");
 
     var fNameDiv = "div" + TipoElemento;
+   
     listaTipiElementi.forEach(function (tipo) {
-        if (tipo.AggregaAElemento == false) {
+        //if (tipo.AggregaAElemento == false) { 
+        try {
             $('#div' + tipo.Codice).hide();
         }
+        catch { };
     });
     $('body').addClass('waiting');
     if (Aggrega === 'True') {
+        if (view === '') {
         $('#divSoggetto').show();
-        $('#divElemento').show();
+        //  $('#divElemento').show();
         //$('#divFascicolo').show();
+    }
+    else {
+        $('#divSoggetto').hide();
+            $('#' + fNameDiv).show();
+        }
     }
     else {
         $('#divSoggetto').hide();
@@ -1302,7 +1311,8 @@ function NuovoElemento(e) {
 
 
 function SalvaAttributi(caller) {
-
+    //caller.preventDefault();
+    //TipoElemento = this.element.attr("codice");
     var fNameForm = "form" + TipoElemento;
     var frm = $("#" + fNameForm);
 

@@ -754,7 +754,7 @@ function saveAnnotations() {
 
     var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
     zippdfviewer.exportFileName = JSON.stringify(PdfCorrente);
-    zippdfviewer.exportAnnotations();
+    zippdfviewer.exportAnnotation();
 }
 
 function documentLoaded(args) {
@@ -857,7 +857,7 @@ function tbpdf_click(e) {
 
         if (PdfCorrente.iAzione == docsAzioniPdf.Salva && zippdfviewer.annotationCollection != undefined && zippdfviewer.annotationCollection.length > 0) {
 
-            zippdfviewer.exportAnnotations(JSON.stringify(PdfCorrente));
+            zippdfviewer.exportAnnotation(JSON.stringify(PdfCorrente));
 
         }
         else {

@@ -1288,7 +1288,7 @@ function importAnnotations() {
     //emailpdfviewer.fileName = JSON.stringify(PdfCorrente);
     //emailpdfviewer.importAnnotations('');
     //emailpdfviewer.exportFileName = JSON.stringify(PdfCorrente);
-    emailpdfviewer.importAnnotations();
+    emailpdfviewer.importAnnotation();
 }
 
 function annotationAdd(e) {
@@ -1300,7 +1300,7 @@ function saveAnnotations() {
 
     var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
     emailpdfviewer.exportFileName = JSON.stringify(PdfCorrente);
-    emailpdfviewer.exportAnnotations();
+    emailpdfviewer.exportAnnotation();
 }
 
 function documentLoaded(args) {
@@ -1335,7 +1335,7 @@ function documentLoaded(args) {
 
     }
 
-    emailpdfviewer.importAnnotations(JSON.stringify(PdfCorrente));
+    emailpdfviewer.importAnnotation(JSON.stringify(PdfCorrente));
 
 }
 
@@ -1417,7 +1417,7 @@ function tbpdf_click(e) {
         //emailpdfviewer.exportAnnotationFileName = JSON.stringify(PdfCorrente);
         if (PdfCorrente.iAzione == docsAzioniPdf.Salva && emailpdfviewer.annotationCollection != undefined &&  emailpdfviewer.annotationCollection.length > 0) {
 
-            emailpdfviewer.exportAnnotations(JSON.stringify(PdfCorrente));
+            emailpdfviewer.exportAnnotation(JSON.stringify(PdfCorrente));
             //var myPromise = emailpdfviewer.exportAnnotationsAsObject();
             //myPromise.then(response => {
             //    emailpdfviewer.load(JSON.stringify(PdfCorrente))

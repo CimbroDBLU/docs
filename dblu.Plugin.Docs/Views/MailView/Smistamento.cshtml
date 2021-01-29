@@ -373,7 +373,7 @@
                                             <div class="col-md-3">
                                                 @(Html.Kendo().Button()
                                         .Name(item.Codice)
-                                        .HtmlAttributes(new { type = "button", @class = "k-primary k-button", @style = "width:100%;", categoria = item.Categoria, codice = item.Codice, aggrega= item.AggregaAElemento })
+                                                    .HtmlAttributes(new { type = "button", @class = "k-primary k-button", @style = "width:100%;", categoria = item.Categoria, codice = item.Codice, aggrega= item.AggregaAElemento , viewattributi = item.ViewAttributi })
                                                 .Content(item.Descrizione)
                                         .Events(e => e.Click("NuovoElemento"))
                                     )
@@ -579,7 +579,7 @@
             </div>
             @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
             {
-                if (!item.AggregaAElemento)
+                if (!item.AggregaAElemento || !string.IsNullOrEmpty(item.ViewAttributi))
                 {
                     var fName = "div" + item.Codice;
                     var fNameForm = "form" + item.Codice;
@@ -600,32 +600,32 @@
                                         <form class="form-horizontal" role="form" method="post" id="@{@fNameForm}" autocomplete="off">
                                             <div class="box-body">
 
-                                                @if (item.ViewAttributi == "")
+                                                @if (string.IsNullOrEmpty(item.ViewAttributi))
                                                 {
                                                 @foreach (var attributo in item.Attributi.ToList().OrderBy(a => a.Sequenza).ToList())
                                                 {
 
                                                     <div class="form-group">
-                                                        @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione)
+                                                            @Html.Label($"lbl_{item.Codice}{attributo.Nome}", attributo.Descrizione)
 
                                                         @switch (attributo.Tipo)
                                                         {
                                                             case "System.DateTime":
                                                                 @(Html.Kendo().DatePicker()
-                                                                            .Name($"ctl_{attributo.Nome}")
+                                                                                .Name($"ctl_{item.Codice}{attributo.Nome}")
                                                                             .Value(attributo.ValorePredefinito)
                                                             )
                                                                 break;
                                                             case "System.Boolean":
                                                                 @(Html.Kendo().CheckBox()
-                                                                            .Name($"ctl_{attributo.Nome}")
+                                                                                .Name($"ctl_{item.Codice}{attributo.Nome}")
                                                                                 .Checked(System.Convert.ToBoolean(attributo.ValorePredefinito))
                                                             )
                                                                 break;
                                                             default:
 
                                                                 @(Html.Kendo().TextBox()
-                                                              .Name($"ctl_{attributo.Nome}")
+                                                                  .Name($"ctl_{item.Codice}{attributo.Nome}")
                                                               .Value(attributo.ValorePredefinito == null ? "" : attributo.ValorePredefinito.ToString())
                                                               .HtmlAttributes(new { style = "width: 100%" })
                                                               )

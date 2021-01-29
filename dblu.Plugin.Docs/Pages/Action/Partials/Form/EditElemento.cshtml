@@ -103,7 +103,7 @@
      function importAnnotations() {
         var IdAllegato = $("#IdAllegato").val();
         var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
-        pdfViewer.importAnnotations(IdAllegato);
+        pdfViewer.importAnnotation(IdAllegato);
     }
 
     function annotationAdd(e) {
@@ -114,7 +114,7 @@
     function saveAnnotations() {
 
         var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
-        pdfViewer.exportAnnotations();
+        pdfViewer.exportAnnotation();
     }
 
     function documentLoaded(args) {

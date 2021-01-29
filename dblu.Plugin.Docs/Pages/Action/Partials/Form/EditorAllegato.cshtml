@@ -108,7 +108,7 @@
     function importAnnotations() {
 
         var emailpdfviewer = document.getElementById('pdfviewer').ej2_instances[0];
-        emailpdfviewer.importAnnotations('');
+        emailpdfviewer.importAnnotation('');
     }
 
     function annotationAdd(e) {
@@ -119,7 +119,7 @@
     function saveAnnotations() {
 
         var emailpdfviewer = document.getElementById('pdfviewer').ej2_instances[0];
-        emailpdfviewer.exportAnnotations();
+        emailpdfviewer.exportAnnotation();
     }
 
     function documentLoaded(args) {

@@ -14,14 +14,6 @@
 
 }
 
-
-@* Syncfusion Essential JS 2 Styles
-<link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
-*@
-@* Syncfusion Essential JS 2 Scripts
-<script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
-*@
-
 <style>
 
     html body #riepilogopdfviewer {
@@ -80,7 +72,7 @@
     function importAnnotations() {
 
         var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
-        emailpdfviewer.importAnnotations('');
+        emailpdfviewer.importAnnotation('');
     }
 
     function annotationAdd(e) {
@@ -91,7 +83,7 @@
     function saveAnnotations() {
 
         var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
-        emailpdfviewer.exportAnnotations();
+        emailpdfviewer.exportAnnotation();
     }
 
     function documentLoaded(args) {

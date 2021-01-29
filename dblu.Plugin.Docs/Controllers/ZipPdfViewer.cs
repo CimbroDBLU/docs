@@ -255,8 +255,8 @@ namespace dblu.Portale.Plugin.Documenti
             try
             {
                 PdfRenderer pdfviewer = new PdfRenderer(_cache);
-                jsonResult = pdfviewer.GetAnnotations(jsonObject);
-                //jsonResult = pdfviewer.ExportAnnotation(jsonObject);
+                //jsonResult = pdfviewer.GetAnnotations(jsonObject);
+                jsonResult = pdfviewer.ExportAnnotation(jsonObject);
 #if TEST
                 var path = Path.Combine(_hostingEnvironment.WebRootPath, notepath);
                 if (!Directory.Exists(path))

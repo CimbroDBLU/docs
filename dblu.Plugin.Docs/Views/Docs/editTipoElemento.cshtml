@@ -184,13 +184,11 @@
                            })
                            .ToolBar(toolbar => toolbar.Create())
                            .Editable(editable => editable.Mode(GridEditMode.InLine))
-                           .Pageable()
                            .Sortable()
                            .Scrollable()
                            .HtmlAttributes(new { style = "height:430px;" })
                            .DataSource(dataSource => dataSource
                                 .Ajax()
-                                .PageSize(20)
                                 .Model(model =>
                                 {
                                     model.Id(p => p.Nome);

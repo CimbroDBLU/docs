@@ -260,10 +260,10 @@ namespace dblu.Portale.Plugin.Documenti
                                     break;
                             }
 
-                            var cacheEntryOptions = new MemoryCacheEntryOptions()
-                                    .SetSlidingExpiration(TimeSpan.FromSeconds(20));
+                            //var cacheEntryOptions = new MemoryCacheEntryOptions()
+                            //        .SetSlidingExpiration(TimeSpan.FromSeconds(20));
                             
-                            _cache.Set(pdf.CacheEntry, pdf, cacheEntryOptions);
+                            //_cache.Set(pdf.CacheEntry, pdf, cacheEntryOptions);
                         }
                         else
                         {
@@ -441,8 +441,8 @@ namespace dblu.Portale.Plugin.Documenti
             try
             {
                 PdfRenderer pdfviewer = new PdfRenderer(_cache);
-                jsonResult = pdfviewer.GetAnnotations(jsonObject);
-                //jsonResult = pdfviewer.ExportAnnotation(jsonObject);
+                //jsonResult = pdfviewer.GetAnnotations(jsonObject);
+                jsonResult = pdfviewer.ExportAnnotation(jsonObject);
                 if (jsonObject != null && jsonObject.ContainsKey("document"))
                 {
                     string documentPath = GetDocumentPath(jsonObject["document"]);
@@ -455,6 +455,7 @@ namespace dblu.Portale.Plugin.Documenti
                             pdf.TempFolder = Path.Combine(_hostingEnvironment.WebRootPath, "_tmp");
                             byte[] b = Convert.FromBase64String(jsonResult.Split(",")[1]);
                             var json = System.Text.Encoding.UTF8.GetString(b);
+                            //var json = "{ \"pdfAnnotation\" : " + jsonObject["pdfAnnotation"] + "}";
 
                             //_allegatiService.SaveNoteString(pdf, json);
                             System.IO.File.WriteAllText(pdf.FileAnnotazioni, json);

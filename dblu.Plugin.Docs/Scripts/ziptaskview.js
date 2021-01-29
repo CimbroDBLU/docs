@@ -633,7 +633,7 @@ function annotationAdd(e) {
 function saveAnnotations() {
 
     var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
-    zippdfviewer.exportAnnotations();
+    zippdfviewer.exportAnnotation();
 }
 
 function documentLoaded(args) {

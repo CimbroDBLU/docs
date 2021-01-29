@@ -25,7 +25,6 @@
 
   <ItemGroup>
     <EmbeddedResource Remove="Views\Docs\EditorPdf.cshtml" />
-    <EmbeddedResource Remove="Views\ZipView\PreviewRiepilogo.cshtml" />
   </ItemGroup>
 
 
