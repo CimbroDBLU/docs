@@ -372,11 +372,11 @@
                                         {
                                             <div class="col-md-3">
                                                 @(Html.Kendo().Button()
-                                        .Name(item.Codice)
-                                                    .HtmlAttributes(new { type = "button", @class = "k-primary k-button", @style = "width:100%;", categoria = item.Categoria, codice = item.Codice, aggrega= item.AggregaAElemento , viewattributi = item.ViewAttributi })
-                                                .Content(item.Descrizione)
-                                        .Events(e => e.Click("NuovoElemento"))
-                                    )
+                                                    .Name(item.Codice)
+                                                            .HtmlAttributes(new { type = "button", @class = "k-primary k-button", @style = "width:100%;", categoria = item.Categoria, codice = item.Codice, aggrega= item.AggregaAElemento , viewattributi = item.ViewAttributi })
+                                                        .Content(item.Descrizione)
+                                                    .Events(e => e.Click("NuovoElemento"))
+                                                )
                                             </div>
 
                                         }

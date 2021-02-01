@@ -743,7 +743,7 @@ function ZipCompleto(e) {
 function importAnnotations() {
 
     var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
-    zippdfviewer.importAnnotations();
+    zippdfviewer.importAnnotation();
 }
 
 function annotationAdd(e) {
@@ -787,7 +787,7 @@ function documentLoaded(args) {
 
     }
 
-    zippdfviewer.importAnnotations(JSON.stringify(PdfCorrente));
+    zippdfviewer.importAnnotation(JSON.stringify(PdfCorrente));
 
 }
 
