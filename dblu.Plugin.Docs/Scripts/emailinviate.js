@@ -84,10 +84,15 @@ function Attachments_OnRowSelect(arg) {
 
 function inoltraOnClick(e) {
     e.preventDefault();
-
+    var listMail = null;
+    if ($("#emailInoltro").val() == "") listMail = $("#multiMailInoltro").val().toString();
+    else {
+        if ($("#multiMailInoltro").val().toString() == "") listMail = $("#emailInoltro").val();
+        else listMail = $("#emailInoltro").val() + ';' + $("#multiMailInoltro").val();
+    }
     var obj = {
         IdAllegato: $("#IdAllegato").val(),
-        email: $("#emailInoltro").val()
+        email: listMail
     };
     $.ajax({
         url: UrlActions.MailView_InArrivo_Inoltra,
