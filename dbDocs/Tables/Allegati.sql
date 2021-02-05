@@ -18,6 +18,7 @@
     [Chiave4]     NVARCHAR (255)   DEFAULT ('') NOT NULL,
     [Chiave5]     NVARCHAR (255)   DEFAULT ('') NOT NULL,
     [Origine]     NVARCHAR (50)    CONSTRAINT [DF_Allegati_Origine] DEFAULT ('') NULL,
+    [Testo] NVARCHAR(MAX) NULL DEFAULT '', 
     CONSTRAINT [PK_Allegati] PRIMARY KEY CLUSTERED ([ID] ASC),
     CONSTRAINT [FK_Allegati_Fascicoli] FOREIGN KEY ([IDFascicolo]) REFERENCES [dbo].[Fascicoli] ([ID]) ON DELETE CASCADE,
     CONSTRAINT [FK_Allegati_TipiAllegati] FOREIGN KEY ([Tipo]) REFERENCES [dbo].[TipiAllegati] ([Codice])

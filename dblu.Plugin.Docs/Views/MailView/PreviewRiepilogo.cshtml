@@ -64,15 +64,17 @@
         //alert(Id)
         var emailpdfviewer = document.getElementById('riepilogopdfviewer').ej2_instances[0];
         var param = "riepilogo;" + id;
+        emailpdfviewer.enablePrint = false;
         emailpdfviewer.load(param);
         emailpdfviewer.downloadFileName = nome;
-        
+        emailpdfviewer.enablePrint = true;
 
     }
     function importAnnotations() {
 
-        var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
+        var emailpdfviewer = document.getElementById('riepilogopdfviewer').ej2_instances[0];
         emailpdfviewer.importAnnotation('');
+   
     }
 
     function annotationAdd(e) {
@@ -82,13 +84,15 @@
 
     function saveAnnotations() {
 
-        var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
+        var emailpdfviewer = document.getElementById('riepilogopdfviewer').ej2_instances[0];
         emailpdfviewer.exportAnnotation();
     }
 
     function documentLoaded(args) {
-        //alert("The document" + args.fileName + "is ready to view");
-        importAnnotations();
+
+        var emailpdfviewer = document.getElementById('riepilogopdfviewer').ej2_instances[0];
+        emailpdfviewer.importAnnotation('');
+        emailpdfviewer.enablePrint = true;
     }
 
 </script>

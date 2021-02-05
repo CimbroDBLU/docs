@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "dbluMailService": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

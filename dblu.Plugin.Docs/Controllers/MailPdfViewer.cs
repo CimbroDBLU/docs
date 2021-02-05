@@ -260,10 +260,10 @@ namespace dblu.Portale.Plugin.Documenti
                                     break;
                             }
 
-                            //var cacheEntryOptions = new MemoryCacheEntryOptions()
-                            //        .SetSlidingExpiration(TimeSpan.FromSeconds(20));
+                            var cacheEntryOptions = new MemoryCacheEntryOptions()
+                                    .SetSlidingExpiration(TimeSpan.FromSeconds(20));
                             
-                            //_cache.Set(pdf.CacheEntry, pdf, cacheEntryOptions);
+                            _cache.Set(pdf.CacheEntry, pdf, cacheEntryOptions);
                         }
                         else
                         {

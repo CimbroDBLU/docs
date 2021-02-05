@@ -34,7 +34,7 @@ namespace dbluMailService
         public string Bpm_url { get; set; }
         public string Bpm_User { get; set; }
         public string Bpm_Password { get; set; }
-        public dblu.Docs.Models.StatoAllegato  StatoIniziale { get; set; }
+        public dblu.Docs.Models.StatoAllegato StatoIniziale { get; set; }
         //'private static readonly NLog.Logger _nlogger = NLog.LogManager.GetCurrentClassLogger();
         public MailManager(ILogger logger, IConfiguration conf)
         {
@@ -48,7 +48,7 @@ namespace dbluMailService
             {
 
                 //var context = new dbluDocsContext(Connessione);
-                
+
                 //var serverIn =  context.EmailServer
                 //            .Where(s => s.Attivo == true && s.InUscita == false)
                 //            .ToList();
@@ -67,74 +67,69 @@ namespace dbluMailService
                             new { Codice = this.TipoAllegato });
 
                         var allMan = new AllegatiManager(Connessione, _logger);
-                    
-                    //bpm
-                    var eng = new BPMClient.BPMEngine();
 
-                    eng.Imposta(this.Bpm_url, this.Bpm_User, this.Bpm_Password,"");
+                        //bpm
+                        var eng = new BPMClient.BPMEngine();
 
-               
-                foreach (EmailServer s in serverIn)
-                {
-                    _logger.LogInformation($"Elaborazione di {s.Nome}");
-                    using (var client = new ImapClient())
-                    {
-                        await client.ConnectAsync(s.Server, s.Porta, s.Ssl, cancel);
+                        eng.Imposta(this.Bpm_url, this.Bpm_User, this.Bpm_Password, "");
 
-                         
-                        // If you want to disable an authentication mechanism,
-                        // you can do so by removing the mechanism like this:
-                        // client.AuthenticationMechanisms.Remove("XOAUTH");
+                        foreach (EmailServer s in serverIn)
+                        {
+                            _logger.LogInformation($"Elaborazione di {s.Nome}");
+                            using (var client = new ImapClient())
+                            {
+                                await client.ConnectAsync(s.Server, s.Porta, s.Ssl, cancel);
 
-                        await client.AuthenticateAsync(s.Utente, s.Password, cancel);
+                                // If you want to disable an authentication mechanism,
+                                // you can do so by removing the mechanism like this:
+                                // client.AuthenticationMechanisms.Remove("XOAUTH");
 
-                        IMailFolder inbox = null;
+                                await client.AuthenticateAsync(s.Utente, s.Password, cancel);
+
+                                IMailFolder inbox = null;
                                 IMailFolder archivio = null;
-                        if (!string.IsNullOrEmpty(s.Cartella))
-                        {
-                            inbox = client.GetFolder(s.Cartella, cancel);
-                        }
-                        else
-                        {
-                            inbox = client.Inbox;
+                                if (!string.IsNullOrEmpty(s.Cartella))
+                                {
+                                    inbox = client.GetFolder(s.Cartella, cancel);
+                                }
+                                else
+                                {
+                                    inbox = client.Inbox;
                                     s.Cartella = inbox.FullName;
-                        }
-                        await inbox.OpenAsync(FolderAccess.ReadWrite, cancel);
-                        _logger.LogDebug($" email {inbox.Count}");
+                                }
+                                await inbox.OpenAsync(FolderAccess.ReadWrite, cancel);
+                                _logger.LogDebug($" email {inbox.Count}");
 
                                 //prendo i messaggi da leggere 
-                        var query = SearchQuery.NotSeen;
+                                var query = SearchQuery.NotSeen;
                                 bool archiviaEmail = !string.IsNullOrEmpty(s.CartellaArchivio);
                                 if (archiviaEmail)
                                 {
-
                                     try
                                     {
-                                        IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0],true,cancel);
-
+                                        IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0], true, cancel);
                                         //
                                         archivio = mf.Where(c => c.Name == s.CartellaArchivio).FirstOrDefault();
-                                        if (archivio == null) {
+                                        if (archivio == null)
+                                        {
                                             mf = inbox.GetSubfolders(true, cancel);
                                             archivio = mf.Where(c => c.Name == s.CartellaArchivio).FirstOrDefault();
                                         }
                                         if (archivio == null)
                                         {
-                                        archivio = client.GetFolder(s.CartellaArchivio, cancel);
-                                    }
-
+                                            archivio = client.GetFolder(s.CartellaArchivio, cancel);
                                         }
-                                    catch {
+                                    }
+                                    catch
+                                    {
                                         try
                                         {
                                             archivio = client.GetFolder($"{s.Cartella}/{s.CartellaArchivio}", cancel);
                                         }
                                         catch
                                         {
-
                                             archiviaEmail = false;
                                             _logger.LogError($"Cartella archivio non valida ( {s.CartellaArchivio},  {s.Cartella}/{s.CartellaArchivio} ).");
-
                                         }
                                     }
                                     if (archivio != null)
@@ -143,72 +138,91 @@ namespace dbluMailService
                                     }
                                 }
 
-                           // var i = 0;
-                        foreach (var uid in inbox.Search(query, cancel))
-                        {
-                                    bool mailprocessata = false;
-                            var message = await inbox.GetMessageAsync(uid, cancel);
-                                //salvo il messaggio
-                                if (message != null)
+                                // var i = 0;
+                                foreach (var uid in inbox.Search(query, cancel))
                                 {
-
-
-                                    var Nomefile = $"{message.MessageId}.eml";
-
-                                        //Allegati all = context.Allegati
-                                        //        .Where(a => a.NomeFile == Nomefile)
-                                        //        .FirstOrDefault();
+                                    if (cancel.IsCancellationRequested)
+                                    {
+                                        break;
+                                    }
+                                    bool mailprocessata = false;
+                                    var message = await inbox.GetMessageAsync(uid, cancel);
+                                    //salvo il messaggio
+                                    if (message != null)
+                                    {
+                                        var Nomefile = $"{message.MessageId}.eml";
 
                                         Allegati all = cn.QueryFirstOrDefault<Allegati>(
-                                            "select * from Allegati where NomeFile = @NomeFile",
-                                            new { NomeFile = Nomefile });
-
-                                    if (all != null)
+                                           @"SELECT * FROM Allegati WHERE Tipo=@Tipo and NomeFile = @NomeFile 
+                                               and CASE WHEN isdate(JSON_VALUE(Attributi,'$.Data'))>0 THEN JSON_VALUE(Attributi,'$.Data') ELSE NULL END = @Data ",
+                                            new { Tipo = tipo.Codice, NomeFile = Nomefile, Data = message.Date.UtcDateTime });
+                                        var flIgnora = false;
+                                        if (all != null)
+                                        {
                                             all = allMan.Get(all.Id);
+                                            flIgnora = all.Stato > StatoAllegato.Attivo;
+                                        }
 
-                                        var newall = false;
-                                        var descr = "";
-                                        if (!string.IsNullOrEmpty(message.Subject)) {
-                                            descr = message.Subject;
-                                        }
-                                        if (descr.Length > 250) {
-                                            descr = descr.Substring(0, 250);
-                                        }
-                                    if (all == null)
-                                    {
-                                        all = new Allegati()
+                                        if (flIgnora)
                                         {
-                                                Descrizione = descr,
-                                            NomeFile = Nomefile,
-                                            Tipo = tipo.Codice,
-                                            TipoNavigation = tipo,
-                                                Stato = this.StatoIniziale,
-                                            Origine = s.Nome
-                                        };
-                                            all.elencoAttributi = tipo.Attributi;
-                                            //context.Allegati.Add(all);
-                                            newall = true;
-                                    }
-                                        else {
-                                            all.Descrizione = descr;
+                                            inbox.SetFlags(uid, MessageFlags.Seen, false, cancel);
+                                            mailprocessata = true;
+                                            _logger.LogWarning($"Email ignorata perché già elaborata in stato {all.Stato} ({all.Id})");
                                         }
-                                        if (all.elencoAttributi == null) { all.elencoAttributi = tipo.Attributi; }
-
-                                        string emailmitt = message.From.Mailboxes.First().Address;
-
-                                    all.SetAttributo("Mittente", emailmitt);
-                                    all.SetAttributo("Data", message.Date.UtcDateTime);
-                                    all.SetAttributo("Oggetto", message.Subject);
-                                    all.SetAttributo("MessageId", message.MessageId);
-                                    all.SetAttributo("CodiceSoggetto","");
-
-                                    // decodifica cliente
-
-                                        try
+                                        else
                                         {
+                                            var newall = false;
 
-                                            //using (SqlConnection cn = new SqlConnection(Connessione))
-                                            //{
+                                            var descr = "";
+                                            if (!string.IsNullOrEmpty(message.Subject))
+                                            {
+                                                descr = message.Subject;
+                                            }
+                                            if (descr.Length > 250)
+                                            {
+                                                descr = descr.Substring(0, 250);
+                                            }
+                                            if (all == null)
+                                            {
+                                                all = new Allegati()
+                                                {
+                                                    Descrizione = descr,
+                                                    NomeFile = Nomefile,
+                                                    Tipo = tipo.Codice,
+                                                    TipoNavigation = tipo,
+                                                    Stato = this.StatoIniziale,
+                                                    Origine = s.Nome
+                                                };
+                                                all.elencoAttributi = tipo.Attributi;
+                                                //context.Allegati.Add(all);
+                                                newall = true;
+                                            }
+                                            else
+                                            {
+                                                all.Descrizione = descr;
+                                                all.DataUM = DateTime.Now;
+                                            }
+                                            if (all.elencoAttributi == null) { all.elencoAttributi = tipo.Attributi; }
+                                            try
+                                            {
+                                                all.Testo = message.TextBody;
+                                            }
+                                            catch { }
+
+                                            string emailmitt = message.From.Mailboxes.First().Address;
+
+                                            all.SetAttributo("Mittente", emailmitt);
+                                            all.SetAttributo("Data", message.Date.UtcDateTime);
+                                            all.SetAttributo("Oggetto", message.Subject);
+                                            all.SetAttributo("MessageId", message.MessageId);
+                                            all.SetAttributo("CodiceSoggetto", "");
+
+                                            // decodifica cliente
+                                            try
+                                            {
+
+                                                //using (SqlConnection cn = new SqlConnection(Connessione))
+                                                //{
                                                 var p = new DynamicParameters();
 
                                                 p.Add("@Mittente", emailmitt, dbType: DbType.String, direction: ParameterDirection.Input);
@@ -221,76 +235,69 @@ namespace dbluMailService
                                                 all.SetAttributo("CodiceSoggetto", p.Get<string>("@Codice"));
                                                 all.SetAttributo("NomeSoggetto", p.Get<string>("@Nome"));
 
-                                            //}
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            _logger.LogWarning($"sp_GetSoggettoEmail {ex.Message}");
-                                        }
-                                    // EmailSoggetti mit = context.EmailSoggetti
-                                    //     .Where(m => m.Email == emailmitt)
-                                    //     .FirstOrDefault();
-                                    //if (mit != null)
-                                    //{
-                                    //all.SetAttributo("Chiave3", mit.IdSoggetto.ToString());
-                                    //}
-                                    //all.Attributi = (JObject)JToken.FromObject(pAttr);
-
-                                    MemoryStream file = new MemoryStream();
-                                        await message.WriteToAsync(file, cancel);
-
-                                        all = await allMan.SalvaAsync(all, file,newall);
-
-                                        if (all != null)
-                                        {
-                                            _logger.LogDebug($"email salvata {all.Id} {all.NomeFile} ");
-
-                                            if (!string.IsNullOrEmpty(s.NomeProcesso))
+                                                //}
+                                            }
+                                            catch (Exception ex)
                                             {
-                                                var pd = new BPMProcessDefinition(eng);
+                                                _logger.LogWarning($"sp_GetSoggettoEmail {ex.Message}");
+                                            }
 
-                                                var pdi = await pd.Get("", s.NomeProcesso);
-                                                if (pdi == null || pdi.Id == null)
+                                            MemoryStream file = new MemoryStream();
+                                            await message.WriteToAsync(file, cancel);
+
+                                            all = await allMan.SalvaAsync(all, file, newall);
+
+                                            if (all != null)
+                                            {
+                                                _logger.LogDebug($"email salvata {all.Id} {all.NomeFile} ");
+
+                                                if (!string.IsNullOrEmpty(s.NomeProcesso))
                                                 {
-                                                    _logger.LogError($"Impossibile trovare la definizione di processo {s.NomeProcesso}.");
-                                                }
-                                                else
-                                                {
-                                                    SubmitStartForm ssf = new SubmitStartForm();
-                                                    ssf.BusinessKey = message.MessageId;
+                                                    var pd = new BPMProcessDefinition(eng);
 
-                                                    ssf.SetVariable("sMittente", emailmitt);
-                                                    ssf.SetVariable("dData", message.Date.UtcDateTime.ToString("dd/MM/yyyy hh:mm"));
-                                                    ssf.SetVariable("sOggetto", message.Subject);
-                                                    ssf.SetVariable("sIdAllegato", all.Id.ToString());
-                                                    ssf.SetVariable("jAllegato", JsonConvert.SerializeObject(all));
-
-                                                    BPMProcessInstanceInfo pi = await pd.SubmitForm(pdi.Id, s.NomeProcesso, ssf);
-                                                    if (pi == null )
+                                                    var pdi = await pd.Get("", s.NomeProcesso);
+                                                    if (pdi == null || pdi.Id == null)
                                                     {
-                                                        //_logger.LogError($"Impossibile avviare il processo {s.NomeProcesso}.");
+                                                        _logger.LogError($"Impossibile trovare la definizione di processo {s.NomeProcesso}.");
                                                     }
                                                     else
                                                     {
-                                                        _logger.LogDebug($"Processo {s.NomeProcesso} avviato.");
-                                                        // segna la mail come elaborata
-                                                          inbox.SetFlags(uid, MessageFlags.Seen, false, cancel);
-                                                        mailprocessata = true;
-                                                    }
+                                                        SubmitStartForm ssf = new SubmitStartForm();
+                                                        ssf.BusinessKey = message.MessageId;
 
+                                                        ssf.SetVariable("sMittente", emailmitt);
+                                                        ssf.SetVariable("dData", message.Date.UtcDateTime.ToString("dd/MM/yyyy hh:mm"));
+                                                        ssf.SetVariable("sOggetto", message.Subject);
+                                                        ssf.SetVariable("sIdAllegato", all.Id.ToString());
+                                                        ssf.SetVariable("jAllegato", JsonConvert.SerializeObject(all));
+
+                                                        BPMProcessInstanceInfo pi = await pd.SubmitForm(pdi.Id, s.NomeProcesso, ssf);
+                                                        if (pi == null)
+                                                        {
+                                                            //_logger.LogError($"Impossibile avviare il processo {s.NomeProcesso}.");
+                                                        }
+                                                        else
+                                                        {
+                                                            _logger.LogDebug($"Processo {s.NomeProcesso} avviato.");
+                                                            // segna la mail come elaborata
+                                                            inbox.SetFlags(uid, MessageFlags.Seen, false, cancel);
+                                                            mailprocessata = true;
+                                                        }
+
+                                                    }
                                                 }
-                                        }
-                                            else
-                                            {
-                                            _logger.LogDebug($"nessun processo avviato.");
-                                            inbox.SetFlags(uid, MessageFlags.Seen, false, cancel);
-                                                mailprocessata = true;
+                                                else
+                                                {
+                                                    _logger.LogDebug($"nessun processo avviato.");
+                                                    inbox.SetFlags(uid, MessageFlags.Seen, false, cancel);
+                                                    mailprocessata = true;
+                                                }
                                             }
                                         }
-                                   
-                                }
 
-                                //break;   
+                                    }
+
+                                    //break;   
                                     if (mailprocessata && archiviaEmail)
                                     {
                                         try
@@ -303,25 +310,25 @@ namespace dbluMailService
                                             mailprocessata = false;
                                         }
                                     }
-                         }
+                                }
 
-                        client.Disconnect(true, cancel);
+                                client.Disconnect(true, cancel);
+                            }
+                        }
                     }
                 }
-            }
-            }
             }
             catch (Exception ex)
             {
 
                 _logger.LogError($"Error: {ex.Message}");
                 return false;
-            }               
+            }
             return true;
         }
 
 
-        public async Task<bool> ResetMail( CancellationToken cancel)
+        public async Task<bool> ResetMail(CancellationToken cancel)
         {
             try
             {
@@ -342,95 +349,95 @@ namespace dbluMailService
 
                     if (tipo.Attributi.Count() == 0)
                     {
-                    var a = new Attributo
-                    {
-                        Nome = "Mittente",
-                        Alias = "Chiave1",
-                        Descrizione = "Mittente",
-                        SystemType = typeof(string),
-                        Obbligatorio = true,
-                        ValorePredefinito = "",
-                        Visibilità = Visibilita_Attributi.VISIBLE,
-                    };
-                    tipo.Attributi.Add(a);
-                    a = new Attributo
-                    {
-                        Nome = "Data",
-                        Alias = "Chiave2",
-                        Descrizione = "Data",
-                        SystemType = typeof(DateTime),
-                        Obbligatorio = true,
-                        Visibilità = Visibilita_Attributi.VISIBLE
-                    };
-                    tipo.Attributi.Add(a);
-                    a = new Attributo
-                    {
-                        Nome = "CodiceSoggetto",
-                        Alias = "Chiave3",
-                        Descrizione = "CodiceSoggetto",
-                        SystemType = typeof(string),
-                        Obbligatorio = true,
-                        ValorePredefinito = "",
-                        Visibilità = Visibilita_Attributi.EDITABLE
-                    };
-                    tipo.Attributi.Add(a);
-                    a = new Attributo
-                    {
-                        Nome = "Oggetto",
-                        Alias = "Chiave4",
-                        Descrizione = "Oggetto",
-                        SystemType = typeof(string),
-                        Obbligatorio = true,
-                        ValorePredefinito = "",
-                        Visibilità = Visibilita_Attributi.VISIBLE
-                    };
-                    tipo.Attributi.Add(a);
-                    a = new Attributo
-                    {
-                        Nome = "MessageId",
-                        Alias = "Chiave5",
-                        Descrizione = "MessageId",
-                        SystemType = typeof(string),
-                        Obbligatorio = true,
-                        ValorePredefinito = "",
-                        Visibilità = Visibilita_Attributi.VISIBLE
-                    };
-                    tipo.Attributi.Add(a);
+                        var a = new Attributo
+                        {
+                            Nome = "Mittente",
+                            Alias = "Chiave1",
+                            Descrizione = "Mittente",
+                            SystemType = typeof(string),
+                            Obbligatorio = true,
+                            ValorePredefinito = "",
+                            Visibilità = Visibilita_Attributi.VISIBLE,
+                        };
+                        tipo.Attributi.Add(a);
+                        a = new Attributo
+                        {
+                            Nome = "Data",
+                            Alias = "Chiave2",
+                            Descrizione = "Data",
+                            SystemType = typeof(DateTime),
+                            Obbligatorio = true,
+                            Visibilità = Visibilita_Attributi.VISIBLE
+                        };
+                        tipo.Attributi.Add(a);
+                        a = new Attributo
+                        {
+                            Nome = "CodiceSoggetto",
+                            Alias = "Chiave3",
+                            Descrizione = "CodiceSoggetto",
+                            SystemType = typeof(string),
+                            Obbligatorio = true,
+                            ValorePredefinito = "",
+                            Visibilità = Visibilita_Attributi.EDITABLE
+                        };
+                        tipo.Attributi.Add(a);
+                        a = new Attributo
+                        {
+                            Nome = "Oggetto",
+                            Alias = "Chiave4",
+                            Descrizione = "Oggetto",
+                            SystemType = typeof(string),
+                            Obbligatorio = true,
+                            ValorePredefinito = "",
+                            Visibilità = Visibilita_Attributi.VISIBLE
+                        };
+                        tipo.Attributi.Add(a);
+                        a = new Attributo
+                        {
+                            Nome = "MessageId",
+                            Alias = "Chiave5",
+                            Descrizione = "MessageId",
+                            SystemType = typeof(string),
+                            Obbligatorio = true,
+                            ValorePredefinito = "",
+                            Visibilità = Visibilita_Attributi.VISIBLE
+                        };
+                        tipo.Attributi.Add(a);
 
                         //context.SaveChanges();
                         cn.Update<TipiAllegati>(tipo);
-                }
+                    }
 
-                if (serverIn.Count > 0)
-                {
-                    foreach (EmailServer s in serverIn)
+                    if (serverIn.Count > 0)
                     {
-                        using (var client = new ImapClient())
+                        foreach (EmailServer s in serverIn)
                         {
-                            await client.ConnectAsync(s.Server, s.Porta, s.Ssl, cancel);
-                            await client.AuthenticateAsync(s.Utente, s.Password, cancel);
-                            IMailFolder inbox = null;
-                            if (!string.IsNullOrEmpty(s.Cartella))
+                            using (var client = new ImapClient())
                             {
-                                inbox = client.GetFolder(s.Cartella, cancel);
-                            }
-                            else
-                            {
-                                inbox = client.Inbox;
-                            }
-                            await inbox.OpenAsync(FolderAccess.ReadWrite, cancel);
-                            var query = SearchQuery.Seen;
-                            foreach (var uid in inbox.Search(query, cancel))
-                            {
-                                inbox.SetFlags(uid, MessageFlags.None, false, cancel);
+                                await client.ConnectAsync(s.Server, s.Porta, s.Ssl, cancel);
+                                await client.AuthenticateAsync(s.Utente, s.Password, cancel);
+                                IMailFolder inbox = null;
+                                if (!string.IsNullOrEmpty(s.Cartella))
+                                {
+                                    inbox = client.GetFolder(s.Cartella, cancel);
+                                }
+                                else
+                                {
+                                    inbox = client.Inbox;
+                                }
+                                await inbox.OpenAsync(FolderAccess.ReadWrite, cancel);
+                                var query = SearchQuery.Seen;
+                                foreach (var uid in inbox.Search(query, cancel))
+                                {
+                                    inbox.SetFlags(uid, MessageFlags.None, false, cancel);
+                                }
+
+                                client.Disconnect(true, cancel);
                             }
 
-                            client.Disconnect(true, cancel);
                         }
-
                     }
                 }
-            }
             }
             catch (Exception ex)
             {
@@ -440,7 +447,7 @@ namespace dbluMailService
             }
             return true;
         }
-   
+
 
 
         public async Task<bool> TestProcess(string NomeProcesso, string Id, CancellationToken cancel)
@@ -453,45 +460,45 @@ namespace dbluMailService
                 using (SqlConnection cn = new SqlConnection(Connessione))
                 {
                     var allMan = new AllegatiManager(Connessione, _logger);
-            
-            var all = allMan.Get(Id);//"B8852801-5C20-4E54-BB6B-12A4ED60B578"
-                var m = await allMan.GetFileAsync(all.Id.ToString());
-            MimeKit.MimeMessage message = MimeKit.MimeMessage.Load(m,cancel);
 
-            var eng = new BPMClient.BPMEngine();
-            eng.Imposta(this.Bpm_url, this.Bpm_User, this.Bpm_Password, "");
-            var pd = new BPMProcessDefinition(eng);
+                    var all = allMan.Get(Id);//"B8852801-5C20-4E54-BB6B-12A4ED60B578"
+                    var m = await allMan.GetFileAsync(all.Id.ToString());
+                    MimeKit.MimeMessage message = MimeKit.MimeMessage.Load(m, cancel);
 
-            var pdi = await pd.Get("", NomeProcesso ); //"RicezioneEmailClienti"
-            if (pdi == null)
-            {
-                _logger.LogError($"Impossibile trovare la definizione di processo {NomeProcesso}.");
-            }
-            else
-            {
-                SubmitStartForm ssf = new SubmitStartForm();
-                ssf.BusinessKey = message.MessageId;
-                
-                string emailmitt = this.RemoveSpecialChars(message.From.Mailboxes.First().Address);
-                
-                ssf.SetVariable("sMittente", emailmitt);
-                ssf.SetVariable("dData", message.Date.ToString("dd/MM/yyyy"));
-                ssf.SetVariable("sOggetto", message.Subject);
-                ssf.SetVariable("sIdAllegato", all.Id.ToString());
-                ssf.SetVariable("jAllegato", JsonConvert.SerializeObject(all));
+                    var eng = new BPMClient.BPMEngine();
+                    eng.Imposta(this.Bpm_url, this.Bpm_User, this.Bpm_Password, "");
+                    var pd = new BPMProcessDefinition(eng);
 
-                BPMProcessInstanceInfo pi = await pd.SubmitForm(pdi.Id, NomeProcesso, ssf);
-                if (pi == null)
-                {
-                    _logger.LogError($"Impossibile avviare il processo {NomeProcesso}.");
-                    return false;
-                }
-                else
-                {
-                    _logger.LogDebug($"Processo {NomeProcesso} avviato.");
-                }
+                    var pdi = await pd.Get("", NomeProcesso); //"RicezioneEmailClienti"
+                    if (pdi == null)
+                    {
+                        _logger.LogError($"Impossibile trovare la definizione di processo {NomeProcesso}.");
                     }
-            }
+                    else
+                    {
+                        SubmitStartForm ssf = new SubmitStartForm();
+                        ssf.BusinessKey = message.MessageId;
+
+                        string emailmitt = this.RemoveSpecialChars(message.From.Mailboxes.First().Address);
+
+                        ssf.SetVariable("sMittente", emailmitt);
+                        ssf.SetVariable("dData", message.Date.ToString("dd/MM/yyyy"));
+                        ssf.SetVariable("sOggetto", message.Subject);
+                        ssf.SetVariable("sIdAllegato", all.Id.ToString());
+                        ssf.SetVariable("jAllegato", JsonConvert.SerializeObject(all));
+
+                        BPMProcessInstanceInfo pi = await pd.SubmitForm(pdi.Id, NomeProcesso, ssf);
+                        if (pi == null)
+                        {
+                            _logger.LogError($"Impossibile avviare il processo {NomeProcesso}.");
+                            return false;
+                        }
+                        else
+                        {
+                            _logger.LogDebug($"Processo {NomeProcesso} avviato.");
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {

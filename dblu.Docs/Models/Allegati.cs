@@ -43,6 +43,7 @@ namespace dblu.Docs.Models
         public string Chiave4 { get; set; }
         public string Chiave5 { get; set; }
         public string Origine { get; set; }
+        public string Testo { get; set; }
 
         //[NotMapped]
         [JsonIgnore]

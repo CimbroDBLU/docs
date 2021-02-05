@@ -3,3 +3,7 @@ dblu.Docs/obj/
 dblu.Plugin.Docs/obj/
 dblu.Docs/bin/
 dblu.Plugin.Docs/bin/
+MailService/bin/
+MailService/obj/
+dbDocs/dbDocs.dbmdl
+dbDocs/dbDocs.jfm
