@@ -922,6 +922,29 @@
                                             .HtmlAttributes(new { style = "width: 100%" })
                                                 )
                                             </div>
+                                        <br />
+                                        <div class="form-group col-md-8">
+                        @(Html.Kendo().MultiSelect()
+.Name("multiMailInoltro")
+.DataTextField("Email")
+.DataValueField("Email")
+.Placeholder("Seleziona gli utenti")
+.ItemTemplate("#= Name # #= LastName #, <span class=\"UserName\">#= Email #</span>")
+.Height(450)
+.Events(e =>
+{
+    //e.Change("multiselectUC_OnChange");
+})
+.DataSource(source =>
+{
+    source
+    .Ajax()
+    .PageSize(80)
+    .Read("Utenti_Read", "Grid");
+})
+     
+                )
+                                            </div>
                                             <div class="form-group col-md-2">
                                                 @(Html.Kendo().Button()
                                             .Name("okinoltra")

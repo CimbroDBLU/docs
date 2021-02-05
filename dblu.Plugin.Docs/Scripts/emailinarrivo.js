@@ -125,9 +125,15 @@ function inoltraOnClick(e) {
     e.preventDefault();
     //alert($("#emailInoltro").val());
     //alert($("#chkemailInoltro").is(':checked'));
+    var listMail = null;
+    if ($("#emailInoltro").val() == "") listMail = $("#multiMailInoltro").val().toString();
+    else {
+        if ($("#multiMailInoltro").val().toString() == "") listMail = $("#emailInoltro").val();
+        else listMail = $("#emailInoltro").val() + ';' + $("#multiMailInoltro").val();
+    }
     var obj = {
         IdAllegato: $("#IdAllegato").val(),
-        email: $("#emailInoltro").val(),
+        email: listMail,
         chiudi: $("#chkemailInoltro").is(':checked')
     };
     $.ajax({
