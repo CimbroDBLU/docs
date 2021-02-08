@@ -475,6 +475,29 @@ namespace dblu.Docs.Classi
             }
             return l;
         }
+        public List<Elementi> GetElementiDaAllegato(Guid IdAllegato)
+        {
+
+            //var doc = _context.Allegati.Where(x => x.IdElemento == elemento && x.Tipo == "FILE");
+            List<Elementi> doc = null;
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    doc = cn.Query<Elementi>("SELECT e.* FROM allegati m INNER JOIN elementi e ON e.idfascicolo = m.idfascicolo " +
+                    " LEFT JOIN allegati f ON f.idfascicolo = m.idfascicolo and f.idelemento = e.id and f.Tipo = 'FILE' and f.NomeFile = cast(m.id as varchar(50)) + '.pdf' " +
+                    " WHERE m.id = @IdAllegato Order by e.datac ",
+                        new { IdAllegato = IdAllegato.ToString() }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetElementiDaAllegato: {ex.Message}");
+
+            }
+            return doc;
+
+        }
 
     }
 }

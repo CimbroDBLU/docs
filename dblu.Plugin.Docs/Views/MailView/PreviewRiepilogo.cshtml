@@ -39,6 +39,7 @@
                                                documentPath=""
                                                enablePrint="true"
                                                documentLoad="documentLoaded"
+                                               printEnd="documentPrinted" 
                                                annotationAdd="annotationAdd"
                                                enableStampAnnotations="true"
                                                locale="it-IT"
@@ -74,7 +75,7 @@
 
         var emailpdfviewer = document.getElementById('riepilogopdfviewer').ej2_instances[0];
         emailpdfviewer.importAnnotation('');
-   
+
     }
 
     function annotationAdd(e) {
@@ -93,6 +94,22 @@
         var emailpdfviewer = document.getElementById('riepilogopdfviewer').ej2_instances[0];
         emailpdfviewer.importAnnotation('');
         emailpdfviewer.enablePrint = true;
+    }
+    function documentPrinted(args) {
+        //let's do that
+        $.ajax({
+        url: '@Url.Action("LogRiepilogo", "MailView")',
+        type: 'POST',
+        data: { IdAllegato: $("#IdAllegato").val()},
+        success: function (result) {
+
+        },
+        error: function () {
+    
+        }
+        });
+
+
     }
 
 </script>
