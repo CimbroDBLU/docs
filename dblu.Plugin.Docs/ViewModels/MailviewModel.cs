@@ -36,7 +36,7 @@ namespace dblu.Portale.Plugin.Docs.ViewModels
         public string NomeFile { get; set; }
         public bool Valido { get; set; }
         public bool Incluso { get; set; }
-
+        public string Avvisi { get; set; }
         public string IsIncluso {
             get {
                 return Incluso ? "Si" : "No";

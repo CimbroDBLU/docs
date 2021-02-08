@@ -760,6 +760,7 @@ function saveAnnotations() {
 function documentLoaded(args) {
 
     var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
+    zippdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 
     //carico lista file allegati
     $.ajax({
@@ -914,4 +915,12 @@ function GetLogsItem() {
         IdItem: idItem,
         TipoItem: tipoItem
     };
+}
+
+function templateAvvisi(dataItem) {
+    if (dataItem.Avvisi != undefined && dataItem.Avvisi != '') {
+        return "<span style=\"background-color:yellow; \">" + dataItem.Avvisi + "</span>"
+    }
+    return "<span/>"
+
 }

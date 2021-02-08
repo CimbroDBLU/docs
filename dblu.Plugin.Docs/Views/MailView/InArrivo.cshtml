@@ -743,8 +743,9 @@
                             .Columns(columns =>
                             {
                                 columns.Select().Width(50).Title("Allega");
-                                columns.Bound(p => p.NomeFile).Title("Nome ").Width("50%");
-                                columns.Bound(p => p.IsIncluso).Title("Incluso nel pdf").Width("20%");
+                                columns.Bound(p => p.NomeFile).Title("Nome ").Width("40%");
+                                columns.Bound(p => p.IsIncluso).Title("Incluso nel pdf").Width("10%");
+                                columns.Bound(p => p.Avvisi).Title("Avvisi").ClientTemplate("#= templateAvvisi(data)#").Width("40%");
                                 columns.Command(command =>
                                 {
                                     command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon my-icon-class-download");
@@ -754,7 +755,7 @@
                                 .Ajax()
                                 .Model(model => model.Id(p => p.Id))
                                 )
-                            .HtmlAttributes(new { style = "font-size:12" })
+                            .HtmlAttributes(new { style = "font-size:12"  })
                             )
                                 @*
                                      .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
@@ -841,7 +842,9 @@
                                                documentLoad="documentLoaded"
                                                annotationAdd="annotationAdd"
                                                enableStampAnnotations="false"
-                                           exportSuccess="exportSuccess"
+                                               enableAnnotation="true"
+                                               enableFreeText="true"
+                                                exportSuccess="exportSuccess"
                                                locale="it-IT"
                                            downloadFileName="@string.Concat("",".pdf")" height="900px"
                                                toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">

@@ -92,6 +92,7 @@
     function documentLoaded(args) {
 
         var emailpdfviewer = document.getElementById('riepilogopdfviewer').ej2_instances[0];
+        emailpdfviewer.downloadFileName = "riepilogo_"+ "@IdAllegato" + ".pdf";
         emailpdfviewer.importAnnotation('');
         emailpdfviewer.enablePrint = true;
     }

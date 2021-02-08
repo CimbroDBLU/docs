@@ -1103,6 +1103,7 @@ function saveAnnotations() {
 function documentLoaded(args) {
 
     var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
+    emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 
     //alert("The document" + args.fileName + "is ready to view");
     $.ajax({
@@ -1361,4 +1362,12 @@ function SalvaAttributi(caller) {
                 alert(data);
             }
         });
+}
+
+function templateAvvisi(dataItem) {
+    if (dataItem.Avvisi != undefined && dataItem.Avvisi != '') {
+        return "<span style=\"background-color:yellow; \">" + dataItem.Avvisi + "</span>"
+    }
+    return "<span/>"
+
 }

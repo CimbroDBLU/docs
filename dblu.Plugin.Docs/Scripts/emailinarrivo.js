@@ -633,10 +633,10 @@ function MostraPdfCompleto(idElemento) {
     var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
                 //emailpdfviewer.downloadFileName = nome;
     PdfCorrente.Pagina = 1;
-    emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
     emailpdfviewer.fileName = JSON.stringify(PdfCorrente);
     emailpdfviewer.load(JSON.stringify(PdfCorrente));
    $("#tbdescrizione").html(PdfCorrente.Descrizione);
+    emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 
     //emailpdfviewer.importAnnotations();
     //$.ajax({
@@ -1312,6 +1312,7 @@ function saveAnnotations() {
 function documentLoaded(args) {
 
     var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
+    emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 
     //alert("The document" + args.fileName + "is ready to view");
     $.ajax({
@@ -1478,6 +1479,14 @@ function wPdfEditorClose(e) {
         emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 
     }
+
+}
+
+function templateAvvisi(dataItem) {
+    if (dataItem.Avvisi != undefined && dataItem.Avvisi != '') {
+        return "<span style=\"background-color:yellow; \">" + dataItem.Avvisi + "</span>"
+    }
+    return "<span/>"
 
 }
 

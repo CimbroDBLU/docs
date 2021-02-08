@@ -35,7 +35,7 @@ namespace dblu.Portale.Plugin.Docs.Class
         private IConfiguration _config { get; }
         private AllegatiManager _allMan;
 
-        public SFPdf( IWebHostEnvironment appEnvironment,
+        public SFPdf(IWebHostEnvironment appEnvironment,
             ILogger logger,
             IConfiguration config,
             AllegatiManager am
@@ -48,17 +48,19 @@ namespace dblu.Portale.Plugin.Docs.Class
         }
 
 
-        private string PulisciHtml(string htxt) {
+        private string PulisciHtml(string htxt)
+        {
 
             htxt = htxt.Replace("<img", "<img hidden");
             htxt = htxt.Replace("<pre", "<p").Replace("</pre>", "</p>");
             htxt = htxt.Replace("MS Sans Serif", "sans-serif");
-            
+
             int i = htxt.IndexOf("face=\"MS");
-            int f = i>0? htxt.IndexOf("Serif\"",i) : -1 ;
-            while( f>i ){
-                htxt = htxt.Substring(0, i+6) + "sans-serif" + htxt.Substring(f + 5);
-                i = htxt.IndexOf("face=\"MS",i+6);
+            int f = i > 0 ? htxt.IndexOf("Serif\"", i) : -1;
+            while (f > i)
+            {
+                htxt = htxt.Substring(0, i + 6) + "sans-serif" + htxt.Substring(f + 5);
+                i = htxt.IndexOf("face=\"MS", i + 6);
                 f = i > 0 ? htxt.IndexOf("Serif\"", i) : -1;
             }
 
@@ -68,11 +70,8 @@ namespace dblu.Portale.Plugin.Docs.Class
         public List<EmailAttachments> CreaTmpPdfCompletoSF(string NomePdf, MimeMessage Messaggio)
         {
             List<EmailAttachments> res = new List<EmailAttachments>();
-
             try
             {
-
-
                 var testfile = NomePdf + ".tmp";
                 if (File.Exists(NomePdf))
                     File.Delete(NomePdf);
@@ -91,89 +90,85 @@ namespace dblu.Portale.Plugin.Docs.Class
 
                 //if (txt.Trim().Length > 0 || htxt.Trim().Length > 10 || Messaggio.Allegati().Count() == 0)
                 //{
-                    if (Messaggio.HtmlBody == null)
+                if (Messaggio.HtmlBody == null)
+                {
+                    if (txt != null)
                     {
-                        if (txt != null)
-                        {
-                            //document = new RadFlowDocument();
-                            //RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
-                            //editor.InsertText($"Oggetto: {oggetto}");
-                            //editor.InsertBreak(BreakType.LineBreak);
-                            //editor.InsertText(txt);Messaggio.From
-                            PdfPage page = document.Pages.Add();
+                        //document = new RadFlowDocument();
+                        //RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
+                        //editor.InsertText($"Oggetto: {oggetto}");
+                        //editor.InsertBreak(BreakType.LineBreak);
+                        //editor.InsertText(txt);Messaggio.From
+                        PdfPage page = document.Pages.Add();
 
-                            PdfGraphics graphics = page.Graphics;
-                            //PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
-                            //graphics.DrawString($"Oggetto: {oggetto} \n\n {txt} ", font, PdfBrushes.Black, new PointF(0, 0));
+                        PdfGraphics graphics = page.Graphics;
+                        //PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+                        //graphics.DrawString($"Oggetto: {oggetto} \n\n {txt} ", font, PdfBrushes.Black, new PointF(0, 0));
 
-                            PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \ndel: {Messaggio.Date.DateTime} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
-                            textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
+                        PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \ndel: {Messaggio.Date.DateTime} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
+                        textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
 
-                            document.Save(pdfstream);
+                        document.Save(pdfstream);
 
-                            //Close the document.
+                        //Close the document.
 
-                            document.Close(true);
-                        }
+                        document.Close(true);
                     }
-                    else
+                }
+                else
+                {
+                    try
                     {
+                        //var htxt = Messaggio.HtmlBody.Replace("http://", "_http://").Replace("https://", "_https://");
+                        //HtmlFormatProvider htmlFormatProvider = new HtmlFormatProvider();
+                        //document = htmlFormatProvider.Import(htxt);
 
-                        try
+                        if (!htxt.Contains("<body>"))
                         {
-
-
-                            //var htxt = Messaggio.HtmlBody.Replace("http://", "_http://").Replace("https://", "_https://");
-                            //HtmlFormatProvider htmlFormatProvider = new HtmlFormatProvider();
-                            //document = htmlFormatProvider.Import(htxt);
-
-
-                            if (!htxt.Contains("<body>"))
-                            {
-                                htxt = $"<body>{htxt}</body>";
-                            }
-                            htxt = PulisciHtml(htxt);
-
-                            htxt = htxt.Replace("<body>", $"<body><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.DateTime}<br></div>");
-
-                            //File.WriteAllText("d:\\temp\\testo.html", htxt);
-                            string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
-
-                            //Set WebKit path
-                            settings.WebKitPath = _config["Docs:PercorsoWebKit"];
-                            settings.EnableJavaScript = false;
-                            settings.EnableHyperLink = false;
-                            settings.EnableOfflineMode = true;
-                            settings.SplitTextLines = true;
-                            settings.SplitImages = true;
-                            //settings.SinglePageLayout = Syncfusion.Pdf.HtmlToPdf.SinglePageLayout.FitHeight;
-                            settings.Margin.Right = 20;
-                            settings.Margin.Left = 20;
-                            settings.Margin.Top = 20;
-                            //Assign WebKit settings to HTML converter
-                            htmlConverter.ConverterSettings = settings;
-
-                            //Convert HTML string to PDF
-                            document = htmlConverter.Convert(htxt, baseUrl);
-
-                            //Save and close the PDF document 
-                            document.Save(pdfstream);
-                            document.Close(true);
-
+                            htxt = $"<body>{htxt}</body>";
                         }
-                        catch (Exception ex)
-                        {
-                            //document = new RadFlowDocument();
-                            //RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
-                            //editor.InsertText($"Oggetto: {oggetto}");
-                            //editor.InsertBreak(BreakType.LineBreak);
-                            //editor.InsertText(txt);
-                            _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il testo. {ex.Message}");
-                        }
+                        htxt = PulisciHtml(htxt);
+
+                        htxt = htxt.Replace("<body>", $"<body><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.DateTime}<br></div>");
+
+                        //File.WriteAllText("d:\\temp\\testo.html", htxt);
+                        string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
+
+                        //Set WebKit path
+                        settings.WebKitPath = _config["Docs:PercorsoWebKit"];
+                        settings.EnableJavaScript = false;
+                        settings.EnableHyperLink = false;
+                        settings.EnableOfflineMode = true;
+                        settings.SplitTextLines = true;
+                        settings.SplitImages = true;
+                        //settings.SinglePageLayout = Syncfusion.Pdf.HtmlToPdf.SinglePageLayout.FitHeight;
+                        settings.Margin.Right = 20;
+                        settings.Margin.Left = 20;
+                        settings.Margin.Top = 20;
+                        //Assign WebKit settings to HTML converter
+                        htmlConverter.ConverterSettings = settings;
+
+                        //Convert HTML string to PDF
+                        document = htmlConverter.Convert(htxt, baseUrl);
+
+                        //Save and close the PDF document 
+                        document.Save(pdfstream);
+                        document.Close(true);
 
                     }
-                    //pdfstream.Close();
-                    ListaPdf.Add(pdfstream);
+                    catch (Exception ex)
+                    {
+                        //document = new RadFlowDocument();
+                        //RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
+                        //editor.InsertText($"Oggetto: {oggetto}");
+                        //editor.InsertBreak(BreakType.LineBreak);
+                        //editor.InsertText(txt);
+                        _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il testo. {ex.Message}");
+                    }
+
+                }
+                //pdfstream.Close();
+                ListaPdf.Add(pdfstream);
                 //}
 
                 int i = 0;
@@ -182,7 +177,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                     var fileName = "";
                     var m = new MemoryStream();
                     var incluso = false;
-
+                    string avvisi = "";
                     i++;
                     if (attachment is MessagePart)
                     {
@@ -204,155 +199,22 @@ namespace dblu.Portale.Plugin.Docs.Class
                         switch (System.IO.Path.GetExtension(fileName).ToLower())
                         {
                             case ".pdf":
-                                try
+                                MemoryStream m1 = ElaboraPdfStream(m, fileName, out avvisi );
+                                if (m1 != null)
                                 {
-                                    //MemoryStream m1 = new MemoryStream();
-                                    //m.Position = 0;
-                                    //m.CopyTo(m1);
-                                    //PdfDocumentAnalyzer analyzer = new PdfDocumentAnalyzer(m1);
-                                    //Get the syntax errors
-                                    //SyntaxAnalyzerResult anRes = analyzer.AnalyzeSyntax();
-                                    ////Check whether the document is corrupted or not
-                                    //if (anRes.IsCorrupted)
-                                    //{
-                                    //    //Get syntax error details from results.error
-                                    //    StringBuilder builder = new StringBuilder();
-                                    //    //builder.AppendLine("The PDF document is corrupted.");
-                                    //    int count = 1;
-                                    //    foreach (PdfException exception in anRes.Errors)
-                                    //    {
-                                    //        builder.AppendLine(count++.ToString() + ": " + exception.Message);
-                                    //    }
-                                    //    _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il file {fileName}. {builder.ToString()}");
-                                    //}
-                                    //else
-                                    //{
-                                        //No syntax error found in the provided PDF document
-                                        m.Position = 0;
-                                        //  appiattisco le note 
-                                        var A4Size = PdfPageSize.A4;
-                                        PdfLoadedDocument ld = new PdfLoadedDocument(m);
-                                        var flAnn = false; 
-                                        var flResize = false;
-                                        foreach (PdfPageBase p in ld.Pages) { 
-                                            if (p.Size.Width > (A4Size.Width + 1f) || p.Size.Height > (A4Size.Height + 1f)) {
-                                                flResize = true;
-                                            }
-                                            if (p.Annotations.Count > 0) { 
-                                                foreach (PdfAnnotation nn in p.Annotations) {
-                                                    //if (!string.IsNullOrEmpty(nn.Text)){
-                                                        nn.Flatten = true;
-                                                flAnn = true;
-                                                    //}
-                                                }
-                                            }
-                                        };
-                                        if (flResize) {
-                                            PdfDocument doc1 = new PdfDocument();
-                                            foreach (PdfPageBase p in ld.Pages)
-                                            {
-                                                PdfPage page = doc1.Pages.Add();
-                                                page.Section.PageSettings.Margins.All = 0f;
-        
-                                                PdfGraphics g = page.Graphics;
-                                                PdfTemplate template = p.CreateTemplate();
-                                               // g.DrawPdfTemplate(template, PointF.Empty, PdfPageSize.A4);
-                                                Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
-                                                Syncfusion.Drawing.SizeF pDest = CalcolaProporzioni(p.Size.Width, p.Size.Height, page.Size.Width, page.Size.Height );
-
-                                                switch (p.Rotation)
-                                                {
-                                                    case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle90:
-                                                        if (pDest.Height < pDest.Width)
-                                                        {
-                                                            g.TranslateTransform(page.Size.Width, 0);
-                                                            g.RotateTransform(90);
-                                                        }
-                                                        g.DrawPdfTemplate(template, posizione, pDest);
-
-                                                        if (pDest.Height < pDest.Width)
-                                                        {
-
-                                                            g.RotateTransform(-90);
-                                                            g.TranslateTransform(-page.Size.Width, 0);
-                                                        }
-
-                                                        break;
-                                                    case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle270:
-                                                        if (pDest.Height < pDest.Width)
-                                                        {
-                                                            g.TranslateTransform(0, page.Size.Height);
-                                                            g.RotateTransform(-90);
-                                                        }
-                                                        g.DrawPdfTemplate(template, posizione, pDest);
-
-                                                        if (pDest.Height < pDest.Width)
-                                                        {
-                                                            g.RotateTransform(90);
-                                                            g.TranslateTransform(0, -page.Size.Height);
-                                                        }
-                                                        break;
-                                                    default:
-                                                        if (pDest.Height < pDest.Width)
-                                                        {
-                                                            g.TranslateTransform(0, page.Size.Height);
-                                                            g.RotateTransform(-90);
-                                                            //page.Section.PageSettings.Orientation = PdfPageOrientation.Landscape;
-                                                        }
-                                                        g.DrawPdfTemplate(template, posizione, pDest);
-
-                                                        if (pDest.Height < pDest.Width)
-                                                        {
-                                                            //page.Section.PageSettings.Orientation = PdfPageOrientation.Landscape;
-                                                            g.RotateTransform(90);
-                                                            g.TranslateTransform(0, -page.Size.Height);
-                                                        }
-                                                        break;
-                                                }
-
-
-
-                                            }
-                                            MemoryStream m2 = new MemoryStream();
-                                            doc1.Save(m2);
-                                            m2.Position = 0;
-                                            ListaPdf.Add(m2);
-                                            m.Close();
-                                            m.Dispose();
-                                        }
-                                        else { 
-                                        if (flAnn)
-                                        {
-                                            MemoryStream m2 = new MemoryStream();
-                                            ld.Save(m2);
-                                            m2.Position = 0;
-                                            ListaPdf.Add(m2);
-                                            m.Close();
-                                            m.Dispose();
-                                        }
-                                        else { 
-                                            m.Position = 0;
-                                        ListaPdf.Add(m);
-                                        }
-                                        }
-                                        incluso = true;
-                                    //}
-                                    //m1.Close();
-                                    //m1.Dispose();
-                                    //analyzer.Close();
-
+                                    m1.Position = 0;
+                                    ListaPdf.Add(m1);
+                                    incluso = true;
                                 }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il file {fileName}. {ex.Message}");
-                                }
+                                m.Close();
+                                m.Dispose(); 
                                 break;
                             case ".jpg":
                             case ".jpeg":
                             case ".png":
                                 try
                                 {
-                                    
+
                                     PdfImage image = new PdfBitmap(m);
                                     //graphics.DrawImage(image, 0, 0);
 
@@ -366,47 +228,47 @@ namespace dblu.Portale.Plugin.Docs.Class
                                         document = new PdfDocument();
                                         //PdfSection section = document.Sections.Add();
 
-                                    if (image.Width > image.Height)
-                                    {
-                                        document.PageSettings.Orientation = PdfPageOrientation.Landscape;
-                                        //page.Rotation = PdfPageRotateAngle.RotateAngle90;
-                                        //section.PageSettings.Rotate = PdfPageRotateAngle.RotateAngle90;
-                                        //PageWidth = page.Graphics.ClientSize.Height;
-                                        //PageHeight = page.Graphics.ClientSize.Width;
+                                        if (image.Width > image.Height)
+                                        {
+                                            document.PageSettings.Orientation = PdfPageOrientation.Landscape;
+                                            //page.Rotation = PdfPageRotateAngle.RotateAngle90;
+                                            //section.PageSettings.Rotate = PdfPageRotateAngle.RotateAngle90;
+                                            //PageWidth = page.Graphics.ClientSize.Height;
+                                            //PageHeight = page.Graphics.ClientSize.Width;
+                                        }
+                                        PdfPage page = document.Pages.Add();
+                                        float PageWidth = page.Graphics.ClientSize.Width;
+                                        float PageHeight = page.Graphics.ClientSize.Height;
+                                        PdfGraphics graphics = page.Graphics;
+
+                                        if (myWidth > PageWidth)
+                                        {
+                                            shrinkFactor = myWidth / PageWidth;
+                                            myWidth = PageWidth;
+                                            myHeight = myHeight / shrinkFactor;
+                                        }
+
+                                        if (myHeight > PageHeight)
+                                        {
+                                            shrinkFactor = myHeight / PageHeight;
+                                            myHeight = PageHeight;
+                                            myWidth = myWidth / shrinkFactor;
+                                        }
+
+                                        float XPosition = (PageWidth - myWidth) / 2;
+                                        float YPosition = (PageHeight - myHeight) / 2;
+                                        graphics.DrawImage(image, XPosition, YPosition, myWidth, myHeight);
+
+                                        pdfstream = new MemoryStream();
+                                        document.Save(pdfstream);
+                                        document.Close(true);
+
+                                        //Close the document
+                                        ListaPdf.Add(pdfstream);
+                                        incluso = true;
                                     }
-                                    PdfPage page = document.Pages.Add();
-                                    float PageWidth = page.Graphics.ClientSize.Width;
-                                    float PageHeight = page.Graphics.ClientSize.Height;
-                                    PdfGraphics graphics = page.Graphics;
-
-
-                                    if (myWidth > PageWidth)
+                                    else
                                     {
-                                        shrinkFactor = myWidth / PageWidth;
-                                        myWidth = PageWidth;
-                                        myHeight = myHeight / shrinkFactor;
-                                    }
-
-                                    if (myHeight > PageHeight)
-                                    {
-                                        shrinkFactor = myHeight / PageHeight;
-                                        myHeight = PageHeight;
-                                        myWidth = myWidth / shrinkFactor;
-                                    }
-
-                                    float XPosition = (PageWidth - myWidth) / 2;
-                                    float YPosition = (PageHeight - myHeight) / 2;
-                                    graphics.DrawImage(image, XPosition, YPosition, myWidth, myHeight);
-
-                                    pdfstream = new MemoryStream();
-                                    document.Save(pdfstream);
-                                    document.Close(true);
-
-                                    //Close the document
-                                    ListaPdf.Add(pdfstream);
-                                    incluso = true;
-                                }
-                                    else {
                                         incluso = false;
                                     }
 
@@ -417,6 +279,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                                 }
                                 break;
                             default:
+                                avvisi = "file non supportato.";
                                 break;
                         }
                     }
@@ -424,11 +287,12 @@ namespace dblu.Portale.Plugin.Docs.Class
                     {
                         _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
                     }
-                    var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = incluso };
+                    var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = incluso, Avvisi = avvisi };
                     res.Add(a);
                 }
 
-                if (ListaPdf.Count() == 0) { 
+                if (ListaPdf.Count() == 0)
+                {
                     // aggiungo almeno l'oggetto
                     PdfPage page = document.Pages.Add();
                     PdfGraphics graphics = page.Graphics;
@@ -444,18 +308,18 @@ namespace dblu.Portale.Plugin.Docs.Class
                     //PdfDocument finalDoc = new PdfDocument();
                     using (PdfDocument finalDoc = new PdfDocument())
                     {
-                    //funzione merge
-                    try
-                    {
+                        //funzione merge
+                        try
+                        {
 
-                        PdfDocumentBase.Merge(finalDoc, ListaPdf.ToArray());
-                        //creazione stram per il file finale
+                            PdfDocumentBase.Merge(finalDoc, ListaPdf.ToArray());
+                            //creazione stram per il file finale
                             //FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite);
                             using (FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite))
                             {
 
-                        //salvataggio e chiusura
-                        finalDoc.Save(fileStreamMerge);
+                                //salvataggio e chiusura
+                                finalDoc.Save(fileStreamMerge);
                             }
                         }
                         catch (Exception ex)
@@ -469,16 +333,13 @@ namespace dblu.Portale.Plugin.Docs.Class
                         finalDoc.Close(true);
                         //finalDoc.Dispose();
                     }
-
-
-                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
 
             }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
-
-                    }
 
             return res;
         }
@@ -506,7 +367,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                         var fileName = entry.Name;
                         var m = new MemoryStream();
                         var incluso = false;
-
+                        string avvisi = "";
                         try
                         {
                             switch (System.IO.Path.GetExtension(fileName).ToLower())
@@ -518,59 +379,15 @@ namespace dblu.Portale.Plugin.Docs.Class
                                         {
                                             unzippedEntryStream.CopyTo(m);
                                         }
-                                        MemoryStream m1 = new MemoryStream();
-                                        m.Position = 0;
-                                        m.CopyTo(m1);
-                                        PdfDocumentAnalyzer analyzer = new PdfDocumentAnalyzer(m1);
-                                        //Get the syntax errors
-                                        SyntaxAnalyzerResult anRes = analyzer.AnalyzeSyntax();
-                                        //Check whether the document is corrupted or not
-                                        if (anRes.IsCorrupted)
+                                        MemoryStream m1 = ElaboraPdfStream(m, fileName, out avvisi);
+                                        if (m1 != null)
                                         {
-                                            //Get syntax error details from results.error
-                                            StringBuilder builder = new StringBuilder();
-                                            //builder.AppendLine("The PDF document is corrupted.");
-                                            int count = 1;
-                                            foreach (PdfException exception in anRes.Errors)
-                                            {
-                                                builder.AppendLine(count++.ToString() + ": " + exception.Message);
-                                            }
-                                            _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il file {fileName}. {builder.ToString()}");
-                                        }
-                                        else
-                                        {
-                                            //No syntax error found in the provided PDF document
-                                            m.Position = 0;
-                                            //  appiattisco le note 
-                                            PdfLoadedDocument ld = new PdfLoadedDocument(m);
-                                            var flAnn = false;
-                                            foreach (PdfPageBase p in ld.Pages)
-                                            {
-                                                if (p.Annotations.Count > 0)
-                                                {
-                                                    p.Annotations.Flatten = true;
-                                                    flAnn = true;
-                                                }
-                                            };
-                                            if (flAnn)
-                                            {
-                                                MemoryStream m2 = new MemoryStream();
-                                                ld.Save(m2);
-                                                m2.Position = 0;
-                                                ListaPdf.Add(m2);
-                                                m.Close();
-                                                m.Dispose();
-                                            }
-                                            else
-                                            {
-                                                m.Position = 0;
-                                                ListaPdf.Add(m);
-                                            }
+                                            m1.Position = 0;
+                                            ListaPdf.Add(m1);
                                             incluso = true;
                                         }
-                                        m1.Close();
-                                        m1.Dispose();
-                                        analyzer.Close();
+                                        m.Close();
+                                        m.Dispose();
                                     }
                                     catch (Exception ex)
                                     {
@@ -635,6 +452,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                                     }
                                     break;
                                 default:
+                                    avvisi = "file non supportato.";
                                     break;
                             }
                         }
@@ -642,57 +460,57 @@ namespace dblu.Portale.Plugin.Docs.Class
                         {
                             _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
                         }
-                        var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = incluso };
+                        var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = incluso, Avvisi=avvisi };
                         res.Add(a);
                     }
                 }
-                    if (ListaPdf.Count() == 0)
-                    {
-                        // aggiungo almeno l'oggetto
-                        PdfPage page = document.Pages.Add();
-                        PdfGraphics graphics = page.Graphics;
-                        PdfTextElement textElement = new PdfTextElement($"nomefile: {NomePdf} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
-                        textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
-                        document.Save(pdfstream);
-                        document.Close(true);
-                        ListaPdf.Add(pdfstream);
-                    }
+                if (ListaPdf.Count() == 0)
+                {
+                    // aggiungo almeno l'oggetto
+                    PdfPage page = document.Pages.Add();
+                    PdfGraphics graphics = page.Graphics;
+                    PdfTextElement textElement = new PdfTextElement($"nomefile: {NomePdf} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
+                    textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
+                    document.Save(pdfstream);
+                    document.Close(true);
+                    ListaPdf.Add(pdfstream);
+                }
 
-                    
-                    if (ListaPdf.Count() > 0)
+
+                if (ListaPdf.Count() > 0)
+                {
+                    //PdfDocument finalDoc = new PdfDocument();
+                    using (PdfDocument finalDoc = new PdfDocument())
                     {
-                        //PdfDocument finalDoc = new PdfDocument();
-                        using (PdfDocument finalDoc = new PdfDocument())
+                        //funzione merge
+                        try
                         {
-                            //funzione merge
-                            try
+
+                            PdfDocumentBase.Merge(finalDoc, ListaPdf.ToArray());
+                            //creazione stram per il file finale
+                            //FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite);
+                            using (FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite))
                             {
 
-                                PdfDocumentBase.Merge(finalDoc, ListaPdf.ToArray());
-                                //creazione stram per il file finale
-                                //FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite);
-                                using (FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite))
-                                {
-
-                                    //salvataggio e chiusura
-                                    finalDoc.Save(fileStreamMerge);
-                                }
+                                //salvataggio e chiusura
+                                finalDoc.Save(fileStreamMerge);
                             }
-                            catch (Exception ex)
-                            {
-                                _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
-                            }
-                    foreach (var ms in ListaPdf)
-                    {
-                        ms.Close();
-                    }
-                    finalDoc.Close(true);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
+                        }
+                        foreach (var ms in ListaPdf)
+                        {
+                            ms.Close();
+                        }
+                        finalDoc.Close(true);
                         //finalDoc.Dispose();
                     }
-                    }
-
-
                 }
+
+
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
@@ -701,8 +519,6 @@ namespace dblu.Portale.Plugin.Docs.Class
 
             return res;
         }
-
-
 
         public async Task<bool> MarcaAllegatoSF(Allegati all, ElencoAttributi att)
         {
@@ -768,85 +584,85 @@ namespace dblu.Portale.Plugin.Docs.Class
 
                             // .CreateTemplate() va in errore con formati documento molto particolari
                             Syncfusion.Pdf.Graphics.PdfTemplate template = lptmp.CreateTemplate();
-                        Syncfusion.Pdf.PdfPage page = document.Pages.Add();
+                            Syncfusion.Pdf.PdfPage page = document.Pages.Add();
 
-                        Syncfusion.Pdf.Graphics.PdfGraphics graphics = page.Graphics;
-                        float etiHeight = page.Size.Height * .05F + 5;
+                            Syncfusion.Pdf.Graphics.PdfGraphics graphics = page.Graphics;
+                            float etiHeight = page.Size.Height * .05F + 5;
 
 
-                        Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = etiHeight + 1 };
+                            Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = etiHeight + 1 };
 
-                        Syncfusion.Drawing.SizeF pDest = CalcolaProporzioni(lptmp.Size.Width, lptmp.Size.Height, page.Size.Width * 0.95F, page.Size.Height - etiHeight);
+                            Syncfusion.Drawing.SizeF pDest = CalcolaProporzioni(lptmp.Size.Width, lptmp.Size.Height, page.Size.Width * 0.95F, page.Size.Height - etiHeight);
 
-                        switch (lptmp.Rotation)
-                        {
-                            case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle90:
-                                if (pDest.Height < pDest.Width)
-                                {
-                                    graphics.TranslateTransform(page.Size.Width, etiHeight);
-                                    graphics.RotateTransform(90);
-                                    posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
-                                }
+                            switch (lptmp.Rotation)
+                            {
+                                case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle90:
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.TranslateTransform(page.Size.Width, etiHeight);
+                                        graphics.RotateTransform(90);
+                                        posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
+                                    }
 
-                                graphics.DrawPdfTemplate(template, posizione, pDest);
+                                    graphics.DrawPdfTemplate(template, posizione, pDest);
 
-                                if (pDest.Height < pDest.Width)
-                                {
-                                    graphics.RotateTransform(-90);
-                                    graphics.TranslateTransform(-page.Size.Width, -etiHeight);
-                                }
-                                
-                                break;
-                            case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle270:
-                                if (pDest.Height < pDest.Width)
-                                {
-                                    graphics.TranslateTransform(0, page.Size.Height);
-                                    graphics.RotateTransform(-90);
-                                    posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
-                                }
-                                graphics.DrawPdfTemplate(template, posizione, pDest);
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.RotateTransform(-90);
+                                        graphics.TranslateTransform(-page.Size.Width, -etiHeight);
+                                    }
 
-                                if (pDest.Height < pDest.Width)
-                                {
-                                    graphics.RotateTransform(90);
-                                    graphics.TranslateTransform(0, -page.Size.Height);
-                                }
-                                break;
-                            default:
-                                if (pDest.Height < pDest.Width)
-                                {
-                                    graphics.TranslateTransform(0, page.Size.Height);
-                                    graphics.RotateTransform(-90);
-                                    posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
-                                }
-                                graphics.DrawPdfTemplate(template, posizione, pDest);
+                                    break;
+                                case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle270:
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.TranslateTransform(0, page.Size.Height);
+                                        graphics.RotateTransform(-90);
+                                        posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
+                                    }
+                                    graphics.DrawPdfTemplate(template, posizione, pDest);
 
-                                if (pDest.Height < pDest.Width)
-                                {
-                                    graphics.RotateTransform(90);
-                                    graphics.TranslateTransform(0, -page.Size.Height);
-                                }
-                                break;
-                        }
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.RotateTransform(90);
+                                        graphics.TranslateTransform(0, -page.Size.Height);
+                                    }
+                                    break;
+                                default:
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.TranslateTransform(0, page.Size.Height);
+                                        graphics.RotateTransform(-90);
+                                        posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
+                                    }
+                                    graphics.DrawPdfTemplate(template, posizione, pDest);
 
-                        i++;
-                        reportSource.Parameters.Add("NPag", i);
-                        reportSource.Parameters.Add("TPag", pdftmp.Pages.Count);
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.RotateTransform(90);
+                                        graphics.TranslateTransform(0, -page.Size.Height);
+                                    }
+                                    break;
+                            }
 
-                        RenderingResult curEti = reportProcessor.RenderReport("PDF", reportSource, null);
-                        Syncfusion.Pdf.Parsing.PdfLoadedDocument pdfEti = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(new MemoryStream(curEti.DocumentBytes));
-                        posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 5 };
-                        Syncfusion.Pdf.PdfLoadedPage loadedPage = pdfEti.Pages[0] as Syncfusion.Pdf.PdfLoadedPage;
-                        template = loadedPage.CreateTemplate();
+                            i++;
+                            reportSource.Parameters.Add("NPag", i);
+                            reportSource.Parameters.Add("TPag", pdftmp.Pages.Count);
 
-                        graphics.DrawPdfTemplate(template, posizione,
-                            new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height));
-                        pdfEti.Close();
+                            RenderingResult curEti = reportProcessor.RenderReport("PDF", reportSource, null);
+                            Syncfusion.Pdf.Parsing.PdfLoadedDocument pdfEti = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(new MemoryStream(curEti.DocumentBytes));
+                            posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 5 };
+                            Syncfusion.Pdf.PdfLoadedPage loadedPage = pdfEti.Pages[0] as Syncfusion.Pdf.PdfLoadedPage;
+                            template = loadedPage.CreateTemplate();
+
+                            graphics.DrawPdfTemplate(template, posizione,
+                                new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height));
+                            pdfEti.Close();
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"MarcaAllegato errore pagina {i+1}: {ex.Message}");
-                            document.ImportPageRange(pdftmp, i , i );
+                            _logger.LogError($"MarcaAllegato errore pagina {i + 1}: {ex.Message}");
+                            document.ImportPageRange(pdftmp, i, i);
                             i++;
                         }
 
@@ -929,7 +745,182 @@ namespace dblu.Portale.Plugin.Docs.Class
             }
             return r;
         }
-    
-    
+
+        private MemoryStream ElaboraPdfStream(MemoryStream m, string fileName, out string avvisi ) {
+             avvisi = "";
+            try
+            {
+
+                //rimosso controllo integrità che va in crash con alcuni pdf
+
+                //MemoryStream m1 = new MemoryStream();
+                //m.Position = 0;
+                //m.CopyTo(m1);
+                //PdfDocumentAnalyzer analyzer = new PdfDocumentAnalyzer(m1);
+                //Get the syntax errors
+                //SyntaxAnalyzerResult anRes = analyzer.AnalyzeSyntax();
+                ////Check whether the document is corrupted or not
+                //if (anRes.IsCorrupted)
+                //{
+                //    //Get syntax error details from results.error
+                //    StringBuilder builder = new StringBuilder();
+                //    //builder.AppendLine("The PDF document is corrupted.");
+                //    int count = 1;
+                //    foreach (PdfException exception in anRes.Errors)
+                //    {
+                //        builder.AppendLine(count++.ToString() + ": " + exception.Message);
+                //    }
+                //    _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il file {fileName}. {builder.ToString()}");
+                //}
+                //else
+                //{
+                //No syntax error found in the provided PDF document
+
+
+                m.Position = 0;
+                var A4Size = PdfPageSize.A4;
+                PdfLoadedDocument ld = new PdfLoadedDocument(m);
+                var flAnn = false;  //contiene annoitazioni
+                var flResize = false;  // richiede resize
+                MemoryStream m2 = null;
+
+                foreach (PdfLoadedPage p in ld.Pages)
+                {
+                   
+                    //controllo se le dimensioni superano a4
+                    if (p.Size.Width > p.Size.Height)
+                    {
+                        if (p.Size.Height > (A4Size.Width + 1f) || p.Size.Width > (A4Size.Height + 1f))
+                        {
+                            flResize = true;
+                        }
+                    }
+                    else
+                    {
+                        if (p.Size.Width > (A4Size.Width + 1f) || p.Size.Height > (A4Size.Height + 1f))
+                        {
+                            flResize = true;
+                        }
+                    }
+                    
+                    //  appiattisco le note 
+                    if (p.Annotations.Count > 0)
+                    {
+                        //p.Annotations.Flatten = true;
+                        foreach (PdfAnnotation nn in p.Annotations)
+                        {
+                            if (!(nn is PdfLoadedInkAnnotation))    // 18.4.39 non funziona flatten per le note manuali
+                            {
+                                flAnn = true;
+                                nn.Flatten = true;
+                            }
+                        }
+                      }
+                };
+
+                if (flAnn) {
+                    // ricarico il documento
+                    try
+                    {
+                        m2 = new MemoryStream();
+                        ld.Save(m2);
+                        ld.Close();
+                        ld = new PdfLoadedDocument(m2);
+                    }
+                    catch (Exception ex){
+                        flAnn = false;
+                        avvisi = "Impossibile caricare le annotazioni. ";
+                        _logger.LogError($"ElaboraPdfStream: impossibile importare le note {fileName}. {ex.Message}");
+                    }
+                }
+                
+                if (flResize)
+                {
+                    PdfDocument doc1 = new PdfDocument();
+                    foreach (PdfPageBase p in ld.Pages)
+                    {
+                        PdfPage page = doc1.Pages.Add();
+                        page.Section.PageSettings.Margins.All = 0f;
+                        
+                        PdfGraphics g = page.Graphics;
+                        PdfTemplate template = p.CreateTemplate();
+                        // g.DrawPdfTemplate(template, PointF.Empty, PdfPageSize.A4);
+                        Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
+                        Syncfusion.Drawing.SizeF pDest = CalcolaProporzioni(p.Size.Width, p.Size.Height, page.Size.Width, page.Size.Height);
+
+                        //p.Annotations.Flatten = true;
+                        switch (p.Rotation)
+                        {
+                            case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle90:
+                                if (pDest.Height < pDest.Width)
+                                {
+                                    g.TranslateTransform(page.Size.Width, 0);
+                                    g.RotateTransform(90);
+                                }
+                                g.DrawPdfTemplate(template, posizione, pDest);
+
+                                if (pDest.Height < pDest.Width)
+                                {
+
+                                    g.RotateTransform(-90);
+                                    g.TranslateTransform(-page.Size.Width, 0);
+                                }
+
+                                break;
+                            case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle270:
+                                if (pDest.Height < pDest.Width)
+                                {
+                                    g.TranslateTransform(0, page.Size.Height);
+                                    g.RotateTransform(-90);
+                                }
+                                g.DrawPdfTemplate(template, posizione, pDest);
+
+                                if (pDest.Height < pDest.Width)
+                                {
+                                    g.RotateTransform(90);
+                                    g.TranslateTransform(0, -page.Size.Height);
+                                }
+                                break;
+                            default:
+                                if (pDest.Height < pDest.Width)
+                                {
+                                    g.TranslateTransform(0, page.Size.Height);
+                                    g.RotateTransform(-90);
+                                    //page.Section.PageSettings.Orientation = PdfPageOrientation.Landscape;
+                                }
+                                g.DrawPdfTemplate(template, posizione, pDest);
+
+                                if (pDest.Height < pDest.Width)
+                                {
+                                    //page.Section.PageSettings.Orientation = PdfPageOrientation.Landscape;
+                                    g.RotateTransform(90);
+                                    g.TranslateTransform(0, -page.Size.Height);
+                                }
+
+                                break;
+                        }
+                    }
+                    if (flAnn) { 
+                        m2.Close();
+                    }
+                    m2 = new MemoryStream();
+                    doc1.Save(m2);
+                }
+
+                if (!flAnn && !flResize)
+                {
+                    m2 = new MemoryStream();
+                    m.Position = 0;
+                    m.CopyTo(m2);
+                }
+                m2.Position = 0;
+                return m2;            }
+            catch (Exception ex)
+            {
+                 avvisi = "Impossibile includere il file";
+                _logger.LogError($"ElaboraPdfStream: impossibile includere il file {fileName}. {ex.Message}");
+            }
+            return null;
+        }
     }
 }
