@@ -354,8 +354,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (mv.Soggetto == null)
                 { mv.Soggetto = new Soggetti(); }
 
-
-                
                 var m = await _allMan.GetFileAsync(mv.IdAllegato);
                 mv.Messaggio = MimeKit.MimeMessage.Load(m, new CancellationToken());
 

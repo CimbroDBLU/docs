@@ -740,8 +740,9 @@
                             .Columns(columns =>
                             {
                                 columns.Select().Width(50).Title("Allega");
-                                columns.Bound(p => p.NomeFile).Title("Nome ").Width("50%");
-                                columns.Bound(p => p.IsIncluso).Title("Incluso nel pdf").Width("20%");
+                                columns.Bound(p => p.NomeFile).Title("Nome ").Width("40%");
+                                columns.Bound(p => p.IsIncluso).Title("Incluso nel pdf").Width("10%");
+                                columns.Bound(p => p.Avvisi).Title("Avvisi").ClientTemplate("#= templateAvvisi(data)#").Width("40%");
                                 columns.Command(command =>
                                 {
                                     command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon my-icon-class-download");
