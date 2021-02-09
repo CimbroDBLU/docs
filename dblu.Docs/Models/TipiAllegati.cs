@@ -23,6 +23,8 @@ namespace dblu.Docs.Models
         public string Descrizione { get; set; }
         public string Cartella { get; set; }
 
+        public string Estensione { get; set; }
+
         //[NotMapped]
         [Write(false)]
         public ElencoAttributi Attributi { get; set; }
