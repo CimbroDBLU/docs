@@ -408,7 +408,6 @@ namespace dblu.Docs.Classi
             return bres;
         }
 
-
         public List<Elementi> CercaElementi(Elementi queryObj)
         {
             List<Elementi> l = new List<Elementi>();

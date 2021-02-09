@@ -101,7 +101,7 @@
         $.ajax({
         url: '@Url.Action("LogRiepilogo", "MailView")',
         type: 'POST',
-        data: { IdAllegato: $("#IdAllegato").val()},
+        data: { IdAllegato : '@IdAllegato'},
         success: function (result) {
 
         },

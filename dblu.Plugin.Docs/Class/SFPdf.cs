@@ -476,7 +476,6 @@ namespace dblu.Portale.Plugin.Docs.Class
                     ListaPdf.Add(pdfstream);
                 }
 
-
                 if (ListaPdf.Count() > 0)
                 {
                     //PdfDocument finalDoc = new PdfDocument();
