@@ -265,6 +265,9 @@ namespace dbluMailService
                                                         SubmitStartForm ssf = new SubmitStartForm();
                                                         ssf.BusinessKey = message.MessageId;
 
+                                                        //tolgo il testo per limitare la variabile jAllegato
+                                                        all.Testo = "";
+
                                                         ssf.SetVariable("sMittente", emailmitt);
                                                         ssf.SetVariable("dData", message.Date.UtcDateTime.ToString("dd/MM/yyyy hh:mm"));
                                                         ssf.SetVariable("sOggetto", message.Subject);

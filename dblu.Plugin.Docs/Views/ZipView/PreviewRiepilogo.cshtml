@@ -43,6 +43,7 @@
                                                enableStampAnnotations="true"
                                                locale="it-IT"
                                                downloadFileName="riepilogo.pdf"
+                                               printEnd="documentPrinted" 
                                                height="900px"
                                                toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool,PanTool"  })">
                                 </ejs-pdfviewer>
@@ -87,6 +88,21 @@
     function documentLoaded(args) {
         //alert("The document" + args.fileName + "is ready to view");
         importAnnotations()
+    }
+
+     function documentPrinted(args) {
+        //let's do that
+        $.ajax({
+        url: '@Url.Action("LogRiepilogo", "MailView")',
+        type: 'POST',
+            data: { IdAllegato: '@IdAllegato'},
+        success: function (result) {
+
+        },
+        error: function () {
+
+        }
+        });
     }
 
 </script>

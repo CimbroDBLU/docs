@@ -474,6 +474,41 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             return Json(r.Successo);
         }
 
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.4")]
+        public async Task<ActionResult<bool>> LogRiepilogo(
+            string IdAllegato)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(IdAllegato))
+
+                    _zipsvc._logMan.Salva(new LogDoc()
+                    {
+                        Data = DateTime.Now,
+                        IdOggetto = Guid.Parse(IdAllegato),
+                        TipoOggetto = TipiOggetto.ALLEGATO,
+                        Utente = User.Identity.Name,
+                        Operazione = TipoOperazione.Stampato
+                    }, true);
+                foreach (Elementi e in _zipsvc._elmMan.GetElementiDaAllegato(Guid.Parse(IdAllegato)))
+                {
+                    _zipsvc._logMan.Salva(new LogDoc()
+                    {
+                        Data = DateTime.Now,
+                        IdOggetto = e.Id,
+                        TipoOggetto = TipiOggetto.ELEMENTO,
+                        Utente = User.Identity.Name,
+                        Operazione = TipoOperazione.Stampato
+                    }, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult(false);
+            }
+            return await Task.FromResult(true);
+        }
 
         [AcceptVerbs("Post")]
         [HasPermission("50.1.4")]
