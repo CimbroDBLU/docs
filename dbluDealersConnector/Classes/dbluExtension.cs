@@ -1,6 +1,5 @@
 ﻿using dblu.Docs.Models;
 using dbluDealersConnector.DealersAPI;
-using dbluDealersConnector.Models;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;

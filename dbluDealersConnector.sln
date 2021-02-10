@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dblu.Docs", "dblu.Docs\dblu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dbluDealersConnector", "dbluDealersConnector\dbluDealersConnector.csproj", "{35AE3EFE-361A-40D6-9DC2-83157FBF35C5}"
 EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "dbDocs", "dbDocs\dbDocs.sqlproj", "{01C60406-0637-4445-8B12-E497261AA603}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,12 @@ Global
 		{35AE3EFE-361A-40D6-9DC2-83157FBF35C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35AE3EFE-361A-40D6-9DC2-83157FBF35C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35AE3EFE-361A-40D6-9DC2-83157FBF35C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01C60406-0637-4445-8B12-E497261AA603}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01C60406-0637-4445-8B12-E497261AA603}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01C60406-0637-4445-8B12-E497261AA603}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{01C60406-0637-4445-8B12-E497261AA603}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01C60406-0637-4445-8B12-E497261AA603}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01C60406-0637-4445-8B12-E497261AA603}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
