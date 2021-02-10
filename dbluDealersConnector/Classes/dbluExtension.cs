@@ -8,8 +8,18 @@ using System.Threading.Tasks;
 
 namespace dbluDealersConnector.Classes
 {
+    /// <summary>
+    /// Class for manaing syntax sugar for helping code-writing
+    /// </summary>
     public static class dbluExtension
     {
+        /// <summary>
+        /// Reflect tthe state of the attachment on the request
+        /// </summary>
+        /// <param name="Stato">State of the attachment</param>
+        /// <returns>
+        /// The state that the request ha assumed according
+        /// </returns>
         public static RequestState ToRequestState(this StatoAllegato Stato)
         {
             switch(Stato)

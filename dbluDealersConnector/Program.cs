@@ -10,19 +10,29 @@ using System.Threading.Tasks;
 
 namespace dblu.Docs.Service
 {
+    /// <summary>
+    /// Program class
+    /// </summary>
     public class Program
     {
+        /// <summary>
+        /// Main
+        /// </summary>
+        /// <param name="args"></param>
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
         }
 
+        /// <summary>
+        /// Create the web server
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                
+            Host.CreateDefaultBuilder(args)                
              .ConfigureLogging((logging) =>
              {
-                 // clear default logging providers
                  logging.ClearProviders();
              }).UseNLog()
                 .ConfigureWebHostDefaults(webBuilder =>

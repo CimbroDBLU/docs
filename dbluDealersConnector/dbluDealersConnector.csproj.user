@@ -12,7 +12,7 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Update="Workers\RequestWorker.cs">
+    <Compile Update="Workers\RequestSynchronizer.cs">
       <SubType>Component</SubType>
     </Compile>
   </ItemGroup>
