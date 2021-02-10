@@ -1,3 +1,4 @@
+dbDoc/obj/
 dblu.Docs/obj/
 .vs/
 dblu.Plugin.Docs/obj/
@@ -9,4 +10,4 @@ dbDocs/dbDocs.dbmdl
 dbDocs/dbDocs.jfm
 dbluDealersConnector/bin/
 dbluDealersConnector/obj/
-
+dbluDealersConnector/log.txt
