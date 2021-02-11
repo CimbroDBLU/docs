@@ -45,5 +45,10 @@ namespace dbluDealersConnector.DealersAPI
         /// </summary>
         public string Number { get; set; }
 
+        /// <summary>
+        /// As source of the request
+        /// </summary>
+        public bool InReferece { get; set; }
+
     }
 }

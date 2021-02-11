@@ -95,6 +95,11 @@ namespace dblu.Docs.Service
             C.Attributi.Add(new Attributo() { Nome = "Testo", Descrizione = "Testo", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "2" });
             C.Attributi.Add(new Attributo() { Nome = "Descrizione", Descrizione = "Descrizione", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "3" });
             C.Attributi.Add(new Attributo() { Nome = "ElencoFile", Descrizione = "Lista di nome files e relativa dimensione separati da |", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "4" });
+            C.Attributi.Add(new Attributo() { Nome = "Reference", Descrizione = "Riferimenti", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "5" });
+            C.Attributi.Add(new Attributo() { Nome = "RefYear", Descrizione = "Anno ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "6" });
+            C.Attributi.Add(new Attributo() { Nome = "RefNumber", Descrizione = "Numero ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "7" });
+            C.Attributi.Add(new Attributo() { Nome = "RefItemId", Descrizione = "Elemento ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.Guid", Valore = "", SystemType = Type.GetType("System.Guid"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "8" });
+            C.Attributi.Add(new Attributo() { Nome = "RefDossierId", Descrizione = "Fascicolo ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.Guid", Valore = "", SystemType = Type.GetType("System.Guid"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "9" });
             AM.SalvaTipoAllegato(C);
             return C;
 
@@ -152,12 +157,6 @@ namespace dblu.Docs.Service
                 {
                     log.LogInformation($"RequestSynchronizer.Engine: Request: [{R.Id}] [{R.Descrizione}] is READY and has to be stored in Docs");
 
-                    if (R.NomeFile == "")
-                    {
-                        log.LogWarning($"RequestSynchronizer.Engine: Request: [{R.Id}] has no attachments");
-                        continue;
-                    }
-
                     MemoryStream M = await DC.GetDocument(R.NomeFile);
                     Allegati A = new Allegati
                     {
@@ -174,8 +173,20 @@ namespace dblu.Docs.Service
                     A.SetAttributo("Testo", R.Testo);
                     A.SetAttributo("Descrizione", R.Descrizione);
                     A.SetAttributo("ElencoFile", R.ElencoFile);
+                    A.SetAttributo("Reference", R.Reference);
 
-                    await AM.SalvaAsync(A, M, true);
+                    A.SetAttributo("RefYear", R.RefYear);
+                    A.SetAttributo("RefNumber", R.RefNumber);
+                    A.SetAttributo("RefItemId", R.RefItemId);
+                    A.SetAttributo("RefDossierId", R.RefDossierId);
+
+                    if (R.NomeFile == "")
+                    {
+                        log.LogWarning($"RequestSynchronizer.Engine: Request: [{R.Id}] has no attachments");
+                        AM.Salva(A, true);
+                    }
+                    else await AM.SalvaAsync(A, M, true);
+
                     log.LogInformation($"RequestSynchronizer.Engine: Created Attachment for Request: [{R.Id}] Attachment: {A.Id}-{A.NomeFile}");
 
                     await DC.ChangeState(R.Id, RequestState.Processing);

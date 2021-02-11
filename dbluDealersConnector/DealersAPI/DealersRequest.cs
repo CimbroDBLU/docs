@@ -110,5 +110,29 @@ namespace dbluDealersConnector.DealersAPI
         /// </summary>
         public RequestState State { get; set; }
 
+        /// <summary>
+        /// Referece of this item
+        /// </summary>
+        public string Reference { get; set; }
+
+        /// <summary>
+        /// Year of the order source of this request if any
+        /// </summary>
+        public string RefYear { get; set; }
+
+        /// <summary>
+        /// Number of the order source of this request if any
+        /// </summary>
+        public string RefNumber { get; set; }
+
+        /// <summary>
+        /// ItemID of the order source of this request if any
+        /// </summary>
+        public Guid? RefItemId { get; set; }
+
+        /// <summary>
+        /// DossierID of the order source of this request if any
+        /// </summary>
+        public Guid? RefDossierId { get; set; }
     }
 }
