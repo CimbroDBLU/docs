@@ -524,7 +524,11 @@ namespace dblu.Portale.Plugin.Docs.Class
             bool res = true;
             try
             {
-                string etichetta = Path.Combine(_appEnvironment.ContentRootPath, "Report", _config["Docs:EtichettaProtocollo"]);
+                string rpt = _config["Docs:EtichettaProtocollo"];
+                if (string.IsNullOrEmpty(rpt))
+                    return true;
+                
+                string etichetta = Path.Combine(_appEnvironment.ContentRootPath, "Report", rpt);
 
                 if (!File.Exists(etichetta))
                 {
@@ -782,10 +786,13 @@ namespace dblu.Portale.Plugin.Docs.Class
                 var flAnn = false;  //contiene annoitazioni
                 var flResize = false;  // richiede resize
                 MemoryStream m2 = null;
-
+                List<string> ControllaPag = new List<string>();
+                var flNoteManuali = false;
+                var pn = 0; 
                 foreach (PdfLoadedPage p in ld.Pages)
                 {
-                   
+                    pn++;
+                    flNoteManuali = false;
                     //controllo se le dimensioni superano a4
                     if (p.Size.Width > p.Size.Height)
                     {
@@ -808,14 +815,24 @@ namespace dblu.Portale.Plugin.Docs.Class
                         //p.Annotations.Flatten = true;
                         foreach (PdfAnnotation nn in p.Annotations)
                         {
-                            if (!(nn is PdfLoadedInkAnnotation))    // 18.4.39 non funziona flatten per le note manuali
+                            flAnn = true;
+                            nn.Flatten = true;                   
+                            if (nn is PdfLoadedInkAnnotation)    // 18.4.39 non funziona flatten per le note manuali
                             {
-                                flAnn = true;
-                                nn.Flatten = true;
+                                flNoteManuali = true;
                             }
                         }
                       }
+
+                    if (flNoteManuali) {
+                          ControllaPag.Add(pn.ToString());
+                        _logger.LogWarning($"ElaboraPdfStream: presenza di note manuali  pag {pn}  {fileName}. ");
+                    }
                 };
+
+                if (ControllaPag.Count > 0) {
+                    avvisi = $" Controllare le note manuali (pag. {string.Join(",",ControllaPag)})";
+                }
 
                 if (flAnn) {
                     // ricarico il documento
@@ -828,7 +845,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                     }
                     catch (Exception ex){
                         flAnn = false;
-                        avvisi = "Impossibile caricare le annotazioni. ";
+                        avvisi += " Impossibile importare le note. ";
                         _logger.LogError($"ElaboraPdfStream: impossibile importare le note {fileName}. {ex.Message}");
                     }
                 }
