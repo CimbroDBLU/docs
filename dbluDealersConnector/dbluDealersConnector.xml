@@ -1,0 +1,524 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>dbluDealersConnector</name>
+    </assembly>
+    <members>
+        <member name="T:dbluDealersConnector.Classes.dbluExtension">
+            <summary>
+            Class for manaing syntax sugar for helping code-writing
+            </summary>
+        </member>
+        <member name="M:dbluDealersConnector.Classes.dbluExtension.ToRequestState(dblu.Docs.Models.StatoAllegato)">
+            <summary>
+            Reflect tthe state of the attachment on the request
+            </summary>
+            <param name="Stato">State of the attachment</param>
+            <returns>
+            The state that the request ha assumed according
+            </returns>
+        </member>
+        <member name="T:dbluDealersConnector.Controllers.AccessController">
+            <summary>
+            Controller for managing accessing using Bearer\JWT tokens
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.Controllers.AccessController.conf">
+            <summary>
+            Injected configuration
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.Controllers.AccessController.log">
+            <summary>
+            Injected logger
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.Controllers.AccessController.users">
+            <summary>
+            List of accepted users
+            </summary>
+        </member>
+        <member name="M:dbluDealersConnector.Controllers.AccessController.#ctor(Microsoft.Extensions.Logging.ILogger{dbluDealersConnector.Controllers.AccessController},Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="nLog">Injected configuration</param>
+            <param name="nConf"> List of accepted users</param>
+        </member>
+        <member name="M:dbluDealersConnector.Controllers.AccessController.Login(dbluDealersConnector.Model.User)">
+            <summary>
+            Authenticate the corrent user and pass
+            </summary>
+            <param name="U">Username and password</param>
+            <returns>A json object with code=0 (if ok) and the token under filed "Payload"</returns>
+        </member>
+        <member name="M:dbluDealersConnector.Controllers.AccessController.GetToken(System.String)">
+            <summary>
+            Aux method for creating token
+            </summary>
+            <param name="UserName">Username to insert into token</param>
+            <returns>The token created</returns>
+        </member>
+        <member name="M:dbluDealersConnector.Controllers.AccessController.TestMe">
+            <summary>
+            Test method that shows UserName in LOG if exsisting
+            </summary>
+        </member>
+        <member name="T:dbluDealersConnector.DealersAPI.DealersClient">
+            <summary>
+            Class for interacting with dbludealers
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.DealersClient.baseUri">
+            <summary>
+            base url of the dbludealers
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.DealersClient.cookieContainer">
+            <summary>
+            Storage for saving the cookies
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.DealersClient.client">
+            <summary>
+            Client http used for dealer comunications
+            </summary>
+        </member>
+        <member name="M:dbluDealersConnector.DealersAPI.DealersClient.#ctor(System.Uri)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="nBaseUri">Base url fo the dbludealers</param>
+        </member>
+        <member name="M:dbluDealersConnector.DealersAPI.DealersClient.GetTenant(System.String,System.String@)">
+            <summary>
+            Get the tenant id seaching for Tenant name
+            </summary>
+            <param name="TenantName">Tenant name</param>
+            <param name="Tenant">Tenant id</param>
+            <returns>
+            0 if request is gone well
+            =! 0 otherwise
+            </returns>
+        </member>
+        <member name="M:dbluDealersConnector.DealersAPI.DealersClient.Login(System.String,System.String,System.String)">
+            <summary>
+            Login into the system (dbluDealers)
+            </summary>
+            <param name="nTenantName">Tenant Name</param>
+            <param name="nLogin">Login</param>
+            <param name="nPassword">Password</param>
+            <returns>
+            0 if request is gone well
+            =! 0 otherwise
+            </returns>
+        </member>
+        <member name="M:dbluDealersConnector.DealersAPI.DealersClient.PendingRequest">
+            <summary>
+            Get the list of the pending request
+            </summary>
+            <returns>
+            List of the pending request
+            </returns>
+        </member>
+        <member name="M:dbluDealersConnector.DealersAPI.DealersClient.SyncReferences(System.Guid,System.Collections.Generic.List{dbluDealersConnector.DealersAPI.DealersRequestReferences})">
+            <summary>
+            Synchoronize the references of the request with the elements generated by the attachement
+            </summary>
+            <param name="RequestId">Id of the reqquest</param>
+            <param name="Data">List of elements generated from the attachments</param>
+            <returns>
+            Retreive the number of references inserted into dbludealer
+            </returns>
+        </member>
+        <member name="M:dbluDealersConnector.DealersAPI.DealersClient.GetDocument(System.String)">
+            <summary>
+            Retreive the document related to a Request
+            </summary>
+            <param name="Doc">Id of the document</param>
+            <returns>
+            Memory stream hosting the document
+            </returns>
+        </member>
+        <member name="M:dbluDealersConnector.DealersAPI.DealersClient.ChangeState(System.Guid,dbluDealersConnector.DealersAPI.RequestState)">
+            <summary>
+            Change the state of the Request id
+            </summary>
+            <param name="RequestId">Request Id</param>
+            <param name="newState">State of the request</param>
+            <returns>
+            true if the status has been upgraded properly
+            </returns>
+        </member>
+        <member name="T:dbluDealersConnector.DealersAPI.RequestType">
+            <summary>
+            Type of the request
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Ordine">
+            <summary>
+            Order
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Sostituzione">
+            <summary>
+            Replacement
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Chiarimento">
+            <summary>
+            Clarification
+            </summary>
+        </member>
+        <member name="T:dbluDealersConnector.DealersAPI.RequestState">
+            <summary>
+             Request status
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestState.Preparing">
+            <summary>
+            Preparing
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestState.Ready">
+            <summary>
+            Ready
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestState.Processing">
+            <summary>
+            Processing
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestState.Processed">
+            <summary>
+            Processed
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestState.Closed">
+            <summary>
+            Closed
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestState.Aborted">
+            <summary>
+            Aborted
+            </summary>
+        </member>
+        <member name="T:dbluDealersConnector.DealersAPI.DealersRequest">
+            <summary>
+            Request
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.Id">
+            <summary>
+            Id of the request
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.TenantId">
+            <summary>
+            Tenant id any
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.Cli">
+            <summary>
+            Code of the shop
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.Tipo">
+            <summary>
+            Type of the request
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.Testo">
+            <summary>
+            Text
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.Descrizione">
+            <summary>
+            Description
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.DataC">
+            <summary>
+            Creation Date
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.NomeFile">
+            <summary>
+            FileName
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.ElencoFile">
+            <summary>
+            List of contents on the ZIP file
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.State">
+            <summary>
+            Status of the request
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.Reference">
+            <summary>
+            Referece of this item
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.RefYear">
+            <summary>
+            Year of the order source of this request if any
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.RefNumber">
+            <summary>
+            Number of the order source of this request if any
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.RefItemId">
+            <summary>
+            ItemID of the order source of this request if any
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.RefDossierId">
+            <summary>
+            DossierID of the order source of this request if any
+            </summary>
+        </member>
+        <member name="T:dbluDealersConnector.DealersAPI.DealersRequestReferences">
+            <summary>
+            Reference of the request
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequestReferences.Id">
+            <summary>
+            Id of the reference
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequestReferences.TenantId">
+            <summary>
+            Tenant Id
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequestReferences.RequestId">
+            <summary>
+            Request Id
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequestReferences.ItemId">
+            <summary>
+            Id of the item (ELEMENTO)
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequestReferences.DossierId">
+            <summary>
+            Id of the Dossier (FASCICOLO)
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequestReferences.Year">
+            <summary>
+            Year of protocol
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequestReferences.Number">
+            <summary>
+            Number of protocol
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequestReferences.InReferece">
+            <summary>
+            As source of the request
+            </summary>
+        </member>
+        <member name="T:dbluDealersConnector.Model.Answer">
+            <summary>
+            Ansert for a login action
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.Model.Answer.Code">
+            <summary>
+            Out code , 0 means ok, != mean error
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.Model.Answer.Payload">
+            <summary>
+            Payload of the answer, contains the token or an error message
+            </summary>
+        </member>
+        <member name="T:dbluDealersConnector.Model.Attachment">
+            <summary>
+            Model for an Attachment
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.Model.Attachment.Id">
+            <summary>
+            Id of the attachment
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.Model.Attachment.Filename">
+            <summary>
+            Name of the attachment
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.Model.Attachment.Description">
+            <summary>
+            Description of the attachment
+            </summary>
+        </member>
+        <member name="T:dbluDealersConnector.Model.User">
+            <summary>
+            Model for the User
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.Model.User.Username">
+            <summary>
+            Username
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.Model.User.Password">
+            <summary>
+            Password
+            </summary>
+        </member>
+        <member name="T:dblu.Docs.Service.Controllers.AttachmentController">
+            <summary>
+            Controller for downloading attachments
+            </summary>
+        </member>
+        <member name="F:dblu.Docs.Service.Controllers.AttachmentController.conf">
+            <summary>
+            Injected configuration
+            </summary>
+        </member>
+        <member name="F:dblu.Docs.Service.Controllers.AttachmentController.log">
+            <summary>
+            Injected logger
+            </summary>
+        </member>
+        <member name="M:dblu.Docs.Service.Controllers.AttachmentController.#ctor(Microsoft.Extensions.Logging.ILogger{dblu.Docs.Service.Controllers.AttachmentController},Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="nLog">Injected configuration</param>
+            <param name="nConf"> List of accepted users</param>
+        </member>
+        <member name="M:dblu.Docs.Service.Controllers.AttachmentController.Get(System.Guid)">
+            <summary>
+            Retreive an attachment using the Id
+            </summary>
+            <param name="Id">Id of the attachment</param>
+            <returns>
+            The Attachment found
+            </returns>
+        </member>
+        <member name="M:dblu.Docs.Service.Controllers.AttachmentController.GetByItemId(System.Guid)">
+            <summary>
+            Retreive the attachments included in this element
+            </summary>
+            <param name="Id">Id of the item</param>
+            <returns>
+            List of the Attachment linked to this item
+            </returns>
+        </member>
+        <member name="M:dblu.Docs.Service.Controllers.AttachmentController.Download(System.Guid)">
+            <summary>
+            Return the specidief attachment
+            </summary>
+            <param name="Id">Id of the attachment</param>
+            <returns>
+            The file downloaded
+            </returns>
+        </member>
+        <member name="T:dblu.Docs.Service.Program">
+            <summary>
+            Program class
+            </summary>
+        </member>
+        <member name="M:dblu.Docs.Service.Program.Main(System.String[])">
+            <summary>
+            Main
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="M:dblu.Docs.Service.Program.CreateHostBuilder(System.String[])">
+            <summary>
+            Create the web server
+            </summary>
+            <param name="args"></param>
+            <returns></returns>
+        </member>
+        <member name="T:dblu.Docs.Service.Startup">
+            <summary>
+            Class for configuring the services hosted
+            </summary>
+        </member>
+        <member name="M:dblu.Docs.Service.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="configuration">Injected configurator</param>
+        </member>
+        <member name="P:dblu.Docs.Service.Startup.Configuration">
+            <summary>
+            Injected configurator
+            </summary>
+        </member>
+        <member name="M:dblu.Docs.Service.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+             This method gets called by the runtime. Use this method to add services to the container.
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:dblu.Docs.Service.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
+            <summary>
+             This method gets called by the runtime. Use this method to add services to the container.
+            </summary>
+            <param name="app"></param>
+            <param name="env"></param>
+        </member>
+        <member name="T:dblu.Docs.Service.RequestSynchronizer">
+            <summary>
+            Class that synchronize dbludealer request into dbludocs (in order to make them processed by JobAID)
+            </summary>
+        </member>
+        <member name="F:dblu.Docs.Service.RequestSynchronizer.conf">
+            <summary>
+            Injected configuration
+            </summary>
+        </member>
+        <member name="F:dblu.Docs.Service.RequestSynchronizer.log">
+            <summary>
+            Injected logger
+            </summary>
+        </member>
+        <member name="M:dblu.Docs.Service.RequestSynchronizer.#ctor(Microsoft.Extensions.Logging.ILogger{dblu.Docs.Service.RequestSynchronizer},Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="logger">Injected logger</param>
+            <param name="nConf">Injected configuration</param>
+        </member>
+        <member name="M:dblu.Docs.Service.RequestSynchronizer.ExecuteAsync(System.Threading.CancellationToken)">
+            <summary>
+            Procedure that periodically scan the dbluDealers and move forward the pending request
+            </summary>
+            <param name="stoppingToken">Stopping Token for a fast\safe stop of the procedure</param>
+            <returns>
+            The task done
+            </returns>
+        </member>
+        <member name="M:dblu.Docs.Service.RequestSynchronizer.GetAttachType">
+            <summary>
+            Retrive and if necessary create a REQ Attach Type
+            </summary>
+            <returns>
+            The REQ attach type.
+            </returns>
+        </member>
+        <member name="M:dblu.Docs.Service.RequestSynchronizer.Engine">
+            <summary>
+            Procedure that scan the dbluDealers and move forward the pending requests, if any
+            </summary>
+        </member>
+    </members>
+</doc>

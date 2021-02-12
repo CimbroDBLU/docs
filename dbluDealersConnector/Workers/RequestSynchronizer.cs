@@ -53,7 +53,7 @@ namespace dblu.Docs.Service
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.Delay(1000, stoppingToken);
-            if (conf["cronschedule"].Length == 0)
+            if (conf["cronschedule"]==null || conf["cronschedule"].Length == 0)
             {
                 log.LogInformation($"RequestWorker.ExecuteAsync: No sync required");
                 return;

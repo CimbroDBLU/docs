@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>C:\Sources\dbludocs\dblu.Docs.Service\dbluDealersConnector.xml</DocumentationFile>
+    <DocumentationFile>.\dbluDealersConnector.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

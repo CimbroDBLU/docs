@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using dbluDealersConnector.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -63,33 +64,31 @@ namespace dbluDealersConnector.Controllers
         /// <summary>
         /// Authenticate the corrent user and pass
         /// </summary>
-        /// <param name="Login">Login of the user</param>
-        /// <param name="Password">Password</param>
+        /// <param name="U">Username and password</param>
         /// <returns>A json object with code=0 (if ok) and the token under filed "Payload"</returns>
-        [HttpGet("Login")]
-        [Produces("application/json", "application/xml")]
-        public IActionResult Login(string Login, string Password)
+        [HttpPost("Login")]      
+        public Answer Login([FromBody] User U)
         {
-            dynamic result = new ExpandoObject();
+            Answer result = new Answer();
 
-            log.LogInformation($"Access.Login: >> Requested login for {Login}");
-            if(!users.ContainsKey(Login))
+            log.LogInformation($"Access.Login: >> Requested login for {U.Username}");
+            if(!users.ContainsKey(U.Username))
                 {
                 result.Code = 1;
                 result.Payload = "User unknown";
-                return Ok(result);
-                }
+                return result;
+            }
 
-            if(users[Login] !=Password)
+            if(users[U.Username] !=U.Password)
             {
                 result.Code = 2;
                 result.Payload = "Wrong password";
-                return Ok(result);
+                return result;
             }
-            string TK = GetToken(Login);            
+            string TK = GetToken(U.Username);            
             result.Code = 0;
             result.Payload = TK;
-            return Ok(result);
+            return result;
         }
         
         /// <summary>

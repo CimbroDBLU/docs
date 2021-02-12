@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using dbluDealersConnector.Classes;
 using dblu.Docs.Models;
 using System.IO;
+using dbluDealersConnector.Model;
 
 namespace dblu.Docs.Service.Controllers
 {
@@ -19,6 +20,7 @@ namespace dblu.Docs.Service.Controllers
     /// Controller for downloading attachments
     /// </summary>
     [Route("/Attachments")]
+    [Authorize]
     [ApiController]
     public class AttachmentController : Controller
     {
@@ -43,16 +45,68 @@ namespace dblu.Docs.Service.Controllers
         }
 
         /// <summary>
-        /// Return the specidief attachment
+        /// Retreive an attachment using the Id
+        /// </summary>
+        /// <param name="Id">Id of the attachment</param>
+        /// <returns>
+        /// The Attachment found
+        /// </returns>
+        [Authorize]
+        [HttpGet("{Id}")]
+        public Attachment Get(Guid Id)
+        {
+            AllegatiManager AM = new AllegatiManager(conf["dbluDocs:db"], log);
+            Allegati A=AM.Get(Id);
+            if(A!=null)
+                return new Attachment() { Id = Id, Filename = A.NomeFile, Description = A.Descrizione };
+            return new Attachment() { Id = Guid.Empty, Filename = "", Description = "" };
+        }
+    
+        /// <summary>
+        /// Retreive the attachments included in this element
+        /// </summary>
+        /// <param name="Id">Id of the item</param>
+        /// <returns>
+        /// List of the Attachment linked to this item
+        /// </returns>
+        [Authorize]
+        [HttpGet("_ByItemId/{Id}")]
+        public List<Attachment> GetByItemId(Guid Id)
+        {
+            ElementiManager EM=new ElementiManager(conf["dbluDocs:db"], log);
+
+            ////////////////////////////////////////////////////////////////
+            // TODO: RIMUOVERE QUESTO GUID DI TEST
+            ////////////////////////////////////////////////////////////////
+           
+            Id = Guid.Parse("14942425-01AC-4100-8BC4-8C11AB626B32");
+            
+            List<Allegati> lst=EM.GetAllegatiElemento(Id);
+            List<Attachment> lstAttachment = new List<Attachment>();
+            foreach (Allegati A in lst)
+                lstAttachment.Add(new Attachment() { Id = A.Id, Filename = A.NomeFile, Description = A.Descrizione });
+            return lstAttachment;
+        }
+
+        /// <summary>
+        /// Return the specified attachment
         /// </summary>
         /// <param name="Id">Id of the attachment</param>
         /// <returns>
         /// The file downloaded
         /// </returns>
         [Authorize]
-        [HttpGet("{Id}/Docs")]
+        [HttpGet("{Id}/Doc")]
         public async Task<IActionResult> Download(Guid Id)
         {
+            AllegatiManager AM = new AllegatiManager(conf["dbluDocs:db"], log);
+            Allegati A = AM.Get(Id);
+            if (A != null)
+            {              
+                MemoryStream Zipped = await AM.GetFileAsync(A.Id.ToString());
+                if(Zipped!=null)
+                    return File(Zipped.ToArray(), AM.GetContentType(A.NomeFile), A.NomeFile);
+            }
             return NotFound();
         }
 

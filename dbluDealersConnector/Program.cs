@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using NLog.Web;
 using System;
 using System.Collections.Generic;
@@ -21,6 +23,13 @@ namespace dblu.Docs.Service
         /// <param name="args"></param>
         public static void Main(string[] args)
         {
+
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+
             CreateHostBuilder(args).Build().Run();
         }
 
