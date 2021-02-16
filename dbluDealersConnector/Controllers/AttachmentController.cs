@@ -74,12 +74,6 @@ namespace dblu.Docs.Service.Controllers
         public List<Attachment> GetByItemId(Guid Id)
         {
             ElementiManager EM=new ElementiManager(conf["dbluDocs:db"], log);
-
-            ////////////////////////////////////////////////////////////////
-            // TODO: RIMUOVERE QUESTO GUID DI TEST
-            ////////////////////////////////////////////////////////////////
-           
-            Id = Guid.Parse("14942425-01AC-4100-8BC4-8C11AB626B32");
             
             List<Allegati> lst=EM.GetAllegatiElemento(Id);
             List<Attachment> lstAttachment = new List<Attachment>();
