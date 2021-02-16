@@ -332,7 +332,7 @@
         </member>
         <member name="T:dbluDealersConnector.Model.Answer">
             <summary>
-            Ansert for a login action
+            Answer for a login action
             </summary>
         </member>
         <member name="P:dbluDealersConnector.Model.Answer.Code">
@@ -422,7 +422,7 @@
         </member>
         <member name="M:dblu.Docs.Service.Controllers.AttachmentController.Download(System.Guid)">
             <summary>
-            Return the specidief attachment
+            Return the specified attachment
             </summary>
             <param name="Id">Id of the attachment</param>
             <returns>
