@@ -778,13 +778,25 @@ namespace dblu.Portale.Plugin.Docs.Class
                 //else
                 //{
                 //No syntax error found in the provided PDF document
+                //m.Position = 0;
+                //File.WriteAllBytes(Path.Combine(_appEnvironment.WebRootPath, "_tmp", fileName), m.ToArray());
 
+                var flAnn = false;  //contiene annotazioni
+                var flResize = false;  // richiede resize
 
                 m.Position = 0;
                 var A4Size = PdfPageSize.A4;
-                PdfLoadedDocument ld = new PdfLoadedDocument(m);
-                var flAnn = false;  //contiene annoitazioni
-                var flResize = false;  // richiede resize
+                PdfLoadedDocument ld = null;
+                try
+                {
+                    ld = new PdfLoadedDocument(m);
+                }
+                catch 
+                {
+                    ld = new PdfLoadedDocument(m, true);
+                    flAnn = true;  // forzo la copia dello stream corretto
+                }
+
                 MemoryStream m2 = null;
                 List<string> ControllaPag = new List<string>();
                 var flNoteManuali = false;
@@ -826,7 +838,7 @@ namespace dblu.Portale.Plugin.Docs.Class
 
                     if (flNoteManuali) {
                           ControllaPag.Add(pn.ToString());
-                        _logger.LogWarning($"ElaboraPdfStream: presenza di note manuali  pag {pn}  {fileName}. ");
+                        _logger.LogWarning($"ElaboraPdfStream: presenza di note manuali pag {pn}  {fileName}. ");
                     }
                 };
 
