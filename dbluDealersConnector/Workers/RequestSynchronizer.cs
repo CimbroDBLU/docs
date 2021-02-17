@@ -112,7 +112,11 @@ namespace dblu.Docs.Service
         {
             try
             {
-                DealersClient DC = new DealersClient(new Uri(conf["dbluDealer:Url"]));
+                bool.TryParse(conf["dbluDealer:allow_unsigned_https"], out bool allow);
+                string DealersUriString = conf["dbluDealer:Url"];
+                if (!DealersUriString.EndsWith("/"))
+                    DealersUriString += "/";
+                DealersClient DC = new DealersClient(new Uri(DealersUriString),allow);
                 AllegatiManager AM = new AllegatiManager(conf["dbluDocs:db"], log);
                 ElementiManager EM = new ElementiManager(conf["dbluDocs:db"], log);
 

@@ -32,15 +32,23 @@ namespace dbluDealersConnector.DealersAPI
         /// </summary>
         private readonly HttpClient client;
 
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="nBaseUri">Base url fo the dbludealers</param>
-        public DealersClient(Uri nBaseUri)
+        /// <param name="nAllowHttpsUnsigned">Allow the connection to unsigned https</param>
+        public DealersClient(Uri nBaseUri,bool nAllowHttpsUnsigned)
         {
+
+
             baseUri = nBaseUri;
             cookieContainer = new CookieContainer();
             HttpClientHandler clientHandler = new HttpClientHandler() { CookieContainer = cookieContainer };
+
+          
+            if (nAllowHttpsUnsigned)
+                clientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
             client = new HttpClient(clientHandler) { BaseAddress = baseUri };
         }
 
@@ -55,7 +63,7 @@ namespace dbluDealersConnector.DealersAPI
         /// </returns>
         public  int GetTenant(string TenantName, ref string Tenant)
         {
-        HttpResponseMessage R0 = client.GetAsync(baseUri.ToString() + @"api/abp/multi-tenancy/tenants/by-name/" + TenantName).Result;
+            HttpResponseMessage R0 = client.GetAsync(baseUri.ToString() + @"api/abp/multi-tenancy/tenants/by-name/" + TenantName).Result;
         dynamic data = JObject.Parse(R0.Content.ReadAsStringAsync().Result);
 
         if (data.success == true)

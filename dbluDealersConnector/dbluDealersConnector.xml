@@ -84,11 +84,12 @@
             Client http used for dealer comunications
             </summary>
         </member>
-        <member name="M:dbluDealersConnector.DealersAPI.DealersClient.#ctor(System.Uri)">
+        <member name="M:dbluDealersConnector.DealersAPI.DealersClient.#ctor(System.Uri,System.Boolean)">
             <summary>
             Constructor
             </summary>
             <param name="nBaseUri">Base url fo the dbludealers</param>
+            <param name="nAllowHttpsUnsigned">Allow the connection to unsigned https</param>
         </member>
         <member name="M:dbluDealersConnector.DealersAPI.DealersClient.GetTenant(System.String,System.String@)">
             <summary>

@@ -87,13 +87,14 @@ namespace dblu.Docs.Service
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(x =>
+            })
+            .AddJwtBearer(x =>
             {
                 x.RequireHttpsMetadata = true;
                 x.SaveToken = true;
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SigningKey"])),                    
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SigningKey"])),
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = false,
                     ValidateAudience = false,
@@ -112,11 +113,9 @@ namespace dblu.Docs.Service
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "dbluDealersConnector v1"));
-
-
             }
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "dbluDealersConnector v1"));
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseHttpsRedirection();
@@ -124,7 +123,7 @@ namespace dblu.Docs.Service
             app.UseRouting();
 
             app.UseAuthorization();
-            //app.UseJwtBearerAuthentication();
+           
 
             app.UseEndpoints(endpoints =>
             {
