@@ -1549,7 +1549,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                     //    .Include(s => s.CategoriaNavigation)
                     //    .FirstOrDefault();
                     f = _fasMan.Get(IdFascicolo);
-                    f.elencoAttributi = f.CategoriaNavigation.Attributi;
+                    if (f.elencoAttributi == null) { 
+                        f.elencoAttributi = f.CategoriaNavigation.Attributi;
+                    }
                 }
                 f.CodiceSoggetto = CodiceSoggetto;
                 f.SetAttributo("CodiceSoggetto", CodiceSoggetto);
@@ -1568,9 +1570,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (isNew) log.Operazione = TipoOperazione.Creato; else log.Operazione = TipoOperazione.Modificato;
                 _logMan.Salva(log, true);
                 //-------- Memorizzo l'operazione----------------------
-
-
-
 
                 //if (Allegato.IdElemento == null)
                 //{
@@ -1785,8 +1784,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                     _logMan.Salva(log, true);
                     //-------- Memorizzo l'operazione----------------------
 
-
-
                     //estrae i file dalla mail presenti in lista e li assegna all'elemento
                     Allegati all = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll,true, cancel);
 
@@ -1794,7 +1791,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                     var estrai = all != null;
                     estrai = estrai && await sfdpf.MarcaAllegatoSF(all, e.elencoAttributi);
                     estrai = estrai && AvviaProcesso(e,variabili);
-
 
                     return estrai;
                 }
