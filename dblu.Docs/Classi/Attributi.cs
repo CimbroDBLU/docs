@@ -9,6 +9,11 @@ namespace dblu.Docs.Classi
 
     public class Attributo
     {
+        public Attributo()
+        {
+            this.Duplicabile = true;
+        }
+
         public string Nome { get; set; }
         public string Descrizione { get; set; }
         public string Alias { get; set; }
@@ -49,6 +54,7 @@ namespace dblu.Docs.Classi
         }
         public Visibilita_Attributi Visibilità { get; set; }
         public bool Obbligatorio { get; set; }
+        public bool Duplicabile { get; set; }
         public string ValorePredefinito { get; set; }
         public string Sequenza { get; set; }
 

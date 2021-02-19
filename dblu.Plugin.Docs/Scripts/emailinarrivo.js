@@ -762,6 +762,13 @@ function AggiungiAElementoOnClick(e) {
     $('body').removeClass('waiting');
 }
 
+function DuplicaElemento() {
+    if (elementoItem != null) {
+        var TipoElemento = elementoItem.TipoElemento;
+        var IdElementoCorrente = $("#IdElemento").val();
+        debugger;
+    }
+}
 function RimuoviElementoGrid(e) {
     e.preventDefault();
     var data = this.dataItem($(e.currentTarget).closest("tr"));
