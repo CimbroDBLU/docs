@@ -1287,7 +1287,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                                     fileStream.Read(mpdf.GetBuffer(), 0, (int)fileStream.Length);
                                 }
                                 _allMan.Salva(Mail, false);
-
                             }
                             else { 
                         var l =  await GetTmpPdfCompletoAsync(Mail, null, daEmail); 
@@ -1346,8 +1345,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                             }
                             
                         all = await _allMan.SalvaAsync(all, mpdf, isNewAll);
-
-
                     }
                     //else   // file separati
                     //{ 

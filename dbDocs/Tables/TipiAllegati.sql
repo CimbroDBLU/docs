@@ -4,7 +4,7 @@
     [Cartella]       NVARCHAR (255) NULL,
     [ViewAttributi]  NVARCHAR (255) DEFAULT ('') NULL,
     [ListaAttributi] NVARCHAR (MAX) DEFAULT ('') NOT NULL,
-    [Estensione] NVARCHAR(10) NULL, 
+    [Estensione] NVARCHAR(10) NULL DEFAULT (''), 
     CONSTRAINT [PK_TipiAllegati] PRIMARY KEY CLUSTERED ([Codice] ASC)
 );
 

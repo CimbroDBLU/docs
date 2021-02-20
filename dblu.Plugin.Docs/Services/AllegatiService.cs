@@ -116,6 +116,20 @@ namespace dblu.Portale.Plugin.Docs.Services
             return doc;
         }
 
+        internal List<viewAllegati> GetvAllegatiElemento(Guid IdElemento)
+        {
+
+            //var doc = _context.Allegati.Where(x => x.IdElemento == elemento && x.Tipo=="FILE");
+            List<viewAllegati> doc = null;
+            using (SqlConnection cn = new SqlConnection(_context.Connessione))
+            {
+                doc = cn.Query<viewAllegati>($"select * from [{GetNomeVista("vALLEGATO")}] where IdElemento=@IdElemento and Tipo='FILE' ",
+                    new { IdElemento = IdElemento.ToString() }).ToList();
+            }
+
+            return doc;
+        }
+
 
         internal List<Allegati> GetFilesZip(Guid elemento)
         {

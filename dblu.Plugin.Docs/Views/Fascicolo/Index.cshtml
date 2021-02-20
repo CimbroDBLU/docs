@@ -13,7 +13,7 @@
     var elementi = Model.Fascicolo.vElementi;
     List<dblu.Docs.Models.Colonna> Cols = _ele.GetColonne("vELEMENTO");
     var attributi = Model.Fascicolo.CategoriaNavigation._listaAttributi;
-
+    List<dblu.Docs.Models.Colonna> ColsAl = _ele.GetColonne("vALLEGATO");
 
 }
 
@@ -455,9 +455,19 @@ else
                                 .Name("Allegati")
                                 .Columns(columns =>
                                 {
-                                    columns.Bound(p => p.Descrizione).Title("Descrizione").Width(140);
-                                    columns.Bound(p => p.NomeFile).Title("File").Width(130);
-                                    columns.Bound(p => p.UtenteC).Title("Utente").Width(50);
+                                    columns.Bound(p => p.Descrizione).Title("Descrizione").Width(100);
+                                    columns.Bound(p => p.NomeFile).Title("File").Width(100);
+                                    columns.Bound(p => p.UtenteC).Title("Utente").Width(40);
+                                    columns.Bound(p => p.Campo1).Title(ColsAl.ElementAt(0).Des).Visible(ColsAl.ElementAt(0).Visible).Width(100);
+                                    columns.Bound(p => p.Campo2).Title(ColsAl.ElementAt(1).Des).Visible(ColsAl.ElementAt(1).Visible).Width(100);
+                                    columns.Bound(p => p.Campo3).Title(ColsAl.ElementAt(2).Des).Visible(ColsAl.ElementAt(2).Visible).Width(100);
+                                    columns.Bound(p => p.Campo4).Title(ColsAl.ElementAt(3).Des).Visible(ColsAl.ElementAt(3).Visible).Width(100);
+                                    columns.Bound(p => p.Campo5).Title(ColsAl.ElementAt(4).Des).Visible(ColsAl.ElementAt(4).Visible).Width(100);
+                                    columns.Bound(p => p.Campo6).Title(ColsAl.ElementAt(5).Des).Visible(ColsAl.ElementAt(5).Visible).Width(100);
+                                    columns.Bound(p => p.Campo7).Title(ColsAl.ElementAt(6).Des).Visible(ColsAl.ElementAt(6).Visible).Width(100);
+                                    columns.Bound(p => p.Campo8).Title(ColsAl.ElementAt(7).Des).Visible(ColsAl.ElementAt(7).Visible).Width(100);
+                                    columns.Bound(p => p.Campo9).Title(ColsAl.ElementAt(8).Des).Visible(ColsAl.ElementAt(8).Visible).Width(100);
+                                    columns.Bound(p => p.Campo10).Title(ColsAl.ElementAt(9).Des).Visible(ColsAl.ElementAt(9).Visible).Width(100);
                                     //columns.Bound(p => p.DataC).Title("Data Creazione").Format("{0:dd/MM/yyyy}").Width(70);
                                     columns.Command(column =>
                                     {

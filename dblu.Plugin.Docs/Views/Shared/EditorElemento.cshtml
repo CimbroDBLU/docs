@@ -13,7 +13,7 @@
     var tipoelemento = _doc.GetTipoElemento(Model.Oggetto.Tipo);
 
     List<dblu.Docs.Models.Allegati> Allegati = _doc._elmMan.GetAllegatiElemento(Model.Oggetto.Id);
-
+    List<dblu.Docs.Models.Colonna> ColsAl = _doc.GetColonne("vALLEGATO");
 
 
     bool isEdit = Model.IsEdit();
@@ -192,7 +192,7 @@
         var dataItem = this.dataItem(this.select());
         if (dataItem != null) {
 
-            var IdAllegato = dataItem.Id;
+            var IdAllegato = dataItem.IdAllegato;
             $("#IdAllegato").val(IdAllegato);
             var nome = dataItem.NomeFile.toLowerCase();
             $("#NomeAllegato").val(nome);
@@ -498,15 +498,25 @@
                                     @Html.Hidden("IdAllegato")
                             @Html.Hidden("NomeAllegato")
                                     <div class="col-md-12">
-                                        @(Html.Kendo().Grid<dblu.Docs.Models.Allegati>()
+                                        @(Html.Kendo().Grid<dblu.Docs.Models.viewAllegati>()
                                     .Name("GridAllegati")
                                     .Editable(editable => editable.Mode(GridEditMode.InCell))
                                     .Columns(columns =>
                                     {
                                         columns.Bound(p => p.NomeFile).Title("Nome file").Width(100);
                                         columns.Bound(p => p.Descrizione).Title("Descrizione").Width(200);
+                                        columns.Bound(p => p.Campo1).Title(ColsAl.ElementAt(0).Des).Visible(ColsAl.ElementAt(0).Visible).Width(100);
+                                        columns.Bound(p => p.Campo2).Title(ColsAl.ElementAt(1).Des).Visible(ColsAl.ElementAt(1).Visible).Width(100);
+                                        columns.Bound(p => p.Campo3).Title(ColsAl.ElementAt(2).Des).Visible(ColsAl.ElementAt(2).Visible).Width(100);
+                                        columns.Bound(p => p.Campo4).Title(ColsAl.ElementAt(3).Des).Visible(ColsAl.ElementAt(3).Visible).Width(100);
+                                        columns.Bound(p => p.Campo5).Title(ColsAl.ElementAt(4).Des).Visible(ColsAl.ElementAt(4).Visible).Width(100);
+                                        columns.Bound(p => p.Campo6).Title(ColsAl.ElementAt(5).Des).Visible(ColsAl.ElementAt(5).Visible).Width(100);
+                                        columns.Bound(p => p.Campo7).Title(ColsAl.ElementAt(6).Des).Visible(ColsAl.ElementAt(6).Visible).Width(100);
+                                        columns.Bound(p => p.Campo8).Title(ColsAl.ElementAt(7).Des).Visible(ColsAl.ElementAt(7).Visible).Width(100);
+                                        columns.Bound(p => p.Campo9).Title(ColsAl.ElementAt(8).Des).Visible(ColsAl.ElementAt(8).Visible).Width(100);
+                                        columns.Bound(p => p.Campo10).Title(ColsAl.ElementAt(9).Des).Visible(ColsAl.ElementAt(9).Visible).Width(100);
                                         columns.Command(command =>
-                                                {
+                                        {
                                             command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon k-i-download");
                                         }).Width("10%");
                                     })
@@ -516,12 +526,12 @@
                                         .ServerOperation(false)
                                         .AutoSync(true)
                                         .Model(model =>
-                                                {
-                                            model.Id(p => p.Id);
+                                        {
+                                            model.Id(p => p.IdAllegato);
                                             model.Field(p => p.NomeFile).Editable(false);
                                         })
-                                    .Read("GetAllegatiElemento", "Fascicolo", new { elemento = Model.Oggetto.Id })
-                                    .Update("UpdateAllegati", "Fascicolo")
+                                    .Read("GetvAllegatiElemento", "Fascicolo", new { elemento = Model.Oggetto.Id })
+                                    //.Update("UpdateAllegati", "Fascicolo")
                                     )
                                 .HtmlAttributes(new { style = "font-size:10" })
                                 .Selectable()

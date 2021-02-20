@@ -755,14 +755,31 @@ namespace dblu.Portale.Plugin.Docs.Services
                         var FileZip = new ZipArchive(m, ZipArchiveMode.Read);
                         if (AllegaZip)
                         {  //file pdf completo
-                            var l = await GetTmpPdfCompletoAsync(Zip, null, daZip);
+                            MemoryStream mpdf = new MemoryStream();
+                            PdfEditAction pdfed = new PdfEditAction();
+                            pdfed.IdAllegato = Zip.Id.ToString();
+                            pdfed.TempFolder = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
 
-                            Zip.SetAttributo("jAllegati", JToken.FromObject(l));
-                            _allMan.Salva(Zip, false);
+                            if (File.Exists(pdfed.FilePdfModificato))
+                            {
+                                using (FileStream fileStream = File.OpenRead(pdfed.FilePdfModificato))
+                                {
+                                    mpdf.SetLength(fileStream.Length);
+                                    //read file to MemoryStream
+                                    fileStream.Read(mpdf.GetBuffer(), 0, (int)fileStream.Length);
+                                }
+                                _allMan.Salva(Zip, false);
+                            }
+                            else
+                            {
+                                var l = await GetTmpPdfCompletoAsync(Zip, null, daZip);
 
-                            //prende il file tmp appena creato
-                            MemoryStream mpdf = await GetPdfCompletoAsync(Zip.Id.ToString(), null, daZip);
+                                Zip.SetAttributo("jAllegati", JToken.FromObject(l));
+                                _allMan.Salva(Zip, false);
 
+                                //prende il file tmp appena creato
+                                mpdf = await GetPdfCompletoAsync(Zip.Id.ToString(), null, daZip);
+                            }
                             if (daZip == false && Zip.IdElemento != null)
                             {
                                 all = cn.QueryFirstOrDefault<Allegati>(
@@ -780,7 +797,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                                     TipoNavigation = tipoAll,
                                     Stato = StatoAllegato.Attivo,
                                     IdFascicolo = Zip.IdFascicolo,
-                                    IdElemento = Zip.IdElemento
+                                    IdElemento = Zip.IdElemento,
+                                    jNote = Zip.jNote
                                 };
                                 isNewAll = true;
                             }
@@ -794,11 +812,14 @@ namespace dblu.Portale.Plugin.Docs.Services
                             all.SetAttributo("Data", Zip.DataC);
                             all.SetAttributo("CodiceSoggetto", Zip.GetAttributo("CodiceSoggetto"));
                             all.SetAttributo("NomeSoggetto", Zip.GetAttributo("NomeSoggetto"));
-
+                           
+                            if (File.Exists(pdfed.FileAnnotazioni))
+                            {
+                                var note = File.ReadAllText(pdfed.FileAnnotazioni);
+                                all.jNote = JObject.Parse(note);
+                            }
                             all = await _allMan.SalvaAsync(all, mpdf, isNewAll);
-
                         }
-
                         //file da allegare singolarmente
                         if (!string.IsNullOrEmpty(ElencoFile))
                         {

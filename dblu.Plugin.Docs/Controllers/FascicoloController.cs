@@ -82,6 +82,15 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             return Json(allegati.ToDataSourceResult(request));
         }
 
+        [Authorize]
+        [HasPermission("50.1.2")]
+        public IActionResult GetvAllegatiElemento([DataSourceRequest] DataSourceRequest request, Guid elemento)
+        {
+            var allegati = _doc.GetvAllegatiElemento(elemento);
+            return Json(allegati.ToDataSourceResult(request));
+        }
+
+
         [AcceptVerbs("Post")]
         [Authorize]
         [HasPermission("50.1.2")]
@@ -96,6 +105,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     if (allegato.Chiave3 == null) allegato.Chiave3 = "";
                     if (allegato.Chiave4 == null) allegato.Chiave4 = "";
                     if (allegato.Chiave5 == null) allegato.Chiave5 = "";
+                    
                     allegato.UtenteUM = HttpContext.User.Identity.Name;
                     allegato.DataUM = DateTime.Now;
                     if (_doc.SaveAllegato(allegato) == false)
