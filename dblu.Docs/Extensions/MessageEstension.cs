@@ -23,6 +23,8 @@ namespace dblu.Docs.Extensions
                     
                     if (all.IsAttachment)
                     {
+                        //all.WriteTo("d:\\temp\\winmail.dat");
+
                         if (all.GetType() == typeof(MimeKit.Tnef.TnefPart))
                         {
                             esclusi.Add(all.IdAllegato());
