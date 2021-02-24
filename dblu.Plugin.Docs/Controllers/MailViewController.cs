@@ -176,6 +176,44 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
 
+        public async Task<ActionResult<Elementi>> DuplicaElementoAsync(string IdAllegato,
+             string IdFascicolo,
+             string IdElemento,
+             string Categoria,
+             string TipoElemento,
+             string CodiceSoggetto,
+             string NomeSoggetto,
+             string ElencoFile,
+             bool AllegaEmail,
+             string Descrizione)
+        {
+            try
+            {
+                if (TipoElemento is null)
+                {
+                    _toastNotification.AddErrorToastMessage("Scegli il tipo di elemento!");
+                    return BadRequest();
+                }
+
+                var f = await _mailService.DuplicaElementoAsync(IdAllegato, IdFascicolo, IdElemento, Categoria, TipoElemento, CodiceSoggetto, NomeSoggetto, ElencoFile, AllegaEmail, Descrizione, User);
+                if (f is null)
+                {
+                    _toastNotification.AddErrorToastMessage("Errore nella duplicazione dell'elemento!");
+                    return BadRequest();
+                }
+                _toastNotification.AddSuccessToastMessage("Elemento duplicato correttamente!");
+                return Ok(f);
+            }
+            catch (Exception)
+            {
+                _toastNotification.AddErrorToastMessage("Errore nella duplicazione dell'elemento!");
+                return BadRequest();
+            }
+
+        }
+
+
+
         [HttpGet]
         [HasPermission("50.1.3")]
         public async Task<FileResult> ApriFile(string IdAllegato, string NomeFile)
