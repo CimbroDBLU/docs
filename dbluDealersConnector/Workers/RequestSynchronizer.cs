@@ -100,6 +100,7 @@ namespace dblu.Docs.Service
             C.Attributi.Add(new Attributo() { Nome = "RefNumber", Descrizione = "Numero ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "7" });
             C.Attributi.Add(new Attributo() { Nome = "RefItemId", Descrizione = "Elemento ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.Guid", Valore = "", SystemType = Type.GetType("System.Guid"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "8" });
             C.Attributi.Add(new Attributo() { Nome = "RefDossierId", Descrizione = "Fascicolo ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.Guid", Valore = "", SystemType = Type.GetType("System.Guid"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "9" });
+            C.Attributi.Add(new Attributo() { Nome = "CodCli", Descrizione = "Codice cliente", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "10" });
             AM.SalvaTipoAllegato(C);
             return C;
 
@@ -176,6 +177,7 @@ namespace dblu.Docs.Service
                     A.elencoAttributi = A.TipoNavigation.Attributi;
                     A.SetAttributo("Tipo", R.Tipo.ToString());
                     A.SetAttributo("Testo", R.Testo);
+                    A.SetAttributo("CodCli", R.Cli);
                     A.SetAttributo("Descrizione", R.Descrizione);
                     A.SetAttributo("ElencoFile", R.ElencoFile);
                     A.SetAttributo("Reference", R.Reference);
