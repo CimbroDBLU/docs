@@ -1,4 +1,4 @@
-﻿@model dblu.Docs.Models.Allegati
+﻿@model dblu.Portale.Plugin.Docs.ViewModels.ZipProcessatiViewModel
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _zipservice
@@ -12,21 +12,66 @@
 @{
     ViewData["Title"] = "Documenti processati";
     List<dblu.Docs.Models.TipiElementi> ListaTipiElementi;
-    TipiAllegati TipoAll = _zipservice._allMan.GetTipoAllegato("ZIP");
-    List<SelectListItem> ListaRuoliZip = null;
+    //TipiAllegati TipoAll = _zipservice._allMan.GetTipoAllegato("ZIP");
+    //List<SelectListItem> ListaRuoliZip = null;
+    //ListaRuoliZip = _zipservice.GetRuoliZip(Context.User.Claims);
+    //if (ListaRuoliZip.Count() == 0)
+    //{
+    //    ListaRuoliZip.Add(new SelectListItem("(nessuno)", ".."));
+    //}
+    //List<string> ListaRuoli = new List<string>();
+    //foreach (SelectListItem s in ListaRuoliZip)
+    //    ListaRuoli.Add(s.Value);
+
+    //ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoli);
+    //var ListaServer = _zipservice._serMan.GetServersEmailinRoles(Context.User.Claims, TipiRecordServer.CartellaFile);
 
 
-    ListaRuoliZip = _zipservice.GetRuoliZip(Context.User.Claims);
-    if (ListaRuoliZip.Count() == 0)
+
+
+    TipiAllegati TipoAll;
+    if (!string.IsNullOrEmpty(Model.TipoAll))
     {
-        ListaRuoliZip.Add(new SelectListItem("(nessuno)", ".."));
+        TipoAll = _zipservice._allMan.GetTipoAllegato(Model.TipoAll);
     }
-    List<string> ListaRuoli = new List<string>();
-    foreach (SelectListItem s in ListaRuoliZip)
-        ListaRuoli.Add(s.Value);
+    else
+    {
+        TipoAll = _zipservice._allMan.GetTipoAllegato("ZIP");
+    }
 
-    ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoli);
-    var ListaServer = _zipservice._serMan.GetServersEmailinRoles(Context.User.Claims, TipiRecordServer.CartellaFile);
+    List<string> ListaRuoliZip = null;
+    List<string> ListaRuoli = new List<string>();
+
+    if (!string.IsNullOrEmpty(Model.Ruolo))
+    {
+        ListaRuoli = new List<string>();
+        ListaRuoli.Add(Model.Ruolo);
+
+    }
+    else
+    {
+        ListaRuoli = _zipservice.GetRuoliTipoAll(Context.User.Claims, TipoAll.Codice);
+    }
+
+
+    var ListaServer = _zipservice._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaFile);
+
+    //var ListaServerIngresso = _mailservice._serMan.GetServerEmailInIngresso();
+    if (ListaServer != null && ListaServer.Count > 0)
+    {
+        //var ListaRuoliServ = _mailservice.getRuoli(Context.User.Claims, ListaServer.ElementAt(0).Nome);
+        ListaRuoliZip = _zipservice.getRuoli(ListaRuoli, ListaServer.ElementAt(0).Nome);
+        ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoliZip);
+    }
+    else
+    {
+        ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoli);
+    }
+
+
+
+
+
 
 
 }

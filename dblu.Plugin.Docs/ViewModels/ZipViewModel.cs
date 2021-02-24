@@ -85,6 +85,14 @@ namespace dblu.Portale.Plugin.Docs.ViewModels
     {
 
         public string Ruolo { get; set; }
+        public string TipoAll { get; set; }
     }
 
+
+    public class ZipProcessatiViewModel
+    {
+
+        public string Ruolo { get; set; }
+        public string TipoAll { get; set; }
+    }
 }

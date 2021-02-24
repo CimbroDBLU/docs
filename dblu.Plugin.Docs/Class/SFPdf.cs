@@ -343,7 +343,7 @@ namespace dblu.Portale.Plugin.Docs.Class
 
             return res;
         }
-        public List<EmailAttachments> CreaTmpPdfCompletoSF(string NomePdf, ZipArchive ZipFile)
+        public List<EmailAttachments> CreaTmpPdfCompletoSF(string NomePdf, ZipArchive ZipFile, string Testo = "")
         {
             List<EmailAttachments> res = new List<EmailAttachments>();
 
@@ -360,6 +360,30 @@ namespace dblu.Portale.Plugin.Docs.Class
                 PdfDocument document = new PdfDocument();
                 //HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
                 //WebKitConverterSettings settings = new WebKitConverterSettings();
+
+                if (Testo.Length >0 )
+                {
+                    PdfPage page = document.Pages.Add();
+
+                    PdfGraphics graphics = page.Graphics;
+                    //PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+                    //graphics.DrawString($"Oggetto: {oggetto} \n\n {txt} ", font, PdfBrushes.Black, new PointF(0, 0));
+
+                    PdfTextElement textElement = new PdfTextElement(Testo, new PdfStandardFont(PdfFontFamily.Helvetica, 10));
+                    textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
+
+                    document.Save(pdfstream);
+
+                    //Close the document.
+
+                    document.Close(true);
+                    ListaPdf.Add(pdfstream);
+
+                }
+
+             
+
+
 
                 foreach (ZipArchiveEntry entry in ZipFile.Entries)
                 {
