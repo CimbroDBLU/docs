@@ -59,12 +59,13 @@ using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
 using dblu.Portale.Core.Infrastructure.Identity.Class;
+using dblu.CamundaClient;
+using AutoMapper;
 
 namespace dblu.Portale.Plugin.Docs.Services
 {
     public class MailService 
     {
-
         public readonly dbluDocsContext _context;
         public readonly ILogger _logger;
         private readonly IWebHostEnvironment _appEnvironment;
@@ -80,7 +81,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         //        private readonly SoggettiManager _sggMan;
         public IConfiguration _config { get; }
         public ISoggettiService _soggetti;
-
+        private MapperConfiguration _mapperConfig;
 
         public const string NOME_FILE_CONTENUTO_EMAIL = "email-contenuto.pdf";
 
@@ -106,6 +107,8 @@ namespace dblu.Portale.Plugin.Docs.Services
 //            _sggMan = new SoggettiManager(_context, _logger);
             _config = config;
             _usrManager = usrManager;
+
+            _mapperConfig = new MapperConfiguration(cfg => cfg.CreateMap<BPMProcessInfo, BPMDocsProcessInfo>());
             try
             {
                 _soggetti = sogg;
@@ -1896,17 +1899,17 @@ namespace dblu.Portale.Plugin.Docs.Services
         //}
 
         public async Task<bool> AllegaAElementoFascicolo(string IdAllegato,
-            string IdFascicolo,
-            string IdElemento,
-            string ElencoFile,
-            bool AllegaEmail,
-            string Descrizione,
-            ClaimsPrincipal User,
-            Dictionary<string, VariableValue> variabili)
-        {
+                string IdFascicolo,
+                string IdElemento,
+                string ElencoFile,
+                bool AllegaEmail,
+                string Descrizione,
+                ClaimsPrincipal User,
+                BPMDocsProcessInfo Info,
+                Dictionary<string, VariableValue> variabili)
+         {
             try
             {
-                
                 var cancel = new CancellationToken();
 
                 var Allegato = _allMan.Get(IdAllegato);
@@ -1945,7 +1948,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                     var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
                     var estrai = all != null;
                     estrai = estrai && await sfdpf.MarcaAllegatoSF(all, e.elencoAttributi);
-                    estrai = estrai && AvviaProcesso(e,variabili);
+
+                    Info.StatoPrec = (int)e.Stato;  
+                    Info.Stato = (int)e.Stato;
+                    estrai = estrai && AvviaProcesso(Info, e , variabili);
 
                     return estrai;
                 }
@@ -2254,9 +2260,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             return res;
         }
 
-
-
-        public bool AvviaProcesso(Elementi el, Dictionary<string, VariableValue> variabili)
+        public bool AvviaProcesso(BPMDocsProcessInfo Info , Elementi el, Dictionary<string, VariableValue> variabili)
         {
             bool res = true;
             try
@@ -2273,6 +2277,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                     v = VariableValue.FromObject(JsonConvert.SerializeObject(el));
                     variabili.Add("jElemento", v);
 
+                    v = VariableValue.FromObject(JsonConvert.SerializeObject(Info));
+                    variabili.Add("_ProcessInfo", v);
+
                     var pi = pd.Start("", el.TipoNavigation.Processo, el.Id.ToString(), variabili);
 
                     res = (pi != null && pi.Result != null );
@@ -2287,9 +2294,9 @@ namespace dblu.Portale.Plugin.Docs.Services
             return res;
         }
     
-        public bool AvviaProcesso(Elementi el)
+        public bool AvviaProcesso(BPMDocsProcessInfo Info, Elementi el)
         {
-            return AvviaProcesso(el, null);
+            return AvviaProcesso(Info, el, null);
         }
 
         public async Task<RisultatoAzione> InoltraEmail(string IdAllegato, string Indirizzi, bool chiudi, ClaimsPrincipal User)
@@ -3268,5 +3275,19 @@ namespace dblu.Portale.Plugin.Docs.Services
             return false;
         }
 
+        public BPMDocsProcessInfo GetProcessInfo(
+            TipiOggetto Tipo,
+            AzioneOggetto Azione 
+            )
+        {
+            BPMProcessInfo baseinfo = _bpm.GetProcessInfo();
+            var mapper = _mapperConfig.CreateMapper();
+            BPMDocsProcessInfo info = mapper.Map<BPMDocsProcessInfo>(baseinfo);
+            info.TipoOggetto = Tipo;
+            info.Azione = Azione;
+            //info.StatoPrec = StatoPrec;
+            //info.Stato = StatoAttuale;
+            return info;
+        }
     }
 }

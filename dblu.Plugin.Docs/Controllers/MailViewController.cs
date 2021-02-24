@@ -30,6 +30,7 @@ using dblu.Docs.Extensions;
 using dblu.Portale.Plugin.Docs.Models;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
+using dblu.Portale.Plugin.Docs.Class;
 
 namespace dblu.Portale.Plugin.Documenti.Controllers
 {
@@ -546,13 +547,15 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         {
             if (IdAllegato != null && IdFascicolo != null && IdElemento != null)
             {
+                BPMDocsProcessInfo Info = _mailService.GetProcessInfo(TipiOggetto.ELEMENTO, AzioneOggetto.MODIFICA);
                 bool fl = await _mailService.AllegaAElementoFascicolo(IdAllegato,
                     IdFascicolo,
                     IdElemento,
                     elencoFile,
                     AllegaEmail,
                     Descrizione,
-                    User, 
+                    User,
+                    Info,
                     null);
                 
                     if (fl){

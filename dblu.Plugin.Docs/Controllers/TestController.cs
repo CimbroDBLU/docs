@@ -1,6 +1,8 @@
-﻿using dblu.Docs.Models;
+﻿using dblu.Docs.Classi;
+using dblu.Docs.Models;
 using dblu.Portale.Plugin.Docs.Class;
 using dblu.Portale.Plugin.Docs.Services;
+using dblu.Portale.Services.Camunda;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -20,12 +22,11 @@ namespace dblu.Portale.Plugin.Docs.Controllers
         private readonly IToastNotification _toastNotification;
         private MailService _mailService;
         private IConfiguration _config;
-         private readonly IWebHostEnvironment _hostingEnvironment;
-
+        private readonly IWebHostEnvironment _hostingEnvironment;
         public TestController(MailService mailservice,
             IToastNotification toastNotification,
             IConfiguration config,
-            IWebHostEnvironment hostingEnvironment)
+            IWebHostEnvironment hostingEnvironment )
         {
             _mailService = mailservice;
             _toastNotification = toastNotification;
@@ -38,8 +39,9 @@ namespace dblu.Portale.Plugin.Docs.Controllers
             try
             {
 
-                Elementi el = _mailService._elmMan.Get("C32CDEC5-9BD9-4BA4-B22A-1EECDFD92B1E", 0);
-               _mailService.AvviaProcesso(el);
+                BPMDocsProcessInfo Info = _mailService.GetProcessInfo(TipiOggetto.ELEMENTO, AzioneOggetto.MODIFICA);
+                Elementi el = _mailService._elmMan.Get("12e980cf-1831-4459-82d0-806385a3bc4f", 0);
+                _mailService.AvviaProcesso(Info, el);
 
                 //string json = System.IO.File.ReadAllText("d:\\temp\\pdf\\new3.json");
                 //List<SFPdfPageAnnotation> note = JsonConvert.DeserializeObject<SFPdfPageAnnotation>(json);
