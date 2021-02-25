@@ -472,7 +472,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                             TipoNavigation = tipoAll,
                             Stato = StatoAllegato.Attivo,
                             IdFascicolo = Allegato.IdFascicolo,
-                            IdElemento = Allegato.IdElemento
+                            IdElemento = Allegato.IdElemento,
+                            UtenteC = User.Identity.Name,
+                            UtenteUM = User.Identity.Name,
                         };
                         string emailmitt = Messaggio.From.Mailboxes.First().Address;
 
@@ -1260,6 +1262,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             string Descrizione, 
             TipiAllegati tipoAll, 
             bool daEmail ,
+            string Utente,
             CancellationToken cancel)
         {
             Allegati all = null;
@@ -1321,8 +1324,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 TipoNavigation = tipoAll,
                                 Stato = StatoAllegato.Attivo,
                                 IdFascicolo = Mail.IdFascicolo,
-                                    IdElemento = Mail.IdElemento,
-                                    jNote = Mail.jNote
+                                IdElemento = Mail.IdElemento,
+                                jNote = Mail.jNote,
+                                UtenteC = Utente,
+                                UtenteUM = Utente,
                             };
                                 //_context.Add(all);
                                 isNewAll = true;
@@ -1631,9 +1636,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 //-------- Memorizzo l'operazione----------------------
 
                 //estrae i file dalla mail presenti in lista e li assegna all'elemento
-                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, cancel);
-
-                
+                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, User.Identity.Name, cancel);
 
                 return e;
                     }
@@ -1706,7 +1709,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 //-------- Memorizzo l'operazione----------------------
 
 
-                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, cancel);
+                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, User.Identity.Name,cancel);
 
 
                 return e;
@@ -1785,7 +1788,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     //-------- Memorizzo l'operazione----------------------
 
                     //estrae i file dalla mail presenti in lista e li assegna all'elemento
-                    Allegati all = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll,true, cancel);
+                    Allegati all = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll,true, User.Identity.Name, cancel);
 
                     var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
                     var estrai = all != null;
@@ -2501,7 +2504,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                                     Tipo = al.Tipo,
                                     TipoNavigation = al.TipoNavigation,
                                     Stato = StatoAllegato.Spedito,
-                                    Origine = NomeServer
+                                    Origine = NomeServer,
+                                    UtenteC = User.Identity.Name,
+                                    UtenteUM = User.Identity.Name
                               };
                               newall.elencoAttributi = al.TipoNavigation.Attributi;
                             string emailmitt = newmessage.From.Mailboxes.First().Address;

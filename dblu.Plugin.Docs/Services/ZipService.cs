@@ -716,7 +716,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     }, true);
 
                     //estrae i file dallo zip presenti in lista e li assegna all'elemento
-                    Allegati all = await EstraiAllegatiZip(Allegato, ElencoFile, AllegaZip, Descrizione, tipoAll, true, cancel);
+                    Allegati all = await EstraiAllegatiZip(Allegato, ElencoFile, AllegaZip, Descrizione, tipoAll, true, User.Identity.Name, cancel);
 
                     var estrai = all != null;
                     var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
@@ -739,6 +739,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 string Descrizione,
                 TipiAllegati tipoAll,
                 bool daZip,
+                string Utente,
                 CancellationToken cancel)
         {
             Allegati all = null;
@@ -798,7 +799,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                                     Stato = StatoAllegato.Attivo,
                                     IdFascicolo = Zip.IdFascicolo,
                                     IdElemento = Zip.IdElemento,
-                                    jNote = Zip.jNote
+                                    jNote = Zip.jNote,
+                                    UtenteC = Utente,
+                                    UtenteUM=Utente
                                 };
                                 isNewAll = true;
                             }
@@ -849,7 +852,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                                             TipoNavigation = tipoAll,
                                             Stato = StatoAllegato.Attivo,
                                             IdFascicolo = Zip.IdFascicolo,
-                                            IdElemento = Zip.IdElemento
+                                            IdElemento = Zip.IdElemento,
+                                            UtenteC =Utente,
+                                            UtenteUM = Utente
                                         };
                                         //_context.Add(all);
                                         isNewAll = true;
@@ -1025,9 +1030,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 _logMan.Salva(log, true);
                 //-------- Memorizzo l'operazione----------------------
 
-                 var estrai = await EstraiAllegatiZip(Allegato, ElencoFile, AllegaZip, Descrizione, tipoAll, false, cancel);
-
-
+                 var estrai = await EstraiAllegatiZip(Allegato, ElencoFile, AllegaZip, Descrizione, tipoAll, false, User.Identity.Name, cancel);
 
                 return e;
             }
