@@ -472,7 +472,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                             TipoNavigation = tipoAll,
                             Stato = StatoAllegato.Attivo,
                             IdFascicolo = Allegato.IdFascicolo,
-                            IdElemento = Allegato.IdElemento
+                            IdElemento = Allegato.IdElemento,
+                            UtenteC = User.Identity.Name,
+                            UtenteUM = User.Identity.Name,
                         };
                         string emailmitt = Messaggio.From.Mailboxes.First().Address;
 
@@ -1260,6 +1262,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             string Descrizione, 
             TipiAllegati tipoAll, 
             bool daEmail ,
+            string Utente,
             CancellationToken cancel)
         {
             Allegati all = null;
@@ -1321,8 +1324,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 TipoNavigation = tipoAll,
                                 Stato = StatoAllegato.Attivo,
                                 IdFascicolo = Mail.IdFascicolo,
-                                    IdElemento = Mail.IdElemento,
-                                    jNote = Mail.jNote
+                                IdElemento = Mail.IdElemento,
+                                jNote = Mail.jNote,
+                                UtenteC = Utente,
+                                UtenteUM = Utente,
                             };
                                 //_context.Add(all);
                                 isNewAll = true;
@@ -1631,9 +1636,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 //-------- Memorizzo l'operazione----------------------
 
                 //estrae i file dalla mail presenti in lista e li assegna all'elemento
-                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, cancel);
-
-                
+                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, User.Identity.Name, cancel);
 
                 return e;
                     }
@@ -1706,7 +1709,165 @@ namespace dblu.Portale.Plugin.Docs.Services
                 //-------- Memorizzo l'operazione----------------------
 
 
+                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, User.Identity.Name,cancel);
+
+
+                return e;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CreaFascicoloAsync : {ex.Message}");
+            }
+            return null;
+        }
+
+
+        public async Task<Elementi> DuplicaElementoAsync(string IdAllegato,
+            string IdFascicolo,
+            string IdElemento,
+            string Categoria,
+            string TipoElemento,
+            string CodiceSoggetto,
+            string NomeSoggetto,
+            string ElencoFile,
+            bool AllegaEmail,
+            string Descrizione,
+            ClaimsPrincipal User)
+        {
+            try
+            {
+                Fascicoli f = null;
+                var cancel = new CancellationToken();
+
+                var Allegato = _allMan.Get(IdAllegato);
+                if (Descrizione == null)
+                    Descrizione = Allegato.Descrizione;
+
+                TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
+
+                Allegato.SetAttributo("CodiceSoggetto", CodiceSoggetto);
+                Allegato.SetAttributo("NomeSoggetto", NomeSoggetto);
+                Allegato.DataUM = DateTime.Now;
+                if (Allegato.IdFascicolo == null && !string.IsNullOrEmpty(IdFascicolo))
+                {
+                    Allegato.IdFascicolo = Guid.Parse(IdFascicolo);
+                }
+
+                var isNew = false;
+                if (Allegato.IdFascicolo == null)
+                {
+                    //CreaFascicolo nuovo fascicolo e assegna alla mail
+                    f = new Fascicoli();
+                    f.Categoria = Categoria;
+                    f.CategoriaNavigation = _fasMan.GetCategoria(Categoria);
+                    f.elencoAttributi = f.CategoriaNavigation.Attributi;
+
+                    //f.UtenteC = User.Identity.Name;
+                    //_context.Add(f);
+                    isNew = true;
+                    Allegato.IdFascicolo = f.Id;
+                    f.Descrizione = Descrizione;
+                }
+                else
+                {
+
+                    f = _fasMan.Get(IdFascicolo);
+                    if (f.elencoAttributi == null)
+                    {
+                        f.elencoAttributi = f.CategoriaNavigation.Attributi;
+                    }
+                }
+                f.CodiceSoggetto = CodiceSoggetto;
+                f.SetAttributo("CodiceSoggetto", CodiceSoggetto);
+                f.SetAttributo("NomeSoggetto", NomeSoggetto);
+                if (_fasMan.Salva(f, isNew) == false) return null;
+
+
+                //-------- Memorizzo l'operazione----------------------
+                LogDoc log = new LogDoc()
+                {
+                    Data = DateTime.Now,
+                    IdOggetto = f.Id,
+                    TipoOggetto = TipiOggetto.FASCICOLO,
+                    Utente = User.Identity.Name
+                };
+                if (isNew) log.Operazione = TipoOperazione.Creato; else log.Operazione = TipoOperazione.Modificato;
+                _logMan.Salva(log, true);
+                //-------- Memorizzo l'operazione----------------------
+
+                var e = new Elementi();
+                e.Tipo = TipoElemento;
+                e.IdFascicolo = f.Id;
+
+                
+                e.Descrizione = Descrizione;
+                
+
+
+                isNew = true;
+                e.IdFascicoloNavigation = f;
+                //TipiElementi tipoEl = _context.TipiElementi
+                //        .Where(t => t.Codice == TipoElemento)
+                //        .FirstOrDefault();
+                TipiElementi tipoEl = _elmMan.GetTipoElemento(TipoElemento);
+                e.TipoNavigation = tipoEl;
+                e.elencoAttributi = tipoEl.Attributi;
+
+                Elementi oldEl = _elmMan.Get(IdElemento,0);
+                foreach (Attributo xx in e.elencoAttributi.ToList())
+                {
+                    if (xx.Duplicabile)
+                    {
+                        xx.Valore = oldEl.GetAttributo(xx.Nome);
+                    } 
+
+                }
+
+                Allegato.IdElemento = e.Id;
+                //if (!string.IsNullOrEmpty(IdElemento)) {
+                //    var te = _elmMan.GetTipoElemento(TipoElemento);
+                //    var el = _elmMan.Get(IdElemento,0);
+                //    el.TipoNavigation = te;
+                //    e.elencoAttributi = te.Attributi;
+                //    e.elencoAttributi.SetValori(el.elencoAttributi.GetValori());
+                //}
+                e.SetAttributo("CodiceSoggetto", CodiceSoggetto);
+                e.SetAttributo("NomeSoggetto", NomeSoggetto);
+
+                if (_elmMan.Salva(e, isNew) == false) return null;
+
+                //-------- Memorizzo l'operazione----------------------
+                log = new LogDoc()
+                {
+                    Data = DateTime.Now,
+                    IdOggetto = e.Id,
+                    TipoOggetto = TipiOggetto.ELEMENTO,
+                    Operazione = TipoOperazione.Creato,
+                    Utente = User.Identity.Name
+                };
+                _logMan.Salva(log, true);
+                //-------- Memorizzo l'operazione----------------------
+
+
+                //var i = await _context.SaveChangesAsync(cancel);
+                Allegato.Stato = StatoAllegato.Elaborato;
+                if (_allMan.Salva(Allegato, false) == false) return null;
+
+                //-------- Memorizzo l'operazione----------------------
+                log = new LogDoc()
+                {
+                    Data = DateTime.Now,
+                    IdOggetto = Allegato.Id,
+                    TipoOggetto = TipiOggetto.ALLEGATO,
+                    Operazione = TipoOperazione.Elaborato,
+                    Utente = User.Identity.Name
+                };
+                _logMan.Salva(log, true);
+                //-------- Memorizzo l'operazione----------------------
+
+                //estrae i file dalla mail presenti in lista e li assegna all'elemento
                 var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, cancel);
+
 
 
                 return e;
@@ -1737,7 +1898,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         //    {
         //        return _sggMan.Get(Codice);
         //    }
-           
+
         //}
 
         public async Task<bool> AllegaAElementoFascicolo(string IdAllegato,
@@ -1785,7 +1946,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     //-------- Memorizzo l'operazione----------------------
 
                     //estrae i file dalla mail presenti in lista e li assegna all'elemento
-                    Allegati all = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll,true, cancel);
+                    Allegati all = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll,true, User.Identity.Name, cancel);
 
                     var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
                     var estrai = all != null;
@@ -2501,7 +2662,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                                     Tipo = al.Tipo,
                                     TipoNavigation = al.TipoNavigation,
                                     Stato = StatoAllegato.Spedito,
-                                    Origine = NomeServer
+                                    Origine = NomeServer,
+                                    UtenteC = User.Identity.Name,
+                                    UtenteUM = User.Identity.Name
                               };
                               newall.elencoAttributi = al.TipoNavigation.Attributi;
                             string emailmitt = newmessage.From.Mailboxes.First().Address;

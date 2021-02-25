@@ -11,8 +11,8 @@
 
 @{
     ViewData["Title"] = "Email processate";
-    List<dblu.Docs.Models.TipiElementi> ListaTipiElementi ;
-    List<dblu.Docs.Models.TipiElementi> ListaTipiElementiServ ;
+    List<dblu.Docs.Models.TipiElementi> ListaTipiElementi;
+    List<dblu.Docs.Models.TipiElementi> ListaTipiElementiServ;
     TipiAllegati TipoAll = _mailservice._allMan.GetTipoAllegato("EMAIL");
 
     //-----OK--------
@@ -59,7 +59,7 @@
     }
 </style>
 <style>
-   
+
     .my-icon-class-download:before {
         content: "\e132"; /* Adds a glyph using the Unicode character number */
     }
@@ -71,7 +71,11 @@
     .my-icon-class-inoltra:before {
         content: "\e101"; /* Adds a glyph using the Unicode character number */
     }
+
     .my-icon-class-undo:before {
+        content: "\e100"; /* Adds a glyph using the Unicode character number */
+    }
+    .my-icon-class-rispondi:before {
         content: "\e100"; /* Adds a glyph using the Unicode character number */
     }
 </style>
@@ -99,9 +103,10 @@
         MailView_ApriFile: '@Url.Action("ApriFile","MailView" )',
         MailView_InArrivo_Inoltra: '@Url.Action("InArrivo_Inoltra","MailView" )',
         MailView_Processate_Riapri: '@Url.Action("Processate_Riapri", "MailView" )',
+        MailView_InArrivo_Rispondi: '@Url.Action("InArrivo_Rispondi","MailView" )',
         MailView_Processate_Cancella:'@Url.Action("Processate_Cancella", "MailView" )'
         };
-       
+
     TipoAll = {
         Codice: "@TipoAll.Codice"
     }
@@ -130,7 +135,6 @@
                     {
                         e.Select("onSelectServer");
                     })
-
                 )
             </div>
         </div>
@@ -192,6 +196,7 @@
                         .ToolBar(toolbar =>
                         {
                             // toolbar.ClientTemplateId("GridToolbarTemplate");
+                            toolbar.Custom().Text("Rispondi").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:90px", onclick = "RispondiEmail()" });
                             toolbar.Custom().Text("Inoltra").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:75px", onclick = "InoltraMail()", id="btnInoltra" }) ;
                             toolbar.Custom().Text("Riapri").IconClass("k-icon my-icon-class-undo").HtmlAttributes(new { style = "width:75px", onclick = "RiapriMail()", id = "btnRiapri" });
                             toolbar.Custom().Text("Elimina").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaEmail()", id = "btnCancella" });
@@ -215,7 +220,7 @@
                             })
                             .Sort(sort => sort.Add(p => p.DataC))
                             .Read(read => read.Action("Processate_Read", "MailView").Data("getEmails"))
-                        
+
                          )
                          .Events(events => events
                             .Change("gridEmailOnChange")
@@ -249,10 +254,10 @@
                     </form>
                 </div>
             </div>
-    
+
             <div class="box box-solid box-default">
                 <div class="box-body">
-                    <div class="form-group" >
+                    <div class="form-group">
                         <div class="form-row">
                             <label class="control-label col-md-2" style="font-size:12px">Testo</label>
                             <div style="width:95%">
@@ -280,16 +285,83 @@
                                 )
                             .HtmlAttributes(new { style = "font-size:12" })
                             )
-                            
+
                         </div><br /><br />
-                    </div>
-                            </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 </section>
+@(Html.Kendo().Window()
+    .Name("wRispondi")
+    .Size("auto")
+    .Title("Rispondi:")
+    .Visible(false)
+    .Actions(actions => actions.Close())
+    .Content(@<text>
+                <div class="box-body">
+                    <form>
+                        <div class="form-group">
+                            <label class="control-label col-md-2" style="font-size:12px">A: </label>
+                            <div class="form-group col-md-8">
+                                @(Html.Kendo().TextBox()
+                                    .Name("destinatarioRisposta")
+                                    .Value("")
+                                    .HtmlAttributes(new { style = "width: 100%" })
+                                )
+                            </div>
+                            <label class="control-label col-md-2" style="font-size:12px">CC: </label>
+                            <div class="form-group col-md-8">
+                                @(Html.Kendo().TextBox()
+                                    .Name("ccRisposta")
+                                    .Value("")
+                                    .HtmlAttributes(new { style = "width: 100%" })
+                                )
+                            </div>
+                            <label class="control-label col-md-2" style="font-size:12px">Oggetto: </label>
+                            <div class="form-group col-md-8">
+                                @(Html.Kendo().TextBox()
+                                    .Name("oggettoRisposta")
+                                    .Value("")
+                                    .HtmlAttributes(new { style = "width: 100%" })
+                                )
+                            </div>
+                            <label class="control-label col-md-2" style="font-size:12px">Testo: </label>
+                            <div class="form-group col-md-8">
+                                 @*@Html.TextArea("testoRiposta", "", new { @class="k-textbox", style = "width: 100%;" })*@
 
-
+                                @(Html.Kendo().TextArea()
+                                    .Name("testoRisposta")
+                                    .Value("")
+                                    .Rows(10)
+                                    .HtmlAttributes(new { style = "width: 100%" })
+                                )
+                            </div>
+                            <div class="form-group col-md-2">
+                                @(Html.Kendo().Button()
+                            .Name("okrispondi")
+                            .Content("Invia")
+                            .Events(ev => ev.Click("rispondiOnClick"))
+                                )
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-group col-md-10" >
+                                <input type="checkbox" checked  id="chkemailRispondi" title="Allega originale">
+                                <label class="control-label col-md-3" >Allega originale</label>
+                            </div>
+                            <div class="form-group col-md-10" >
+                                <input type="checkbox" checked  id="chkemailRispondiChiudi" title="Chiudi email">
+                                <label class="control-label col-md-3" >Chiudi email</label>                            </div>
+                        </div>
+                        </form>
+                    </div>
+            </text>)
+    .Width(600)
+    .Height(500)
+    .Modal(true)
+                 )
 @(Html.Kendo().Window()
     .Name("wInoltra")
     .Size("auto")

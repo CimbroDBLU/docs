@@ -17,34 +17,76 @@
 
     List<dblu.Docs.Models.TipiElementi> ListaTipiElementi;
     //List<SelectListItem> ListaRuoliZip = _zipservice.GetRuoliZip(Context.User.Claims);
-    TipiAllegati TipoAll = _zipservice._allMan.GetTipoAllegato("ZIP");
-    List<SelectListItem> ListaRuoliZip = null;
 
-
-    if (!string.IsNullOrEmpty(Model.Ruolo))
+    //TipiAllegati TipoAll = _zipservice._allMan.GetTipoAllegato("ZIP");
+    TipiAllegati TipoAll;
+    if (!string.IsNullOrEmpty(Model.TipoAll))
     {
-        ListaRuoliZip = new List<SelectListItem>();
-        ListaRuoliZip.Add(new SelectListItem(Model.Ruolo, Model.Ruolo));
+        TipoAll = _zipservice._allMan.GetTipoAllegato(Model.TipoAll);
     }
     else
     {
-        ListaRuoliZip = _zipservice.GetRuoliZip(Context.User.Claims);
+        TipoAll = _zipservice._allMan.GetTipoAllegato("ZIP");
     }
 
-    if (ListaRuoliZip.Count() == 0)
-    {
-        ListaRuoliZip.Add(new SelectListItem("(nessuno)", ".."));
-    }
-
-
+    List<string> ListaRuoliZip = null;
     List<string> ListaRuoli = new List<string>();
-    foreach (SelectListItem s in ListaRuoliZip)
-        ListaRuoli.Add(s.Value);
 
-    ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoli);
+    if (!string.IsNullOrEmpty(Model.Ruolo))
+    {
+        ListaRuoli = new List<string>();
+        ListaRuoli.Add(Model.Ruolo);
+
+    }
+    else
+    {
+        ListaRuoli = _zipservice.GetRuoliTipoAll(Context.User.Claims, TipoAll.Codice);
+    }
+
+
     var ListaServer = _zipservice._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaFile);
 
-    bool mostraSposa = ListaServer.Count > 1;
+    //var ListaServerIngresso = _mailservice._serMan.GetServerEmailInIngresso();
+    if (ListaServer != null && ListaServer.Count > 0)
+    {
+        //var ListaRuoliServ = _mailservice.getRuoli(Context.User.Claims, ListaServer.ElementAt(0).Nome);
+        ListaRuoliZip = _zipservice.getRuoli(ListaRuoli, ListaServer.ElementAt(0).Nome);
+        ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoliZip);
+    }
+    else
+    {
+        ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoli);
+    }
+    bool mostraSposta = ListaServer.Count > 1;
+
+
+
+    //List<SelectListItem> ListaRuoliZip = null;
+
+    //if (!string.IsNullOrEmpty(Model.Ruolo))
+    //{
+    //    ListaRuoliZip = new List<SelectListItem>();
+    //    ListaRuoliZip.Add(new SelectListItem(Model.Ruolo, Model.Ruolo));
+    //}
+    //else
+    //{
+    //    ListaRuoliZip = _zipservice.GetRuoliZip(Context.User.Claims);
+    //}
+
+    //if (ListaRuoliZip.Count() == 0)
+    //{
+    //    ListaRuoliZip.Add(new SelectListItem("(nessuno)", ".."));
+    //}
+
+
+    //List<string> ListaRuoli = new List<string>();
+    //foreach (SelectListItem s in ListaRuoliZip)
+    //    ListaRuoli.Add(s.Value);
+
+    //ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoli);
+    //var ListaServer = _zipservice._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaFile);
+
+    //bool mostraSposta = ListaServer.Count > 1;
 
     List<dblu.Docs.Models.Colonna> ElCols = _allservice.GetColonne("vELEMENTO");
 
@@ -165,7 +207,7 @@
 
     function MostraSposta(dataItem) {
 
-        if (@mostraSposa)
+        if (@mostraSposta)
             return true;
         else
             return false;
