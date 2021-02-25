@@ -110,6 +110,10 @@ namespace dblu.Docs.Classi
                 //    _context.Elementi.Add(elemento);
                 //}
                 elemento.DataUM = DateTime.Now;
+                    if (elemento.UtenteC == null)
+                        elemento.UtenteC = "";
+                    if (elemento.UtenteUM == null)
+                        elemento.UtenteUM = "";
                     elemento.Attributi = elemento.elencoAttributi.GetValori();
                     // _context.SaveChanges();
                     if (isNew)

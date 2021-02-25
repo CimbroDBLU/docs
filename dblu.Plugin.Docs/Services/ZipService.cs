@@ -118,12 +118,18 @@ namespace dblu.Portale.Plugin.Docs.Services
             try
             {
                 List<string> rr= new List<string>();
-                    foreach (string r in _config["Docs:RuoliZip"].Split(",")) {
+                    if (!string.IsNullOrEmpty(_config["Docs:RuoliZip"]))
+                {
+                    foreach (string r in _config["Docs:RuoliZip"].Split(","))
+                    {
                         Claim c = UserRoles.SingleOrDefault(c => c.Value == r);
-                        if (c != null) {
+                        if (c != null)
+                        {
                             rr.Add($"'{r}'");
                         }
                     }
+                }   
+                    
                 if (rr.Count > 0) {
                     IEnumerable<Role> rl = _usrManager.GetAllRolesIN( String.Join(",", rr) );
 
@@ -140,6 +146,142 @@ namespace dblu.Portale.Plugin.Docs.Services
             return res;
         }
 
+        public List<string> GetRuoliTipoAll(IEnumerable<Claim> Roles, string TipoAll)
+        {
+
+            List<string> l = new List<string>();
+
+
+            if (TipoAll != "")
+            {
+
+                string xRol = "'";
+                foreach (Claim x in Roles)
+                {
+                    if (x.Type == ClaimTypes.Role) xRol = xRol + x.Value + "','";
+                }
+                xRol = xRol.Substring(0, xRol.Length - 2);
+
+                try
+                {
+
+                    using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                    {
+
+                        string sql = "Select RoleId FROM [AllegatiInRoles] where [RoleId] IN (" + xRol + ") and [Tipo]='" + TipoAll + "'";
+                        l = cn.Query<string>(sql).ToList();
+
+                    }
+                }
+
+                catch (Exception ex)
+                {
+                    _logger.LogError($"getRuoli: {ex.Message}");
+                }
+
+            }
+            else
+            {
+                foreach (Claim x in Roles)
+                {
+                    if (x.Type == ClaimTypes.Role) l.Add(x.Value);
+                }
+            }
+
+            return l;
+        }
+
+        public List<string> GetRuoli(IEnumerable<Claim> Roles, string NomeServer)
+        {
+
+            List<string> l = new List<string>();
+
+
+            if (NomeServer != "")
+            {
+
+                string xRol = "'";
+                foreach (Claim x in Roles)
+                {
+                    if (x.Type == ClaimTypes.Role) xRol = xRol + x.Value + "','";
+                }
+                xRol = xRol.Substring(0, xRol.Length - 2);
+                try
+                {
+
+                    using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                    {
+
+                        string sql = "Select RoleID FROM [ServersInRole] where [RoleID] IN (" + xRol + ") and [idServer]='" + NomeServer + "'";
+                        l = cn.Query<string>(sql).ToList();
+
+                    }
+                }
+
+                catch (Exception ex)
+                {
+                    _logger.LogError($"getRuoli: {ex.Message}");
+                }
+
+            }
+            else
+            {
+                foreach (Claim x in Roles)
+                {
+                    if (x.Type == ClaimTypes.Role) l.Add(x.Value);
+                }
+            }
+
+            return l;
+        }
+
+        public List<String> getRuoli(List<string> Ruoli, string NomeServer)
+        {
+            List<string> l = new List<string>();
+
+
+            if (NomeServer != "")
+            {
+
+                //string xRol = "'";
+                //foreach (Claim x in Roles)
+                //{
+                //    if (x.Type == ClaimTypes.Role) xRol = xRol + x.Value + "','";
+                //}
+                //xRol = xRol.Substring(0, xRol.Length - 2);
+                try
+                {
+
+                    using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                    {
+
+                        string sql = "Select RoleID FROM [ServersInRole] where [RoleID] IN ('" + string.Join("','", Ruoli) + "') and [idServer]='" + NomeServer + "'";
+                        l = cn.Query<string>(sql).ToList();
+
+                    }
+                }
+
+                catch (Exception ex)
+                {
+                    _logger.LogError($"getRuoli: {ex.Message}");
+                }
+
+            }
+            else
+            {
+                //foreach (Claim x in Roles)
+                //{
+                //    if (x.Type == ClaimTypes.Role) l.Add(x.Value);
+                //}
+                l = Ruoli;
+            }
+
+            return l;
+
+
+
+
+        }
 
         public async Task<IList<EmailAttachments>> GetZipFilesAsync(string IdAllegato)
         {
@@ -395,6 +537,32 @@ namespace dblu.Portale.Plugin.Docs.Services
                             zm.Stato = el.Stato;
                         }
                     }
+                    else if (all != null && all.Tipo == "REQ"){
+                        zm.CodiceSoggetto = all.GetAttributo("codCli", "");
+                        //zm.NomeSoggetto = all.GetAttributo("NomeSoggetto", "");
+                        zm.IdFascicolo = all.IdFascicolo.ToString();
+                        zm.IdElemento = all.IdElemento.ToString();
+                        zm.DescrizioneElemento = all.Descrizione;
+                        zm.FileAllegati = await this.GetListaFileZippatiAsync(all, null);
+                        zm.StatoZip = all.Stato;
+
+                        Elementi el = null;
+                        if (zm.IdElemento != null)
+                        {
+                            el = _elmMan.Get(zm.IdElemento, 0);
+                        }
+                        if (el == null)
+                        {
+                            zm.Stato = StatoElemento.Attivo;
+                        }
+                        else
+                        {
+                            zm.DescrizioneElemento = el.Descrizione;
+                            zm.Stato = el.Stato;
+                        }
+
+
+                    }
 
                 }
             }
@@ -571,7 +739,16 @@ namespace dblu.Portale.Plugin.Docs.Services
                 try
                 {
                     var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
-                    res = sfdpf.CreaTmpPdfCompletoSF(NomePdf, FileZip);
+                    string Testo;
+
+                    var mittente = Allegato.elencoAttributi.Get("codCli");  //Allegato.Chiave3;    //$"{Messaggio.From.Mailboxes.First().Name} ({Messaggio.From.Mailboxes.First().Address})";
+                    var oggetto = Allegato.Descrizione;       //Chiave4;
+                    var txt = Allegato.elencoAttributi.Get("testo");
+                    var DataZip = Allegato.elencoAttributi.Get("Data") == null ? Allegato.DataC.ToString() : Allegato.elencoAttributi.Get("Data");
+
+                    Testo = $"Da: {mittente} \nOggetto: {oggetto} \ndel: {DataZip} \n\n {txt} ";
+
+                    res = sfdpf.CreaTmpPdfCompletoSF(NomePdf, FileZip, Testo);
                 }
                 catch (Exception ex)
                 {
@@ -716,7 +893,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     }, true);
 
                     //estrae i file dallo zip presenti in lista e li assegna all'elemento
-                    Allegati all = await EstraiAllegatiZip(Allegato, ElencoFile, AllegaZip, Descrizione, tipoAll, true, cancel);
+                    Allegati all = await EstraiAllegatiZip(Allegato, ElencoFile, AllegaZip, Descrizione, tipoAll, true, User.Identity.Name, cancel);
 
                     var estrai = all != null;
                     var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
@@ -739,6 +916,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 string Descrizione,
                 TipiAllegati tipoAll,
                 bool daZip,
+                string Utente,
                 CancellationToken cancel)
         {
             Allegati all = null;
@@ -798,7 +976,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                                     Stato = StatoAllegato.Attivo,
                                     IdFascicolo = Zip.IdFascicolo,
                                     IdElemento = Zip.IdElemento,
-                                    jNote = Zip.jNote
+                                    jNote = Zip.jNote,
+                                    UtenteC = Utente,
+                                    UtenteUM=Utente
                                 };
                                 isNewAll = true;
                             }
@@ -849,7 +1029,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                                             TipoNavigation = tipoAll,
                                             Stato = StatoAllegato.Attivo,
                                             IdFascicolo = Zip.IdFascicolo,
-                                            IdElemento = Zip.IdElemento
+                                            IdElemento = Zip.IdElemento,
+                                            UtenteC =Utente,
+                                            UtenteUM = Utente
                                         };
                                         //_context.Add(all);
                                         isNewAll = true;
@@ -1025,9 +1207,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 _logMan.Salva(log, true);
                 //-------- Memorizzo l'operazione----------------------
 
-                 var estrai = await EstraiAllegatiZip(Allegato, ElencoFile, AllegaZip, Descrizione, tipoAll, false, cancel);
-
-
+                 var estrai = await EstraiAllegatiZip(Allegato, ElencoFile, AllegaZip, Descrizione, tipoAll, false, User.Identity.Name, cancel);
 
                 return e;
             }

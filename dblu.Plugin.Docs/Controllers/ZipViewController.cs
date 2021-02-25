@@ -383,11 +383,12 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         #region ZipInArrivo
         
         [HasPermission("50.1.4")]
-        public ActionResult ZipInArrivo(string Ruolo)
+        public ActionResult ZipInArrivo(string Ruolo, string Tipo)
         {
             return View(new ZipInArrivoViewModel
                 {
-                    Ruolo = Ruolo
+                    Ruolo = Ruolo,
+                    TipoAll = Tipo
                 }
             );
         }
@@ -567,9 +568,15 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         #region   Zip Processati
 
         [HasPermission("50.1.4")]
-        public ActionResult ZipProcessati()
+        public ActionResult ZipProcessati(string Ruolo, string Tipo)
         {
-            return View();
+            return View(new ZipProcessatiViewModel
+            {
+                Ruolo = Ruolo,
+                TipoAll = Tipo
+            }
+            );
+            //return View();
         }
 
 

@@ -30,6 +30,7 @@ using dblu.Docs.Extensions;
 using dblu.Portale.Plugin.Docs.Models;
 using System.Web;
 using Microsoft.AspNetCore.Hosting;
+using dblu.Portale.Plugin.Docs.Class;
 
 namespace dblu.Portale.Plugin.Documenti.Controllers
 {
@@ -174,6 +175,44 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             }
 
         }
+
+
+        public async Task<ActionResult<Elementi>> DuplicaElementoAsync(string IdAllegato,
+             string IdFascicolo,
+             string IdElemento,
+             string Categoria,
+             string TipoElemento,
+             string CodiceSoggetto,
+             string NomeSoggetto,
+             string ElencoFile,
+             bool AllegaEmail,
+             string Descrizione)
+        {
+            try
+            {
+                if (TipoElemento is null)
+                {
+                    _toastNotification.AddErrorToastMessage("Scegli il tipo di elemento!");
+                    return BadRequest();
+                }
+
+                var f = await _mailService.DuplicaElementoAsync(IdAllegato, IdFascicolo, IdElemento, Categoria, TipoElemento, CodiceSoggetto, NomeSoggetto, ElencoFile, AllegaEmail, Descrizione, User);
+                if (f is null)
+                {
+                    _toastNotification.AddErrorToastMessage("Errore nella duplicazione dell'elemento!");
+                    return BadRequest();
+                }
+                _toastNotification.AddSuccessToastMessage("Elemento duplicato correttamente!");
+                return Ok(f);
+            }
+            catch (Exception)
+            {
+                _toastNotification.AddErrorToastMessage("Errore nella duplicazione dell'elemento!");
+                return BadRequest();
+            }
+
+        }
+
 
 
         [HttpGet]
@@ -508,13 +547,15 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         {
             if (IdAllegato != null && IdFascicolo != null && IdElemento != null)
             {
+                BPMDocsProcessInfo Info = _mailService.GetProcessInfo(TipiOggetto.ELEMENTO, AzioneOggetto.MODIFICA);
                 bool fl = await _mailService.AllegaAElementoFascicolo(IdAllegato,
                     IdFascicolo,
                     IdElemento,
                     elencoFile,
                     AllegaEmail,
                     Descrizione,
-                    User, 
+                    User,
+                    Info,
                     null);
                 
                     if (fl){
