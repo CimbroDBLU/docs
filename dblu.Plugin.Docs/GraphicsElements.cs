@@ -68,6 +68,8 @@ namespace dblu.Portale.Plugin.Documenti
                     new MenuItem("50.1.3", 3, "MailView/emailInviate", "Email inviate", "fa-table", null),
                     new MenuItem("50.1.4", 4, "ZipView/ZipInArrivo", "File in arrivo", "fa-table", null),
                     new MenuItem("50.1.4", 5, "ZipView/ZipProcessati", "File processati", "fa-table", null),
+                    new MenuItem("50.1.4", 6, "ZipView/ZipInArrivo?Tipo=REQ", "Ordini Dealers in arrivo", "fa-table", null),
+                    new MenuItem("50.1.4", 6, "ZipView/ZipProcessati?Tipo=REQ", "Ordini Dealers processati", "fa-table", null),
                     new MenuItem("50.2", 1, "Docs/Logs", "Gestione Log", "fa-table", null),
                 };
             }
@@ -87,6 +89,11 @@ namespace dblu.Portale.Plugin.Documenti
                 myFile.Size = new System.Drawing.Size(2, 6);
                 myFile.ElementType = OBJECT_TYPE.TEMPLATE;
                 myFile.Template = "TemplateFile";
+                // DEALERS
+                var myREQ = new IndexItem("50.1.4", 2, "", "Richieste", "FileDash", "");
+                myREQ.Size = new System.Drawing.Size(2, 6);
+                myREQ.ElementType = OBJECT_TYPE.TEMPLATE;
+                myREQ.Template = "TemplateDealers";
                 // FASCICOLI
                 var myFascicoli = new IndexItem("50.1.2", 3, "", "Fascicoli", "FascicoliDash", "");
                 myFascicoli.Size = new System.Drawing.Size(2, 6);
@@ -101,7 +108,7 @@ namespace dblu.Portale.Plugin.Documenti
 
                 return new IndexItem[]
                 {
-                    myMail, myFile, myFascicoli, mySmista
+                    myMail, myFile, myREQ, myFascicoli, mySmista
                  // new IndexItem("50.1.3", 1,  "", "Index", "DocsDash", "")
                 };
             }
