@@ -134,5 +134,15 @@ namespace dbluDealersConnector.DealersAPI
         /// DossierID of the order source of this request if any
         /// </summary>
         public Guid? RefDossierId { get; set; }
+
+        /// <summary>
+        /// Last modification time, when inserted ont dblu docs is alwais equal to "sent time"
+        /// </summary>
+        public DateTime? LastModificationTime { get; set; }
+
+        /// <summary>
+        /// Name of the branch
+        /// </summary>
+        public string BranchName { get; set; }
     }
 }
