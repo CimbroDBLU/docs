@@ -180,7 +180,6 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         public async Task<ActionResult<Elementi>> DuplicaElementoAsync(string IdAllegato,
              string IdFascicolo,
              string IdElemento,
-             string Categoria,
              string TipoElemento,
              string CodiceSoggetto,
              string NomeSoggetto,
@@ -196,7 +195,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     return BadRequest();
                 }
 
-                var f = await _mailService.DuplicaElementoAsync(IdAllegato, IdFascicolo, IdElemento, Categoria, TipoElemento, CodiceSoggetto, NomeSoggetto, ElencoFile, AllegaEmail, Descrizione, User);
+                var f = await _mailService.DuplicaElementoAsync(IdAllegato, IdFascicolo, IdElemento, TipoElemento, CodiceSoggetto, NomeSoggetto, ElencoFile, AllegaEmail, Descrizione, User);
                 if (f is null)
                 {
                     _toastNotification.AddErrorToastMessage("Errore nella duplicazione dell'elemento!");

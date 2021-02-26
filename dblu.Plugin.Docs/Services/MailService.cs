@@ -1725,7 +1725,6 @@ namespace dblu.Portale.Plugin.Docs.Services
         public async Task<Elementi> DuplicaElementoAsync(string IdAllegato,
             string IdFascicolo,
             string IdElemento,
-            string Categoria,
             string TipoElemento,
             string CodiceSoggetto,
             string NomeSoggetto,
@@ -1756,17 +1755,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 var isNew = false;
                 if (Allegato.IdFascicolo == null)
                 {
-                    //CreaFascicolo nuovo fascicolo e assegna alla mail
-                    f = new Fascicoli();
-                    f.Categoria = Categoria;
-                    f.CategoriaNavigation = _fasMan.GetCategoria(Categoria);
-                    f.elencoAttributi = f.CategoriaNavigation.Attributi;
-
-                    //f.UtenteC = User.Identity.Name;
-                    //_context.Add(f);
-                    isNew = true;
-                    Allegato.IdFascicolo = f.Id;
-                    f.Descrizione = Descrizione;
+                    return null;
                 }
                 else
                 {
@@ -1866,7 +1855,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 //-------- Memorizzo l'operazione----------------------
 
                 //estrae i file dalla mail presenti in lista e li assegna all'elemento
-                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, cancel);
+                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, User.Identity.Name, cancel);
 
 
 
