@@ -144,5 +144,10 @@ namespace dbluDealersConnector.DealersAPI
         /// Name of the branch
         /// </summary>
         public string BranchName { get; set; }
+
+        /// <summary>
+        /// Email of the user that make the request
+        /// </summary>
+        public string Mail { get; set; }
     }
 }

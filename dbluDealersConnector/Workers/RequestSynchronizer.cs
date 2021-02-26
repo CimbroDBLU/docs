@@ -103,6 +103,7 @@ namespace dbluDealersConnector.Workers
             C.Attributi.Add(new Attributo() { Nome = "CodiceSoggetto", Descrizione = "Codice Soggetto", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "10" });
             C.Attributi.Add(new Attributo() { Nome = "Data", Descrizione = "Data", Alias = "", Obbligatorio = false, Tipo = "System.DateTime", Valore = "", SystemType = Type.GetType("System.DateTime"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "11" });
             C.Attributi.Add(new Attributo() { Nome = "NomeSoggetto", Descrizione = "Nome Soggetto", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "12" });
+            C.Attributi.Add(new Attributo() { Nome = "Email", Descrizione = "Email di chi ha creato la richiesta", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "13" });
             AM.SalvaTipoAllegato(C);
             return C;
             
@@ -175,7 +176,7 @@ namespace dbluDealersConnector.Workers
                         TipoNavigation = T,
                         Tipo = T.Codice,
                         Stato = StatoAllegato.Attivo,
-                        Descrizione = R.Descrizione,
+                        Descrizione = R.Descrizione//,
                         //IdElemento = R.RefItemId,
                         //IdFascicolo=R.RefDossierId
                     };
@@ -192,6 +193,8 @@ namespace dbluDealersConnector.Workers
                     A.SetAttributo("NumeroProtocollo", R.RefNumber);
                     A.SetAttributo("RefItemId", R.RefItemId);
                     A.SetAttributo("RefDossierId", R.RefDossierId);
+                    A.SetAttributo("Email", R.Mail);
+
 
                     if (R.NomeFile == "")
                     {
@@ -205,13 +208,13 @@ namespace dbluDealersConnector.Workers
                     await DC.ChangeState(R.Id, RequestState.Processing);
                     log.LogInformation($"RequestSynchronizer.Engine: Saved Attachment [{A.Id}] [{A.NomeFile}]");
 
-                    if(!string.IsNullOrEmpty(conf["Camunda:Process"]))
+                    if(!string.IsNullOrEmpty(conf["Camunda:Ip"]))
                     {
                         EmailServer ES=SEM.GetServer("dbluDealers");
                         if (ES != null)
-                            _ = new RunWorkflow(conf, log).Start(ES.NomeProcesso, null);
+                            _ = new RunWorkflow(conf, log).Start(ES.NomeProcesso, R,A);
                         else
-                            log.LogInformation($"RequestSynchronizer.Engine: Saved Attachment ");
+                            log.LogInformation($"RequestSynchronizer.Engine: Server dbluDealers not found");
                     }
                 }
 

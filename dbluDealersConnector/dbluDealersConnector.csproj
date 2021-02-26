@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\dblubpm\dblu.CamundaClient\dblu.CamundaClient.csproj" />
     <ProjectReference Include="..\dblu.Docs\dblu.Docs.csproj" />
   </ItemGroup>
 
