@@ -1,4 +1,6 @@
 ﻿using BPMClient;
+using dblu.Docs.Models;
+using dbluDealersConnector.DealersAPI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -38,11 +40,12 @@ namespace dbluDealersConnector.Workers
         /// Start a process
         /// </summary>
         /// <param name="Name">Name of the process to start</param>
-        /// <param name="ssf">List of variables to send to camunda</param>
+        /// <param name="REQ">Request to send to CAMUNDA</param>
+        /// <param name="A">Attachment to send to CAMUNDA</param>
         /// <returns>
         /// true if process is started
         /// </returns>
-        public async Task<bool> Start(string Name, SubmitStartForm ssf)
+        public async Task<bool> Start(string Name, DealersRequest REQ, Allegati A)
         {
             string CamundaUrl = _config["Camunda:Ip"];
             if (string.IsNullOrEmpty(CamundaUrl))
@@ -69,14 +72,14 @@ namespace dbluDealersConnector.Workers
             }
             else
             {
-                // ssf = new SubmitStartForm();
-                //ssf.BusinessKey = message.MessageId;
-                //ssf.SetVariable("sMittente", emailmitt);
-                //ssf.SetVariable("dData", message.Date.UtcDateTime.ToString("dd/MM/yyyy hh:mm"));
-                //ssf.SetVariable("sOggetto", message.Subject);
-                //ssf.SetVariable("sIdAllegato", all.Id.ToString());
-                //ssf.SetVariable("jAllegato", JsonConvert.SerializeObject(all));
+                SubmitStartForm ssf = new SubmitStartForm();
 
+                ssf.BusinessKey = REQ.Id.ToString();
+                ssf.SetVariable("sMittente", REQ.Mail);
+                ssf.SetVariable("dData", REQ.LastModificationTime?.ToString("dd/MM/yyyy hh:mm")??"");
+                ssf.SetVariable("sOggetto",REQ.Descrizione);
+                ssf.SetVariable("sIdAllegato", A.Id.ToString());
+           
                 BPMProcessInstanceInfo pi = await pd.SubmitForm(pdi.Id, Name, ssf);
                 if (pi == null)
                 {
