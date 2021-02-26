@@ -153,6 +153,11 @@ namespace dblu.Docs.Classi
                 //fascicolo.DataUM = DateTime.Now;
                 //fascicolo._attributi = fascicolo.Attributi.GetValori();
                 //_context.SaveChanges();
+                if (fascicolo.UtenteC == null)
+                    fascicolo.UtenteC = "";
+                if (fascicolo.UtenteUM == null)
+                    fascicolo.UtenteUM = "";
+
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
                     if (string.IsNullOrEmpty(fascicolo.Categoria))

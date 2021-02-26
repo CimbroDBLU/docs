@@ -360,6 +360,59 @@ function MostraDettaglio(dettaglio) {
     }
     $('#emailAttachments').data('kendoGrid').dataSource.data(dettaglio.FileAllegati);
 }
+function RispondiEmail() {
+    if (mailItem != null) {
+        $("#IdAllegato").val(mailItem.Id);
+        $("#destinatarioRisposta").val(mailItem.Chiave1);
+        $("#ccRisposta").val("");
+        $("#oggettoRisposta").val("R: " + mailItem.Descrizione);
+        $("#testoRisposta").val("");
+        var dialog = $("#wRispondi").data("kendoWindow");
+
+        dialog.center().open();
+
+    }
+}
+function rispondiOnClick(e) {
+    e.preventDefault();
+    var server = "";
+    if (NomeServer != null) {
+        server = NomeServer;
+    }
+    else {
+        server = $("#emailServer").data("kendoComboBox").value();
+    };
+
+
+    var obj = {
+        IdAllegato: $("#IdAllegato").val(),
+        NomeServer: server,
+        to: $("#destinatarioRisposta").val(),
+        cc: $("#ccRisposta").val(),
+        oggetto: $("#oggettoRisposta").val(),
+        testo: $("#testoRisposta").val(),
+        allegaEmail: $("#chkemailRispondi").is(':checked'),
+        chiudiEmail: $("#chkemailRispondiChiudi").is(':checked')
+    };
+    $.ajax({
+        url: UrlActions.MailView_InArrivo_Rispondi,
+        type: 'POST',
+        cache: false,
+        data: obj,
+        success: function (data) {
+            var ok = $.parseJSON(data);
+            if (ok) {
+                var dialog = $("#wRispondi").data("kendoWindow");
+                dialog.close();
+                var grid = $("#gridEmail").data("kendoGrid");
+                gridRefresLastOp(grid, docsTipiOperazioni.RISPOSTO);
+            }
+        },
+        error: function (data) {
+            var ok = $.parseJSON(data);
+        }
+    });
+}
 
 
 //errori

@@ -1,3 +1,4 @@
+using dbluDealersConnector.Workers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -121,10 +122,8 @@ namespace dblu.Docs.Service
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
             app.UseAuthorization();
            
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

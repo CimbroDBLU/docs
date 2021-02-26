@@ -167,6 +167,12 @@ namespace dblu.Docs.Classi
                         allegato.Attributi = allegato.elencoAttributi.GetValori();
                     }
 
+                    allegato.DataUM = DateTime.Now;
+                    if (allegato.UtenteC == null)
+                        allegato.UtenteC = "";
+                    if (allegato.UtenteUM == null)
+                        allegato.UtenteUM = "";
+
                     //_context.Allegati.Add(allegato);
                     //int i = await _context.SaveChangesAsync();
                     bool b = false;
@@ -174,15 +180,13 @@ namespace dblu.Docs.Classi
                     {
                         var r = await cn.InsertAsync<Allegati>(allegato);
                         b = true;
-                }
-                    else { 
-                         b = await cn.UpdateAsync<Allegati>(allegato);
-                }
-                
-
+                    }
+                        else { 
+                             b = await cn.UpdateAsync<Allegati>(allegato);
+                    }
+ 
                     if (b)
                     {
-
                         //dbluDocsContext db = new dbluDocsContext(_context.Connessione);
 
                         string percorso = Sottocartella(allegato);
@@ -765,6 +769,10 @@ namespace dblu.Docs.Classi
                     //    _context.Elementi.Add(elemento);
                     //}
                     all.DataUM = DateTime.Now;
+                    if (all.UtenteC == null)
+                        all.UtenteC = "";
+                    if (all.UtenteUM == null)
+                        all.UtenteUM = "";
                     all.Attributi = all.elencoAttributi.GetValori();
                     all.Note = all.Note == null ? "" : all.Note;
                     if (all.Stato == StatoAllegato.Attivo && cambiaStato) all.Stato = StatoAllegato.Elaborato;
