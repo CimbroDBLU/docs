@@ -1738,6 +1738,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             {
                 Fascicoli f = null;
                 var cancel = new CancellationToken();
+                string utente = User.Identity.Name == null ? "" : User.Identity.Name;
 
                 var Allegato = _allMan.Get(IdAllegato);
                 if (Descrizione == null)
@@ -1789,7 +1790,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     Data = DateTime.Now,
                     IdOggetto = f.Id,
                     TipoOggetto = TipiOggetto.FASCICOLO,
-                    Utente = User.Identity.Name
+                    Utente = utente
                 };
                 if (isNew) log.Operazione = TipoOperazione.Creato; else log.Operazione = TipoOperazione.Modificato;
                 _logMan.Salva(log, true);
@@ -1798,12 +1799,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                 var e = new Elementi();
                 e.Tipo = TipoElemento;
                 e.IdFascicolo = f.Id;
-
-                
+               
                 e.Descrizione = Descrizione;
-                
-
-
+ 
                 isNew = true;
                 e.IdFascicoloNavigation = f;
                 //TipiElementi tipoEl = _context.TipiElementi
@@ -1843,7 +1841,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     IdOggetto = e.Id,
                     TipoOggetto = TipiOggetto.ELEMENTO,
                     Operazione = TipoOperazione.Creato,
-                    Utente = User.Identity.Name
+                    Utente = utente
                 };
                 _logMan.Salva(log, true);
                 //-------- Memorizzo l'operazione----------------------
@@ -1860,15 +1858,13 @@ namespace dblu.Portale.Plugin.Docs.Services
                     IdOggetto = Allegato.Id,
                     TipoOggetto = TipiOggetto.ALLEGATO,
                     Operazione = TipoOperazione.Elaborato,
-                    Utente = User.Identity.Name
+                    Utente = utente
                 };
                 _logMan.Salva(log, true);
                 //-------- Memorizzo l'operazione----------------------
 
                 //estrae i file dalla mail presenti in lista e li assegna all'elemento
-                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, cancel);
-
-
+                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false , utente, cancel);
 
                 return e;
             }
