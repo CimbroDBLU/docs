@@ -15,7 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 
-namespace dblu.Docs.Service
+namespace dbluDealersConnector.Workers
 {
 
     /// <summary>
@@ -95,15 +95,18 @@ namespace dblu.Docs.Service
             C.Attributi.Add(new Attributo() { Nome = "Testo", Descrizione = "Testo", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "2" });
             C.Attributi.Add(new Attributo() { Nome = "Descrizione", Descrizione = "Descrizione", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "3" });
             C.Attributi.Add(new Attributo() { Nome = "ElencoFile", Descrizione = "Lista di nome files e relativa dimensione separati da |", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "4" });
-            C.Attributi.Add(new Attributo() { Nome = "Reference", Descrizione = "Riferimenti", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "5" });
-            C.Attributi.Add(new Attributo() { Nome = "RefYear", Descrizione = "Anno ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "6" });
-            C.Attributi.Add(new Attributo() { Nome = "RefNumber", Descrizione = "Numero ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "7" });
+            C.Attributi.Add(new Attributo() { Nome = "Riferimento", Descrizione = "Riferimenti", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "5" });            
+            C.Attributi.Add(new Attributo() { Nome = "AnnoProtocollo", Descrizione = "Anno ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "6" });
+            C.Attributi.Add(new Attributo() { Nome = "NumeroProtocollo", Descrizione = "Numero ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "7" });
             C.Attributi.Add(new Attributo() { Nome = "RefItemId", Descrizione = "Elemento ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.Guid", Valore = "", SystemType = Type.GetType("System.Guid"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "8" });
             C.Attributi.Add(new Attributo() { Nome = "RefDossierId", Descrizione = "Fascicolo ordine eventuale di partenza", Alias = "", Obbligatorio = false, Tipo = "System.Guid", Valore = "", SystemType = Type.GetType("System.Guid"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "9" });
-            C.Attributi.Add(new Attributo() { Nome = "CodCli", Descrizione = "Codice cliente", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "10" });
+            C.Attributi.Add(new Attributo() { Nome = "CodiceSoggetto", Descrizione = "Codice Soggetto", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "10" });
+            C.Attributi.Add(new Attributo() { Nome = "Data", Descrizione = "Data", Alias = "", Obbligatorio = false, Tipo = "System.DateTime", Valore = "", SystemType = Type.GetType("System.DateTime"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "11" });
+            C.Attributi.Add(new Attributo() { Nome = "NomeSoggetto", Descrizione = "Nome Soggetto", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "12" });
+            C.Attributi.Add(new Attributo() { Nome = "Email", Descrizione = "Email di chi ha creato la richiesta", Alias = "", Obbligatorio = false, Tipo = "System.String", Valore = "", SystemType = Type.GetType("System.String"), Visibilità = Visibilita_Attributi.VISIBLE, ValorePredefinito = "", Sequenza = "13" });
             AM.SalvaTipoAllegato(C);
             return C;
-
+            
         }
 
         /// <summary>
@@ -120,6 +123,7 @@ namespace dblu.Docs.Service
                 DealersClient DC = new DealersClient(new Uri(DealersUriString),allow);
                 AllegatiManager AM = new AllegatiManager(conf["dbluDocs:db"], log);
                 ElementiManager EM = new ElementiManager(conf["dbluDocs:db"], log);
+                ServerEmailManager SEM = new ServerEmailManager(conf["dbluDocs:db"], log);
 
                 try
                 {
@@ -170,22 +174,27 @@ namespace dblu.Docs.Service
                         Origine = "dbluDealers",
                         Testo = R.Testo,
                         TipoNavigation = T,
-                        Tipo = T.Codice,                         
+                        Tipo = T.Codice,
                         Stato = StatoAllegato.Attivo,
-                        Descrizione = R.Descrizione
+                        Descrizione = R.Descrizione//,
+                        //IdElemento = R.RefItemId,
+                        //IdFascicolo=R.RefDossierId
                     };
                     A.elencoAttributi = A.TipoNavigation.Attributi;
                     A.SetAttributo("Tipo", R.Tipo.ToString());
                     A.SetAttributo("Testo", R.Testo);
-                    A.SetAttributo("CodCli", R.Cli);
+                    A.SetAttributo("CodiceSoggetto", R.Cli);
+                    A.SetAttributo("NomeSoggetto", R.BranchName);
+                    A.SetAttributo("Data", R.LastModificationTime);
                     A.SetAttributo("Descrizione", R.Descrizione);
                     A.SetAttributo("ElencoFile", R.ElencoFile);
-                    A.SetAttributo("Reference", R.Reference);
-
-                    A.SetAttributo("RefYear", R.RefYear);
-                    A.SetAttributo("RefNumber", R.RefNumber);
+                    A.SetAttributo("Riferimento", R.Reference);
+                    A.SetAttributo("AnnoProtocollo", R.RefYear);
+                    A.SetAttributo("NumeroProtocollo", R.RefNumber);
                     A.SetAttributo("RefItemId", R.RefItemId);
                     A.SetAttributo("RefDossierId", R.RefDossierId);
+                    A.SetAttributo("Email", R.Mail);
+
 
                     if (R.NomeFile == "")
                     {
@@ -194,11 +203,19 @@ namespace dblu.Docs.Service
                     }
                     else 
                         await AM.SalvaAsync(A, M, true);
-
                     log.LogInformation($"RequestSynchronizer.Engine: Created Attachment for Request: [{R.Id}] Attachment: {A.Id}-{A.NomeFile}");
 
                     await DC.ChangeState(R.Id, RequestState.Processing);
                     log.LogInformation($"RequestSynchronizer.Engine: Saved Attachment [{A.Id}] [{A.NomeFile}]");
+
+                    if(!string.IsNullOrEmpty(conf["Camunda:Ip"]))
+                    {
+                        EmailServer ES=SEM.GetServer("dbluDealers");
+                        if (ES != null)
+                            _ = new RunWorkflow(conf, log).Start(ES.NomeProcesso, R,A);
+                        else
+                            log.LogInformation($"RequestSynchronizer.Engine: Server dbluDealers not found");
+                    }
                 }
 
                 List<DealersRequest> ToMoveForwardList = PR.Where(x => x.State != RequestState.Ready && x.State != RequestState.Preparing).ToList();

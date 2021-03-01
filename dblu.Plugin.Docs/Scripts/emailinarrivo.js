@@ -765,7 +765,51 @@ function AggiungiAElementoOnClick(e) {
 function DuplicaElemento() {
     if (elementoItem != null) {
         var TipoElemento = elementoItem.TipoElemento;
-        var IdElementoCorrente = $("#IdElemento").val();
+        var IdElementoCorrente = elementoItem.Id;
+        var items = '';
+        $('body').addClass('waiting');
+
+        //var idElemento = $('#IdElemento').val();
+        var IdFascicolo = $("#IdFascicolo").val();
+        var gridall = $("#emailAttachments").data("kendoGrid");
+        var selectedElements = gridall.select();
+        for (var j = 0; j < selectedElements.length; j++) {
+            var item = gridall.dataItem(selectedElements[j]);
+            items = items + item.NomeFile + ';';
+        }
+        var r = true;
+        if (IdFascicolo != "") {
+            r = confirm("Confermi la creazione di un nuovo elemento nel fascicolo corrente?");
+        }
+        if (r) {
+
+            var obj = {
+                IdAllegato: $("#IdAllegato").val(),
+                IdFascicolo: IdFascicolo,
+                IdElemento: IdElementoCorrente,
+                TipoElemento: TipoElemento,
+                CodiceSoggetto: $("#CodiceSoggetto").val(),
+                NomeSoggetto: $("#NomeSoggetto").val(),
+                elencoFile: items,
+                AllegaEmail: $("#allegamail").val(),
+                Descrizione: $("#DescrizioneElemento").val(),
+            };
+            $.ajax({
+                url: UrlActions.MailView_DuplicaElemento,
+                type: 'POST',
+                data: obj,
+                success: function (elemento) {
+                    CaricaElemento(elemento);
+                },
+                error: function () {
+                    $('body').removeClass('waiting');
+                }
+            });
+        }
+
+
+
+
         debugger;
     }
 }
