@@ -44,11 +44,14 @@ namespace dblu.Docs.Classi
             using (SqlConnection cn = new SqlConnection(StringaConnessione))
             {
                 fsc = cn.Get<Fascicoli>(id);
-                fsc.CategoriaNavigation = cn.Get<Categorie>(fsc.Categoria);
-                fsc.elencoAttributi = fsc.CategoriaNavigation.Attributi;
-                if (!string.IsNullOrEmpty(fsc.Attributi))
+                if (fsc != null)
                 {
-                    fsc.elencoAttributi.SetValori(fsc.Attributi);
+                    fsc.CategoriaNavigation = cn.Get<Categorie>(fsc.Categoria);
+                    fsc.elencoAttributi = fsc.CategoriaNavigation.Attributi;
+                    if (!string.IsNullOrEmpty(fsc.Attributi))
+                    {
+                        fsc.elencoAttributi.SetValori(fsc.Attributi);
+                    }
                 }
             }
             return fsc;

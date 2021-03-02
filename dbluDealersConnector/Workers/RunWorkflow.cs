@@ -39,13 +39,12 @@ namespace dbluDealersConnector.Workers
         /// <summary>
         /// Start a process
         /// </summary>
-        /// <param name="Name">Name of the process to start</param>
-        /// <param name="REQ">Request to send to CAMUNDA</param>
-        /// <param name="A">Attachment to send to CAMUNDA</param>
+        /// <param name="Name">Name of the process</param>
+        /// <param name="ssf">Parameters for the process</param>
         /// <returns>
         /// true if process is started
         /// </returns>
-        public async Task<bool> Start(string Name, DealersRequest REQ, Allegati A)
+        public async Task<bool> Start(string Name, SubmitStartForm ssf)
         {
             string CamundaUrl = _config["Camunda:Ip"];
             if (string.IsNullOrEmpty(CamundaUrl))
@@ -72,14 +71,7 @@ namespace dbluDealersConnector.Workers
             }
             else
             {
-                SubmitStartForm ssf = new SubmitStartForm();
 
-                ssf.BusinessKey = REQ.Id.ToString();
-                ssf.SetVariable("sMittente", REQ.Mail);
-                ssf.SetVariable("dData", REQ.LastModificationTime?.ToString("dd/MM/yyyy hh:mm")??"");
-                ssf.SetVariable("sOggetto",REQ.Descrizione);
-                ssf.SetVariable("sIdAllegato", A.Id.ToString());
-           
                 BPMProcessInstanceInfo pi = await pd.SubmitForm(pdi.Id, Name, ssf);
                 if (pi == null)
                 {
@@ -90,7 +82,6 @@ namespace dbluDealersConnector.Workers
                 {
                     _log.LogDebug($"RunWorkflow.Start: Process {Name} started.");
                     return true;
-   
                 }
 
 

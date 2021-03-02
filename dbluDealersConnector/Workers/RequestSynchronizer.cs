@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
+using BPMClient;
 
 namespace dbluDealersConnector.Workers
 {
@@ -123,6 +124,8 @@ namespace dbluDealersConnector.Workers
                 DealersClient DC = new DealersClient(new Uri(DealersUriString),allow);
                 AllegatiManager AM = new AllegatiManager(conf["dbluDocs:db"], log);
                 ElementiManager EM = new ElementiManager(conf["dbluDocs:db"], log);
+                FascicoliManager FM=new FascicoliManager(conf["dbluDocs:db"], log);
+
                 ServerEmailManager SEM = new ServerEmailManager(conf["dbluDocs:db"], log);
 
                 try
@@ -168,6 +171,9 @@ namespace dbluDealersConnector.Workers
 
                     MemoryStream M = await DC.GetDocument(R.NomeFile);
                     TipiAllegati T = GetAttachType();
+
+
+
                     Allegati A = new Allegati
                     {
                         NomeFile = R.NomeFile,
@@ -176,9 +182,9 @@ namespace dbluDealersConnector.Workers
                         TipoNavigation = T,
                         Tipo = T.Codice,
                         Stato = StatoAllegato.Attivo,
-                        Descrizione = R.Descrizione//,
-                        //IdElemento = R.RefItemId,
-                        //IdFascicolo=R.RefDossierId
+                        Descrizione = R.Descrizione,
+                        IdElemento = EM.Get(R.RefItemId, 0)?.Id,
+                        IdFascicolo = FM.Get(R.RefDossierId)?.Id
                     };
                     A.elencoAttributi = A.TipoNavigation.Attributi;
                     A.SetAttributo("Tipo", R.Tipo.ToString());
@@ -201,21 +207,33 @@ namespace dbluDealersConnector.Workers
                         log.LogWarning($"RequestSynchronizer.Engine: Request: [{R.Id}] has no attachments");
                         AM.Salva(A, true);
                     }
-                    else 
-                        await AM.SalvaAsync(A, M, true);
+                    else  await AM.SalvaAsync(A, M, true);
                     log.LogInformation($"RequestSynchronizer.Engine: Created Attachment for Request: [{R.Id}] Attachment: {A.Id}-{A.NomeFile}");
-
-                    await DC.ChangeState(R.Id, RequestState.Processing);
-                    log.LogInformation($"RequestSynchronizer.Engine: Saved Attachment [{A.Id}] [{A.NomeFile}]");
 
                     if(!string.IsNullOrEmpty(conf["Camunda:Ip"]))
                     {
                         EmailServer ES=SEM.GetServer("dbluDealers");
                         if (ES != null)
-                            _ = new RunWorkflow(conf, log).Start(ES.NomeProcesso, R,A);
+                        {
+                            SubmitStartForm ssf = new SubmitStartForm();
+                            ssf.BusinessKey = R.Id.ToString();
+                            ssf.SetVariable("sMittente", R.Mail);
+                            ssf.SetVariable("dData", R.LastModificationTime?.ToString("dd/MM/yyyy hh:mm") ?? "");
+                            ssf.SetVariable("sOggetto", R.Descrizione);
+                            ssf.SetVariable("sIdAllegato", A.Id.ToString());
+                            ssf.SetVariable("_Numero", R.RefNumber);
+                            ssf.SetVariable("_Anno", R.RefYear);
+                            _ = new RunWorkflow(conf, log).Start(ES.NomeProcesso, ssf);
+
+                            log.LogInformation($"RequestSynchronizer.Engine: Process {ES.NomeProcesso} has been called for {R.RefNumber}/{R.RefYear}");
+                        }
                         else
                             log.LogInformation($"RequestSynchronizer.Engine: Server dbluDealers not found");
                     }
+
+                    await DC.ChangeState(R.Id, RequestState.Processing);
+                    log.LogInformation($"RequestSynchronizer.Engine: Saved Attachment [{A.Id}] [{A.NomeFile}]");
+
                 }
 
                 List<DealersRequest> ToMoveForwardList = PR.Where(x => x.State != RequestState.Ready && x.State != RequestState.Preparing).ToList();
