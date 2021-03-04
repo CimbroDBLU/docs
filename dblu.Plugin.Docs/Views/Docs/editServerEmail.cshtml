@@ -3,12 +3,17 @@
 
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using Kendo.Mvc.UI
+@{
+    bool Tipo;
+    if (Model.TipoRecord == dblu.Docs.Models.TipiRecordServer.CartellaMail) Tipo = true;
+    else Tipo = false;
+}
 
-  
 <section class="content-header">
-        @if (Model.TipoRecord == dblu.Docs.Models.TipiRecordServer.CartellaMail)
-        { <h1>Dettaglio server mail:  @(Model.Nome)</h1>}
-        else{  <h1>Dettaglio cartella:  @(Model.Nome)</h1>}
+    @if (Model.TipoRecord == dblu.Docs.Models.TipiRecordServer.CartellaMail)
+    {<h1>Dettaglio server mail:  @(Model.Nome)</h1>}
+    else
+    { <h1>Dettaglio cartella:  @(Model.Nome)</h1>}
     <ol class="breadcrumb">
         <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
         <li><a href="/Docs/ServersEmail">Server Email</a></li>
@@ -30,42 +35,42 @@
                 </div>
                 @if (Model.TipoRecord == dblu.Docs.Models.TipiRecordServer.CartellaMail)
                 {
-                <div class="form-group">
-                    <label class="control-label col-md-2">Email</label>
-                    <div class="col-md-10" style="width:50%">
-                        <input type="text"
-                               name="Email"
-                               class="form-control" value="@Model.Email" />
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Email</label>
+                        <div class="col-md-10" style="width:50%">
+                            <input type="text"
+                                   name="Email"
+                                   class="form-control" value="@Model.Email" />
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label class="control-label col-md-2">Server</label>
-                    <div class="col-md-10" style="width:50%">
-                        <input type="text"
-                               name="Server"
-                               class="form-control" value="@Model.Server" />
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Server</label>
+                        <div class="col-md-10" style="width:50%">
+                            <input type="text"
+                                   name="Server"
+                                   class="form-control" value="@Model.Server" />
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">Porta</label>
-                    <div class="col-md-10" style="width:50%">
-                        <input type="text"
-                               name="Porta"
-                               class="form-control" value="@Model.Porta" />
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Porta</label>
+                        <div class="col-md-10" style="width:50%">
+                            <input type="text"
+                                   name="Porta"
+                                   class="form-control" value="@Model.Porta" />
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">SSL</label>
-                    <div class="col-md-10" style="width:50%">
-                        @(Html.Kendo().Switch()
-                              .Name("Ssl")
-                              .Messages(c => c.Checked("Si").Unchecked("No"))
-                              .Checked(@Model.Ssl)
+                    <div class="form-group">
+                        <label class="control-label col-md-2">SSL</label>
+                        <div class="col-md-10" style="width:50%">
+                            @(Html.Kendo().Switch()
+.Name("Ssl")
+.Messages(c => c.Checked("Si").Unchecked("No"))
+.Checked(@Model.Ssl)
                         )
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
+                    <div class="form-group">
                         <label class="control-label col-md-2">Cartella</label>
                         <div class="col-md-10" style="width:50%">
                             <input type="text"
@@ -74,90 +79,91 @@
                         </div>
                     </div>
                     <div class="form-group">
-                    <label class="control-label col-md-2">Utente</label>
-                    <div class="col-md-10" style="width:50%">
-                        <input type="text"
-                               name="Utente"
-                               class="form-control" value="@Model.Utente" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">Password</label>
-                    <div class="col-md-10" style="width:50%">
-                        <input type="text"
-                               name="Password"
-                               class="form-control" value="@Model.Password" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">Intervallo</label>
-                    <div class="col-md-10" style="width:50%">
-                        <input type="text"
-                               name="Intervallo"
-                               class="form-control" value="@Model.Intervallo" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">Attivo</label>
-                    <div class="col-md-10" style="width:50%">
-                        @(Html.Kendo().Switch()
-                              .Name("Attivo")
-                              .Messages(c => c.Checked("Si").Unchecked("No"))
-                              .Checked(@Model.Attivo)
-                        )
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">Cartella Archivio</label>
-                    <div class="col-md-10" style="width:50%">
-                        <input type="text"
-                               name="CartellaArchivio"
-                               class="form-control" value="@Model.CartellaArchivio" />
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="control-label col-md-2">In Uscita</label>
-                    <div class="col-md-10" style="width:50%">
-                        @(Html.Kendo().Switch()
-                              .Name("InUscita")
-                              .Messages(c => c.Checked("Si").Unchecked("No"))
-                              .Checked(@Model.InUscita)
-                        )
-                    </div>
-                </div>
-                @if (!Model.InUscita)
-                {
-                    <div class="form-group">
-                        <label class="control-label col-md-2">Server in Uscita</label>
+                        <label class="control-label col-md-2">Utente</label>
                         <div class="col-md-10" style="width:50%">
-                            @(Html.Kendo().DropDownListFor(m => Model.NomeServerInUscita)
+                            <input type="text"
+                                   name="Utente"
+                                   class="form-control" value="@Model.Utente" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Password</label>
+                        <div class="col-md-10" style="width:50%">
+                            <input type="text"
+                                   name="Password"
+                                   class="form-control" value="@Model.Password" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Intervallo</label>
+                        <div class="col-md-10" style="width:50%">
+                            <input type="text"
+                                   name="Intervallo"
+                                   class="form-control" value="@Model.Intervallo" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Attivo</label>
+                        <div class="col-md-10" style="width:50%">
+                            @(Html.Kendo().Switch()
+.Name("Attivo")
+.Messages(c => c.Checked("Si").Unchecked("No"))
+.Checked(@Model.Attivo)
+                        )
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Cartella Archivio</label>
+                        <div class="col-md-10" style="width:50%">
+                            <input type="text"
+                                   name="CartellaArchivio"
+                                   class="form-control" value="@Model.CartellaArchivio" />
+                        </div>
+                    </div>
 
-                                  .DataTextField("Nome")
-                                  .DataValueField("Nome")
 
-                                  .BindTo((System.Collections.IEnumerable)ViewData["ServerInUscita"])
+                    <div class="form-group">
+                        <label class="control-label col-md-2">In Uscita</label>
+                        <div class="col-md-10" style="width:50%">
+                            @(Html.Kendo().Switch()
+.Name("InUscita")
+.Messages(c => c.Checked("Si").Unchecked("No"))
+.Checked(@Model.InUscita)
+                        )
+                        </div>
+                    </div>
+                    @if (!Model.InUscita)
+                    {
+                        <div class="form-group">
+                            <label class="control-label col-md-2">Server in Uscita</label>
+                            <div class="col-md-10" style="width:50%">
+                                @(Html.Kendo().DropDownListFor(m => Model.NomeServerInUscita)
 
-                                  .HtmlAttributes(new { style = "width: 100%" })
+.DataTextField("Nome")
+.DataValueField("Nome")
+
+.BindTo((System.Collections.IEnumerable)ViewData["ServerInUscita"])
+
+.HtmlAttributes(new { style = "width: 100%" })
                             )
 
 
-                         </div>
-                    </div>
-                }
+                            </div>
+                        </div>
+                    }
 
 
-                <div class="form-group">
-                    <label class="control-label col-md-2">Nome Processo </label>
-                    <div class="col-md-10" style="width:50%">
-                        <input type="text"
-                               name="NomeProcesso"
-                               class="form-control" value="@Model.NomeProcesso" />
+                    <div class="form-group">
+                        <label class="control-label col-md-2">Nome Processo </label>
+                        <div class="col-md-10" style="width:50%">
+                            <input type="text"
+                                   name="NomeProcesso"
+                                   class="form-control" value="@Model.NomeProcesso" />
+                        </div>
+                        <div class="col-md-2">
+                            <button formaction="/Docs/SalvaEmailServer" method="post" type="submit" margin class="btn btn-info pull-left">Salva</button>
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <button formaction="/Docs/SalvaEmailServer" method="post" type="submit" margin class="btn btn-info pull-left">Salva</button>
-                    </div>
-                </div>
                 }
                 else
                 {
@@ -168,10 +174,31 @@
                                    name="Cartella"
                                    class="form-control" value="@Model.Cartella" />
                         </div>
+                        <div class="col-md-2">
+                            <button formaction="/Docs/SalvaEmailServer" method="post" type="submit" margin class="btn btn-info pull-left">Salva</button>
+                        </div>
                     </div>
                 }
-
-
+                <div class="form-group">
+                    <label class="control-label col-md-2">TipoRecord</label>
+                    <div class="col-md-10" style="width:50%">
+                        @(Html.Kendo().Switch()
+.Name("TipoRecord2")
+.Messages(c => c.Checked("MAIL").Unchecked("FILE"))
+.Events(ev => ev.Change("onChangeSwitch"))
+.Checked(@Tipo)
+                        )
+                    </div>
+                </div>
+                <div class="form-group" style="visibility: hidden;">
+                    <label class="control-label col-md-1">TipoRecord</label>
+                    <div class="col-md-1" style="width:0%">
+                        <input type="text"
+                               id="TipoRecord"
+                               name="TipoRecord"
+                               class="form-control" value="@Model.TipoRecord" />
+                    </div>
+                </div>
                 <div class="form-group">
                     <div class="box box-solid box-danger">
                         <div class="box-header with-border">
@@ -183,44 +210,44 @@
                         <br />
 
                         @(Html.Kendo().Grid<Role>
-                            ()
-                            .Name("GridRuoli")
-                            .Columns(columns =>
-                            {
+()
+.Name("GridRuoli")
+.Columns(columns =>
+{
 
-                            columns.Bound(c => c.Code).Width(180).Title("COD");
-                            columns.Bound(c => c.Name).Title("Descrizione");
-                            columns.Command(command => command.Destroy()).Width(190);
-                            })
-                            .ToolBar(toolbar =>
-                            {
-                                toolbar.Custom().Text("Aggiungi ruolo").HtmlAttributes(new { id = "AddRuolo" });
-                            })
-                            .Scrollable(scr => scr.Height(430))
-                            .Sortable()
-                            .Pageable(pageable => pageable
-                                .Refresh(true)
-                                .PageSizes(true)
-                                .ButtonCount(5))
+    columns.Bound(c => c.Code).Width(180).Title("COD");
+    columns.Bound(c => c.Name).Title("Descrizione");
+    columns.Command(command => command.Destroy()).Width(190);
+})
+.ToolBar(toolbar =>
+{
+    toolbar.Custom().Text("Aggiungi ruolo").HtmlAttributes(new { id = "AddRuolo" });
+})
+.Scrollable(scr => scr.Height(430))
+.Sortable()
+.Pageable(pageable => pageable
+.Refresh(true)
+.PageSizes(true)
+.ButtonCount(5))
 
-                            .DataSource(dataSource => dataSource
-                                .Ajax()
+.DataSource(dataSource => dataSource
+.Ajax()
 
-                                .PageSize(20)
-                                .Batch(true)
-                                .Events(events => events.Error("error_handler"))
-                                .AutoSync(true)
-                                .ServerOperation(false)
-                                .Model(model =>
-                                {
-                                model.Id(p => p.RoleId);
-                                model.Field(p => p.Code);
-                                model.Field(p => p.Name);
-                                model.Field(p => p.Position);
-                                })
-                                .Read("RuoliServer", "Docs", new { ServerName = Model.Nome })
-                                .Destroy("RemoveFromRole", "Docs", new { ServerName = Model.Nome })
-                            )
+.PageSize(20)
+.Batch(true)
+.Events(events => events.Error("error_handler"))
+.AutoSync(true)
+.ServerOperation(false)
+.Model(model =>
+{
+    model.Id(p => p.RoleId);
+    model.Field(p => p.Code);
+    model.Field(p => p.Name);
+    model.Field(p => p.Position);
+})
+.Read("RuoliServer", "Docs", new { ServerName = Model.Nome })
+.Destroy("RemoveFromRole", "Docs", new { ServerName = Model.Nome })
+)
                         )
 
                     </div>
@@ -230,46 +257,46 @@
 
         </div>
         @(Html.Kendo().Window()
-                        .Name("window")
-                        .Title("Ruoli Disponibili")
-                        .Modal(true)
-                        .Actions(actions => actions
-                            .Custom("custom")
-                            .Minimize()
-                            .Maximize()
-                            .Close()
-                        )
-                        .Content(@<text>
+                .Name("window")
+                .Title("Ruoli Disponibili")
+                .Modal(true)
+                .Actions(actions => actions
+                    .Custom("custom")
+                    .Minimize()
+                    .Maximize()
+                    .Close()
+                )
+                .Content(@<text>
                                     @(Html.Kendo().Grid<Role>()
-                              .Name("SelectRuoli")
-                              .Columns(columns =>
-                              {
-                              columns.Select().Width(50);
-                              columns.Bound(c => c.Code).Width(180).Title("COD");
-                              columns.Bound(c => c.Name).Title("Descrizione");
+.Name("SelectRuoli")
+.Columns(columns =>
+{
+    columns.Select().Width(50);
+    columns.Bound(c => c.Code).Width(180).Title("COD");
+    columns.Bound(c => c.Name).Title("Descrizione");
 
-                              })
-                             .Scrollable(scr => scr.Height(430))
-                              .Sortable()
-                              .Pageable(pageable => pageable
-                              .Refresh(true)
-                              .PageSizes(true)
-                              .ButtonCount(5))
+})
+.Scrollable(scr => scr.Height(430))
+.Sortable()
+.Pageable(pageable => pageable
+.Refresh(true)
+.PageSizes(true)
+.ButtonCount(5))
 
-                              .DataSource(dataSource => dataSource
-                              .Ajax()
+.DataSource(dataSource => dataSource
+.Ajax()
 
-                              .PageSize(20)
-                              .Batch(true)
-                              .Events(events => events.Error("error_handler"))
-                              .Model(model =>
-                              {
-                              model.Id(p => p.RoleId);
-                               })
-                              .Read("RuoliNonAttivi", "Docs", new { ServerName = Model.Nome })
+.PageSize(20)
+.Batch(true)
+.Events(events => events.Error("error_handler"))
+.Model(model =>
+{
+    model.Id(p => p.RoleId);
+})
+.Read("RuoliNonAttivi", "Docs", new { ServerName = Model.Nome })
 
 
-                              )
+)
                                     )
                                     <div>
                                         <span id="Annulla" class="k-button">Annulla</span>
@@ -365,7 +392,17 @@
                 $(this).closest("[data-role=window]").data("kendoWindow").close();
             })
 
-         })
+           })
+        function onChangeSwitch(e) {
+            var r = e.checked;
+            if (r) {
+                document.getElementById("TipoRecord").value = "CartellaMail";
+            }
+            else {
+                document.getElementById("TipoRecord").value = "CartellaFile";
+            }
+    
+        }
     </script>
 
 

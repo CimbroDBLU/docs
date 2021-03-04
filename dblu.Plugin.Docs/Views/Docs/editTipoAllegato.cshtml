@@ -39,11 +39,27 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="control-label col-md-2">View atttributi </label>
+                    <label class="control-label col-md-2">Cartella</label>
                     <div class="col-md-10" style="width:50%">
                         <input type="text"
-                               name="ViewAttributi"
-                               class="form-control" value="@Model.ViewAttributi" />
+                               name="Cartella"
+                               class="form-control" value="@Model.Cartella" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">Descrizione</label>
+                    <div class="col-md-10" style="width:50%">
+                        <input type="text"
+                               name="Descrizione"
+                               class="form-control" value="@Model.Descrizione" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-md-2">Estensione </label>
+                    <div class="col-md-10" style="width:50%">
+                        <input type="text"
+                               name="Estensione"
+                               class="form-control" value="@Model.Estensione" />
                     </div>
                     <div class="col-md-2">
                         <button formaction="/Docs/SalvaTipoAllegato" method="post" type="submit" margin class="btn btn-info pull-left">Salva</button>

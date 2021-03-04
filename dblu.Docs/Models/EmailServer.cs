@@ -28,7 +28,7 @@ namespace dblu.Docs.Models
         public string NomeProcesso { get; set; } = "";
         public string CartellaArchivio { get; set; } = "";
         public string NomeServerInUscita { get; set; } = "";
-        public TipiRecordServer TipoRecord { get; set; } = TipiRecordServer.CartellaMail;
+        public TipiRecordServer TipoRecord { get; set; }
 
     }
 }
