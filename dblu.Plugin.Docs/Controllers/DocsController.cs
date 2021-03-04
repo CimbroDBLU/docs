@@ -777,7 +777,8 @@ namespace dblu.Portale.Controllers
                     c.Codice = !string.IsNullOrEmpty(obj.Codice) ? obj.Codice : c.Codice;
                     c.Descrizione = !string.IsNullOrEmpty(obj.Descrizione) ? obj.Descrizione : c.Descrizione;
                     c.ViewAttributi = !string.IsNullOrEmpty(obj.ViewAttributi) ? obj.ViewAttributi : c.ViewAttributi;
-
+                    c.Cartella = !string.IsNullOrEmpty(obj.Cartella) ? obj.Cartella : c.Cartella;
+                    c.Estensione = !string.IsNullOrEmpty(obj.Estensione) ? obj.Estensione : c.Estensione;
                     if (_allMan.SalvaTipoAllegato(c))
                     {
                         HttpContext.Session.SetString("TipoAllegato", JsonConvert.SerializeObject(c));
@@ -1046,7 +1047,7 @@ namespace dblu.Portale.Controllers
         [HttpPost]
         public ActionResult SalvaEmailServer(EmailServer obj)
         {
-            ViewBag.Message = "Server Email Salvato";
+             ViewBag.Message = "Server Email Salvato";
             EmailServer c = obj;
             try
             {
@@ -1068,7 +1069,7 @@ namespace dblu.Portale.Controllers
                     c.Ssl = obj.Ssl;
                     c.Utente = !string.IsNullOrEmpty(obj.Utente) ? obj.Utente : c.Utente;
                     c.NomeServerInUscita = !string.IsNullOrEmpty(obj.NomeServerInUscita) ? obj.NomeServerInUscita : c.NomeServerInUscita;
-
+                    c.TipoRecord = !string.IsNullOrEmpty(obj.TipoRecord.ToString()) ? obj.TipoRecord : c.TipoRecord;
                     if (_serMan.SalvaServerEmail(c))
                     {
                         HttpContext.Session.SetString("EmailServer", JsonConvert.SerializeObject(c));
