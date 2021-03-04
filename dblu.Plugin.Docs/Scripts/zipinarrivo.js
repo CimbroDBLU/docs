@@ -82,7 +82,7 @@ function gridZipOnChange(e) {
     var data = this.dataItem(this.select());
     zipItem = data;
     elementoItem = null;
-
+  
     PulisciDettaglio();
 
     $("#IdAllegato").val(data.id);
@@ -94,7 +94,7 @@ function gridZipOnChange(e) {
         data: { Id: data.id },
         success: function (data) {
             var dettaglio = data;
-            //alert(dettaglio.IdAllegato);
+           
             PdfCorrente.Descrizione = "  Contenuto zip " 
             MostraDettaglio(dettaglio);
             if (IdNuovoElemento != null) {

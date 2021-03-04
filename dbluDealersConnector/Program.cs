@@ -27,7 +27,7 @@ namespace dblu.Docs.Service
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                ContractResolver = new DefaultContractResolver()
             };
 
             CreateHostBuilder(args).Build().Run();

@@ -538,8 +538,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                         }
                     }
                     else if (all != null && all.Tipo == "REQ"){
-                        zm.CodiceSoggetto = all.GetAttributo("codCli", "");
-                        //zm.NomeSoggetto = all.GetAttributo("NomeSoggetto", "");
+                        zm.CodiceSoggetto = all.GetAttributo("CodiceSoggetto", "");
+                        zm.NomeSoggetto = all.GetAttributo("NomeSoggetto", "");
                         zm.IdFascicolo = all.IdFascicolo.ToString();
                         zm.IdElemento = all.IdElemento.ToString();
                         zm.DescrizioneElemento = all.Descrizione;
@@ -740,14 +740,18 @@ namespace dblu.Portale.Plugin.Docs.Services
                 {
                     var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
                     string Testo;
-
-                    var mittente = Allegato.elencoAttributi.Get("codCli");  //Allegato.Chiave3;    //$"{Messaggio.From.Mailboxes.First().Name} ({Messaggio.From.Mailboxes.First().Address})";
+                    var mittente = $"{Allegato.elencoAttributi.Get("NomeSoggetto")}";
+                    if (Allegato.Tipo == "REQ")
+                        mittente = $"{Allegato.elencoAttributi.Get("Email")} - {Allegato.elencoAttributi.Get("NomeSoggetto")}";
+                   
                     var oggetto = Allegato.Descrizione;       //Chiave4;
-                    var txt = Allegato.elencoAttributi.Get("testo");
+                    var txt = Allegato.Testo;
                     var DataZip = Allegato.elencoAttributi.Get("Data") == null ? Allegato.DataC.ToString() : Allegato.elencoAttributi.Get("Data");
 
-                    Testo = $"Da: {mittente} \nOggetto: {oggetto} \ndel: {DataZip} \n\n {txt} ";
-
+                    Testo = $"Da: {mittente} \nOggetto: {oggetto} \ndel: {DataZip}\n\n {txt} ";
+                    if (Allegato.Tipo == "REQ")
+                        Testo = $"Da: {mittente} \nOggetto: {oggetto} del: {DataZip}\nRiferimento: {Allegato.elencoAttributi.Get("Riferimento")}\nTipo: {Allegato.elencoAttributi.Get("Tipo")} \n\n {txt} ";
+                    
                     res = sfdpf.CreaTmpPdfCompletoSF(NomePdf, FileZip, Testo);
                 }
                 catch (Exception ex)
