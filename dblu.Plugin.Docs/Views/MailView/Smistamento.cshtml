@@ -142,7 +142,11 @@
         emailpdfviewer.freeTextSettings.fontColor = '#ff0000';
         emailpdfviewer.freeTextSettings.fontSize = '20';
         emailpdfviewer.arrowSettings.author = '@User.Identity.Name';
-        emailpdfviewer.enableAnnotationToolbar=true;
+        emailpdfviewer.enableAnnotationToolbar = true;
+
+
+        //var grid = $("#gridEmail").data("kendoGrid");
+        //grid.columns("Chiave2").sorting.compare()
     });
 
     var listaTipiElementi  = @Json.Serialize(ListaTipiElementi);
@@ -289,26 +293,25 @@
                         .Name("gridEmail")
                         .Columns(columns =>
                         {
-                            //columns.Select().Width(50);
-                            columns.Bound(p => p.Id).Title("Id").Width(0).Hidden();
-                            columns.Bound(p => p.Chiave4).Title("Nome").Width(0).Hidden();
-                            columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.DescrizioneChiave("Chiave1")).Width(300)
-                                        .ClientTemplate("<span> cliente #: Chiave3# </span> <br/>"
-                                            + "<span><b> #: Chiave4# </b></span>"
-                                            + "<span> #: Chiave1# </span><br/>");
-                            columns.Bound(p => p.Descrizione).Title("Oggetto").Width(150);
-                            columns.Bound(p => p.DataC).Title("Data").Width(100).Format("{0:dd/MM/yy HH:mm}");
-
+                        //columns.Select().Width(50);
+                        columns.Bound(p => p.Id).Title("Id").Width(0).Hidden();
+                        columns.Bound(p => p.Chiave4).Title("Nome").Width(0).Hidden();
+                        columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.DescrizioneChiave("Chiave1")).Width(300)
+                                    .ClientTemplate("<span> cliente #: Chiave3# </span> <br/>"
+                                        + "<span><b> #: Chiave4# </b></span>"
+                                        + "<span> #: Chiave1# </span><br/>");
+                        columns.Bound(p => p.Descrizione).Title("Oggetto").Width(150);
+                        columns.Bound(p => p.DataC).Title("Data").Width(100).Format("{0:dd/MM/yy HH:mm}");
                         })
                              .ToolBar(toolbar =>
                              {
-                                 // toolbar.ClientTemplateId("GridToolbarTemplate");
-                                 toolbar.Custom().Text("Inoltra").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:75px", onclick = "InoltraEmail()" });
-                                 toolbar.Custom().Text("Sposta").IconClass("k-icon my-icon-class-sposta").HtmlAttributes(new { style = "width:75px", onclick = "SpostaEmail()" });
-                                 toolbar.Custom().Text("Rispondi").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:90px", onclick = "RispondiEmail()" });
-                                 toolbar.Custom().Text("Canc.").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:70px", onclick = "CancellaEmail()" });
-                                 toolbar.Search();
-                             })
+                            // toolbar.ClientTemplateId("GridToolbarTemplate");
+                            toolbar.Custom().Text("Inoltra").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:75px", onclick = "InoltraEmail()" });
+                            toolbar.Custom().Text("Sposta").IconClass("k-icon my-icon-class-sposta").HtmlAttributes(new { style = "width:75px", onclick = "SpostaEmail()" });
+                            toolbar.Custom().Text("Rispondi").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:90px", onclick = "RispondiEmail()" });
+                            toolbar.Custom().Text("Canc.").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:70px", onclick = "CancellaEmail()" });
+                            toolbar.Search();
+                        })
                         //.Selectable()
                         .Selectable(selectable => selectable.Mode(GridSelectionMode.Multiple).Type(GridSelectionType.Row))
                         .Pageable()
@@ -327,8 +330,8 @@
                             .Events(events => events.Error("error_handler"))
                             .Model(model =>
                             {
-                                model.Id(p => p.Id);
-                            })
+            model.Id(p => p.Id);
+        })
                             //.Group(group => group.Add(p => p.Chiave4))
                             //.Read(read => read.Action("InArrivo_Read", "MailView", new { Tipo = @TipoAll.Codice}))
                             .Read(read => read.Action("Smistamento_Read", "MailView").Data("getEmails"))
@@ -600,22 +603,22 @@
                                                     {
                                                         case "System.DateTime":
                                                             @(Html.Kendo().DatePicker()
-                        .Name($"ctl_{item.Codice}{attributo.Nome}")
-                        .Value(attributo.ValorePredefinito)
-                                                )
+                                                            .Name($"ctl_{item.Codice}{attributo.Nome}")
+                                                            .Value(attributo.ValorePredefinito)
+                                                            )
                                                             break;
                                                         case "System.Boolean":
                                                             @(Html.Kendo().CheckBox()
-                       .Name($"ctl_{item.Codice}{attributo.Nome}")
-                       .Checked(System.Convert.ToBoolean(attributo.ValorePredefinito))
-                                                 )
+                                                               .Name($"ctl_{item.Codice}{attributo.Nome}")
+                                                               .Checked(System.Convert.ToBoolean(attributo.ValorePredefinito))
+                                                            )
                                                             break;
                                                         default:
                                                             @(Html.Kendo().TextBox()
-                                .Name($"ctl_{item.Codice}{attributo.Nome}")
-                            .Value(attributo.ValorePredefinito == null ? "" : attributo.ValorePredefinito.ToString())
-                            .HtmlAttributes(new { style = "width: 100%" })
-                                                        )
+                                                                .Name($"ctl_{item.Codice}{attributo.Nome}")
+                                                                .Value(attributo.ValorePredefinito == null ? "" : attributo.ValorePredefinito.ToString())
+                                                                .HtmlAttributes(new { style = "width: 100%" })
+                                                            )
                                                             break;
                                                     }
                                                 </div>

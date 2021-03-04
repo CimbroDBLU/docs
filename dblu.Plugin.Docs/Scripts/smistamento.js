@@ -1371,3 +1371,5 @@ function templateAvvisi(dataItem) {
     return "<span/>"
 
 }
+
+
