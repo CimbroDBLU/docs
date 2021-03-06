@@ -1174,6 +1174,24 @@ function exportSuccess(args) {
 
     }
 }
+// full pdf Ctr+Maiusc
+$(document).keydown(function (e) {
+    if (e.keyCode == 16 && e.ctrlKey) {
+        var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
+    var gridEl = $("#gridemailElementi").data("kendoGrid");
+
+    PdfCorrente.IdAllegato = $("#IdAllegato").val();
+    //PdfCorrente.IdElemento = $("#IdElemento").val();
+    PdfCorrente.Pagina = emailpdfviewer.currentPageNumber;
+        var pdfWindow = $("#wPdfEditor").data("kendoWindow");
+    pdfWindow.refresh({
+        url: UrlActions.Pdf_Editor,
+        type: "Post",
+        data: { pdf: JSON.stringify(PdfCorrente) }
+    });
+        pdfWindow.open().maximize();
+    }
+}); 
 
 function tbpdf_click(e) {
 
