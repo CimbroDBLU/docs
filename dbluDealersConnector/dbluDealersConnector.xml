@@ -156,19 +156,44 @@
             Type of the request
             </summary>
         </member>
-        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Ordine">
+        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Nuovo_Ordine">
             <summary>
-            Order
+            New_Order
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Modifica_Ordine">
+            <summary>
+            Edit Order
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Conferma_Ordine">
+            <summary>
+            Confirm Order
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Completamento_Ordine">
+            <summary>
+            Expanded order
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Nuovo_Preventivo">
+            <summary>
+            New quotation
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Modifica_Preventivo">
+            <summary>
+            Edit Quotation
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Conferma_Preventivo">
+            <summary>
+            Confirm Quotation
             </summary>
         </member>
         <member name="F:dbluDealersConnector.DealersAPI.RequestType.Sostituzione">
             <summary>
             Replacement
-            </summary>
-        </member>
-        <member name="F:dbluDealersConnector.DealersAPI.RequestType.Chiarimento">
-            <summary>
-            Clarification
             </summary>
         </member>
         <member name="T:dbluDealersConnector.DealersAPI.RequestState">
@@ -286,6 +311,21 @@
             DossierID of the order source of this request if any
             </summary>
         </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.LastModificationTime">
+            <summary>
+            Last modification time, when inserted ont dblu docs is alwais equal to "sent time"
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.BranchName">
+            <summary>
+            Name of the branch
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.Mail">
+            <summary>
+            Email of the user that make the request
+            </summary>
+        </member>
         <member name="T:dbluDealersConnector.DealersAPI.DealersRequestReferences">
             <summary>
             Reference of the request
@@ -380,6 +420,82 @@
             <summary>
             Password
             </summary>
+        </member>
+        <member name="T:dbluDealersConnector.Workers.RequestSynchronizer">
+            <summary>
+            Class that synchronize dbludealer request into dbludocs (in order to make them processed by JobAID)
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.Workers.RequestSynchronizer.conf">
+            <summary>
+            Injected configuration
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.Workers.RequestSynchronizer.log">
+            <summary>
+            Injected logger
+            </summary>
+        </member>
+        <member name="M:dbluDealersConnector.Workers.RequestSynchronizer.#ctor(Microsoft.Extensions.Logging.ILogger{dbluDealersConnector.Workers.RequestSynchronizer},Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="logger">Injected logger</param>
+            <param name="nConf">Injected configuration</param>
+        </member>
+        <member name="M:dbluDealersConnector.Workers.RequestSynchronizer.ExecuteAsync(System.Threading.CancellationToken)">
+            <summary>
+            Procedure that periodically scan the dbluDealers and move forward the pending request
+            </summary>
+            <param name="stoppingToken">Stopping Token for a fast\safe stop of the procedure</param>
+            <returns>
+            The task done
+            </returns>
+        </member>
+        <member name="M:dbluDealersConnector.Workers.RequestSynchronizer.GetAttachType">
+            <summary>
+            Retrive and if necessary create a REQ Attach Type
+            </summary>
+            <returns>
+            The REQ attach type.
+            </returns>
+        </member>
+        <member name="M:dbluDealersConnector.Workers.RequestSynchronizer.Engine">
+            <summary>
+            Procedure that scan the dbluDealers and move forward the pending requests, if any
+            </summary>
+        </member>
+        <member name="T:dbluDealersConnector.Workers.RunWorkflow">
+            <summary>
+            Helper class for running a Process against Camunda
+            </summary>
+        </member>
+        <member name="P:dbluDealersConnector.Workers.RunWorkflow._config">
+            <summary>
+            Injected configuration
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.Workers.RunWorkflow._log">
+            <summary>
+            Injected logger
+            </summary>
+        </member>
+        <member name="M:dbluDealersConnector.Workers.RunWorkflow.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="nConfig">Injected configuration</param>
+            <param name="nLogger">Injected logger</param>
+        </member>
+        <member name="M:dbluDealersConnector.Workers.RunWorkflow.Start(System.String,BPMClient.SubmitStartForm)">
+            <summary>
+            Start a process
+            </summary>
+            <param name="Name">Name of the process</param>
+            <param name="ssf">Parameters for the process</param>
+            <returns>
+            true if process is started
+            </returns>
         </member>
         <member name="T:dblu.Docs.Service.Controllers.AttachmentController">
             <summary>
@@ -476,50 +592,6 @@
             </summary>
             <param name="app"></param>
             <param name="env"></param>
-        </member>
-        <member name="T:dblu.Docs.Service.RequestSynchronizer">
-            <summary>
-            Class that synchronize dbludealer request into dbludocs (in order to make them processed by JobAID)
-            </summary>
-        </member>
-        <member name="F:dblu.Docs.Service.RequestSynchronizer.conf">
-            <summary>
-            Injected configuration
-            </summary>
-        </member>
-        <member name="F:dblu.Docs.Service.RequestSynchronizer.log">
-            <summary>
-            Injected logger
-            </summary>
-        </member>
-        <member name="M:dblu.Docs.Service.RequestSynchronizer.#ctor(Microsoft.Extensions.Logging.ILogger{dblu.Docs.Service.RequestSynchronizer},Microsoft.Extensions.Configuration.IConfiguration)">
-            <summary>
-            Constructor
-            </summary>
-            <param name="logger">Injected logger</param>
-            <param name="nConf">Injected configuration</param>
-        </member>
-        <member name="M:dblu.Docs.Service.RequestSynchronizer.ExecuteAsync(System.Threading.CancellationToken)">
-            <summary>
-            Procedure that periodically scan the dbluDealers and move forward the pending request
-            </summary>
-            <param name="stoppingToken">Stopping Token for a fast\safe stop of the procedure</param>
-            <returns>
-            The task done
-            </returns>
-        </member>
-        <member name="M:dblu.Docs.Service.RequestSynchronizer.GetAttachType">
-            <summary>
-            Retrive and if necessary create a REQ Attach Type
-            </summary>
-            <returns>
-            The REQ attach type.
-            </returns>
-        </member>
-        <member name="M:dblu.Docs.Service.RequestSynchronizer.Engine">
-            <summary>
-            Procedure that scan the dbluDealers and move forward the pending requests, if any
-            </summary>
         </member>
     </members>
 </doc>
