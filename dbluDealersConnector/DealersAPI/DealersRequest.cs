@@ -9,19 +9,39 @@ namespace dbluDealersConnector.DealersAPI
     /// Type of the request
     /// </summary>
     public enum RequestType
-    {
+    { 
         /// <summary>
-        /// Order
+        /// New_Order
         /// </summary>
-        Ordine,
+        Nuovo_Ordine,
+        /// <summary>
+        /// Edit Order
+        /// </summary>
+        Modifica_Ordine,
+        /// <summary>
+        /// Confirm Order
+        /// </summary>
+        Conferma_Ordine,
+        /// <summary>
+        /// Expanded order
+        /// </summary>
+        Completamento_Ordine,
+        /// <summary>
+        /// New quotation
+        /// </summary>
+        Nuovo_Preventivo,
+        /// <summary>
+        /// Edit Quotation
+        /// </summary>
+        Modifica_Preventivo,
+        /// <summary>
+        /// Confirm Quotation
+        /// </summary>
+        Conferma_Preventivo,
         /// <summary>
         /// Replacement
         /// </summary>
-        Sostituzione,
-        /// <summary>
-        /// Clarification
-        /// </summary>
-        Chiarimento
+        Sostituzione
     }
 
     /// <summary>

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -40,7 +41,6 @@ namespace dbluDealersConnector.DealersAPI
         /// <param name="nAllowHttpsUnsigned">Allow the connection to unsigned https</param>
         public DealersClient(Uri nBaseUri,bool nAllowHttpsUnsigned)
         {
-
 
             baseUri = nBaseUri;
             cookieContainer = new CookieContainer();
