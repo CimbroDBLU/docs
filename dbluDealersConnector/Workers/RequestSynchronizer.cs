@@ -178,21 +178,21 @@ namespace dbluDealersConnector.Workers
                     {
                         NomeFile = R.NomeFile,
                         Origine = "dbluDealers",
-                        Testo = R.Testo,
+                        Testo = R.Testo??"",
                         TipoNavigation = T,
                         Tipo = T.Codice,
                         Stato = StatoAllegato.Attivo,
-                        Descrizione = R.Descrizione,
+                        Descrizione = R?.Descrizione??"",
                         IdElemento = EM.Get(R.RefItemId, 0)?.Id,
                         IdFascicolo = FM.Get(R.RefDossierId)?.Id
                     };
                     A.elencoAttributi = A.TipoNavigation.Attributi;
                     A.SetAttributo("Tipo", R.Tipo.ToString());
-                    A.SetAttributo("Testo", R.Testo);
+                    A.SetAttributo("Testo", R.Testo??"");
                     A.SetAttributo("CodiceSoggetto", R.Cli);
                     A.SetAttributo("NomeSoggetto", R.BranchName);
                     A.SetAttributo("Data", R.LastModificationTime);
-                    A.SetAttributo("Descrizione", R.Descrizione);
+                    A.SetAttributo("Descrizione", R.Descrizione??"");
                     A.SetAttributo("ElencoFile", R.ElencoFile);
                     A.SetAttributo("Riferimento", R.Reference);
                     A.SetAttributo("AnnoProtocollo", R.RefYear);
