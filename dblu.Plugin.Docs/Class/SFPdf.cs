@@ -85,7 +85,6 @@ namespace dblu.Portale.Plugin.Docs.Class
                 var oggetto = Messaggio.Subject;
                 var txt = Messaggio.TextBody == null ? "" : Messaggio.TextBody;
                 var htxt = Messaggio.HtmlBody == null ? "" : Messaggio.HtmlBody;
- //               var rtxt = "";
                 var pdfstream = new MemoryStream();
                 var ListaPdf = new List<MemoryStream>();
                 //FileStream pdfstream = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite);
@@ -94,79 +93,70 @@ namespace dblu.Portale.Plugin.Docs.Class
                 HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
                 WebKitConverterSettings settings = new WebKitConverterSettings();
 
+                if (htxt == "") {
+                    // controlla presenza testo rtf exchange/outlook (winmail.dat)
+                    // estrae rtf e converte in pdf
+                    var rtxt = "";
+                    try
+                    {
+                        var tnef = Messaggio.BodyParts.OfType<TnefPart>().FirstOrDefault();
+                        if (tnef != null)
+                        {
+                            foreach (var attachment in tnef.ExtractAttachments())
+                            {
+                                var mime_part = attachment as MimePart;
+                                var text = attachment as TextPart;
+                                if (text != null)
+                                {
+                                    rtxt += text.Text;
+                                }
+                            }
+                        }
+                    }
+                    catch { 
+                    }
+                    if (rtxt != "") {
+                        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                        htxt= RtfPipe.Rtf.ToHtml(rtxt);
+                    }
+                }
 
-                //var tnef = Messaggio.BodyParts.OfType<TnefPart>().FirstOrDefault();
-                //if (tnef != null) { 
-                //    foreach (var attachment in tnef.ExtractAttachments())
-                //    {
-                //        var mime_part = attachment as MimePart;
-                //        var text = attachment as TextPart;
-                //        if (text != null)
-                //        {
-                //             rtxt += text.Text;
-                //        }
-                //    }
-                //}
-                
-                //if (rtxt != "")
-                //{
-                //    RtfFormatProvider rtfProvider = new RtfFormatProvider();
-                //    RadFlowDocument rtfDoc = rtfProvider.Import(rtxt);
-                //    HtmlFormatProvider hProvider = new HtmlFormatProvider();
-                //    MemoryStream hs = new MemoryStream();
-                //    hProvider.Export(rtfDoc, hs);
-                //    hs.Position = 0;
-                //    using (StreamReader reader = new StreamReader(hs, Encoding.UTF8))
-                //    {
-                //        htxt =  reader.ReadToEnd();
-                //    }
-                //    hs.Close();
-                //    PdfFormatProvider pdfProvider = new PdfFormatProvider();
-                //    pdfProvider.Export(rtfDoc, pdfstream);
-                //}
-                //else
-                //{
-
-                    if (htxt == "")
+                if (htxt == "")
                     {
                         if (txt != null)
                         {
-                            //document = new RadFlowDocument();
-                            //RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
-                            //editor.InsertText($"Oggetto: {oggetto}");
-                            //editor.InsertBreak(BreakType.LineBreak);
-                            //editor.InsertText(txt);Messaggio.From
                             PdfPage page = document.Pages.Add();
 
                             PdfGraphics graphics = page.Graphics;
                             //PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
                             //graphics.DrawString($"Oggetto: {oggetto} \n\n {txt} ", font, PdfBrushes.Black, new PointF(0, 0));
+                            
+                           //intestazione
+                            PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \ndel: {Messaggio.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm")} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
 
-                            PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \ndel: {Messaggio.Date.DateTime} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
                             textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
-
                             document.Save(pdfstream);
-
                             //Close the document.
-
                             document.Close(true);
                         }
                     }
-                    else
+                    else   // conversione html in pdf
                     {
                         try
                         {
-                            //var htxt = Messaggio.HtmlBody.Replace("http://", "_http://").Replace("https://", "_https://");
-                            //HtmlFormatProvider htmlFormatProvider = new HtmlFormatProvider();
-                            //document = htmlFormatProvider.Import(htxt);
+                        
+                        //var htxt = Messaggio.HtmlBody.Replace("http://", "_http://").Replace("https://", "_https://");
+                        //HtmlFormatProvider htmlFormatProvider = new HtmlFormatProvider();
+                        //document = htmlFormatProvider.Import(htxt);
 
-                            if (!htxt.Contains("<body>"))
+                        //intestazione
+                        if (!htxt.Contains("<body>"))
                             {
                                 htxt = $"<body>{htxt}</body>";
                             }
                             htxt = PulisciHtml(htxt);
 
-                            htxt = htxt.Replace("<body>", $"<body><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.DateTime}<br></div>");
+                            htxt = htxt.Replace("<body>", $"<body><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm ")}<br></div>");
 
                             //File.WriteAllText("d:\\temp\\testo.html", htxt);
                             string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");

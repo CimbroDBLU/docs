@@ -167,11 +167,11 @@
                         {
                             columns.Bound(p => p.Id).Title("Id").Width(0).Hidden();
                             columns.Bound(p => p.Chiave4).Title("Nome").Width(0).Hidden();
-                            columns.Bound(p => p.Chiave1).Title(TipoAll.Attributi.Descrizione("Destinatario")).Width(300)
+                            columns.Bound(p => p.Destinatario).Title(TipoAll.Attributi.Descrizione("Destinatario")).Width(300)
                                 .ClientTemplate("<span> cliente #: Chiave3# </span> <br/>"
                                     + "<span><b> #: Destinatario# </b></span>" );
-                            columns.Bound(p => p.Descrizione).Title("Oggetto").Width(150);
-                            columns.Bound(p => p.DataC).Title("Data").Width(100).Format("{0:dd/MM/yy HH:mm}");
+                            columns.Bound(p => p.Oggetto).Title("Oggetto").Width(150);
+                            columns.Bound(p => p.Data).Title("Data").Width(100).Format("{0:dd/MM/yy HH:mm}");
                             @*
                             columns.Command(command =>
                             {

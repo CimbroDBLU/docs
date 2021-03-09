@@ -152,28 +152,34 @@ namespace dbluMailService
                                     {
                                         var Nomefile = $"{message.MessageId}.eml";
 
-                                        Allegati all = cn.QueryFirstOrDefault<Allegati>(
-                                           @"SELECT * FROM Allegati WHERE Tipo=@Tipo and NomeFile = @NomeFile 
-                                               and CASE WHEN isdate(JSON_VALUE(Attributi,'$.Data'))>0 THEN JSON_VALUE(Attributi,'$.Data') ELSE NULL END = @Data ",
+                                        AllegatoEmail allm = cn.QueryFirstOrDefault<AllegatoEmail>(
+                                           $"SELECT * , {AllegatoEmail.SqlAttributi()} FROM Allegati WHERE Tipo=@Tipo and NomeFile = @NomeFile " +
+                                             "  AND CASE WHEN isdate(JSON_VALUE(Attributi,'$.Data'))>0 THEN JSON_VALUE(Attributi,'$.Data') ELSE NULL END = @Data ",
                                             new { Tipo = tipo.Codice, NomeFile = Nomefile, Data = message.Date.UtcDateTime });
                                         var flIgnora = false;
-                                        if (all != null)
+                                        if (allm != null)
                                         {
-                                            all = allMan.Get(all.Id);
-                                            flIgnora = all.Stato > StatoAllegato.Attivo;
+                                            //all = allMan.Get(all.Id);
+                                            allm.TipoNavigation = allMan.GetTipo(allm.Tipo);
+                                            if (allm.elencoAttributi == null)
+                                            {
+                                                allm.elencoAttributi = tipo.Attributi;
+                                            }
+                                            flIgnora = allm.Stato > StatoAllegato.Attivo;
                                         }
 
                                         if (flIgnora)
                                         {
                                             inbox.SetFlags(uid, MessageFlags.Seen, false, cancel);
                                             mailprocessata = true;
-                                            _logger.LogWarning($"Email ignorata perché già elaborata in stato {all.Stato} ({all.Id})");
+                                            _logger.LogWarning($"Email ignorata perché già elaborata in stato {allm.Stato} ({allm.Id})");
                                         }
                                         else
                                         {
                                             var newall = false;
 
                                             var descr = "";
+                                            string emailmitt = message.From.Mailboxes.First().Address;              
                                             if (!string.IsNullOrEmpty(message.Subject))
                                             {
                                                 descr = message.Subject;
@@ -182,9 +188,9 @@ namespace dbluMailService
                                             {
                                                 descr = descr.Substring(0, 250);
                                             }
-                                            if (all == null)
+                                            if (allm == null)
                                             {
-                                                all = new Allegati()
+                                                allm = new AllegatoEmail()
                                                 {
                                                     Descrizione = descr,
                                                     NomeFile = Nomefile,
@@ -192,30 +198,33 @@ namespace dbluMailService
                                                     TipoNavigation = tipo,
                                                     Stato = this.StatoIniziale,
                                                     Origine = s.Nome
-                                                };
-                                                all.elencoAttributi = tipo.Attributi;
+                                            };
+                                                allm.elencoAttributi = tipo.Attributi;
                                                 //context.Allegati.Add(all);
                                                 newall = true;
                                             }
                                             else
                                             {
-                                                all.Descrizione = descr;
-                                                all.DataUM = DateTime.Now;
+                                                allm.Descrizione = descr;
+                                                allm.DataUM = DateTime.Now;
                                             }
-                                            if (all.elencoAttributi == null) { all.elencoAttributi = tipo.Attributi; }
+                                            if (allm.elencoAttributi == null) { allm.elencoAttributi = tipo.Attributi; }
                                             try
                                             {
-                                                all.Testo = message.TextBody;
+                                                allm.Testo = message.TextBody;
                                             }
                                             catch { }
 
-                                            string emailmitt = message.From.Mailboxes.First().Address;
-
-                                            all.SetAttributo("Mittente", emailmitt);
-                                            all.SetAttributo("Data", message.Date.UtcDateTime);
-                                            all.SetAttributo("Oggetto", message.Subject);
-                                            all.SetAttributo("MessageId", message.MessageId);
-                                            all.SetAttributo("CodiceSoggetto", "");
+                                            //all.SetAttributo("Mittente", emailmitt);
+                                            //all.SetAttributo("Data", message.Date.UtcDateTime);
+                                            //all.SetAttributo("Oggetto", message.Subject);
+                                            //all.SetAttributo("MessageId", message.MessageId);
+                                            allm.Mittente = emailmitt;
+                                            allm.Destinatario = message.To.ToString();
+                                            allm.Data = (DateTime?)message.Date.UtcDateTime;
+                                            allm.Oggetto = message.Subject;
+                                            allm.MessageId = message.MessageId;
+                                            allm.SetAttributo("CodiceSoggetto", "");
 
                                             // decodifica cliente
                                             try
@@ -232,8 +241,8 @@ namespace dbluMailService
                                                 var sql = "exec dbo.sp_GetSoggettoEmail @Mittente, @Codice OUT, @Nome OUT";
                                                 cn.Execute(sql, p);
 
-                                                all.SetAttributo("CodiceSoggetto", p.Get<string>("@Codice"));
-                                                all.SetAttributo("NomeSoggetto", p.Get<string>("@Nome"));
+                                                allm.SetAttributo("CodiceSoggetto", p.Get<string>("@Codice"));
+                                                allm.SetAttributo("NomeSoggetto", p.Get<string>("@Nome"));
 
                                                 //}
                                             }
@@ -245,7 +254,7 @@ namespace dbluMailService
                                             MemoryStream file = new MemoryStream();
                                             await message.WriteToAsync(file, cancel);
 
-                                            all = await allMan.SalvaAsync(all, file, newall);
+                                            Allegati all = await allMan.SalvaAsync((Allegati)allm, file, newall);
 
                                             if (all != null)
                                             {
@@ -286,7 +295,6 @@ namespace dbluMailService
                                                             inbox.SetFlags(uid, MessageFlags.Seen, false, cancel);
                                                             mailprocessata = true;
                                                         }
-
                                                     }
                                                 }
                                                 else
@@ -297,7 +305,6 @@ namespace dbluMailService
                                                 }
                                             }
                                         }
-
                                     }
 
                                     //break;   
