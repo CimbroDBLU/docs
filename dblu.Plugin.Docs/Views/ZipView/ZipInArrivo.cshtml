@@ -268,7 +268,7 @@
                                     + "<span><b> #: Chiave4# </b></span>");
                                 columns.Bound(p => p.Descrizione).Title("Descrizione").Width(150)
                                 .ClientTemplate("<span> #: Descrizione# </span> <br/>"
-                                    + "<span><b> rif. #: Chiave5# </b></span>");
+                                    + "<span><b> rif. #: Chiave2# </b></span>");
                                 columns.Bound(p => p.DataC).Title("Data").Width(100).Format("{0:dd/MM/yy HH:mm}");
                                 columns.Bound(p => p.LastOp).Width(75).Title("Operaz.").ClientTemplate("#= xIconLastOp(data) #");
                                 columns.Command(command => command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewZipHistory").IconClass("k-icon ").HtmlAttributes(new { style = "width:30px " })).Hidden();

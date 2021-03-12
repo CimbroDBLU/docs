@@ -666,11 +666,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         public async Task<List<EmailAttachments>> GetTmpPdfCompletoAsync(Allegati Allegato, ZipArchive FileZip, bool daZip)
         {
             List<EmailAttachments> res = new List<EmailAttachments>();
-
-            var m = await _allMan.GetFileAsync(Allegato.Id.ToString());
-            if (FileZip == null)
-                FileZip = new ZipArchive(m, ZipArchiveMode.Read);
-
+            using MemoryStream Ms = new MemoryStream();
             string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
             if (!Directory.Exists(NomePdf))
             {
@@ -680,6 +676,21 @@ namespace dblu.Portale.Plugin.Docs.Services
             if (File.Exists(NomePdf))
                 File.Delete(NomePdf);
 
+            var m = await _allMan.GetFileAsync(Allegato.Id.ToString());
+            if (m==null|| m.Length!=0)
+            {
+                if (FileZip == null)
+                    FileZip = new ZipArchive(m, ZipArchiveMode.Read);
+            }
+            else
+            {
+                if (FileZip == null)
+                {
+                    FileZip = new ZipArchive(Ms, ZipArchiveMode.Create,true);
+                    FileZip.Dispose();
+                    FileZip = new ZipArchive(Ms, ZipArchiveMode.Read, true);
+                }
+            }
             Allegati ll = null;
             if (daZip == false && Allegato.IdElemento != null)
             {
