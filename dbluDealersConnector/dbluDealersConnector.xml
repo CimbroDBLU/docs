@@ -313,7 +313,7 @@
         </member>
         <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.LastModificationTime">
             <summary>
-            Last modification time, when inserted ont dblu docs is alwais equal to "sent time"
+            Last modification time, when inserted into dblu docs is alwais equal to "sent time"
             </summary>
         </member>
         <member name="P:dbluDealersConnector.DealersAPI.DealersRequest.BranchName">
@@ -420,6 +420,32 @@
             <summary>
             Password
             </summary>
+        </member>
+        <member name="F:dbluDealersConnector.Workers.RequestCleaner.conf">
+            <summary>
+            Injected configuration
+            </summary>
+        </member>
+        <member name="F:dbluDealersConnector.Workers.RequestCleaner.log">
+            <summary>
+            Injected logger
+            </summary>
+        </member>
+        <member name="M:dbluDealersConnector.Workers.RequestCleaner.#ctor(Microsoft.Extensions.Logging.ILogger{dbluDealersConnector.Workers.RequestCleaner},Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="logger">Injected logger</param>
+            <param name="nConf">Injected configuration</param>
+        </member>
+        <member name="M:dbluDealersConnector.Workers.RequestCleaner.ExecuteAsync(System.Threading.CancellationToken)">
+            <summary>
+            Procedure that periodically scan the dbluDealers and move forward the pending request
+            </summary>
+            <param name="stoppingToken">Stopping Token for a fast\safe stop of the procedure</param>
+            <returns>
+            The task done
+            </returns>
         </member>
         <member name="T:dbluDealersConnector.Workers.RequestSynchronizer">
             <summary>

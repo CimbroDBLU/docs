@@ -53,10 +53,10 @@ namespace dbluDealersConnector.Workers
         /// </returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Delay(1000, stoppingToken);
+            
             if (conf["cronschedule"]==null || conf["cronschedule"].Length == 0)
             {
-                log.LogInformation($"RequestWorker.ExecuteAsync: No sync required");
+                log.LogInformation($"RequestSynchronizer.ExecuteAsync: No sync required");
                 return;
             }
 
@@ -65,15 +65,15 @@ namespace dbluDealersConnector.Workers
             CrontabSchedule Scheduler = CrontabSchedule.Parse(conf["cronschedule"], new CrontabSchedule.ParseOptions() { IncludingSeconds = true }); ;
             while (!stoppingToken.IsCancellationRequested)
             {
-                DateTime T = Scheduler.GetNextOccurrence(LastOccurency).ToUniversalTime();
-                if (Math.Abs((DateTime.UtcNow - T).TotalMilliseconds) < 1000)
+                DateTime T = Scheduler.GetNextOccurrence(LastOccurency).ToUniversalTime();               
+                if (Math.Abs((DateTime.UtcNow - T).TotalMilliseconds) < 100)
                     {                    
-                    log.LogInformation($"RequestSynchronizer.ExecuteAsync: >>>> Execution planned for {T}");
+                    log.LogInformation($"RequestSynchronizer.ExecuteAsync: >>>> Execution planned for {T.ToLocalTime()}");
                     Engine();
                     log.LogInformation($"RequestSynchronizer.ExecuteAsync: <<<< ");
                     LastOccurency = T;
                     }
-                await Task.Delay(100, stoppingToken);
+                await Task.Delay(50, stoppingToken);
             }
         }
 
@@ -154,10 +154,10 @@ namespace dbluDealersConnector.Workers
 
 
                 List<DealersRequest> PR = DC.PendingRequest();
-                log.LogInformation($"RequestSynchronizer.Engine: Read {PR.Count} Pending request");
+                log.LogInformation($"RequestSynchronizer.Engine: Read {PR.Count} Pending requests");
                 if (PR.Count == 0)
                 {
-                    log.LogInformation($"RequestSynchronizer.Engine: Well, no pending request: nothing to do man!");
+                    log.LogInformation($"RequestSynchronizer.Engine: Well, no pending requests: nothing to do man!");
                     return;
                 }
 

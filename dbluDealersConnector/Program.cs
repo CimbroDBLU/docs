@@ -29,7 +29,9 @@ namespace dblu.Docs.Service
                 Formatting = Formatting.Indented,
                 ContractResolver = new DefaultContractResolver()
             };
-
+#if !DEBUG
+                Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+#endif
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -43,7 +45,7 @@ namespace dblu.Docs.Service
              .ConfigureLogging((logging) =>
              {
                  logging.ClearProviders();
-             }).UseNLog()
+             }).UseNLog().UseWindowsService()
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

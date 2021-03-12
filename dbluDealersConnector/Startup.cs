@@ -48,6 +48,7 @@ namespace dblu.Docs.Service
 
             services.AddControllers();
             services.AddHostedService<RequestSynchronizer>();
+            services.AddHostedService<RequestCleaner>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "dbluDealersConnector", Version = "v1" });

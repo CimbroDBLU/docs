@@ -156,7 +156,7 @@ namespace dbluDealersConnector.DealersAPI
         public Guid? RefDossierId { get; set; }
 
         /// <summary>
-        /// Last modification time, when inserted ont dblu docs is alwais equal to "sent time"
+        /// Last modification time, when inserted into dblu docs is alwais equal to "sent time"
         /// </summary>
         public DateTime? LastModificationTime { get; set; }
 
