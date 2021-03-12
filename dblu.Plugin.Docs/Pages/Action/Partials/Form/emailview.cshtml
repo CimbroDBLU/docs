@@ -21,7 +21,7 @@
         }
         else { vModel = await _mailservice.GetMailViewModel(Model.id); }
 
-       // TempData.Put("FileAllegati", vModel.FileAllegati);
+        // TempData.Put("FileAllegati", vModel.FileAllegati);
     }
     catch (Exception)
     {
@@ -35,7 +35,7 @@
 }
 <script src="~/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
 @*
-    <script src="https://kendo.cdn.telerik.com/2020.3.915/js/kendo.all.min.js"></script>
+    <script src="https://kendo.cdn.telerik.com/2021.1.224/js/kendo.all.min.js"></script>
 *@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"></script>
@@ -646,7 +646,6 @@
     .Width(800)
     .Actions(actions => actions.Pin().Minimize().Maximize().Close())
 )
-
 @(Html.Kendo().Window()
     .Name("cercasoggetti")
     .Size("auto")
@@ -911,7 +910,7 @@
                                                                         <button type="button" class="btn btn-lg btn-info" id="bDettaglio">Dettaglio</button>
                                                                     </div>
                                                                 </div>
-                                                                <br/>
+                                                                <br />
                                                                 <button type="button" class="btn btn-lg btn-info" id="bDettaglio" @*style="visibility:hidden"*@>Dettaglio</button>
                                                             </form>
                                                         </div>
@@ -921,8 +920,8 @@
 
 
                                                 </div>
-                                             </div>
-                                         </div>
+                                            </div>
+                                        </div>
 
 
                                         <div id="DivGridElementi" hidden>

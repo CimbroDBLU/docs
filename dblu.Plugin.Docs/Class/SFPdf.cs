@@ -24,6 +24,11 @@ using dblu.Docs.Classi;
 using Telerik.Windows.Documents.Model;
 using Syncfusion.Pdf.Interactive;
 using System.Text.RegularExpressions;
+using MimeKit.Tnef;
+using Telerik.Windows.Documents.Flow.FormatProviders.Rtf;
+using Telerik.Windows.Documents.Flow.Model;
+using Telerik.Windows.Documents.Flow.FormatProviders.Pdf;
+using Telerik.Windows.Documents.Flow.FormatProviders.Html;
 
 namespace dblu.Portale.Plugin.Docs.Class
 {
@@ -88,86 +93,109 @@ namespace dblu.Portale.Plugin.Docs.Class
                 HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
                 WebKitConverterSettings settings = new WebKitConverterSettings();
 
-                //if (txt.Trim().Length > 0 || htxt.Trim().Length > 10 || Messaggio.Allegati().Count() == 0)
-                //{
-                if (Messaggio.HtmlBody == null)
-                {
-                    if (txt != null)
-                    {
-                        //document = new RadFlowDocument();
-                        //RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
-                        //editor.InsertText($"Oggetto: {oggetto}");
-                        //editor.InsertBreak(BreakType.LineBreak);
-                        //editor.InsertText(txt);Messaggio.From
-                        PdfPage page = document.Pages.Add();
-
-                        PdfGraphics graphics = page.Graphics;
-                        //PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
-                        //graphics.DrawString($"Oggetto: {oggetto} \n\n {txt} ", font, PdfBrushes.Black, new PointF(0, 0));
-
-                        PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \ndel: {Messaggio.Date.DateTime} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
-                        textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
-
-                        document.Save(pdfstream);
-
-                        //Close the document.
-
-                        document.Close(true);
-                    }
-                }
-                else
-                {
+                if (htxt == "") {
+                    // controlla presenza testo rtf exchange/outlook (winmail.dat)
+                    // estrae rtf e converte in pdf
+                    var rtxt = "";
                     try
                     {
+                        var tnef = Messaggio.BodyParts.OfType<TnefPart>().FirstOrDefault();
+                        if (tnef != null)
+                        {
+                            foreach (var attachment in tnef.ExtractAttachments())
+                            {
+                                var mime_part = attachment as MimePart;
+                                var text = attachment as TextPart;
+                                if (text != null)
+                                {
+                                    rtxt += text.Text;
+                                }
+                            }
+                        }
+                    }
+                    catch { 
+                    }
+                    if (rtxt != "") {
+                        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                        htxt= RtfPipe.Rtf.ToHtml(rtxt);
+                    }
+                }
+
+                if (htxt == "")
+                    {
+                        if (txt != null)
+                        {
+                            PdfPage page = document.Pages.Add();
+
+                            PdfGraphics graphics = page.Graphics;
+                            //PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
+                            //graphics.DrawString($"Oggetto: {oggetto} \n\n {txt} ", font, PdfBrushes.Black, new PointF(0, 0));
+                            
+                           //intestazione
+                            PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \ndel: {Messaggio.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm")} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
+
+                            textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
+                            document.Save(pdfstream);
+                            //Close the document.
+                            document.Close(true);
+                        }
+                    }
+                    else   // conversione html in pdf
+                    {
+                        try
+                        {
+                        
                         //var htxt = Messaggio.HtmlBody.Replace("http://", "_http://").Replace("https://", "_https://");
                         //HtmlFormatProvider htmlFormatProvider = new HtmlFormatProvider();
                         //document = htmlFormatProvider.Import(htxt);
 
+                        //intestazione
                         if (!htxt.Contains("<body>"))
-                        {
-                            htxt = $"<body>{htxt}</body>";
+                            {
+                                htxt = $"<body>{htxt}</body>";
+                            }
+                            htxt = PulisciHtml(htxt);
+
+                            htxt = htxt.Replace("<body>", $"<body><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm ")}<br></div>");
+
+                            //File.WriteAllText("d:\\temp\\testo.html", htxt);
+                            string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
+
+                            //Set WebKit path
+                            settings.WebKitPath = _config["Docs:PercorsoWebKit"];
+                            settings.EnableJavaScript = false;
+                            settings.EnableHyperLink = false;
+                            settings.EnableOfflineMode = true;
+                            settings.SplitTextLines = true;
+                            settings.SplitImages = true;
+                            //settings.SinglePageLayout = Syncfusion.Pdf.HtmlToPdf.SinglePageLayout.FitHeight;
+                            settings.Margin.Right = 20;
+                            settings.Margin.Left = 20;
+                            settings.Margin.Top = 20;
+                            //Assign WebKit settings to HTML converter
+                            htmlConverter.ConverterSettings = settings;
+
+                            //Convert HTML string to PDF
+                            document = htmlConverter.Convert(htxt, baseUrl);
+
+                            //Save and close the PDF document 
+                            document.Save(pdfstream);
+                            document.Close(true);
+
                         }
-                        htxt = PulisciHtml(htxt);
-
-                        htxt = htxt.Replace("<body>", $"<body><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.DateTime}<br></div>");
-
-                        //File.WriteAllText("d:\\temp\\testo.html", htxt);
-                        string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
-
-                        //Set WebKit path
-                        settings.WebKitPath = _config["Docs:PercorsoWebKit"];
-                        settings.EnableJavaScript = false;
-                        settings.EnableHyperLink = false;
-                        settings.EnableOfflineMode = true;
-                        settings.SplitTextLines = true;
-                        settings.SplitImages = true;
-                        //settings.SinglePageLayout = Syncfusion.Pdf.HtmlToPdf.SinglePageLayout.FitHeight;
-                        settings.Margin.Right = 20;
-                        settings.Margin.Left = 20;
-                        settings.Margin.Top = 20;
-                        //Assign WebKit settings to HTML converter
-                        htmlConverter.ConverterSettings = settings;
-
-                        //Convert HTML string to PDF
-                        document = htmlConverter.Convert(htxt, baseUrl);
-
-                        //Save and close the PDF document 
-                        document.Save(pdfstream);
-                        document.Close(true);
+                        catch (Exception ex)
+                        {
+                            //document = new RadFlowDocument();
+                            //RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
+                            //editor.InsertText($"Oggetto: {oggetto}");
+                            //editor.InsertBreak(BreakType.LineBreak);
+                            //editor.InsertText(txt);
+                            _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il testo. {ex.Message}");
+                        }
 
                     }
-                    catch (Exception ex)
-                    {
-                        //document = new RadFlowDocument();
-                        //RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
-                        //editor.InsertText($"Oggetto: {oggetto}");
-                        //editor.InsertBreak(BreakType.LineBreak);
-                        //editor.InsertText(txt);
-                        _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il testo. {ex.Message}");
-                    }
-
-                }
-                //pdfstream.Close();
+//                }
+                 //pdfstream.Close();
                 ListaPdf.Add(pdfstream);
                 //}
 

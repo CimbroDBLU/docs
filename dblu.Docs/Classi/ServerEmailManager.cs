@@ -112,12 +112,16 @@ namespace dblu.Docs.Classi
         public List<EmailServer> GetServersEmailinRoles(IEnumerable<Claim> Roles, TipiRecordServer Tipo)
         {
             string xRol = "'";
-            foreach (Claim x in Roles)
-            {
-               if (x.Type == ClaimTypes.Role) xRol = xRol + x.Value + "','";
-            }
-            xRol = xRol.Substring(0, xRol.Length - 2);
             List<EmailServer> l = new List<EmailServer>();
+            if (Roles.Count() > 0) { 
+                foreach (Claim x in Roles)
+                {
+                   if (x.Type == ClaimTypes.Role) xRol = xRol + x.Value + "','";
+                }
+                xRol = xRol.Substring(0, xRol.Length - 2);
+            }
+            else
+                return l;
             try
             {
                

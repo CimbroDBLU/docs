@@ -279,6 +279,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             int l = 0;
             try
             {
+                
                 List<EmailServer> ListaServer = _serMan.GetServersEmailinRoles(Roles,TipiRecordServer.CartellaMail);
 
                 if (ListaServer != null && ListaServer.Count > 0)
