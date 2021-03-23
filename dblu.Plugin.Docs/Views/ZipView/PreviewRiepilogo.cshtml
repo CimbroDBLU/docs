@@ -48,6 +48,7 @@
                                 <ejs-pdfviewer id="riepilogopdfviewer" serviceUrl="/api/zipPdfViewer"
                                                documentPath=""
                                                enablePrint="true"
+                                               printStart="documentPrint"
                                                documentLoad="documentLoaded"
                                                annotationAdd="annotationAdd"
                                                enableStampAnnotations="true"
@@ -69,6 +70,7 @@
 
 
 <script type="text/javascript">
+  
     window.onload = function () {
         var nome = 'riepilogo.pdf';
         var id = $("#IdRiepilogo").val();;
@@ -114,6 +116,7 @@
 
             e.cancel = true;
         }
+    }
 
      function documentPrinted(args) {
         //let's do that
