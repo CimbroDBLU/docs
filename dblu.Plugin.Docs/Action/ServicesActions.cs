@@ -32,6 +32,7 @@ namespace dblu.Portale.Plugin.Docs.Actions
             services.AddScoped<AllegatiService>();
             services.AddScoped<MailService>();
             services.AddScoped<ServerMailService>();
+            services.AddScoped<PrintService>();
             services.AddScoped<ZipService>();
             services.AddScoped<PdfEditService>();
 

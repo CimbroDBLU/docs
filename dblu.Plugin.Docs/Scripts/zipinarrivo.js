@@ -774,6 +774,8 @@ function saveAnnotations() {
     zippdfviewer.exportAnnotation();
 }
 
+
+
 function documentLoaded(args) {
 
     var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
@@ -808,6 +810,9 @@ function documentLoaded(args) {
     zippdfviewer.importAnnotation(JSON.stringify(PdfCorrente));
 
 }
+
+
+
 
 function documentPrinted() {
 

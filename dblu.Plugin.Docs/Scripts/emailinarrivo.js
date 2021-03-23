@@ -1413,10 +1413,12 @@ function documentLoaded(args) {
     emailpdfviewer.importAnnotation(JSON.stringify(PdfCorrente));
 
 }
-
+function documentPrint(e) {
+    console.log(e);
+}
 
 function documentPrinted() {
-
+  
     $.ajax({
         url: UrlActions.MailView_InArrivo_Stampato,
         type: 'POST',

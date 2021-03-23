@@ -1,12 +1,15 @@
 ﻿@*@model dblu.Docs.Models.Allegati*@
 
-@model dblu.Portale.Plugin.Docs.ViewModels.inArrivoView 
+@model dblu.Portale.Plugin.Docs.ViewModels.inArrivoView
 
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
+@using dblu.Portale.Core.Infrastructure.Interfaces
+@using dblu.Portale.Core.Infrastructure.Identity.Class
 @inject dblu.Portale.Plugin.Docs.Services.MailService _mailservice
 @inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _allservice
+@inject dblu.Portale.Core.Infrastructure.Interfaces.IDashboardService _dashservice
 
 @using Kendo.Mvc.UI
 @using Syncfusion.EJ2
@@ -17,8 +20,8 @@
 
 @{
     ViewData["Title"] = "Email in arrivo";
-    List<dblu.Docs.Models.TipiElementi> ListaTipiElementi ;
-    List<dblu.Docs.Models.TipiElementi> ListaTipiElementiServ ;
+    List<dblu.Docs.Models.TipiElementi> ListaTipiElementi;
+    List<dblu.Docs.Models.TipiElementi> ListaTipiElementiServ;
     TipiAllegati TipoAll = _mailservice._allMan.GetTipoAllegato("EMAIL");
     List<string> ListaRuoli = null;
 
@@ -38,7 +41,7 @@
 
     //var ListaServer = _mailservice._serMan.GetServersEmailinRoles(Context.User.Claims);
     var ListaServerIngresso = _mailservice._serMan.GetServerEmailInIngresso();
-    if (ListaServer != null  && ListaServer.Count>0)
+    if (ListaServer != null && ListaServer.Count > 0)
     {
         //var ListaRuoliServ = _mailservice.getRuoli(Context.User.Claims, ListaServer.ElementAt(0).Nome);
         var ListaRuoliServ = _mailservice.getRuoli(ListaRuoli, ListaServer.ElementAt(0).Nome);
@@ -49,7 +52,14 @@
         ListaTipiElementiServ = ListaTipiElementi;
     }
     bool mostraSposta = ListaServerIngresso.Count > 1;
-
+    UserProperties P = _dashservice.GeUserProperties(User.Identity.Name);
+    string IsPrintedLocally = "true";
+    string Printer = "";
+    if (P != null && !string.IsNullOrEmpty(P["Printer"]))
+    {
+        IsPrintedLocally = "false";
+        Printer = P["Printer"];
+    }
 
 
 
@@ -131,10 +141,10 @@
 
 
 @* Syncfusion Essential JS 2 Styles
-<link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
+    <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
 *@
 @* Syncfusion Essential JS 2 Scripts
-<script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
 *@
 
 <script>
@@ -172,10 +182,10 @@
 </section>
 
 @*
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"></script>
-<script>
-    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js';
-</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"></script>
+    <script>
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js';
+    </script>
 *@
 
 <script src="~/Scripts/dblupdf.js"></script>
@@ -204,6 +214,7 @@
         MailView_StampaRiepilogo: '@Url.Action("StampaRiepilogo","MailView" )',
         MailView_CancellaElemento: '@Url.Action("CancellaElemento", "MailView" )',
         MailView_InArrivo_Stampato: '@Url.Action("InArrivo_Stampato", "MailView")',
+        MailView_InArrivo_Stampa: '@Url.Action("InArrivo_Stampa", "MailView")',
         sggservice_UrlServizio: '@_sggservice.UrlServizio()',
         sggservice_UrlServizioRicercaElementi: '@_sggservice.UrlServizioRicercaElementi()',
         MailPdfViewer_EditorPdf: '@Url.Action("EditorPdf", "MailPdfViewer")',
@@ -225,6 +236,27 @@
             return true;
         else
             return false;
+    }
+
+    function documentPrint(e) {
+        if ('@IsPrintedLocally'=='false') {
+            $.ajax({
+                url: UrlActions.MailView_InArrivo_Stampa,
+                type: 'POST',
+                cache: false,
+                data: { IdAllegato: $("#IdAllegato").val(), IdElemento: $("#IdElemento").val(),Printer:'@Printer' },
+                success: function (data) {
+
+                    var grid = $("#gridZip").data("kendoGrid");
+                    gridRefresLastOp(grid, docsTipiOperazioni.STAMPATO);
+
+                }
+            });
+
+            e.cancel = true;
+        }
+
+
     }
 
 </script>
@@ -256,7 +288,7 @@
                     <button id="testbutton" type="button" onclick="TestClick()" class="b btn btn-info">test </button>
                     <input type="text" id="testlabel" style="font-size:12px" />
             *@
-          
+
             <label class="control-label col-md-4" style="font-size:12px">Casella di posta:</label>
             <div class="col-md-6">
                 @(Html.Kendo().ComboBox()
@@ -358,7 +390,7 @@
                                        )
                 *@
 
-             <div class="box-body">
+                <div class="box-body">
                     <div class="k-grid">
                         @(Html.Kendo().Grid<dblu.Docs.Models.AllegatoEmail>()
                         .Name("gridEmail")
@@ -440,7 +472,7 @@
             </div>
         </div>
         <div class="col-xs-7">
-            <div class="box box-default"  id="divSoggetto" >
+            <div class="box box-default" id="divSoggetto">
                 <div class="box-header">
                     <i class="ion ion-person"></i>
                     <h4 class="box-title">Cliente</h4>
@@ -453,17 +485,17 @@
                 <div class="box-body">
                     <form>
                         <div class="row" id="divCliente">
-                        <div class="form-group">
+                            <div class="form-group">
                                 @*   <label class="control-label col-md-4" style="font-size:12px">Cliente</label> *@
                                 <div class="col-md-12" style="width:80%;">
-                                <div class="form-row">
-                                    <div class="form-group col-md-2">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-2">
                                             <input type="text" class="form-control" id="CodiceSoggetto" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
-                                    </div>
-                                    <div class="form-group col-md-6">
-                                        <input type="text" class="form-control" id="NomeSoggetto" placeholder="" disabled value="" />
-                                    </div>
-                                    @(Html.Kendo().Button()
+                                        </div>
+                                        <div class="form-group col-md-6">
+                                            <input type="text" class="form-control" id="NomeSoggetto" placeholder="" disabled value="" />
+                                        </div>
+                                        @(Html.Kendo().Button()
                                         .Name("CercaSoggetti")
                                         .HtmlAttributes(new { type = "button", @class = "k-primary" })
                                                 .Content("Cerca Soggetto")
@@ -475,27 +507,27 @@
                                                 .Content("Associa Elemento")
                                                 .Events(e => e.Click("AssociaElementoOnClick"))
                                         )
-                                        @*         
-  <input type="button" value="Open" onclick="window.open('@Url.Action("testdownload", "sgGea")')" />
+                                        @*
+                                            <input type="button" value="Open" onclick="window.open('@Url.Action("testdownload", "sgGea")')" />
 
 
-                                            <script>
-        function testLikGea() {
+                                                                                      <script>
+                                                  function testLikGea() {
 
-            $.ajax({
-                url: '@Url.Action("testdownload", "sgGea")',
-                type: 'GET',
-                success: function (data) {
-                    $("testLikGea").text = "ok";
-                }
-            });
-        }
-         </script>
+                                                      $.ajax({
+                                                          url: '@Url.Action("testdownload", "sgGea")',
+                                                          type: 'GET',
+                                                          success: function (data) {
+                                                              $("testLikGea").text = "ok";
+                                                          }
+                                                      });
+                                                  }
+                                                   </script>
                                         *@
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                </div>
                         <div class="row" id="divSoggettoElementiAperti" hidden>
                             <div class="form-group col-md-12" style="width:80%">
                                 @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggettoElementiAperti>()
@@ -530,9 +562,9 @@
                                 )
                             </div>
                         </div>
-                        </form>
-                    </div>
+                    </form>
                 </div>
+            </div>
 
             <div class="box box-default" id="divFascicolo" hidden>
                 @Html.Hidden("IdFascicolo")
@@ -548,21 +580,21 @@
                 </div>
                 <div class="box-body">
                     <form>
-                    <div class="form-group">
+                        <div class="form-group">
                             @* <label class="control-label col-md-4" style="font-size:12px">Fascicolo / Elemento</label>*@
                             <div class="col-md-12" style="width:100%;">
-                            <div class="form-row">
+                                <div class="form-row">
                                     <div class="form-group col-md-6">
-                                    <input type="text" class="form-control" id="DescrizioneElemento" placeholder="" value="" />
-                                </div>
+                                        <input type="text" class="form-control" id="DescrizioneElemento" placeholder="" value="" />
+                                    </div>
                                     <div class="form-group col-md-2">
-                                @(Html.Kendo().Button()
+                                        @(Html.Kendo().Button()
                                         .Name("CercaFascicolo")
                                         .HtmlAttributes(new { type = "button", @class = "k-primary" })
                                         .Content("Cerca")
                                     .Events(e => e.Click("CercaElementiOnClick"))
                                 )
-                            </div>
+                                    </div>
                                     <div class="form-group col-md-2">
                                         @(Html.Kendo().Button()
                                         .Name("Completa")
@@ -580,33 +612,33 @@
                                         )
                                     </div>
 
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="form-group" id="divElemento">
-                        <div class="col-md-12" style="width:100%;">
-                            <div class="form-row" hidden>
-                                <div class="form-group col-md-2">
-                                    @(Html.Kendo().Button()
+                        <div class="form-group" id="divElemento">
+                            <div class="col-md-12" style="width:100%;">
+                                <div class="form-row" hidden>
+                                    <div class="form-group col-md-2">
+                                        @(Html.Kendo().Button()
                                         .Name("ApriDettaglio")
                                         .HtmlAttributes(new { type = "button", @class = "k-primary" })
                                         .Content("Apri")
                                     .Events(e => e.Click("ApriDettaglioOnClick"))
                                     )
-                                </div>
-                                <div class="form-group col-md-4">
-                                    @(Html.Kendo().Button()
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        @(Html.Kendo().Button()
                                         .Name("AggiungiAElemento")
                                         .HtmlAttributes(new { type = "button", @class = "k-primary" })
                                         .Content("Aggiungi a Elemento")
                                         .Events(e => e.Click("AggiungiAElementoOnClick"))
                                     )
-                                </div>
+                                    </div>
 
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group col-md-12">
-                                    @(Html.Kendo().Grid<EmailElementi>()
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-12">
+                                        @(Html.Kendo().Grid<EmailElementi>()
                                     .Name("gridemailElementi")
                                     .Columns(columns =>
                                     {
@@ -691,30 +723,30 @@
                                                 </div>
                                             }
                                         }
-                                    <style>
-                                        .grid-container {
-                                            display: inline-grid;
-                                            grid-template-columns: auto auto auto;
-                                            background-color: #2196F3;
-                                            padding: 5px;
-                                        }
+                                        <style>
+                                            .grid-container {
+                                                display: inline-grid;
+                                                grid-template-columns: auto auto auto;
+                                                background-color: #2196F3;
+                                                padding: 5px;
+                                            }
 
-                                        .grid-item {
-                                            background-color: rgba(255, 255, 255, 0.8);
-                                            border: 1px solid rgba(0, 0, 0, 0.8);
-                                            padding: 5px;
-                                            font-size: 15px;
-                                            text-align: center;
-                                        }
+                                            .grid-item {
+                                                background-color: rgba(255, 255, 255, 0.8);
+                                                border: 1px solid rgba(0, 0, 0, 0.8);
+                                                padding: 5px;
+                                                font-size: 15px;
+                                                text-align: center;
+                                            }
 
-                                        .b {
-                                            margin-left: 5px;
-                                        }
-                                    </style>
+                                            .b {
+                                                margin-left: 5px;
+                                            }
+                                        </style>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
                     </form>
                 </div>
             </div>
@@ -784,42 +816,42 @@
                         <div class="col-md-12" style="width:100%; margin-top:10px" id="anteprimapdf">
                             @*
 
-         <div class="col-md-12" style="margin-top:10px">
-            @(Html.Kendo().Button()
-                .Name("kbEditPdf")
-                .Icon("k-icon k-i-page-properties")
-                .Content("Apri")
-                .Events(ev => ev.Click("kbEditPdfOnClick"))
-                .HtmlAttributes(new { style = "align-items:end" })
+                                 <div class="col-md-12" style="margin-top:10px">
+                                    @(Html.Kendo().Button()
+                                        .Name("kbEditPdf")
+                                        .Icon("k-icon k-i-page-properties")
+                                        .Content("Apri")
+                                        .Events(ev => ev.Click("kbEditPdfOnClick"))
+                                        .HtmlAttributes(new { style = "align-items:end" })
 
-            )
-        </div>
-
-
-                @(Html.Kendo().PDFViewer().Name("pdfviewer")
-                                    .Toolbar(toolbar =>
-                                    toolbar.Items(items =>
-                                        {
-                                            items.Add().Name("pager");
-                                            items.Add().Name("spacer");
-                                            items.Add().Name("zoom");
-                                            items.Add().Name("print");
-                                            items.Add().Name("search");
-                                            items.Add().Name("download");
-                                            items.Add().Name("open");
-                                        })
                                     )
-                                    .Height(800)
-            .Scale(2)
-                    items.Add().Type(CommandType.ButtonGroup).Buttons(buttons =>
-                    {
-                        buttons.Add().Text("+90°").Id("tbruotadx").Icon("redo").Group("toolbar").Click("tbpdf_click");
-                        buttons.Add().Text("-90°").Id("tbruotasx").Icon("undo").Group("toolbar").Toggle("tbpdf_click");
-                        buttons.Add().Text("Canc.").Id("tbcanc").Icon("delete").Group("toolbar").Toggle("tbpdf_click");
-                    });
-           )
+                                </div>
+
+
+                                        @(Html.Kendo().PDFViewer().Name("pdfviewer")
+                                                            .Toolbar(toolbar =>
+                                                            toolbar.Items(items =>
+                                                                {
+                                                                    items.Add().Name("pager");
+                                                                    items.Add().Name("spacer");
+                                                                    items.Add().Name("zoom");
+                                                                    items.Add().Name("print");
+                                                                    items.Add().Name("search");
+                                                                    items.Add().Name("download");
+                                                                    items.Add().Name("open");
+                                                                })
+                                                            )
+                                                            .Height(800)
+                                    .Scale(2)
+                                            items.Add().Type(CommandType.ButtonGroup).Buttons(buttons =>
+                                            {
+                                                buttons.Add().Text("+90°").Id("tbruotadx").Icon("redo").Group("toolbar").Click("tbpdf_click");
+                                                buttons.Add().Text("-90°").Id("tbruotasx").Icon("undo").Group("toolbar").Toggle("tbpdf_click");
+                                                buttons.Add().Text("Canc.").Id("tbcanc").Icon("delete").Group("toolbar").Toggle("tbpdf_click");
+                                            });
+                                   )
                             *@
-           @(Html.Kendo().ToolBar()
+                            @(Html.Kendo().ToolBar()
                .Name("pdfToolBar")
                .Items(items =>
                {
@@ -839,38 +871,39 @@
 
                                    )
 
-                                <ejs-pdfviewer id="emailpdfviewer" serviceUrl="/api/mailPdfViewer" documentPath=""
-                                               enablePrint="true"
-                                               printEnd="documentPrinted"
-                                               documentLoad="documentLoaded"
-                                               annotationAdd="annotationAdd"
-                                               enableStampAnnotations="false"
-                                               enableAnnotation="true"
-                                               enableFreeText="true"
-                                                exportSuccess="exportSuccess"
-                                               locale="it-IT"
+                            <ejs-pdfviewer id="emailpdfviewer" serviceUrl="/api/mailPdfViewer" documentPath=""
+                                           enablePrint="true"
+                                           printEnd="documentPrinted"
+                                           documentLoad="documentLoaded"
+                                           annotationAdd="annotationAdd"
+                                           printStart="documentPrint"
+                                           enableStampAnnotations="false"
+                                           enableAnnotation="true"
+                                           enableFreeText="true"
+                                           exportSuccess="exportSuccess"
+                                           locale="it-IT"
                                            downloadFileName="@string.Concat("",".pdf")" height="900px"
-                                               toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
-                                                
-                                </ejs-pdfviewer>
+                                           toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
+
+                            </ejs-pdfviewer>
 
                             @*
-                            <div class="col-md-12" style="width:80%" id="anteprimajpg" hidden>
-                                <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
-                            </div>
+                                <div class="col-md-12" style="width:80%" id="anteprimajpg" hidden>
+                                    <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
+                                </div>
                             *@
                         </div>
                     </div>
                 </div>
             </div>
-                        </div>
-                    </div>
+        </div>
+    </div>
 
     <form class="new-tab-opener" method="get" target="_blank"></form>
 </section>
 
 
-  @(Html.Kendo().Window()
+@(Html.Kendo().Window()
     .Name("detElemento")
     .Visible(false).Modal(false)
     .Title("Dettaglio Elemento")
@@ -894,8 +927,7 @@
     .Actions(actions => actions.Pin().Minimize().Maximize().Close())
     .Events(e => e.Close("wCercaElementiClose") )
   )
-
-  @(Html.Kendo().Window()
+@(Html.Kendo().Window()
     .Name("cercasoggetti")
     .Size("auto")
     .Title("Cerca")
@@ -909,8 +941,7 @@
     .Height(700)
     .Modal(true)
   )
-
-  @(Html.Kendo().Window()
+@(Html.Kendo().Window()
     .Name("wInoltra")
     .Size("auto")
     .Title("Inoltra a:")
@@ -948,7 +979,7 @@
     .PageSize(80)
     .Read("Utenti_Read", "Grid");
 })
-     
+
                 )
                                             </div>
                                             <div class="form-group col-md-2">
@@ -989,7 +1020,7 @@
                                     .Value("")
                                     .HtmlAttributes(new { style = "width: 100%" })
                                 )
-                            </div> 
+                            </div>
                             <label class="control-label col-md-2" style="font-size:12px">CC: </label>
                             <div class="form-group col-md-8">
                                 @(Html.Kendo().TextBox()
@@ -1009,7 +1040,7 @@
                             <label class="control-label col-md-2" style="font-size:12px">Testo: </label>
                             <div class="form-group col-md-8">
                                  @*@Html.TextArea("testoRiposta", "", new { @class="k-textbox", style = "width: 100%;" })*@
-                               
+
                                 @(Html.Kendo().TextArea()
                                     .Name("testoRisposta")
                                     .Value("")
@@ -1101,7 +1132,7 @@
                     .Ajax()
                     //.Model(model => model.Id(p => p.ID))
                     .Read(read => read.Action("GetLogsItem", "Docs").Data("GetLogsItem"))
-                   
+
                     )
                     .HtmlAttributes(new { style = "font-size:12" })
                 )
@@ -1112,8 +1143,7 @@
     .Height(180)
     .Modal(true)
                  )
-
-    @(Html.Kendo().Window()
+@(Html.Kendo().Window()
         .Name("wPdfEditor")
         .Size("auto")
         .Title("Editor")
@@ -1123,6 +1153,6 @@
         .Scrollable(true)
         .Modal(true)
                 .Events(e => e.Close("wPdfEditorClose").Open("wPdfEditorOpen"))
-        ); 
+        );
 
 <ejs-scripts></ejs-scripts>

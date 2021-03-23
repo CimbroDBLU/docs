@@ -1,6 +1,8 @@
 ﻿@model dblu.Docs.Models.Allegati
-
+@using dblu.Portale.Core.Infrastructure.Interfaces
+@using dblu.Portale.Core.Infrastructure.Identity.Class
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _doc
+@inject dblu.Portale.Core.Infrastructure.Interfaces.IDashboardService _dashservice
 @using Kendo.Mvc.UI
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using Syncfusion.EJ2
@@ -11,6 +13,15 @@
 
 @{
     var IdAllegato = Model.Id.ToString();
+
+    UserProperties P = _dashservice.GeUserProperties(User.Identity.Name);
+    string IsPrintedLocally = "true";
+    string Printer = "";
+    if (P != null && !string.IsNullOrEmpty(P["Printer"]))
+    {
+        IsPrintedLocally = "false";
+        Printer = P["Printer"];
+    }
 
 }
 
@@ -39,7 +50,8 @@
                                                documentPath=""
                                                enablePrint="true"
                                                documentLoad="documentLoaded"
-                                               printEnd="documentPrinted" 
+                                               printStart="documentPrint"
+                                               printEnd="documentPrinted"
                                                annotationAdd="annotationAdd"
                                                enableStampAnnotations="true"
                                                locale="it-IT"
@@ -106,11 +118,28 @@
 
         },
         error: function () {
-    
+
         }
         });
+    }
 
+    function documentPrint(e) {
+        if ('@IsPrintedLocally'=='false') {
+                   $.ajax({
+        url: '@Url.Action("StampaRiepilogoServer", "MailView")',
+        type: 'POST',
+        data: { IdAllegato : '@IdAllegato',Printer: '@Printer'},
+        success: function (result) {
 
+        },
+        error: function () {
+
+        }
+        });
+            });
+
+            e.cancel = true;
+        }
     }
 
 </script>

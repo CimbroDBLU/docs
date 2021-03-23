@@ -1,6 +1,8 @@
 ﻿@model dblu.Docs.Models.Allegati
-
+@using dblu.Portale.Core.Infrastructure.Interfaces
+@using dblu.Portale.Core.Infrastructure.Identity.Class
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _doc
+@inject dblu.Portale.Core.Infrastructure.Interfaces.IDashboardService _dashservice
 @using Kendo.Mvc.UI
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using Syncfusion.EJ2
@@ -11,6 +13,14 @@
 
 @{
     var IdAllegato = Model.Id.ToString();
+    UserProperties P = _dashservice.GeUserProperties(User.Identity.Name);
+    string IsPrintedLocally = "true";
+    string Printer = "";
+    if (P != null && !string.IsNullOrEmpty(P["Printer"]))
+    {
+        IsPrintedLocally = "false";
+        Printer = P["Printer"];
+    }
 
 }
 
@@ -43,7 +53,7 @@
                                                enableStampAnnotations="true"
                                                locale="it-IT"
                                                downloadFileName="riepilogo.pdf"
-                                               printEnd="documentPrinted" 
+                                               printEnd="documentPrinted"
                                                height="900px"
                                                toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool,PanTool"  })">
                                 </ejs-pdfviewer>
@@ -90,10 +100,25 @@
         importAnnotations()
     }
 
+    function documentPrint(e) {
+        if ('@IsPrintedLocally'=='false') {
+            $.ajax({
+                url:'@Url.Action("StampaRiepilogoServer", "ZipView")',
+                type: 'POST',
+                cache: false,
+                data: { IdAllegato: $("#IdAllegato").val(), Printer: '@Printer' },
+                success: function (data) {
+
+                }
+            });
+
+            e.cancel = true;
+        }
+
      function documentPrinted(args) {
         //let's do that
         $.ajax({
-        url: '@Url.Action("LogRiepilogo", "MailView")',
+        url: '@Url.Action("LogRiepilogo", "ZipView")',
         type: 'POST',
             data: { IdAllegato: '@IdAllegato'},
         success: function (result) {

@@ -39,16 +39,18 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         private ZipService _zipsvc;
         private IConfiguration _config;
         private ISoggettiService _soggetti;
+        private PrintService _printService;
 
         public ZipViewController(ZipService zipservice,
             IToastNotification toastNotification,
             IConfiguration config,
-            ISoggettiService soggetti)
+            ISoggettiService soggetti,PrintService printService)
         {
             _zipsvc = zipservice;
             _toastNotification = toastNotification;
             _config = config;
             _soggetti = soggetti;
+            _printService = printService;
         }
 
 
@@ -476,6 +478,57 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
         [AcceptVerbs("Post")]
+        [HasPermission("50.1.3")]
+        public async Task<ActionResult<bool>> StampaRiepilogoServer(string IdAllegato,string Printer)
+        {
+            try
+            {
+                string TempFile = Path.Combine(Path.GetTempPath(), IdAllegato.ToString() + ".pdf");
+                using (FileStream FS = new FileStream(TempFile, FileMode.Create))
+                {
+                    MemoryStream MS = await _zipsvc.GetPdfRiepilogo(IdAllegato);
+                    MS.WriteTo(FS);
+                    FS.Close();
+                }
+                if (await _printService.AddJob(User.Identity.Name, TempFile,Printer) == 0)
+                {
+                    System.IO.File.Delete(TempFile);
+                    _toastNotification.AddSuccessToastMessage("Documento inviato alla stampante");
+
+                    if (!string.IsNullOrEmpty(IdAllegato))
+
+                        _zipsvc._logMan.Salva(new LogDoc()
+                        {
+                            Data = DateTime.Now,
+                            IdOggetto = Guid.Parse(IdAllegato),
+                            TipoOggetto = TipiOggetto.ALLEGATO,
+                            Utente = User.Identity.Name,
+                            Operazione = TipoOperazione.Stampato
+                        }, true);
+                    foreach (Elementi e in _zipsvc._elmMan.GetElementiDaAllegato(Guid.Parse(IdAllegato)))
+                    {
+                        _zipsvc._logMan.Salva(new LogDoc()
+                        {
+                            Data = DateTime.Now,
+                            IdOggetto = e.Id,
+                            TipoOggetto = TipiOggetto.ELEMENTO,
+                            Utente = User.Identity.Name,
+                            Operazione = TipoOperazione.Stampato
+                        }, true);
+                    }
+                }
+                else _toastNotification.AddErrorToastMessage("Impossibile accodare il documento alla stampante");
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult(false);
+            }
+            return await Task.FromResult(true);
+        }
+
+
+
+        [AcceptVerbs("Post")]
         [HasPermission("50.1.4")]
         public async Task<ActionResult<bool>> LogRiepilogo(
             string IdAllegato)
@@ -546,6 +599,57 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             }
             return await Task.FromResult(true);
         }
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.4")]
+        public async Task<ActionResult<bool>> InArrivo_Stampa(string IdAllegato, string IdElemento,string Printer)
+        {
+            try
+            {
+                string TempFile =Path.Combine(Path.GetTempPath(), IdAllegato.ToString() + ".pdf");
+                using (FileStream FS = new FileStream(TempFile, FileMode.Create))
+                {
+                    MemoryStream MS = await _zipsvc.GetPdfCompletoAsync(IdAllegato,IdElemento,true);
+                    MS.WriteTo(FS);
+                    FS.Close(); 
+                }
+                if (await _printService.AddJob(User.Identity.Name, TempFile,Printer) ==0)
+                {
+                    System.IO.File.Delete(TempFile);
+                    _toastNotification.AddSuccessToastMessage("Documento inviato alla stampante");
+
+                    //Invio di conferma
+                    if (!string.IsNullOrEmpty(IdAllegato))
+                        _zipsvc._logMan.Salva(new LogDoc()
+                        {
+                            Data = DateTime.Now,
+                            IdOggetto = Guid.Parse(IdAllegato),
+                            TipoOggetto = TipiOggetto.ALLEGATO,
+                            Utente = User.Identity.Name,
+                            Operazione = TipoOperazione.Stampato
+                        }, true);
+
+                    if (!string.IsNullOrEmpty(IdElemento))
+                        _zipsvc._logMan.Salva(new LogDoc()
+                        {
+                            Data = DateTime.Now,
+                            IdOggetto = Guid.Parse(IdElemento),
+                            TipoOggetto = TipiOggetto.ELEMENTO,
+                            Utente = User.Identity.Name,
+                            Operazione = TipoOperazione.Stampato
+                        }, true);
+                }
+                else
+                    _toastNotification.AddErrorToastMessage("Impossibile accodare il documento alla stampante");
+            }
+            catch (Exception ex)
+            {
+                _zipsvc._logger.LogError($"InArrivo_Stampa: {ex.Message}");
+                return await Task.FromResult(false);
+            }
+            return await Task.FromResult(true);
+        }
+
 
         [HttpGet]
         [HasPermission("50.1.4")]

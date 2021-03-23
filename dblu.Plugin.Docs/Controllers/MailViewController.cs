@@ -43,18 +43,20 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         private IConfiguration _config;
         private ISoggettiService _soggetti;
         private readonly IWebHostEnvironment _hostingEnvironment;
+        private PrintService _printService;
 
         public MailViewController(MailService mailservice,
             IToastNotification toastNotification,
             IConfiguration config ,
             ISoggettiService soggetti,
-            IWebHostEnvironment hostingEnvironment )
+            IWebHostEnvironment hostingEnvironment, PrintService printService )
         {
             _mailService = mailservice;
             _toastNotification = toastNotification;
             _config = config;
             _soggetti = soggetti;
             _hostingEnvironment = hostingEnvironment;
+            _printService = printService;
         }
 
        
@@ -671,6 +673,60 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             return Json(r.Successo);
         }
 
+
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.3")]
+        public async Task<ActionResult<bool>> StampaRiepilogoServer(
+string IdAllegato,string Printer)
+        {
+            try
+            {
+                string TempFile = Path.Combine(Path.GetTempPath(), IdAllegato.ToString() + ".pdf");
+                using (FileStream FS = new FileStream(TempFile, FileMode.Create))
+                {
+                    MemoryStream MS = await _mailService.GetPdfRiepilogo(IdAllegato);
+                    MS.WriteTo(FS);
+                    FS.Close();
+                }
+                if (await _printService.AddJob(User.Identity.Name,TempFile, Printer) == 0)
+                {
+                    System.IO.File.Delete(TempFile);
+                    _toastNotification.AddSuccessToastMessage("Documento inviato alla stampante");
+
+                    if (!string.IsNullOrEmpty(IdAllegato))
+
+                        _mailService._logMan.Salva(new LogDoc()
+                        {
+                            Data = DateTime.Now,
+                            IdOggetto = Guid.Parse(IdAllegato),
+                            TipoOggetto = TipiOggetto.ALLEGATO,
+                            Utente = User.Identity.Name,
+                            Operazione = TipoOperazione.Stampato
+                        }, true);
+                    foreach (Elementi e in _mailService._elmMan.GetElementiDaAllegato(Guid.Parse(IdAllegato)))
+                    {
+                        _mailService._logMan.Salva(new LogDoc()
+                        {
+                            Data = DateTime.Now,
+                            IdOggetto = e.Id,
+                            TipoOggetto = TipiOggetto.ELEMENTO,
+                            Utente = User.Identity.Name,
+                            Operazione = TipoOperazione.Stampato
+                        }, true);
+                    }
+                }
+                else _toastNotification.AddErrorToastMessage("Impossibile accodare il documento alla stampante");
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult(false);
+            }
+            return await Task.FromResult(true);
+        }
+
+
+
         [AcceptVerbs("Post")]
         [HasPermission("50.1.3")]
         public async Task<ActionResult<bool>> LogRiepilogo(
@@ -705,6 +761,58 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             }
             return await Task.FromResult(true);
         }
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.3")]
+        public async Task<ActionResult<bool>> InArrivo_Stampa(string IdAllegato, string IdElemento,string Printer)
+        {
+            try
+            {
+                string TempFile = Path.Combine(Path.GetTempPath(), IdAllegato.ToString() + ".pdf");
+                using (FileStream FS = new FileStream(TempFile, FileMode.Create))
+                {
+                    MemoryStream MS = await  _mailService.GetPdfCompletoAsync(IdAllegato, IdElemento, true);
+                    MS.WriteTo(FS);
+                    FS.Close();
+                }
+                if (await _printService.AddJob(User.Identity.Name, TempFile,Printer) == 0)
+                {
+                    System.IO.File.Delete(TempFile);
+                    _toastNotification.AddSuccessToastMessage("Documento inviato alla stampante");
+
+                    //Invio di conferma
+                    if (!string.IsNullOrEmpty(IdAllegato))
+                        _mailService._logMan.Salva(new LogDoc()
+                        {
+                            Data = DateTime.Now,
+                            IdOggetto = Guid.Parse(IdAllegato),
+                            TipoOggetto = TipiOggetto.ALLEGATO,
+                            Utente = User.Identity.Name,
+                            Operazione = TipoOperazione.Stampato
+                        }, true);
+
+                    if (!string.IsNullOrEmpty(IdElemento))
+                        _mailService._logMan.Salva(new LogDoc()
+                        {
+                            Data = DateTime.Now,
+                            IdOggetto = Guid.Parse(IdElemento),
+                            TipoOggetto = TipiOggetto.ELEMENTO,
+                            Utente = User.Identity.Name,
+                            Operazione = TipoOperazione.Stampato
+                        }, true);
+                }
+                else
+                    _toastNotification.AddErrorToastMessage("Impossibile accodare il documento alla stampante");
+            }
+            catch (Exception ex)
+            {
+                _mailService._logger.LogError($"InArrivo_Stampa: {ex.Message}");
+                return await Task.FromResult(false);
+            }
+            return await Task.FromResult(true);
+        }
+
+
 
         [AcceptVerbs("Post")]
         [HasPermission("50.1.3")]

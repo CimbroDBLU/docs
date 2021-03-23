@@ -3,9 +3,12 @@
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
+@using dblu.Portale.Core.Infrastructure.Interfaces
+@using dblu.Portale.Core.Infrastructure.Identity.Class
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _zipservice
 @inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _allservice
+@inject dblu.Portale.Core.Infrastructure.Interfaces.IDashboardService _dashservice
 
 @using Kendo.Mvc.UI
 @using Syncfusion.EJ2
@@ -58,6 +61,15 @@
         ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoli);
     }
     bool mostraSposta = ListaServer.Count > 1;
+
+    UserProperties P = _dashservice.GeUserProperties(User.Identity.Name);
+    string IsPrintedLocally = "true";
+    string Printer = "";
+    if (P != null && !string.IsNullOrEmpty(P["Printer"]))
+    {
+        IsPrintedLocally = "false";
+        Printer = P["Printer"];
+    }
 
 
 
@@ -186,6 +198,9 @@
         ZipView_InArrivo_Cancella: '@Url.Action("InArrivo_Cancella", "ZipView")',
         ZipView_InArrivo_Sposta: '@Url.Action("InArrivo_Sposta", "ZipView")',
         ZipView_InArrivo_Stampato: '@Url.Action("InArrivo_Stampato", "ZipView")',
+
+        ZipView_InArrivo_Stampa: '@Url.Action("InArrivo_Stampa", "ZipView")',
+
         ZipView_StampaRiepilogo:'@Url.Action("StampaRiepilogo","ZipView" )',
         ZipView_CancellaElemento:'@Url.Action("CancellaElemento", "ZipView" )',
         ZipView_CreaElementoFascicolo: '@Url.Action("CreaElementoFascicolo","ZipView")',
@@ -491,13 +506,13 @@
                                 <div id="DivGridElementi">
                                     <div class="grid-container">
                                         @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
-    {
+                                        {
                                             @if (item.AggregaAElemento == false)
                                             {
-                                            <div class="grid-item">
-                                                <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info">@item.Descrizione </button>
+                                                <div class="grid-item">
+                                                    <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info">@item.Descrizione </button>
                                                 </div>
-                                                    }
+                                            }
                                         }
                                         <style>
                                             .grid-container {
@@ -617,6 +632,7 @@
                                                annotationAdd="annotationAdd"
                                                enableStampAnnotations="false"
                                                exportSuccess="exportSuccess"
+                                               printStart="documentPrint"
                                                locale="it-IT"
                                                downloadFileName="@string.Concat("",".pdf")" height="900px"
                                                toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
@@ -638,6 +654,27 @@
 
 
 <script type="text/javascript">
+
+    function documentPrint(e) {
+        if ('@IsPrintedLocally'=='false') {
+            $.ajax({
+                url: UrlActions.ZipView_InArrivo_Stampa,
+                type: 'POST',
+                cache: false,
+                data: { IdAllegato: $("#IdAllegato").val(), IdElemento: $("#IdElemento").val(),Printer: '@Printer' },
+                success: function (data) {
+
+                    var grid = $("#gridZip").data("kendoGrid");
+                    gridRefresLastOp(grid, docsTipiOperazioni.STAMPATO);
+
+                }
+            });
+
+            e.cancel = true;
+        }
+
+
+    }
 
     function error_handler(e) {
         if (e.errors) {
