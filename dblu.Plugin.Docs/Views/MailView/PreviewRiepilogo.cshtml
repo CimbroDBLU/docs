@@ -108,6 +108,7 @@
         emailpdfviewer.importAnnotation('');
         emailpdfviewer.enablePrint = true;
     }
+
     function documentPrinted(args) {
         //let's do that
         $.ajax({
@@ -125,22 +126,20 @@
 
     function documentPrint(e) {
         if ('@IsPrintedLocally'=='false') {
-                   $.ajax({
-        url: '@Url.Action("StampaRiepilogoServer", "MailView")',
-        type: 'POST',
-        data: { IdAllegato : '@IdAllegato',Printer: '@Printer'},
-        success: function (result) {
+            $.ajax({
+                url:'@Url.Action("StampaRiepilogoServer", "MailView")',
+                type: 'POST',
+                cache: false,
+                data: { IdAllegato: $("#IdAllegato").val(), Printer: '@Printer' },
+                success: function (data) {
 
-        },
-        error: function () {
-
-        }
-        });
+                }
             });
 
             e.cancel = true;
         }
     }
+
 
 </script>
 
