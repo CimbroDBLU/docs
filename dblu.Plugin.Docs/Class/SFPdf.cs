@@ -172,8 +172,9 @@ namespace dblu.Portale.Plugin.Docs.Class
                             settings.Margin.Right = 20;
                             settings.Margin.Left = 20;
                             settings.Margin.Top = 20;
-                            //Assign WebKit settings to HTML converter
-                            htmlConverter.ConverterSettings = settings;
+                            settings.Margin.Bottom = 20;
+                        //Assign WebKit settings to HTML converter
+                        htmlConverter.ConverterSettings = settings;
 
                             //Convert HTML string to PDF
                             document = htmlConverter.Convert(htxt, baseUrl);
@@ -626,7 +627,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                     Syncfusion.Pdf.Parsing.PdfLoadedDocument pdftmp = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(pdfstream);
 
                     Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
-                    document.PageSettings.SetMargins(10);
+                    document.PageSettings.SetMargins(20);
 
                     int i = 0;
                     foreach (Syncfusion.Pdf.PdfLoadedPage lptmp in pdftmp.Pages)
@@ -920,7 +921,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                     foreach (PdfPageBase p in ld.Pages)
                     {
                         PdfPage page = doc1.Pages.Add();
-                        page.Section.PageSettings.Margins.All = 0f;
+                        page.Section.PageSettings.Margins.All = 20f;
                         
                         PdfGraphics g = page.Graphics;
                         PdfTemplate template = p.CreateTemplate();
