@@ -130,7 +130,7 @@
                 url:'@Url.Action("StampaRiepilogoServer", "MailView")',
                 type: 'POST',
                 cache: false,
-                data: { IdAllegato: $("#IdAllegato").val(), Printer: '@Printer' },
+                data: { IdAllegato: '@IdAllegato', Printer: '@Printer' },
                 success: function (data) {
 
                 }

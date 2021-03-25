@@ -118,7 +118,8 @@ const docsAzioniPdf = {
     CancellaPagina: 10,
     RuotaPagina90: 11,
     RuotaPagina270: 12,
-    SpostaPagina: 13 
+    SpostaPagina: 13,
+    Stampa: 20,
 }
 
 

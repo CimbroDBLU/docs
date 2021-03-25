@@ -1275,7 +1275,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                         //Create a new PDF document
                         Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
-                        document.PageSettings.SetMargins(0);
+                        document.PageSettings.SetMargins(10);
                         //Add a page to the document
                         Syncfusion.Pdf.PdfPage page = document.Pages.Add();
 

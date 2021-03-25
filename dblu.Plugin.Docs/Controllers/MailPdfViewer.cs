@@ -108,7 +108,7 @@ namespace dblu.Portale.Plugin.Documenti
                                     if (System.IO.File.Exists(pdf.FileAnnotazioni))
                                     {
                                         System.IO.File.Delete(pdf.FileAnnotazioni);
-                                        }
+                                    }
                                     stream = await _pdfsvc.GetPdf(pdf);
                                        
                                     //if (!string.IsNullOrEmpty(pdf.IdElemento))

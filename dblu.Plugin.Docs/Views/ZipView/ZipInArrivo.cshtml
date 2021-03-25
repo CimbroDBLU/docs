@@ -220,6 +220,8 @@
         ALLEGATO: '@TipiOggetto.ALLEGATO'
     };
 
+    PdfCorrente.Printer = '@Printer';
+
     function MostraSposta(dataItem) {
 
         if (@mostraSposta)
@@ -654,27 +656,6 @@
 
 
 <script type="text/javascript">
-
-    function documentPrint(e) {
-        if ('@IsPrintedLocally'=='false') {
-            $.ajax({
-                url: UrlActions.ZipView_InArrivo_Stampa,
-                type: 'POST',
-                cache: false,
-                data: { IdAllegato: $("#IdAllegato").val(), IdElemento: $("#IdElemento").val(),Printer: '@Printer' },
-                success: function (data) {
-
-                    var grid = $("#gridZip").data("kendoGrid");
-                    gridRefresLastOp(grid, docsTipiOperazioni.STAMPATO);
-
-                }
-            });
-
-            e.cancel = true;
-        }
-
-
-    }
 
     function error_handler(e) {
         if (e.errors) {

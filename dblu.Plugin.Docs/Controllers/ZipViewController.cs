@@ -602,38 +602,44 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
         [AcceptVerbs("Post")]
         [HasPermission("50.1.4")]
-        public async Task<ActionResult<bool>> InArrivo_Stampa(string IdAllegato, string IdElemento,string Printer)
+        public async Task<ActionResult<bool>> InArrivo_Stampa(string pdf)
         {
             try
             {
-                string TempFile =Path.Combine(Path.GetTempPath(), IdAllegato.ToString() + ".pdf");
+                PdfEditAction pdfact = new PdfEditAction();
+                pdfact = JsonConvert.DeserializeObject<PdfEditAction>(pdf);
+
+                // string TempFile =Path.Combine(Path.GetTempPath(), IdAllegato.ToString() + ".pdf");
+                //pdfact.TempFolder = Path.Combine(_hostingEnvironment.WebRootPath, "_tmp");
+                pdfact.TempFolder = Path.GetTempPath();
+                string TempFile = Path.Combine(pdfact.TempFolder, $"{pdfact.IdAllegato}.stp.pdf");
                 using (FileStream FS = new FileStream(TempFile, FileMode.Create))
                 {
-                    MemoryStream MS = await _zipsvc.GetPdfCompletoAsync(IdAllegato,IdElemento,true);
+                    MemoryStream MS = await _zipsvc.GetPdfCompletoAsync(pdfact.IdAllegato, pdfact.IdElemento, false);
                     MS.WriteTo(FS);
                     FS.Close(); 
                 }
-                if (await _printService.AddJob(User.Identity.Name, TempFile,Printer) ==0)
+                if (await _printService.AddJob(User.Identity.Name, TempFile, pdfact.Printer) ==0)
                 {
                     System.IO.File.Delete(TempFile);
                     _toastNotification.AddSuccessToastMessage("Documento inviato alla stampante");
 
                     //Invio di conferma
-                    if (!string.IsNullOrEmpty(IdAllegato))
+                    if (!string.IsNullOrEmpty(pdfact.IdAllegato))
                         _zipsvc._logMan.Salva(new LogDoc()
                         {
                             Data = DateTime.Now,
-                            IdOggetto = Guid.Parse(IdAllegato),
+                            IdOggetto = Guid.Parse(pdfact.IdAllegato),
                             TipoOggetto = TipiOggetto.ALLEGATO,
                             Utente = User.Identity.Name,
                             Operazione = TipoOperazione.Stampato
                         }, true);
 
-                    if (!string.IsNullOrEmpty(IdElemento))
+                    if (!string.IsNullOrEmpty(pdfact.IdElemento))
                         _zipsvc._logMan.Salva(new LogDoc()
                         {
                             Data = DateTime.Now,
-                            IdOggetto = Guid.Parse(IdElemento),
+                            IdOggetto = Guid.Parse(pdfact.IdElemento),
                             TipoOggetto = TipiOggetto.ELEMENTO,
                             Utente = User.Identity.Name,
                             Operazione = TipoOperazione.Stampato

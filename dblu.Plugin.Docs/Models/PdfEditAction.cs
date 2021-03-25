@@ -32,6 +32,7 @@ namespace dblu.Portale.Plugin.Docs.Models
         public string IdElemento { get; set; }
         public string IdAllegatoAElemento { get; set; }
         public string Descrizione { get; set; }
+        public string Printer { get; set; }
 
         // spostato elenco allegati email/zip per evitare doppia lettura
         public IEnumerable<EmailAttachments> FileAllegati { get; set; }

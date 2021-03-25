@@ -2834,7 +2834,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                         //Create a new PDF document
                         Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
-                        document.PageSettings.SetMargins(0);
+                        document.PageSettings.SetMargins(10);
                         //Add a page to the document
                         Syncfusion.Pdf.PdfPage page = document.Pages.Add();
 
@@ -2910,7 +2910,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             //Draw the template
                             Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = curpos  };
-
+                                
                             graphics.DrawPdfTemplate(template, posizione,
                                 new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height));
                             curpos += etiHeight + 20;
@@ -2934,7 +2934,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = etiHeight + 1 };
 
-                            Syncfusion.Drawing.SizeF pDest = SFPdf.CalcolaProporzioni(lptmp.Size.Width , lptmp.Size.Height , page.Size.Width * 0.95F, page.Size.Height - etiHeight);
+                            Syncfusion.Drawing.SizeF pDest = SFPdf.CalcolaProporzioni(lptmp.Size.Width  , lptmp.Size.Height , page.Size.Width * 0.95F, page.Size.Height - etiHeight);
 
                             switch (lptmp.Rotation)
                             {
@@ -2999,10 +2999,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                             posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 5 };
                             Syncfusion.Pdf.PdfLoadedPage loadedPage = pdfEti.Pages[0] as Syncfusion.Pdf.PdfLoadedPage;
                             template = loadedPage.CreateTemplate();
-                            
-                            
-                            graphics.DrawPdfTemplate(template, posizione,
-                                new Syncfusion.Drawing.SizeF(loadedPage.Size.Width , loadedPage.Size.Height ));
+
+
+                                Syncfusion.Drawing.SizeF pDestE = new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height);
+                                graphics.DrawPdfTemplate(template, posizione, pDestE);
                             pdfEti.Close();
                             }
                             catch (Exception ex)

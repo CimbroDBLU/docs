@@ -44,12 +44,14 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         private ISoggettiService _soggetti;
         private readonly IWebHostEnvironment _hostingEnvironment;
         private PrintService _printService;
+        private PdfEditService _pdfsvc;
 
         public MailViewController(MailService mailservice,
             IToastNotification toastNotification,
             IConfiguration config ,
             ISoggettiService soggetti,
-            IWebHostEnvironment hostingEnvironment, PrintService printService )
+            IWebHostEnvironment hostingEnvironment, PrintService printService ,
+             PdfEditService pdfsvc)
         {
             _mailService = mailservice;
             _toastNotification = toastNotification;
@@ -57,6 +59,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             _soggetti = soggetti;
             _hostingEnvironment = hostingEnvironment;
             _printService = printService;
+            _pdfsvc = pdfsvc;
         }
 
        
@@ -678,7 +681,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         [AcceptVerbs("Post")]
         [HasPermission("50.1.3")]
         public async Task<ActionResult<bool>> StampaRiepilogoServer(
-string IdAllegato,string Printer)
+            string IdAllegato,string Printer)
         {
             try
             {
@@ -764,38 +767,43 @@ string IdAllegato,string Printer)
 
         [AcceptVerbs("Post")]
         [HasPermission("50.1.3")]
-        public async Task<ActionResult<bool>> InArrivo_Stampa(string IdAllegato, string IdElemento,string Printer)
+        public async Task<ActionResult<bool>> InArrivo_Stampa(string pdf)
         {
             try
             {
-                string TempFile = Path.Combine(Path.GetTempPath(), IdAllegato.ToString() + ".pdf");
+                PdfEditAction pdfact = new PdfEditAction();
+
+                pdfact = JsonConvert.DeserializeObject<PdfEditAction>(pdf);
+
+                pdfact.TempFolder= Path.Combine(_hostingEnvironment.WebRootPath, "_tmp");
+                string TempFile = Path.Combine(pdfact.TempFolder, $"{pdfact.IdAllegato}.pdf");
                 using (FileStream FS = new FileStream(TempFile, FileMode.Create))
                 {
-                    MemoryStream MS = await  _mailService.GetPdfCompletoAsync(IdAllegato, IdElemento, true);
+                    MemoryStream MS = await _pdfsvc.GetPdf(pdfact);
                     MS.WriteTo(FS);
                     FS.Close();
                 }
-                if (await _printService.AddJob(User.Identity.Name, TempFile,Printer) == 0)
+                if (await _printService.AddJob(User.Identity.Name, TempFile, pdfact.Printer) == 0)
                 {
                     System.IO.File.Delete(TempFile);
                     _toastNotification.AddSuccessToastMessage("Documento inviato alla stampante");
 
                     //Invio di conferma
-                    if (!string.IsNullOrEmpty(IdAllegato))
+                    if (!string.IsNullOrEmpty(pdfact.IdAllegato))
                         _mailService._logMan.Salva(new LogDoc()
                         {
                             Data = DateTime.Now,
-                            IdOggetto = Guid.Parse(IdAllegato),
+                            IdOggetto = Guid.Parse(pdfact.IdAllegato),
                             TipoOggetto = TipiOggetto.ALLEGATO,
                             Utente = User.Identity.Name,
                             Operazione = TipoOperazione.Stampato
                         }, true);
 
-                    if (!string.IsNullOrEmpty(IdElemento))
+                    if (!string.IsNullOrEmpty(pdfact.IdElemento))
                         _mailService._logMan.Salva(new LogDoc()
                         {
                             Data = DateTime.Now,
-                            IdOggetto = Guid.Parse(IdElemento),
+                            IdOggetto = Guid.Parse(pdfact.IdElemento),
                             TipoOggetto = TipiOggetto.ELEMENTO,
                             Utente = User.Identity.Name,
                             Operazione = TipoOperazione.Stampato

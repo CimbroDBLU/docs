@@ -108,7 +108,7 @@
                 url:'@Url.Action("StampaRiepilogoServer", "ZipView")',
                 type: 'POST',
                 cache: false,
-                data: { IdAllegato: $("#IdAllegato").val(), Printer: '@Printer' },
+                data: { IdAllegato:'@IdAllegato', Printer: '@Printer' },
                 success: function (data) {
 
                 }

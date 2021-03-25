@@ -22,7 +22,8 @@ var PdfCorrente = {
     iAzione: 0,
     IdAllegatoAElemento: "",
     Descrizione: "",
-    FileAllegati: null
+    FileAllegati: null,
+    Printer: ''
 }
 
 
@@ -812,7 +813,31 @@ function documentLoaded(args) {
 }
 
 
+function documentPrint(e) {
+    if (PdfCorrente.Printer != '') {
+        PdfCorrente.iAzione = docsAzioniPdf.Stampa;
+        if (elementoItem == null) {
+            PdfCorrente.IdElemento = null;
+        } else {
+            PdfCorrente.IdElemento = elementoItem.Id;
+        }
 
+        $.ajax({
+            url: UrlActions.ZipView_InArrivo_Stampa,
+            type: 'POST',
+            cache: false,
+            data: { pdf: JSON.stringify(PdfCorrente) },
+            success: function (data) {
+
+                var grid = $("#gridZip").data("kendoGrid");
+                gridRefresLastOp(grid, docsTipiOperazioni.STAMPATO);
+
+            }
+        });
+
+        e.cancel = true;
+    }
+}
 
 function documentPrinted() {
 
