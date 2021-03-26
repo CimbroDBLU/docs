@@ -8,10 +8,8 @@
 @using System.Drawing
 @{
 
-
     var dinamica = Convert.ToInt32(@Configuration.GetSection("Portale")["DashBoardDinamica"]);
     var num = _allegatiservice.CountFascicoli();
-
 }
 
 @if (dinamica == 1)
@@ -19,7 +17,6 @@
     <div class="row">
 
         <div class="col-lg-12 col-xs-12">
-            <!-- small box -->
             <br />
             <div class="small-box bg-green">
                 <div class="inner">
@@ -32,9 +29,6 @@
                     <i class="fa fa-folder-open"></i>
                 </div>
                 <a href="~/Docs/Fascicolo" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
-                @*
-                    <a href="~/Docs/EditorPdf" class="small-box-footer">Test editor<i class="fa fa-arrow-circle-right"></i></a>
-                *@
             </div>
         </div>
 
@@ -45,7 +39,7 @@ else
     <div class="row">
 
         <div class="col-lg-12 col-xs-12">
-            <!-- small box -->
+
             <div class="small-box bg-green">
                 <div class="inner">
                     <h3></h3>
@@ -56,28 +50,12 @@ else
                     <i class="fa fa-folder-open"></i>
                 </div>
                 <a href="~/Docs/Fascicolo" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
-                @*
-                    <a href="~/Docs/EditorPdf" class="small-box-footer">Test editor<i class="fa fa-arrow-circle-right"></i></a>
-                *@
+
             </div>
         </div>
 
     </div>
 
-@*<div class="row">
 
-        <div class="col-lg-3 col-xs-6">
-
-            <div class="small-box @Model.Colore">
-                <div class="inner">
-                    <h3>@Model.VoceMenu</h3>
-                </div>
-                <div class="icon">
-                    <i class="fa fa-envelope"></i>
-                </div>
-                <a href="@Model.Link" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
-    </div>*@
 
 }

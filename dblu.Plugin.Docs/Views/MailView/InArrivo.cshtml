@@ -138,15 +138,6 @@
     }
 </style>
 
-
-
-@* Syncfusion Essential JS 2 Styles
-    <link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
-*@
-@* Syncfusion Essential JS 2 Scripts
-    <script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
-*@
-
 <script>
 
 
@@ -180,13 +171,6 @@
         <li><a href="/Docs/MailInArrivo">Email in arrivo</a></li>
     </ol>
 </section>
-
-@*
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.js"></script>
-    <script>
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.2/pdf.worker.js';
-    </script>
-*@
 
 <script src="~/Scripts/dblupdf.js"></script>
 <script src="~/Scripts/dblugrid.js"></script>
@@ -248,28 +232,6 @@
     <div class="row" hidden="@(ListaServer.Count <= 1)">
         <div class="col-xs-5">
 
-
-            @*
-                 <script>
-                    var isTestClick = false;
-                    function TestClick(e) {
-                        //e.preventDefault();
-                        $(this).off(e);
-                        if (isTestClick == false) {
-                            isTestClick = true;
-                            $(this).prop('disabled', true);
-                            var tx = $("#testlabel").val() + 'x';
-                            $("#testlabel").val(tx);
-                            $(this).prop('disabled', false);
-                            alert(tx);
-                            isTestClick = false;
-                        }
-                    }
-                </script>
-
-                    <button id="testbutton" type="button" onclick="TestClick()" class="b btn btn-info">test </button>
-                    <input type="text" id="testlabel" style="font-size:12px" />
-            *@
 
             <label class="control-label col-md-4" style="font-size:12px">Casella di posta:</label>
             <div class="col-md-6">
@@ -868,12 +830,6 @@
                                            toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
 
                             </ejs-pdfviewer>
-
-                            @*
-                                <div class="col-md-12" style="width:80%" id="anteprimajpg" hidden>
-                                    <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
-                                </div>
-                            *@
                         </div>
                     </div>
                 </div>
