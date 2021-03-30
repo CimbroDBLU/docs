@@ -61,18 +61,6 @@
         Printer = P["Printer"];
     }
 
-
-
-
-    //var ListaTipiElementi = await _mailservice._elmMan.GetAllTipiElementiAsync();
-    // TipiElementi Tipoelemento = _mailservice..GetTipoAllegato("EMAIL");
-    //var attr = new dblu.Portale.Plugin.Docs.ViewModels.AttributiViewModel();
-    //attr.Attributi = TipoAll.Attributi;
-    //attr.NomeView = TipoAll.ViewAttributi;
-    //attr.Valori = "{\"Mittente\":\"roberta@miottomobili.it\",\"Data\":\"2019-12-13T09:41:10Z\",\"CodiceSoggetto\":\"aaa\",\"Oggetto\":\"CONFERMA\",\"MessageId\":\"CAK_jKF0R_JhvOJG4zjWTvgGhW1HAspKLDTN1zFYcUjV3-vgfdg@mail.gmail.com\",\"CodiceCliente\":\"21351\",\"NomeServer\":\"Test\"}";
-
-    //};
-
     List<dblu.Docs.Models.Colonna> ElCols = _allservice.GetColonne("vELEMENTO");
 
 }
@@ -111,8 +99,7 @@
     .new-tab-opener {
         display: none;
     }
-</style>
-<style>
+
     .my-icon-class-inoltra:before {
         content: "\e101"; /* Adds a glyph using the Unicode character number */
     }
@@ -139,7 +126,6 @@
 </style>
 
 <script>
-
 
 
     $(document).ready(function () {
@@ -223,7 +209,7 @@
         else
             return false;
     }
-   
+
 
 </script>
 
@@ -841,6 +827,7 @@
 </section>
 
 
+
 @(Html.Kendo().Window()
     .Name("detElemento")
     .Visible(false).Modal(false)
@@ -880,217 +867,128 @@
     .Modal(true)
   )
 @(Html.Kendo().Window()
-    .Name("wInoltra")
-    .Size("auto")
-    .Title("Inoltra a:")
-    .Visible(false)
-    .Actions(actions => actions.Close())
-    .Content(@<text>
-                            <div class="box-body">
-                                <form>
-                                    <div class="form-group">
-                                        @*              <label class="control-label col-md-1" style="font-size:14px">indirizzo</label>*@
+        .Name("wInoltra")
+        .Size("auto")
+        .Title("Inoltra a:")
+        .Visible(false)
+        .Actions(actions => actions.Close())
+        .Content(@<text>
+                                <div class="box-body">
+                                    <form>
+                                        <div class="form-group">
+                                                <div class="form-group col-md-8">
+                                                    @(Html.Kendo().TextBox()
+                                                .Name("emailInoltro")
+                                                .Value("")
+                                                .HtmlAttributes(new { style = "width: 100%" })
+                                                    )
+                                                </div>
+                                            <br />
                                             <div class="form-group col-md-8">
-                                                @(Html.Kendo().TextBox()
-                                            .Name("emailInoltro")
-                                            .Value("")
-                                            .HtmlAttributes(new { style = "width: 100%" })
-                                                )
-                                            </div>
-                                        <br />
-                                        <div class="form-group col-md-8">
-                        @(Html.Kendo().MultiSelect()
-.Name("multiMailInoltro")
-.DataTextField("Email")
-.DataValueField("Email")
-.Placeholder("Seleziona gli utenti")
-.ItemTemplate("#= Name # #= LastName #, <span class=\"UserName\">#= Email #</span>")
-.Height(450)
-.Events(e =>
-{
-    //e.Change("multiselectUC_OnChange");
-})
-.DataSource(source =>
-{
-    source
-    .Ajax()
-    .PageSize(80)
-    .Read("Utenti_Read", "Grid");
-})
-
-                )
-                                            </div>
-                                            <div class="form-group col-md-2">
-                                                @(Html.Kendo().Button()
-                                            .Name("okinoltra")
-                                            .Content("Invia")
-                                            .Events(ev => ev.Click("inoltraOnClick"))
-                                                )
-                                            </div>
-                                        </div>
-                <div class="form-group">
-                    <div class="form-group col-md-10" >
-                        <input type="checkbox" checked  id="chkemailInoltro" title="Chiudi email">
-                        <label class="control-label col-md-3" >Chiudi email</label>
-                    </div>
-                </div>
-                                    </form>
-                                </div>
-                        </text>)
-                        .Width(600)
-    .Height(180)
-                        .Modal(true)
-                 )
-@(Html.Kendo().Window()
-    .Name("wRispondi")
-    .Size("auto")
-    .Title("Rispondi:")
-    .Visible(false)
-    .Actions(actions => actions.Close())
-    .Content(@<text>
-                <div class="box-body">
-                    <form>
-                        <div class="form-group">
-                            <label class="control-label col-md-2" style="font-size:12px">A: </label>
-                            <div class="form-group col-md-8">
-                                @(Html.Kendo().TextBox()
-                                    .Name("destinatarioRisposta")
-                                    .Value("")
-                                    .HtmlAttributes(new { style = "width: 100%" })
-                                )
-                            </div>
-                            <label class="control-label col-md-2" style="font-size:12px">CC: </label>
-                            <div class="form-group col-md-8">
-                                @(Html.Kendo().TextBox()
-                                    .Name("ccRisposta")
-                                    .Value("")
-                                    .HtmlAttributes(new { style = "width: 100%" })
-                                )
-                            </div>
-                            <label class="control-label col-md-2" style="font-size:12px">Oggetto: </label>
-                            <div class="form-group col-md-8">
-                                @(Html.Kendo().TextBox()
-                                    .Name("oggettoRisposta")
-                                    .Value("")
-                                    .HtmlAttributes(new { style = "width: 100%" })
-                                )
-                            </div>
-                            <label class="control-label col-md-2" style="font-size:12px">Testo: </label>
-                            <div class="form-group col-md-8">
-                                 @*@Html.TextArea("testoRiposta", "", new { @class="k-textbox", style = "width: 100%;" })*@
-
-                                @(Html.Kendo().TextArea()
-                                    .Name("testoRisposta")
-                                    .Value("")
-                                    .Rows(10)
-                                    .HtmlAttributes(new { style = "width: 100%" })
-                                )
-                            </div>
-                            <div class="form-group col-md-2">
-                                @(Html.Kendo().Button()
-                            .Name("okrispondi")
-                            .Content("Invia")
-                            .Events(ev => ev.Click("rispondiOnClick"))
-                                )
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="form-group col-md-10" >
-                                <input type="checkbox" checked  id="chkemailRispondi" title="Allega originale">
-                                <label class="control-label col-md-3" >Allega originale</label>
-                            </div>
-                            <div class="form-group col-md-10" >
-                                <input type="checkbox" checked  id="chkemailRispondiChiudi" title="Chiudi email">
-                                <label class="control-label col-md-3" >Chiudi email</label>                            </div>
-                        </div>
-                        </form>
-                    </div>
-            </text>)
-    .Width(600)
-    .Height(500)
-    .Modal(true)
-                 )
-@(Html.Kendo().Window()
-    .Name("wSposta")
-    .Size("auto")
-    .Title("Sposta in:")
-    .Visible(false)
-    .Actions(actions => actions.Close())
-    .Content(@<text>
-        <div class="box-body">
-            <form>
-                <div class="form-group">
-                    @*              <label class="control-label col-md-1" style="font-size:14px">indirizzo</label>*@
-                    <div class="form-group col-md-8">
-                         @(Html.Kendo().ComboBox()
-                            .Name("emailServer_sposta")
-                            .Placeholder("Seleziona Server...")
-                            .DataTextField("Nome")
-                            .DataValueField("Nome")
-                            .BindTo(ListaServerIngresso)
-                            .SelectedIndex(0)
-                            .Suggest(true)
-                            .HtmlAttributes(new { style = "width:100%;" })
-
-                        )
-                    </div>
-                    <div class="form-group col-md-2">
-                        @(Html.Kendo().Button()
-                        .Name("okSposta")
-                        .Content("Sposta")
-                        .Events(ev => ev.Click("spostaOnClick"))
-                        )
-                    </div>
-                </div>
-            </form >
-        </div >
-    </text>)
-    .Width(600)
-    .Height(180)
-    .Modal(true)
-                 )
-@(Html.Kendo().Window()
-    .Name("wHistory")
-    .Size("auto")
-    .Title("Operazioni:")
-    .Visible(false)
-    .Actions(actions => actions.Close())
-    .Content(@<text>
-        <div class="box-body">
-            <div class="form-group col-md-11">
-              @(Html.Kendo().Grid<LogDoc>()
-                .Name("logs")
-                .Columns(columns =>
-                {
-                    columns.Bound(p => p.Data).Title("Data").Width("50%").ClientTemplate("#= kendo.toString(Data, 'dd/MM/yyyy HH:mm') #");
-                    columns.Bound(p => p.Operazione).Title("Operazione").Width("20%");
-                    columns.Bound(p => p.Utente).Title("Utente").Width("20%");
-                })
-                .DataSource(dataSource => dataSource
-                    .Ajax()
-                    //.Model(model => model.Id(p => p.ID))
-                    .Read(read => read.Action("GetLogsItem", "Docs").Data("GetLogsItem"))
+                            @(Html.Kendo().MultiSelect()
+    .Name("multiMailInoltro")
+    .DataTextField("Email")
+    .DataValueField("Email")
+    .Placeholder("Seleziona gli utenti")
+    .ItemTemplate("#= Name # #= LastName #, <span class=\"UserName\">#= Email #</span>")
+    .Height(450)
+    .Events(e =>
+    {
+        //e.Change("multiselectUC_OnChange");
+    })
+    .DataSource(source =>
+    {
+        source
+        .Ajax()
+        .PageSize(80)
+        .Read("Utenti_Read", "Grid");
+    })
 
                     )
-                    .HtmlAttributes(new { style = "font-size:12" })
-                )
-            </div>
-        </div >
-    </text>)
-    .Width(600)
-    .Height(180)
-    .Modal(true)
-                 )
+                                                </div>
+                                                <div class="form-group col-md-2">
+                                                    @(Html.Kendo().Button()
+                                                .Name("okinoltra")
+                                                .Content("Invia")
+                                                .Events(ev => ev.Click("inoltraOnClick"))
+                                                    )
+                                                </div>
+                                            </div>
+                    <div class="form-group">
+                        <div class="form-group col-md-10" >
+                            <input type="checkbox" checked  id="chkemailInoltro" title="Chiudi email">
+                            <label class="control-label col-md-3" >Chiudi email</label>
+                        </div>
+                    </div>
+                                        </form>
+                                    </div>
+                            </text>)
+                            .Width(600)
+        .Height(180)
+                            .Modal(true) )
 @(Html.Kendo().Window()
-        .Name("wPdfEditor")
-        .Size("auto")
-        .Title("Editor")
-        .Visible(false)
-        .Actions(actions => actions.Refresh().Close())
-        .Content("")
-        .Scrollable(true)
-        .Modal(true)
-                .Events(e => e.Close("wPdfEditorClose").Open("wPdfEditorOpen"))
-        );
+            .Name("wRispondi")
+            .Size("auto")
+            .Title("Rispondi:")
+            .Visible(false)
+            .Actions(actions => actions.Close())
+            .Content(@<text>
 
-<ejs-scripts></ejs-scripts>
+  <div class="box-body">
+    <form>
+    <div class="form-group">
+                                    <label class="control-label col-md-2" style="font-size:12px">A: </label>
+                                    <div class="form-group col-md-8">
+                                        @(Html.Kendo().TextBox()
+                                            .Name("destinatarioRisposta")
+                                            .Value("")
+                                            .HtmlAttributes(new { style = "width: 100%" })
+                                        )
+                                    </div>
+
+        <label class="control-label col-md-2" style="font-size:12px">CC: </label>
+                                    <div class="form-group col-md-8">
+                                        @(Html.Kendo().TextBox()
+                                            .Name("ccRisposta")
+                                            .Value("")
+                                            .HtmlAttributes(new { style = "width: 100%" })
+                                        )
+                                    </div>
+
+                                            <label class="control-label col-md-2" style="font-size:12px">Oggetto: </label>
+                                    <div class="form-group col-md-8">
+                                        @(Html.Kendo().TextBox()
+                                            .Name("oggettoRisposta")
+                                            .Value("")
+                                            .HtmlAttributes(new { style = "width: 100%" })
+                                        )
+                                    </div>
+
+                                    <label class="control-label col-md-2" style="font-size:12px">Testo: </label>
+                                    <div class="form-group col-md-8">
+                                        @Html.TextArea("testoRisposta", "", new { @class="k-textbox", style = "width: 100%;" })
+                                    </div>
+
+                                    <div class="form-group col-md-2">
+                                        @(Html.Kendo().Button()
+                                    .Name("okrispondi")
+                                    .Content("Invia")
+                                    .Events(ev => ev.Click("rispondiOnClick"))
+                                        )
+                                    </div>
+       <div class="form-group col-md-10" >
+            <input type="checkbox" checked  id="chkemailRispondi" title="Allega originale">
+            <label class="control-label col-md-3" >Allega originale</label>
+       </div>
+       <div class="form-group col-md-10" >
+           <input type="checkbox" checked  id="chkemailRispondiChiudi" title="Chiudi email">
+           <label class="control-label col-md-3" >Chiudi email</label>
+	   </div>
+    </div>
+    </form>
+  </div>
+                    </text>)
+            .Width(600)
+            .Height(500)
+            .Modal(true)
+                         )

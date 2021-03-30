@@ -1380,6 +1380,8 @@ function saveAnnotations() {
 
 function documentLoaded(args) {
 
+    console.log("-loaded");
+
     var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
     emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 
@@ -1417,6 +1419,8 @@ function documentLoaded(args) {
 
 
 function documentPrint(e) {
+
+    console.log("-print");
     if (PdfCorrente.Printer != '') {
         PdfCorrente.iAzione = docsAzioniPdf.Stampa;
         if (elementoItem == null) {
@@ -1442,7 +1446,7 @@ function documentPrint(e) {
 
 
 function documentPrinted() {
-  
+    console.log("-documentPrinted");
     $.ajax({
         url: UrlActions.MailView_InArrivo_Stampato,
         type: 'POST',
@@ -1468,7 +1472,7 @@ function documentPrinted() {
 }
 
 function exportSuccess(args) {
-
+    console.log("-exportSuccess");
     if (PdfCorrente.iAzione == docsAzioniPdf.Salva) {
 
         var pdfEditorViewer = document.getElementById('emailpdfviewer').ej2_instances[0];
