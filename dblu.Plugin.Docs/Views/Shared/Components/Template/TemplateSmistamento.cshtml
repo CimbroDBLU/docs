@@ -3,7 +3,7 @@
 @using Microsoft.Extensions.Configuration
 @inject IConfiguration Configuration
 @inject dblu.Portale.Plugin.Docs.Services.MailService _mailservice
-@model dblu.Portale.ViewModels.TemplateViewModel
+@model dblu.Portale.ViewModels.TemplateViewModel 
 
 @using System.Drawing
 @{ var dinamica = Convert.ToInt32(@Configuration.GetSection("Portale")["DashBoardDinamica"]);

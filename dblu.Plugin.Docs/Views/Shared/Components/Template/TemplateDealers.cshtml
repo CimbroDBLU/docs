@@ -6,52 +6,46 @@
 @model dblu.Portale.ViewModels.TemplateViewModel
 
 @using System.Drawing
-@{
+@{ var dinamica = Convert.ToInt32(@Configuration.GetSection("Portale")["DashBoardDinamica"]);
 
-    var dinamica = Convert.ToInt32(@Configuration.GetSection("Portale")["DashBoardDinamica"]);
-
-    var numeroFile = _zipservice.CountZipInArrivo("REQ", User.Claims);
-}
+    var numeroFile = _zipservice.CountZipInArrivo("REQ", User.Claims); }
 
 @if (dinamica == 1)
 {
-    <div class="row">
-        <div class="col-lg-12 col-xs-12">
-            <br />
-            <!-- small box -->
-            <div class="small-box bg-yellow">
-                <div class="inner">
-                    <h3>@numeroFile</h3>
-                    <p>Richieste in arrivo</p>
-                    <br />
-                </div>
-                <div class="icon">
-                    <i class="fa fa-file-text-o"></i>
-                </div>
-                <a href="~/ZipView/ZipInArrivo?Tipo=REQ" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
+<div class="row">
+    <div class="col-lg-12 col-xs-12">
+        <br />
+        <!-- small box -->
+        <div class="small-box bg-yellow">
+            <div class="inner">
+                <h3>@numeroFile</h3>
+                <p>Richieste in arrivo</p>
+                <br />
             </div>
+            <div class="icon">
+                <i class="fa fa-file-text-o"></i>
+            </div>
+            <a href="~/ZipView/ZipInArrivo?Tipo=REQ" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
         </div>
-
     </div>
-}
+
+</div> }
 else
 {
-    <div class="row">
-        <div class="col-lg-12 col-xs-12">
-            <!-- small box -->
-            <div class="small-box bg-yellow">
-                <div class="inner">
-                    <h3>@numeroFile</h3>
-                    <p>Richieste in arrivo</p>
-                    <br />
-                </div>
-                <div class="icon">
-                    <i class="fa fa-file-text-o"></i>
-                </div>
-                <a href="~/ZipView/ZipInArrivo?Tipo=REQ" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
+<div class="row">
+    <div class="col-lg-12 col-xs-12">
+        <!-- small box -->
+        <div class="small-box bg-yellow">
+            <div class="inner">
+                <h3>@numeroFile</h3>
+                <p>Richieste in arrivo</p>
+                <br />
             </div>
+            <div class="icon">
+                <i class="fa fa-file-text-o"></i>
+            </div>
+            <a href="~/ZipView/ZipInArrivo?Tipo=REQ" class="small-box-footer">Apri <i class="fa fa-arrow-circle-right"></i></a>
         </div>
-
     </div>
 
-}
+</div>}
