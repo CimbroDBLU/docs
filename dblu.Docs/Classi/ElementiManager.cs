@@ -71,7 +71,7 @@ namespace dblu.Docs.Classi
                     //.Include(a => a.TipoNavigation)
                     //.Where(a => (a.Id == guid && a.Revisione==rev) ).FirstOrDefault();
                     //elm.Attributi = elm.TipoNavigation.Attributi;
-                    
+
                     //if (!string.IsNullOrEmpty(elm._attributi))
                     //{
                     //    elm.Attributi.SetValori(elm._attributi);
@@ -79,7 +79,7 @@ namespace dblu.Docs.Classi
 
                     elm = this.Get(guid.ToString(), rev);
                 }
-            }
+             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
@@ -114,7 +114,7 @@ namespace dblu.Docs.Classi
                         elemento.UtenteC = "";
                     if (elemento.UtenteUM == null)
                         elemento.UtenteUM = "";
-                    elemento.Attributi = elemento.elencoAttributi.GetValori();
+                 elemento.Attributi = elemento.elencoAttributi.GetValori();
                     // _context.SaveChanges();
                     if (isNew)
                     {

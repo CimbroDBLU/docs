@@ -100,8 +100,6 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                 _mailService._logger.LogError($" GetEmailAttachments : {ex.Message}");
             }
             return Json(l.ToDataSourceResult(request));
-
-
         }
 
 
@@ -1076,7 +1074,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
                                 if (all.elencoAttributi.Valori.ContainsKey(xx.Nome))
                                 {
-                                    all.elencoAttributi.Valori[xx.Nome].Valore = attr.Get(n);
+                                        all.elencoAttributi.Assegna(xx.Nome, attr.Get(n));
                                 }
                                 else
                                 {

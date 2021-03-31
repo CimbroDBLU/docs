@@ -204,41 +204,52 @@ namespace dblu.Docs.Classi
                 if (Valori.ContainsKey(Nome))
                 {
                     Attributo a = Valori[Nome];
-                    if (a.SystemType.IsAssignableFrom(valore.GetType()))
-                    {
-                        a.Valore = valore;
-                        bres = true;
-                    }
-                    else
-                    {
-                        switch (a.Tipo)
+                    if (valore == null) {
+                        if (a.Obbligatorio)
                         {
-                            case "System.DateTime":
-                                DateTime dt;
-                                if (DateTime.TryParse(valore.ToString(), out dt))
-                                {
-                                    a.Valore = dt;
-                                    bres = true;
-                                }
-                                break;
-                            case "System.Boolean":
-                                a.Valore = System.Convert.ToBoolean(valore);
-                                break;
-                            case "System.Double":
-                                a.Valore = System.Convert.ToDouble(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
-                                break;
-                            case "System.Int32":
-                                a.Valore = System.Convert.ToInt32(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
-                                break;
-                             case "System.Int64":
-                                a.Valore = System.Convert.ToInt64(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
-                                break;
-                            case "System.String":
-                                a.Valore = valore.ToString();
-                                break;
-                            default:
-                                a.Valore = valore.ToString();
-                                break;
+                            return false;
+                        }
+                        else {
+                            a.Valore = null;
+                        }
+                    }
+                    else { 
+                        if (a.SystemType.IsAssignableFrom(valore.GetType()))
+                        {
+                            a.Valore = valore;
+                            bres = true;
+                        }
+                        else
+                        {
+                            switch (a.Tipo)
+                            {
+                                case "System.DateTime":
+                                    DateTime dt;
+                                    if (DateTime.TryParse(valore.ToString(), out dt))
+                                    {
+                                        a.Valore = dt;
+                                        bres = true;
+                                    }
+                                    break;
+                                case "System.Boolean":
+                                    a.Valore = System.Convert.ToBoolean(valore);
+                                    break;
+                                case "System.Double":
+                                    a.Valore = System.Convert.ToDouble(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+                                    break;
+                                case "System.Int32":
+                                    a.Valore = System.Convert.ToInt32(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+                                    break;
+                                 case "System.Int64":
+                                    a.Valore = System.Convert.ToInt64(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+                                    break;
+                                case "System.String":
+                                    a.Valore = valore.ToString();
+                                    break;
+                                default:
+                                    a.Valore = valore.ToString();
+                                    break;
+                            }
                         }
                     }
                 }
@@ -290,8 +301,15 @@ namespace dblu.Docs.Classi
             try
             {
                 var values = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(jValori);
-                foreach (KeyValuePair<string, dynamic> d in values) { 
-                    this.Valori[d.Key].Valore = d.Value;
+                foreach (KeyValuePair<string, dynamic> d in values)
+                {
+                    try
+                    {
+                        this.Valori[d.Key].Valore = d.Value;
+                    }
+                    catch (Exception ex){
+                        var Message = ex.Message;
+                    }
                 }
             }
             catch

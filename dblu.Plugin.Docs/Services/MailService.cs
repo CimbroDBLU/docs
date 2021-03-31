@@ -1586,15 +1586,18 @@ namespace dblu.Portale.Plugin.Docs.Services
                     e.Descrizione = Descrizione;
                 //_context.Add(e);
                 isNew = true;
-                    e.IdFascicoloNavigation = f;
+                e.IdFascicoloNavigation = f;
                 //TipiElementi tipoEl = _context.TipiElementi
                 //        .Where(t => t.Codice == TipoElemento)
                 //        .FirstOrDefault();
                 TipiElementi tipoEl =  _elmMan.GetTipoElemento(TipoElemento);
                 e.TipoNavigation = tipoEl;
-                e.elencoAttributi = tipoEl.Attributi;
+                if (e.elencoAttributi == null)
+                {
+                    e.elencoAttributi = e.TipoNavigation.Attributi;
+                }
 
-                    Allegato.IdElemento = e.Id;
+                Allegato.IdElemento = e.Id;
                 //if (!string.IsNullOrEmpty(IdElemento)) {
                 //    var te = _elmMan.GetTipoElemento(TipoElemento);
                 //    var el = _elmMan.Get(IdElemento,0);
@@ -1602,6 +1605,14 @@ namespace dblu.Portale.Plugin.Docs.Services
                 //    e.elencoAttributi = te.Attributi;
                 //    e.elencoAttributi.SetValori(el.elencoAttributi.GetValori());
                 //}
+
+                //eredita attributi email 
+                var kk = Allegato.elencoAttributi.Nomi();
+                foreach (var att in e.elencoAttributi.ToList()) {
+                    if (att.Duplicabile && kk.Contains(att.Nome) ) {
+                        e.SetAttributo(att.Nome, Allegato.GetAttributo(att.Nome));
+                    }
+                }
                 e.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 e.SetAttributo("NomeSoggetto", NomeSoggetto);
 
@@ -2262,6 +2273,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                         variabili = new Dictionary<string, VariableValue>();
 
                     VariableValue v = VariableValue.FromObject(el.Id.ToString());
+                    if (variabili.ContainsKey("IdElemento")) {
+                        variabili.Remove("IdElemento"); }
                     variabili.Add("IdElemento", v);
                     v = VariableValue.FromObject(JsonConvert.SerializeObject(el));
                     variabili.Add("jElemento", v);
