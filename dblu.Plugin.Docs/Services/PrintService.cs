@@ -51,7 +51,6 @@ namespace dblu.Portale.Plugin.Docs.Services
             if (nPrinterName != null)
                 PrinterName = nPrinterName;
 
-
             _logger.LogInformation($"PrintService.AddJob: User:{User} is printing {FileName} on {PrinterName}");
 
             Process objP = new Process();

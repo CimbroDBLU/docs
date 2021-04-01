@@ -61,6 +61,7 @@ using MailKit.Search;
 using dblu.Portale.Core.Infrastructure.Identity.Class;
 using dblu.CamundaClient;
 using AutoMapper;
+using Syncfusion.Pdf.Graphics;
 
 namespace dblu.Portale.Plugin.Docs.Services
 {
@@ -2816,7 +2817,16 @@ namespace dblu.Portale.Plugin.Docs.Services
 
             try
             {
-            if (!File.Exists(NomePdf))
+                PdfUnitConverter convertor = new PdfUnitConverter();
+                float mm = 10;
+                try { 
+                    mm = float.Parse(_config["Docs:Margini"]);
+                } catch {
+                    mm = 10;
+                }
+                float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
+
+                if (!File.Exists(NomePdf))
             {
                 string etichetta = Path.Combine(_appEnvironment.ContentRootPath, "Report", _config["Docs:EtichettaProtocollo"]);
                 if (!File.Exists(etichetta))
@@ -2847,7 +2857,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                         //Create a new PDF document
                         Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
-                        document.PageSettings.SetMargins(10);
+                        document.PageSettings.SetMargins(MarginPoints);
                         //Add a page to the document
                         Syncfusion.Pdf.PdfPage page = document.Pages.Add();
 

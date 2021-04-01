@@ -77,6 +77,18 @@ namespace dblu.Portale.Plugin.Docs.Class
             List<EmailAttachments> res = new List<EmailAttachments>();
             try
             {
+                PdfUnitConverter convertor = new PdfUnitConverter();
+                float mm = 10;
+                try
+                {
+                    mm = float.Parse(_config["Docs:Margini"]);
+                }
+                catch
+                {
+                    mm = 10;
+                }
+                float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
+
                 var testfile = NomePdf + ".tmp";
                 if (File.Exists(NomePdf))
                     File.Delete(NomePdf);
@@ -169,10 +181,10 @@ namespace dblu.Portale.Plugin.Docs.Class
                             settings.SplitTextLines = true;
                             settings.SplitImages = true;
                             //settings.SinglePageLayout = Syncfusion.Pdf.HtmlToPdf.SinglePageLayout.FitHeight;
-                            settings.Margin.Right = 20;
-                            settings.Margin.Left = 20;
-                            settings.Margin.Top = 20;
-                            settings.Margin.Bottom = 20;
+                            settings.Margin.Right = MarginPoints;
+                            settings.Margin.Left = MarginPoints;
+                            settings.Margin.Top = MarginPoints;
+                            settings.Margin.Bottom = MarginPoints;
                         //Assign WebKit settings to HTML converter
                         htmlConverter.ConverterSettings = settings;
 
@@ -409,11 +421,6 @@ namespace dblu.Portale.Plugin.Docs.Class
                     ListaPdf.Add(pdfstream);
 
                 }
-
-             
-
-
-
                 foreach (ZipArchiveEntry entry in ZipFile.Entries)
                 {
                     {
@@ -577,6 +584,18 @@ namespace dblu.Portale.Plugin.Docs.Class
             bool res = true;
             try
             {
+                PdfUnitConverter convertor = new PdfUnitConverter();
+                float mm = 10;
+                try
+                {
+                    mm = float.Parse(_config["Docs:Margini"]);
+                }
+                catch
+                {
+                    mm = 10;
+                }
+                float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
+
                 string rpt = _config["Docs:EtichettaProtocollo"];
                 if (string.IsNullOrEmpty(rpt))
                     return true;
@@ -627,7 +646,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                     Syncfusion.Pdf.Parsing.PdfLoadedDocument pdftmp = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(pdfstream);
 
                     Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
-                    document.PageSettings.SetMargins(20);
+                    document.PageSettings.SetMargins(MarginPoints);
 
                     int i = 0;
                     foreach (Syncfusion.Pdf.PdfLoadedPage lptmp in pdftmp.Pages)
@@ -806,33 +825,17 @@ namespace dblu.Portale.Plugin.Docs.Class
              avvisi = "";
             try
             {
-
-                //rimosso controllo integrità che va in crash con alcuni pdf
-
-                //MemoryStream m1 = new MemoryStream();
-                //m.Position = 0;
-                //m.CopyTo(m1);
-                //PdfDocumentAnalyzer analyzer = new PdfDocumentAnalyzer(m1);
-                //Get the syntax errors
-                //SyntaxAnalyzerResult anRes = analyzer.AnalyzeSyntax();
-                ////Check whether the document is corrupted or not
-                //if (anRes.IsCorrupted)
-                //{
-                //    //Get syntax error details from results.error
-                //    StringBuilder builder = new StringBuilder();
-                //    //builder.AppendLine("The PDF document is corrupted.");
-                //    int count = 1;
-                //    foreach (PdfException exception in anRes.Errors)
-                //    {
-                //        builder.AppendLine(count++.ToString() + ": " + exception.Message);
-                //    }
-                //    _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il file {fileName}. {builder.ToString()}");
-                //}
-                //else
-                //{
-                //No syntax error found in the provided PDF document
-                //m.Position = 0;
-                //File.WriteAllBytes(Path.Combine(_appEnvironment.WebRootPath, "_tmp", fileName), m.ToArray());
+                PdfUnitConverter convertor = new PdfUnitConverter();
+                float mm = 10;
+                try
+                {
+                    mm = float.Parse(_config["Docs:Margini"]);
+                }
+                catch
+                {
+                    mm = 10;
+                }
+                float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
 
                 var flAnn = false;  //contiene annotazioni
                 var flResize = false;  // richiede resize
@@ -921,7 +924,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                     foreach (PdfPageBase p in ld.Pages)
                     {
                         PdfPage page = doc1.Pages.Add();
-                        page.Section.PageSettings.Margins.All = 20f;
+                        page.Section.PageSettings.Margins.All = MarginPoints;
                         
                         PdfGraphics g = page.Graphics;
                         PdfTemplate template = p.CreateTemplate();

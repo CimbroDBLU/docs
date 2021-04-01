@@ -20,6 +20,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NToastNotify;
+using Syncfusion.Pdf.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -1244,6 +1245,18 @@ namespace dblu.Portale.Plugin.Docs.Services
 
             try
             {
+                PdfUnitConverter convertor = new PdfUnitConverter();
+                float mm = 10;
+                try
+                {
+                    mm = float.Parse(_config["Docs:Margini"]);
+                }
+                catch
+                {
+                    mm = 10;
+                }
+                float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
+
                 if (!File.Exists(NomePdf))
                 {
                     string etichetta = Path.Combine(_appEnvironment.ContentRootPath, "Report", _config["Docs:EtichettaProtocollo"]);
@@ -1275,7 +1288,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                         //Create a new PDF document
                         Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
-                        document.PageSettings.SetMargins(10);
+                        document.PageSettings.SetMargins(MarginPoints);
                         //Add a page to the document
                         Syncfusion.Pdf.PdfPage page = document.Pages.Add();
 
