@@ -2845,7 +2845,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                 var reportSource = new Telerik.Reporting.InstanceReportSource();
                 reportSource.ReportDocument = eti;
 
-
                     // cambiato in left join per elementi senza allegato
 
                     var sql = "SELECT e.* FROM allegati m INNER JOIN elementi e ON e.idfascicolo = m.idfascicolo " +
@@ -2879,21 +2878,21 @@ namespace dblu.Portale.Plugin.Docs.Services
                         Syncfusion.Pdf.Parsing.PdfLoadedDocument pdftmp = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(mpdftmp);
 
 
-                        float curpos = 20;
+                        float curpos = MarginPoints;
                         float etiHeight = page.Size.Height * (float) .05;
                         int i = 0;
                         //foreach (Elementi e in el)
-                        int nrpag = (int)Math.Round(el.Count() / 13.0+0.5,0,MidpointRounding.AwayFromZero) ;
+                        int nrpag = (int)Math.Round(el.Count() / 12.0+0.5,0,MidpointRounding.AwayFromZero) ;
 
                         for(int p=0; p< nrpag; p++) {
                             if (p > 0) {
                                 page = document.Pages.Add();
                                 graphics = page.Graphics;
-                                curpos = 20;
+                                curpos = MarginPoints;
                             }
-                            for (i=0; i< 13;i++)
+                            for (i=0; i< 12;i++)
                         {
-                                int j = p * 13 + i;
+                                int j = p * 12 + i;
                                 if (j >= el.Count())
                                     break;
                                 
@@ -2903,13 +2902,13 @@ namespace dblu.Portale.Plugin.Docs.Services
                             e.elencoAttributi = e.TipoNavigation.Attributi;
                             e.elencoAttributi.SetValori(e.Attributi);
                         
-                        foreach (Attributo a in e.elencoAttributi.ToList())
-                        {
-                            if (a.Valore != null)
+                            foreach (Attributo a in e.elencoAttributi.ToList())
                             {
-                                reportSource.Parameters.Add(a.Nome, a.Valore == null ? "" : a.Valore);
+                                if (a.Valore != null)
+                                {
+                                    reportSource.Parameters.Add(a.Nome, a.Valore == null ? "" : a.Valore);
+                                }
                             }
-                        }
                                 //i++;
                                 reportSource.Parameters.Add("NPag", p+1);
                                 reportSource.Parameters.Add("TPag", pdftmp.Pages.Count + nrpag );
@@ -2936,7 +2935,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 
                             graphics.DrawPdfTemplate(template, posizione,
                                 new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height));
-                            curpos += etiHeight + 20;
+                            curpos += etiHeight + MarginPoints;
                             pdfEti.Close();
 
                     }
