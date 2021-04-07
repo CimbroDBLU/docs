@@ -183,7 +183,7 @@
 
 <section class="pdf-editor-section">
     <!-- Main row -->
-    <div >
+    <div>
         @(Html.Kendo().ToolBar()
                 .Name("pdfEditorToolBar")
                 .Items(items =>
@@ -202,16 +202,18 @@
         )
 
         <ejs-pdfviewer id="pdfEditorViewer" serviceUrl="/api/PdfEditor" documentPath="@azione"
-            enablePrint="false"
-            printEnd="pdf_documentPrinted"
-            documentLoad="pdf_documentLoaded"
-            annotationAdd="pdf_annotationAdd"
-            exportSuccess="pdf_exportSuccess"
-            locale="it-IT" 
-            downloadFileName="@string.Concat("",".pdf")" height="900px"
-            toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
+                       enablePrint="false"
+                       printEnd="pdf_documentPrinted"
+                       documentLoad="pdf_documentLoaded"
+                       annotationAdd="pdf_annotationAdd"
+                       exportSuccess="pdf_exportSuccess"
+                       locale="it-IT"
+                       downloadFileName="@string.Concat("",".pdf")" height="900px"
+                       toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
         </ejs-pdfviewer>
     </div>
+
+    <ejs-scripts></ejs-scripts>
 </section>
 
 
