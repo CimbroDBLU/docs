@@ -144,7 +144,7 @@ namespace dblu.Docs.Classi
                 {
                     dynamic v = Valori[Nome].Valore;
                     bool? b = null;
-                    if (v.GetType() == typeof(bool))
+                    if (v!= null && v.GetType() == typeof(bool))
                     {
                         b = (bool)v;
                     }

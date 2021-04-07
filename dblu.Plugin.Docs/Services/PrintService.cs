@@ -1,9 +1,13 @@
 ﻿
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,6 +18,7 @@ namespace dblu.Portale.Plugin.Docs.Services
     /// </summary>
     public class PrintService
     {
+
         /// <summary>
         /// Injected configuration reader
         /// </summary>
@@ -46,31 +51,35 @@ namespace dblu.Portale.Plugin.Docs.Services
         /// </returns>
         public async Task<int> AddJob(string User,string FileName,string nPrinterName="")
         {
-            string ServerName = _config["PrintServer:Server"];
-            string PrinterName = _config["PrintServer:Printer"];
-            if (nPrinterName != null)
-                PrinterName = nPrinterName;
-
-            _logger.LogInformation($"PrintService.AddJob: User:{User} is printing {FileName} on {PrinterName}");
-
-            Process objP = new Process();
-            objP.StartInfo.FileName = "lpr";
-            objP.StartInfo.Arguments = $" -S {ServerName} -P \"{PrinterName}\" -o l \"{FileName}\"";
-            objP.StartInfo.RedirectStandardOutput = true;
-            objP.StartInfo.UseShellExecute = false;
-            objP.StartInfo.RedirectStandardError = true;
-            objP.StartInfo.CreateNoWindow = true;
-            objP.Start();
-            objP.WaitForExit();
-
-            if (objP.ExitCode == 0)
-                _logger.LogInformation($"PrintService.AddJob: Printing of {FileName} on {PrinterName} has been finished");
-            else
+            try
             {
-                _logger.LogWarning($"PrintService.AddJob: Printing of {FileName} on {PrinterName} FAILED");
-                _logger.LogWarning($"PrintService.AddJob: Ex {objP.StandardOutput.ReadToEnd()}");
+                string ServerName = _config["PrintServer:Server"];
+                string PrinterName = _config["PrintServer:Printer"];
+                if (nPrinterName != null)
+                    PrinterName = nPrinterName;
+
+                RestClient restClient = new RestClient(ServerName);
+                RestRequest restRequest = new RestRequest("api/PrinterServer");
+                restRequest.RequestFormat = DataFormat.Json;
+                restRequest.Method = Method.POST;
+                restRequest.AddHeader("Content-Type", "multipart/form-data");
+                restRequest.AddFile("File", FileName);
+                restRequest.AddParameter("Printer", PrinterName, ParameterType.RequestBody);
+               
+                var response = restClient.Execute(restRequest);
+                if (response.Content == "0")
+                {
+                    _logger.LogInformation($"PrintService.AddJob: Sent print {FileName} to {PrinterName} from {User}");
+                    return 0;
+
+                }
+                _logger.LogError($"PrintService.AddJob: Print {FileName} to {PrinterName} from {User} not worked! Service is off? ");
+                return 1;
+            }catch(Exception ex)
+            {
+                _logger.LogError($"PrintService.AddJob: Print {FileName} from {User} not worked! Exception:{ex} ");
+                return 2;
             }
-            return objP.ExitCode;
         }
     }
 }

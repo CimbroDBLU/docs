@@ -1,5 +1,4 @@
-﻿@*@model dblu.Docs.Models.Allegati*@
-
+﻿
 @model dblu.Portale.Plugin.Docs.ViewModels.inArrivoView
 
 @using dblu.Docs.Classi
@@ -61,6 +60,8 @@
         Printer = P["Printer"];
     }
 
+
+
     List<dblu.Docs.Models.Colonna> ElCols = _allservice.GetColonne("vELEMENTO");
 
 }
@@ -99,7 +100,8 @@
     .new-tab-opener {
         display: none;
     }
-
+</style>
+<style>
     .my-icon-class-inoltra:before {
         content: "\e101"; /* Adds a glyph using the Unicode character number */
     }
@@ -126,6 +128,7 @@
 </style>
 
 <script>
+
 
 
     $(document).ready(function () {
@@ -157,6 +160,8 @@
         <li><a href="/Docs/MailInArrivo">Email in arrivo</a></li>
     </ol>
 </section>
+
+
 
 <script src="~/Scripts/dblupdf.js"></script>
 <script src="~/Scripts/dblugrid.js"></script>
@@ -217,6 +222,7 @@
 <section class="content">
     <div class="row" hidden="@(ListaServer.Count <= 1)">
         <div class="col-xs-5">
+
 
 
             <label class="control-label col-md-4" style="font-size:12px">Casella di posta:</label>
@@ -281,44 +287,7 @@
         <div class="col-xs-5">
             <div class="box box-solid box-default">
                 @Html.Hidden("IdAllegato")
-                @* <div class="box-header with-border">
-                                           <h3 class="box-title">email in arrivo</h3>
-                                       </div
-
-                                               @(Html.Kendo().Button()
-                                          .Name("CercaSoggetti")
-                                          .Content("Test")
-                                          .Events(ev => ev.Click("cercaonClick"))
-
-                    )
-                                 @(Html.Kendo().Window()
-                                                   .Name("cercasoggetti")
-                                       .Size("auto")
-                                       .Title("Dettaglio")
-                                       .Visible(false)
-                                       .Actions(actions => actions.Refresh().Minimize().Maximize().Close())
-                                       .Content("")
-                                       .Scrollable(true)
-                                       .Draggable(false)
-                                       .Resizable()
-                                       .Modal(false)
-                                       .Width(800)
-
-                                   )
-                     .ClientRowTemplate(
-                                           "<tr>" +
-                                               "<td class='chiave1'>" +
-                                                   "<span >#: Chiave1# </span>" +
-                                               "</td>" +
-                                               "<td class='descrizione'>" +
-                                                   "#: Descrizione #" +
-                                               "</td>" +
-                                               "<td class='chiave2'>" +
-                                               "#: Chiave2 #" +
-                                               "</td>" +
-                                            "</tr>"
-                                       )
-                *@
+              
 
                 <div class="box-body">
                     <div class="k-grid">
@@ -334,18 +303,7 @@
                                             + "<span> #: Mittente# </span><br/>");
                             columns.Bound(p => p.Oggetto).Title("Oggetto").Width(150);
                             columns.Bound(p => p.Data).Title(TipoAll.Attributi.Descrizione("Data")).Width(100).Format("{0:dd/MM/yy HH:mm}");
-                                //columns.Bound(p => p.Chiave1).Title("chiave1").Width(0).Hidden();
-                            //columns.Command(command =>
-                            //{
-
-                            //    command.Custom("Inoltra").Text("").Click("InoltraEmail").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:70px" });
-                            //    command.Custom("Sposta").Text("").Click("SpostaEmail").IconClass("k-icon my-icon-class-sposta").HtmlAttributes(new { style = "width:70px " });
-                            //    command.Custom("Rispondi").Text("Risp.").Click("RispondiEmail").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:70px" });
-                            //    // command.Custom("*Elimina*").Click("DeleteEmail");
-                            //    command.Destroy().Text("Canc.").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:70px"});
-                            //}).Width(90);
-                            //columns.Bound(p => p.Stato).Width(50).ClientTemplate("#if (data.Stato == 3){#<span class='k-icon k-i-printer'></span>#} else if (data.Stato==2){#<span class='k-icon k-i-file-add'></span>#}#");
-                                columns.Bound(p => p.LastOp).Width(75).Title("Operaz.").ClientTemplate("#= xIconLastOp(data) #");
+                                        columns.Bound(p => p.LastOp).Width(75).Title("Operaz.").ClientTemplate("#= xIconLastOp(data) #");
                                 columns.Command(command => command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewHistory").IconClass("k-icon ").HtmlAttributes(new { style = "width:30px " })).Hidden();
                         })
                              .ToolBar(toolbar =>
@@ -396,9 +354,6 @@
                         )
                     </div>
                 </div>
-                @*<div>
-                        <button id="test" onclick="dettonclick()">Test</button>
-                    </div>*@
             </div>
         </div>
         <div class="col-xs-7">
@@ -416,7 +371,7 @@
                     <form>
                         <div class="row" id="divCliente">
                             <div class="form-group">
-                                @*   <label class="control-label col-md-4" style="font-size:12px">Cliente</label> *@
+                              
                                 <div class="col-md-12" style="width:80%;">
                                     <div class="form-row">
                                         <div class="form-group col-md-2">
@@ -437,23 +392,7 @@
                                                 .Content("Associa Elemento")
                                                 .Events(e => e.Click("AssociaElementoOnClick"))
                                         )
-                                        @*
-                                            <input type="button" value="Open" onclick="window.open('@Url.Action("testdownload", "sgGea")')" />
-
-
-                                                                                      <script>
-                                                  function testLikGea() {
-
-                                                      $.ajax({
-                                                          url: '@Url.Action("testdownload", "sgGea")',
-                                                          type: 'GET',
-                                                          success: function (data) {
-                                                              $("testLikGea").text = "ok";
-                                                          }
-                                                      });
-                                                  }
-                                                   </script>
-                                        *@
+                                      
                                     </div>
                                 </div>
                             </div>
@@ -744,43 +683,6 @@
                     <div class="form-group">
 
                         <div class="col-md-12" style="width:100%; margin-top:10px" id="anteprimapdf">
-                            @*
-
-                                 <div class="col-md-12" style="margin-top:10px">
-                                    @(Html.Kendo().Button()
-                                        .Name("kbEditPdf")
-                                        .Icon("k-icon k-i-page-properties")
-                                        .Content("Apri")
-                                        .Events(ev => ev.Click("kbEditPdfOnClick"))
-                                        .HtmlAttributes(new { style = "align-items:end" })
-
-                                    )
-                                </div>
-
-
-                                        @(Html.Kendo().PDFViewer().Name("pdfviewer")
-                                                            .Toolbar(toolbar =>
-                                                            toolbar.Items(items =>
-                                                                {
-                                                                    items.Add().Name("pager");
-                                                                    items.Add().Name("spacer");
-                                                                    items.Add().Name("zoom");
-                                                                    items.Add().Name("print");
-                                                                    items.Add().Name("search");
-                                                                    items.Add().Name("download");
-                                                                    items.Add().Name("open");
-                                                                })
-                                                            )
-                                                            .Height(800)
-                                    .Scale(2)
-                                            items.Add().Type(CommandType.ButtonGroup).Buttons(buttons =>
-                                            {
-                                                buttons.Add().Text("+90°").Id("tbruotadx").Icon("redo").Group("toolbar").Click("tbpdf_click");
-                                                buttons.Add().Text("-90°").Id("tbruotasx").Icon("undo").Group("toolbar").Toggle("tbpdf_click");
-                                                buttons.Add().Text("Canc.").Id("tbcanc").Icon("delete").Group("toolbar").Toggle("tbpdf_click");
-                                            });
-                                   )
-                            *@
                             @(Html.Kendo().ToolBar()
                .Name("pdfToolBar")
                .Items(items =>
@@ -827,7 +729,6 @@
 </section>
 
 
-
 @(Html.Kendo().Window()
     .Name("detElemento")
     .Visible(false).Modal(false)
@@ -867,128 +768,212 @@
     .Modal(true)
   )
 @(Html.Kendo().Window()
-        .Name("wInoltra")
-        .Size("auto")
-        .Title("Inoltra a:")
-        .Visible(false)
-        .Actions(actions => actions.Close())
-        .Content(@<text>
-                                <div class="box-body">
-                                    <form>
-                                        <div class="form-group">
-                                                <div class="form-group col-md-8">
-                                                    @(Html.Kendo().TextBox()
-                                                .Name("emailInoltro")
-                                                .Value("")
-                                                .HtmlAttributes(new { style = "width: 100%" })
-                                                    )
-                                                </div>
-                                            <br />
+    .Name("wInoltra")
+    .Size("auto")
+    .Title("Inoltra a:")
+    .Visible(false)
+    .Actions(actions => actions.Close())
+    .Content(@<text>
+                            <div class="box-body">
+                                <form>
+                                    <div class="form-group">
+                                        @*              <label class="control-label col-md-1" style="font-size:14px">indirizzo</label>*@
                                             <div class="form-group col-md-8">
-                            @(Html.Kendo().MultiSelect()
-    .Name("multiMailInoltro")
-    .DataTextField("Email")
-    .DataValueField("Email")
-    .Placeholder("Seleziona gli utenti")
-    .ItemTemplate("#= Name # #= LastName #, <span class=\"UserName\">#= Email #</span>")
-    .Height(450)
-    .Events(e =>
-    {
-        //e.Change("multiselectUC_OnChange");
-    })
-    .DataSource(source =>
-    {
-        source
-        .Ajax()
-        .PageSize(80)
-        .Read("Utenti_Read", "Grid");
-    })
+                                                @(Html.Kendo().TextBox()
+                                            .Name("emailInoltro")
+                                            .Value("")
+                                            .HtmlAttributes(new { style = "width: 100%" })
+                                                )
+                                            </div>
+                                        <br />
+                                        <div class="form-group col-md-8">
+                        @(Html.Kendo().MultiSelect()
+.Name("multiMailInoltro")
+.DataTextField("Email")
+.DataValueField("Email")
+.Placeholder("Seleziona gli utenti")
+.ItemTemplate("#= Name # #= LastName #, <span class=\"UserName\">#= Email #</span>")
+.Height(450)
+.Events(e =>
+{
+    //e.Change("multiselectUC_OnChange");
+})
+.DataSource(source =>
+{
+    source
+    .Ajax()
+    .PageSize(80)
+    .Read("Utenti_Read", "Grid");
+})
+
+                )
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                @(Html.Kendo().Button()
+                                            .Name("okinoltra")
+                                            .Content("Invia")
+                                            .Events(ev => ev.Click("inoltraOnClick"))
+                                                )
+                                            </div>
+                                        </div>
+                <div class="form-group">
+                    <div class="form-group col-md-10" >
+                        <input type="checkbox" checked  id="chkemailInoltro" title="Chiudi email">
+                        <label class="control-label col-md-3" >Chiudi email</label>
+                    </div>
+                </div>
+                                    </form>
+                                </div>
+                        </text>)
+                        .Width(600)
+    .Height(180)
+                        .Modal(true)
+                 )
+@(Html.Kendo().Window()
+    .Name("wRispondi")
+    .Size("auto")
+    .Title("Rispondi:")
+    .Visible(false)
+    .Actions(actions => actions.Close())
+    .Content(@<text>
+                <div class="box-body">
+                    <form>
+                        <div class="form-group">
+                            <label class="control-label col-md-2" style="font-size:12px">A: </label>
+                            <div class="form-group col-md-8">
+                                @(Html.Kendo().TextBox()
+                                    .Name("destinatarioRisposta")
+                                    .Value("")
+                                    .HtmlAttributes(new { style = "width: 100%" })
+                                )
+                            </div>
+                            <label class="control-label col-md-2" style="font-size:12px">CC: </label>
+                            <div class="form-group col-md-8">
+                                @(Html.Kendo().TextBox()
+                                    .Name("ccRisposta")
+                                    .Value("")
+                                    .HtmlAttributes(new { style = "width: 100%" })
+                                )
+                            </div>
+                            <label class="control-label col-md-2" style="font-size:12px">Oggetto: </label>
+                            <div class="form-group col-md-8">
+                                @(Html.Kendo().TextBox()
+                                    .Name("oggettoRisposta")
+                                    .Value("")
+                                    .HtmlAttributes(new { style = "width: 100%" })
+                                )
+                            </div>
+                            <label class="control-label col-md-2" style="font-size:12px">Testo: </label>
+                            <div class="form-group col-md-8">
+                                 @Html.TextArea("testoRiposta", "", new { @class="k-textbox", style = "width: 100%;", rows=5 })
+
+                              
+                            </div>
+                            <div class="form-group col-md-2">
+                                @(Html.Kendo().Button()
+                            .Name("okrispondi")
+                            .Content("Invia")
+                            .Events(ev => ev.Click("rispondiOnClick"))
+                                )
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-group col-md-10" >
+                                <input type="checkbox" checked  id="chkemailRispondi" title="Allega originale">
+                                <label class="control-label col-md-3" >Allega originale</label>
+                            </div>
+                            <div class="form-group col-md-10" >
+                                <input type="checkbox" checked  id="chkemailRispondiChiudi" title="Chiudi email">
+                                <label class="control-label col-md-3" >Chiudi email</label>                            </div>
+                        </div>
+                        </form>
+                    </div>
+            </text>)
+    .Width(600)
+    .Height(500)
+    .Modal(true)
+                 )
+@(Html.Kendo().Window()
+    .Name("wSposta")
+    .Size("auto")
+    .Title("Sposta in:")
+    .Visible(false)
+    .Actions(actions => actions.Close())
+    .Content(@<text>
+        <div class="box-body">
+            <form>
+                <div class="form-group">
+                    @*              <label class="control-label col-md-1" style="font-size:14px">indirizzo</label>*@
+                    <div class="form-group col-md-8">
+                         @(Html.Kendo().ComboBox()
+                            .Name("emailServer_sposta")
+                            .Placeholder("Seleziona Server...")
+                            .DataTextField("Nome")
+                            .DataValueField("Nome")
+                            .BindTo(ListaServerIngresso)
+                            .SelectedIndex(0)
+                            .Suggest(true)
+                            .HtmlAttributes(new { style = "width:100%;" })
+
+                        )
+                    </div>
+                    <div class="form-group col-md-2">
+                        @(Html.Kendo().Button()
+                        .Name("okSposta")
+                        .Content("Sposta")
+                        .Events(ev => ev.Click("spostaOnClick"))
+                        )
+                    </div>
+                </div>
+            </form >
+        </div >
+    </text>)
+    .Width(600)
+    .Height(180)
+    .Modal(true)
+                 )
+@(Html.Kendo().Window()
+    .Name("wHistory")
+    .Size("auto")
+    .Title("Operazioni:")
+    .Visible(false)
+    .Actions(actions => actions.Close())
+    .Content(@<text>
+        <div class="box-body">
+            <div class="form-group col-md-11">
+              @(Html.Kendo().Grid<LogDoc>()
+                .Name("logs")
+                .Columns(columns =>
+                {
+                    columns.Bound(p => p.Data).Title("Data").Width("50%").ClientTemplate("#= kendo.toString(Data, 'dd/MM/yyyy HH:mm') #");
+                    columns.Bound(p => p.Operazione).Title("Operazione").Width("20%");
+                    columns.Bound(p => p.Utente).Title("Utente").Width("20%");
+                })
+                .DataSource(dataSource => dataSource
+                    .Ajax()
+                    //.Model(model => model.Id(p => p.ID))
+                    .Read(read => read.Action("GetLogsItem", "Docs").Data("GetLogsItem"))
 
                     )
-                                                </div>
-                                                <div class="form-group col-md-2">
-                                                    @(Html.Kendo().Button()
-                                                .Name("okinoltra")
-                                                .Content("Invia")
-                                                .Events(ev => ev.Click("inoltraOnClick"))
-                                                    )
-                                                </div>
-                                            </div>
-                    <div class="form-group">
-                        <div class="form-group col-md-10" >
-                            <input type="checkbox" checked  id="chkemailInoltro" title="Chiudi email">
-                            <label class="control-label col-md-3" >Chiudi email</label>
-                        </div>
-                    </div>
-                                        </form>
-                                    </div>
-                            </text>)
-                            .Width(600)
-        .Height(180)
-                            .Modal(true) )
+                    .HtmlAttributes(new { style = "font-size:12" })
+                )
+            </div>
+        </div >
+    </text>)
+    .Width(600)
+    .Height(180)
+    .Modal(true)
+                 )
 @(Html.Kendo().Window()
-            .Name("wRispondi")
-            .Size("auto")
-            .Title("Rispondi:")
-            .Visible(false)
-            .Actions(actions => actions.Close())
-            .Content(@<text>
+        .Name("wPdfEditor")
+        .Size("auto")
+        .Title("Editor")
+        .Visible(false)
+        .Actions(actions => actions.Refresh().Close())
+        .Content("")
+        .Scrollable(true)
+        .Modal(true)
+                .Events(e => e.Close("wPdfEditorClose").Open("wPdfEditorOpen"))
+        );
 
-  <div class="box-body">
-    <form>
-    <div class="form-group">
-                                    <label class="control-label col-md-2" style="font-size:12px">A: </label>
-                                    <div class="form-group col-md-8">
-                                        @(Html.Kendo().TextBox()
-                                            .Name("destinatarioRisposta")
-                                            .Value("")
-                                            .HtmlAttributes(new { style = "width: 100%" })
-                                        )
-                                    </div>
 
-        <label class="control-label col-md-2" style="font-size:12px">CC: </label>
-                                    <div class="form-group col-md-8">
-                                        @(Html.Kendo().TextBox()
-                                            .Name("ccRisposta")
-                                            .Value("")
-                                            .HtmlAttributes(new { style = "width: 100%" })
-                                        )
-                                    </div>
-
-                                            <label class="control-label col-md-2" style="font-size:12px">Oggetto: </label>
-                                    <div class="form-group col-md-8">
-                                        @(Html.Kendo().TextBox()
-                                            .Name("oggettoRisposta")
-                                            .Value("")
-                                            .HtmlAttributes(new { style = "width: 100%" })
-                                        )
-                                    </div>
-
-                                    <label class="control-label col-md-2" style="font-size:12px">Testo: </label>
-                                    <div class="form-group col-md-8">
-                                        @Html.TextArea("testoRisposta", "", new { @class="k-textbox", style = "width: 100%;" })
-                                    </div>
-
-                                    <div class="form-group col-md-2">
-                                        @(Html.Kendo().Button()
-                                    .Name("okrispondi")
-                                    .Content("Invia")
-                                    .Events(ev => ev.Click("rispondiOnClick"))
-                                        )
-                                    </div>
-       <div class="form-group col-md-10" >
-            <input type="checkbox" checked  id="chkemailRispondi" title="Allega originale">
-            <label class="control-label col-md-3" >Allega originale</label>
-       </div>
-       <div class="form-group col-md-10" >
-           <input type="checkbox" checked  id="chkemailRispondiChiudi" title="Chiudi email">
-           <label class="control-label col-md-3" >Chiudi email</label>
-	   </div>
-    </div>
-    </form>
-  </div>
-                    </text>)
-            .Width(600)
-            .Height(500)
-            .Modal(true)
-                         )
