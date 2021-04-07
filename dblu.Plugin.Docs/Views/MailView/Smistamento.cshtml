@@ -1,6 +1,6 @@
 ﻿@*@model dblu.Docs.Models.Allegati*@
 
-@model dblu.Portale.Plugin.Docs.ViewModels.inArrivoView_new 
+@model dblu.Portale.Plugin.Docs.ViewModels.inArrivoView_new
 
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
@@ -17,8 +17,8 @@
 
 @{
     ViewData["Title"] = "Email in arrivo - Smistamento";
-    List<dblu.Docs.Models.TipiElementi> ListaTipiElementi ;
-    List<dblu.Docs.Models.TipiElementi> ListaTipiElementiServ ;
+    List<dblu.Docs.Models.TipiElementi> ListaTipiElementi;
+    List<dblu.Docs.Models.TipiElementi> ListaTipiElementiServ;
     TipiAllegati TipoAll = _mailservice._allMan.GetTipoAllegato("EMAIL");
     List<string> ListaRuoli = null;
 
@@ -38,7 +38,7 @@
 
     //var ListaServer = _mailservice._serMan.GetServersEmailinRoles(Context.User.Claims);
     var ListaServerIngresso = _mailservice._serMan.GetServerEmailInIngresso();
-    if (ListaServer != null  && ListaServer.Count>0)
+    if (ListaServer != null && ListaServer.Count > 0)
     {
         //var ListaRuoliServ = _mailservice.getRuoli(Context.User.Claims, ListaServer.ElementAt(0).Nome);
         var ListaRuoliServ = _mailservice.getRuoli(ListaRuoli, ListaServer.ElementAt(0).Nome);
@@ -340,7 +340,7 @@
                         )
                     </div>
                 </div>
-         
+
             </div>
         </div>
         <div class="col-xs-7">
@@ -414,40 +414,40 @@
                             </div>
                         </div>
                         @*
-                        <div class="row" id="divSoggettoElementiAperti" hidden>
-                            <div class="form-group col-md-12" style="width:80%">
-                                @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggettoElementiAperti>()
-                                    .Name("gridSoggettoElementiAperti")
-                                    .Columns(columns =>
-                                    {
-                                        columns.Bound(p => p.Numero).Title("Numero").Width("20%");
-                                        columns.Bound(p => p.Riferimento).Title("Riferimento").Width("40%");
-                                        columns.Bound(p => p.DataConsegna).Title("Data cons.").Width("20%").Format("{0:dd/MM/yy}");
-                                        columns.Bound(p => p.Stato).Title("Stato").Width("20%");
-                                    })
-                                    .Pageable()
-                                    .Sortable()
-                                    .Scrollable(s => s.Height("auto"))
-                                    .Filterable()
-                                    .DataSource(dataSource => dataSource
-                                        .Ajax()
-                                        .PageSize(10)
-                                        .Batch(false)
-                                        .ServerOperation(true)
-                                        .AutoSync(true)
-                                        .Events(events => events.Error("error_handler"))
-                                        .Model(model =>
+                            <div class="row" id="divSoggettoElementiAperti" hidden>
+                                <div class="form-group col-md-12" style="width:80%">
+                                    @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggettoElementiAperti>()
+                                        .Name("gridSoggettoElementiAperti")
+                                        .Columns(columns =>
                                         {
-                                            model.Id(p => p.Numero);
+                                            columns.Bound(p => p.Numero).Title("Numero").Width("20%");
+                                            columns.Bound(p => p.Riferimento).Title("Riferimento").Width("40%");
+                                            columns.Bound(p => p.DataConsegna).Title("Data cons.").Width("20%").Format("{0:dd/MM/yy}");
+                                            columns.Bound(p => p.Stato).Title("Stato").Width("20%");
                                         })
-                                        .Read(read => read.Action("SoggettoElementiAperti", "MailView").Data("getSoggetto"))
-                                     )
-                                    .Groupable(false)
-                                    .Resizable(resize => resize.Columns(true))
-                                    .HtmlAttributes(new { style = "font-size:10" })
-                                )
+                                        .Pageable()
+                                        .Sortable()
+                                        .Scrollable(s => s.Height("auto"))
+                                        .Filterable()
+                                        .DataSource(dataSource => dataSource
+                                            .Ajax()
+                                            .PageSize(10)
+                                            .Batch(false)
+                                            .ServerOperation(true)
+                                            .AutoSync(true)
+                                            .Events(events => events.Error("error_handler"))
+                                            .Model(model =>
+                                            {
+                                                model.Id(p => p.Numero);
+                                            })
+                                            .Read(read => read.Action("SoggettoElementiAperti", "MailView").Data("getSoggetto"))
+                                         )
+                                        .Groupable(false)
+                                        .Resizable(resize => resize.Columns(true))
+                                        .HtmlAttributes(new { style = "font-size:10" })
+                                    )
+                                </div>
                             </div>
-                        </div>
                         *@
                     </form>
                 </div>
@@ -556,96 +556,96 @@
                     </form>
                 </div>
             </div>
- @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
- {
-     if (!item.AggregaAElemento || !string.IsNullOrEmpty(item.ViewAttributi))
-     {
-         var fName = "div" + item.Codice;
-         var fNameForm = "form" + item.Codice;
-         var sPartialview = $"Smistamento/{item.ViewAttributi}";
-            <div id=@{@fName} class="box box-default" hidden>
-                <div class="box-header">
-                    <i class="ion ion-document"></i>
-                    <h4 class="box-title">@item.Descrizione</h4>
-                    <div class="box-tools pull-right">
-                        <button type="button" class="btn btn-box-tool" data-widget="collapse" id="Collapse@{@fName}" >
-                            <i class="fa fa-minus"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="box-body">
-                    @if (string.IsNullOrEmpty(item.ViewAttributi))
-                    {
-                        <div class="row">
-                            <div class="col-md-12 col-sm-12">
-                                <div class="pad">
-                                    <form class="form-horizontal" role="form" method="post" id="@{@fNameForm}" autocomplete="off">
-                                        <div class="box-body">
-                                            @foreach (var attributo in item.Attributi.ToList().OrderBy(a => a.Sequenza).ToList())
-                                            {
-                                                <div class="form-group">
-                                                    @Html.Label($"lbl_{item.Codice}{attributo.Nome}", attributo.Descrizione)
-
-                                                    @switch (attributo.Tipo)
+            @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
+            {
+                if (!item.AggregaAElemento || !string.IsNullOrEmpty(item.ViewAttributi))
+                {
+                    var fName = "div" + item.Codice;
+                    var fNameForm = "form" + item.Codice;
+                    var sPartialview = $"Smistamento/{item.ViewAttributi}";
+                    <div id=@{@fName} class="box box-default" hidden>
+                        <div class="box-header">
+                            <i class="ion ion-document"></i>
+                            <h4 class="box-title">@item.Descrizione</h4>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse" id="Collapse@{@fName}">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            @if (string.IsNullOrEmpty(item.ViewAttributi))
+                            {
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12">
+                                        <div class="pad">
+                                            <form class="form-horizontal" role="form" method="post" id="@{@fNameForm}" autocomplete="off">
+                                                <div class="box-body">
+                                                    @foreach (var attributo in item.Attributi.ToList().OrderBy(a => a.Sequenza).ToList())
                                                     {
-                                                        case "System.DateTime":
-                                                            @(Html.Kendo().DatePicker()
+                                                        <div class="form-group">
+                                                            @Html.Label($"lbl_{item.Codice}{attributo.Nome}", attributo.Descrizione)
+
+                                                            @switch (attributo.Tipo)
+                                                            {
+                                                                case "System.DateTime":
+                                                                    @(Html.Kendo().DatePicker()
                                                             .Name($"ctl_{item.Codice}{attributo.Nome}")
                                                             .Value(attributo.ValorePredefinito)
                                                             )
-                                                            break;
-                                                        case "System.Boolean":
-                                                            @(Html.Kendo().CheckBox()
+                                                                    break;
+                                                                case "System.Boolean":
+                                                                    @(Html.Kendo().CheckBox()
                                                                .Name($"ctl_{item.Codice}{attributo.Nome}")
                                                                .Checked(System.Convert.ToBoolean(attributo.ValorePredefinito))
                                                             )
-                                                            break;
-                                                        default:
-                                                            @(Html.Kendo().TextBox()
+                                                                    break;
+                                                                default:
+                                                                    @(Html.Kendo().TextBox()
                                                                 .Name($"ctl_{item.Codice}{attributo.Nome}")
                                                                 .Value(attributo.ValorePredefinito == null ? "" : attributo.ValorePredefinito.ToString())
                                                                 .HtmlAttributes(new { style = "width: 100%" })
                                                             )
-                                                            break;
+                                                                    break;
+                                                            }
+                                                        </div>
                                                     }
                                                 </div>
-                                            }
+                                            </form>
                                         </div>
-                                    </form>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="form-group col-md-4">
-                        </div>
-                        <div class="form-group col-md-2">
-                            @(Html.Kendo().Button()
+                                <div class="form-group col-md-4">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    @(Html.Kendo().Button()
                             .Name($"btn_{item.Codice}")
                             .HtmlAttributes(new { type = "button", @class = "k-primary k-button", categoria = item.Categoria, codice = item.Codice, aggrega = item.AggregaAElemento })
                             .Content("Conferma")
                             .Events(e => e.Click("SalvaAttributi"))
                         )
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="row">
+                                    <div class="col-12">
+                                        @Html.Partial(sPartialview, item)
+                                    </div>
+                                </div>
+                            }
                         </div>
-                    }
-                    else
-                    {
-                        <div class="row">
-                            <div class="col-12">
-                                 @Html.Partial(sPartialview,item)
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-    }
-}
+                    </div>
+                }
+            }
             <div class="box box-default">
                 <div class="box-header">
                     <h4 class="box-title">Anteprima</h4>
                     <div class="box-tools pull-right">
                         <button type="button" class="btn btn-box-tool" data-widget="collapse">
                             <i class="fa fa-minus"></i>
-                         </button>
-                     </div>
+                        </button>
+                    </div>
                 </div>
                 <div class="box-body">
                     <div class="form-group">
@@ -669,24 +669,24 @@
                                 .Events(e => e.Click("tbpdf_click"))
                             )
                             <ejs-pdfviewer id="emailpdfviewer" serviceUrl="/api/mailPdfViewer" documentPath=""
-                                            enablePrint="true"
-                                            printEnd="documentPrinted"
-                                            documentLoad="documentLoaded"
-                                            annotationAdd="annotationAdd"
-                                            enableStampAnnotations="false"
-                                            exportSuccess="exportSuccess"
-                                            locale="it-IT"
-                                            downloadFileName="@string.Concat("",".pdf")" height="900px"
-                                            toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
+                                           enablePrint="true"
+                                           printEnd="documentPrinted"
+                                           documentLoad="documentLoaded"
+                                           annotationAdd="annotationAdd"
+                                           enableStampAnnotations="false"
+                                           exportSuccess="exportSuccess"
+                                           locale="it-IT"
+                                           downloadFileName="@string.Concat("",".pdf")" height="900px"
+                                           toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
                             </ejs-pdfviewer>
-                    @*
-                        <div class="col-md-12" style="width:80%" id="anteprimajpg" hidden>
-                            <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
+                            @*
+                                <div class="col-md-12" style="width:80%" id="anteprimajpg" hidden>
+                                    <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
+                                </div>
+                            *@
                         </div>
-                                            *@
-                         </div>
-                     </div>
-                 </div>
+                    </div>
+                </div>
             </div>
             <div class="box box-default">
                 <div class="box-header with-border">
@@ -695,8 +695,8 @@
                     <div class="box-tools pull-right">
                         <button type="button" class="btn btn-box-tool" data-widget="collapse" id="CollapseContenuto">
                             <i class="fa fa-minus"></i>
-                         </button>
-                     </div>
+                        </button>
+                    </div>
                 </div>
                 <div class="box-body">
                     <form>
@@ -704,7 +704,7 @@
                             <label class="control-label col-md-2" style="font-size:12px">Testo</label>
                             <div class="col-md-12" style="width:100%">
                                 <textarea class="form-control" id="TestoEmail" name="TestoEmail" rows="5" style="width:100%" readonly="readonly"></textarea>
-                             </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="control-label col-md-2" style="font-size:12px" hidden>Allegati da includere</label>
@@ -730,13 +730,13 @@
                                     .HtmlAttributes(new { style = "font-size:12" })
                                 )
                                 @*
-                                .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
-                                .Events(events => events.Change("Attachments_OnRowSelect"))
-                                .Events(ev => ev.Change("xxonChange"))
+                                    .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
+                                    .Events(events => events.Change("Attachments_OnRowSelect"))
+                                    .Events(ev => ev.Change("xxonChange"))
                                 *@
-                             </div>
+                            </div>
                             <br /><br />
-                         </div>
+                        </div>
                         <div class="form-group" style="margin-top:10px" hidden>
                             <div class="col-md-10" style="font-size:15px">
                                 @(Html.Kendo().CheckBox().Name("allegamail")
@@ -744,65 +744,65 @@
                                 )
                             </div>
                         </div>
-                     </form>
-                 </div>
-             </div>
-             @*
-                <div id="divViewAttributi" class="box box-success" hidden>
-                <div class="box-body no-padding">
-                <div class="row">
-                    <div class="col-md-12 col-sm-12">
-                        <div class="pad">
-                            <form class="form-horizontal" role="form" method="post" id="attributi" autocomplete="off">
-                                <div class="box-body">
+                    </form>
+                </div>
+            </div>
+            @*
+                        <div id="divViewAttributi" class="box box-success" hidden>
+                        <div class="box-body no-padding">
+                        <div class="row">
+                            <div class="col-md-12 col-sm-12">
+                                <div class="pad">
+                                    <form class="form-horizontal" role="form" method="post" id="attributi" autocomplete="off">
+                                        <div class="box-body">
 
-                                    @foreach (var attributo in listaAttributi)
-                                    {
-
-                                        <div class="form-group">
-                                            @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione)
-
-
-                                            @switch (attributo.Tipo)
+                                            @foreach (var attributo in listaAttributi)
                                             {
-                                                case "System.DateTime":
-                                                    @(Html.Kendo().DatePicker()
-                                                                    .Name($"ctl_{attributo.Nome}")
-                                                                    .Value(attributo.Valore)
-                                                    )
-                                                    break;
-                                                case "System.Boolean":
-                                                    @(Html.Kendo().CheckBox()
-                                                                    .Name($"ctl_{attributo.Nome}")
-                                                                    .Checked(attributo.Valore)
-                                                    )
-                                                    break;
-                                                default:
 
-                                                    @(Html.Kendo().TextBox()
-                                                      .Name($"ctl_{attributo.Nome}")
-                                                      .Value(attributo.Valore == null ? "" : attributo.Valore.ToString())
-                                                      .HtmlAttributes(new { style = "width: 100%" })
-                                                      )
-                                                    break;
+                                                <div class="form-group">
+                                                    @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione)
+
+
+                                                    @switch (attributo.Tipo)
+                                                    {
+                                                        case "System.DateTime":
+                                                            @(Html.Kendo().DatePicker()
+                                                                            .Name($"ctl_{attributo.Nome}")
+                                                                            .Value(attributo.Valore)
+                                                            )
+                                                            break;
+                                                        case "System.Boolean":
+                                                            @(Html.Kendo().CheckBox()
+                                                                            .Name($"ctl_{attributo.Nome}")
+                                                                            .Checked(attributo.Valore)
+                                                            )
+                                                            break;
+                                                        default:
+
+                                                            @(Html.Kendo().TextBox()
+                                                              .Name($"ctl_{attributo.Nome}")
+                                                              .Value(attributo.Valore == null ? "" : attributo.Valore.ToString())
+                                                              .HtmlAttributes(new { style = "width: 100%" })
+                                                              )
+                                                            break;
+                                                    }
+                                                </div>
                                             }
                                         </div>
-                                    }
+                                    </form>
                                 </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            *@
         </div>
-             *@
-         </div>
-     </div>
+    </div>
     <form class="new-tab-opener" method="get" target="_blank"></form>
 </section>
 
 
-  @(Html.Kendo().Window()
+@(Html.Kendo().Window()
     .Name("detElemento")
     .Visible(false).Modal(false)
     .Title("Dettaglio Elemento")
@@ -813,7 +813,6 @@
     .Actions(actions => actions.Pin().Minimize().Maximize().Close())
     .Events(e => e.Close("detElementoClose").Open("detElementoOpen")  )
 )
-
 @(Html.Kendo().Window()
     .Name("wCercaElementi")
     .Visible(false)
@@ -827,8 +826,7 @@
     .Actions(actions => actions.Pin().Minimize().Maximize().Close())
     .Events(e => e.Close("wCercaElementiClose") )
   )
-
-  @(Html.Kendo().Window()
+@(Html.Kendo().Window()
     .Name("cercasoggetti")
     .Size("auto")
     .Title("Cerca")
@@ -842,8 +840,7 @@
     .Height(700)
     .Modal(true)
   )
-
-  @(Html.Kendo().Window()
+@(Html.Kendo().Window()
     .Name("wInoltra")
     .Size("auto")
     .Title("Inoltra a:")
@@ -922,7 +919,7 @@
                                     .Value("")
                                     .HtmlAttributes(new { style = "width: 100%" })
                                 )
-                            </div> 
+                            </div>
                             <label class="control-label col-md-2" style="font-size:12px">CC: </label>
                             <div class="form-group col-md-8">
                                 @(Html.Kendo().TextBox()
@@ -941,14 +938,7 @@
                             </div>
                             <label class="control-label col-md-2" style="font-size:12px">Testo: </label>
                             <div class="form-group col-md-8">
-                                 @*@Html.TextArea("testoRiposta", "", new { @class="k-textbox", style = "width: 100%;" })*@
-                               
-                                @(Html.Kendo().TextArea()
-                                    .Name("testoRisposta")
-                                    .Value("")
-                                    .Rows(10)
-                                    .HtmlAttributes(new { style = "width: 100%" })
-                                )
+                                  @Html.TextArea("testoRiposta", "", new { @class = "k-textbox", style = "width: 100%;", rows = 10 });
                             </div>
                             <div class="form-group col-md-2">
                                 @(Html.Kendo().Button()
@@ -1013,9 +1003,7 @@
     .Height(180)
     .Modal(true)
                  )
-
-
-    @(Html.Kendo().Window()
+@(Html.Kendo().Window()
         .Name("wPdfEditor")
         .Size("auto")
         .Title("Editor")
@@ -1025,6 +1013,6 @@
         .Scrollable(true)
         .Modal(true)
                 .Events(e => e.Close("wPdfEditorClose").Open("wPdfEditorOpen"))
-        ); 
+        );
 
 

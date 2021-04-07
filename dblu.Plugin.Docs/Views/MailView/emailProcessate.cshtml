@@ -31,15 +31,6 @@
         ListaTipiElementiServ = ListaTipiElementi;
     }
 
-    //var s = Url.Action("~");
-    //var ListaTipiElementi = await _mailservice._elmMan.GetAllTipiElementiAsync();
-    // TipiElementi Tipoelemento = _mailservice..GetTipoAllegato("EMAIL");
-    //var attr = new dblu.Portale.Plugin.Docs.ViewModels.AttributiViewModel();
-    //attr.Attributi = TipoAll.Attributi;
-    //attr.NomeView = TipoAll.ViewAttributi;
-    //attr.Valori = "{\"Mittente\":\"roberta@miottomobili.it\",\"Data\":\"2019-12-13T09:41:10Z\",\"CodiceSoggetto\":\"aaa\",\"Oggetto\":\"CONFERMA\",\"MessageId\":\"CAK_jKF0R_JhvOJG4zjWTvgGhW1HAspKLDTN1zFYcUjV3-vgfdg@mail.gmail.com\",\"CodiceCliente\":\"21351\",\"NomeServer\":\"Test\"}";
-
-    //};
 
 }
 
@@ -329,14 +320,7 @@
                             </div>
                             <label class="control-label col-md-2" style="font-size:12px">Testo: </label>
                             <div class="form-group col-md-8">
-                                 @*@Html.TextArea("testoRiposta", "", new { @class="k-textbox", style = "width: 100%;" })*@
-
-                                @(Html.Kendo().TextArea()
-                                    .Name("testoRisposta")
-                                    .Value("")
-                                    .Rows(10)
-                                    .HtmlAttributes(new { style = "width: 100%" })
-                                )
+                                 @Html.TextArea("testoRiposta", "", new { @class = "k-textbox", style = "width: 100%;", rows = 10 });
                             </div>
                             <div class="form-group col-md-2">
                                 @(Html.Kendo().Button()
@@ -464,12 +448,3 @@
     .Height(200)
     .Modal(true)
 )
-@*            <form>
-        <div class='form-group'>
-            <div class='form-group col-md-10'>
-                <input type='checkbox'  id='chkemailElimina'  >
-                <label for='chkemailElimina' class='control-label col-md-6' >Elimina anche dalla casella di posta</label>
-            </div>
-            </div>
-    </form >
-*@
