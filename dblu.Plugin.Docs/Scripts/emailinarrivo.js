@@ -1571,7 +1571,7 @@ function wPdfEditorClose(e) {
 
     if (MustReloadPdf) {
 
-        PdfCorrente.iAzione = docsAzioniPdf.Ricarica;
+        PdfCorrente.iAzione = docsAzioniPdf.Carica;
         var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
         emailpdfviewer.load(JSON.stringify(PdfCorrente));
         emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
