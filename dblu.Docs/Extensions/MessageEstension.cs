@@ -53,7 +53,7 @@ namespace dblu.Docs.Extensions
                     }
                 }
             //&& x.IsAttachment == false
-                IEnumerable<MimeEntity> att = message.BodyParts.Where(x => x.ContentType.Name != null).ToList();
+                IEnumerable<MimeEntity> att = message.BodyParts.Where(x => x.ContentType.Name != null  ||  x.ContentType.MediaType=="image" ).ToList();
                 foreach (MimeEntity all in att)
                 {
                     //var nome = all.NomeAllegato(i);
@@ -86,22 +86,32 @@ namespace dblu.Docs.Extensions
             else
             {
                 var part = (MimePart)attachment;
-                if(part.FileName!=null)
+                if(part.FileName!=null || part.ContentType.MediaType=="image")
                 {
-                    var nome = Path.GetFileNameWithoutExtension(part.FileName);
-                    var ext = Path.GetExtension(part.FileName).ToLower();
-                    List<string> myExt = new List<string>{ ".pdf", ".jpg", ".jpeg", ".png" };
-
-                    if (!myExt.Contains(ext) && !string.IsNullOrEmpty(part.ContentType.MediaSubtype)){
-                        List<string> myTypes = new List<string> { "pdf", "jpeg" };
-                        if (myTypes.Contains(part.ContentType.MediaSubtype))
-                        { 
-                            nome = part.FileName;
-                            ext = "." + part.ContentType.MediaSubtype;                    
+                    var nome = ""; var ext = "";
+                    List<string> myExt = new List<string>{ ".pdf", ".jpg", ".jpeg", ".png" };  
+                    List<string> myTypes = new List<string> { "pdf", "jpeg" };
+                    if (part.FileName == null)
+                    {
+                        if (!string.IsNullOrEmpty(part.ContentType.MediaSubtype) && myTypes.Contains(part.ContentType.MediaSubtype))
+                        {
+                            nome = part.ContentType.MediaType;
+                            ext = "." + part.ContentType.MediaSubtype;
                         }
                     }
+                    else {
+                        nome =  Path.GetFileNameWithoutExtension(part.FileName);
+                        ext =  Path.GetExtension(part.FileName).ToLower();
+                        if (!myExt.Contains(ext) && !string.IsNullOrEmpty(part.ContentType.MediaSubtype)){
+                           if (myTypes.Contains(part.ContentType.MediaSubtype))
+                            { 
+                                nome = part.FileName;
+                                ext = "." + part.ContentType.MediaSubtype;                    
+                            }
+                        }                    
+                    }
                     if (Index>=0)
-                     fileName = $"{nome}_{Index}{ext}";
+                        fileName = $"{nome}_{Index}{ext}";
                     else
                         fileName = $"{nome}{ext}";
                 }

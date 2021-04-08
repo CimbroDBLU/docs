@@ -92,14 +92,14 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (System.IO.File.Exists(azione.FilePdfInModifica))
                 {
                     PdfLoadedDocument loadedDocument = null;
-                    using (FileStream fsSource = new FileStream(azione.FilePdfInModifica, FileMode.Open, FileAccess.ReadWrite))
+                    MemoryStream m = new MemoryStream();
+                    using (FileStream fsSource = new FileStream(azione.FilePdfInModifica, FileMode.Open, FileAccess.Read))
                     {
                         loadedDocument = new PdfLoadedDocument(fsSource);
-                   
                         switch (azione.Azione)
                         {
                             case Azioni.RuotaPagina90:
-                                PdfPageBase p90 = loadedDocument.Pages[azione.Pagina-1] as PdfPageBase;
+                                PdfPageBase p90 = loadedDocument.Pages[azione.Pagina - 1] as PdfPageBase;
                                 switch (p90.Rotation) {
                                     case PdfPageRotateAngle.RotateAngle0:
                                         p90.Rotation = PdfPageRotateAngle.RotateAngle90;
@@ -116,7 +116,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 }
                                 break;
                             case Azioni.RuotaPagina270:
-                                PdfPageBase p270 = loadedDocument.Pages[azione.Pagina-1] as PdfPageBase;
+                                PdfPageBase p270 = loadedDocument.Pages[azione.Pagina - 1] as PdfPageBase;
                                 switch (p270.Rotation)
                                 {
                                     case PdfPageRotateAngle.RotateAngle0:
@@ -134,15 +134,20 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 }
                                 break;
                             case Azioni.CancellaPagina:
-                                loadedDocument.Pages.RemoveAt(azione.Pagina-1);
+                                loadedDocument.Pages.RemoveAt(azione.Pagina - 1);
                                 break;
                             default:
                                 break;
                         }
-                        loadedDocument.Save(fsSource);
-
+                        loadedDocument.Save(m);
                     }
-                    loadedDocument.Close(true);
+                    m.Position = 0;
+                    using (FileStream fDest = new FileStream(azione.FilePdfInModifica, FileMode.OpenOrCreate, FileAccess.Write))
+                    {
+                        m.CopyTo(fDest);
+                        fDest.Close();
+                    }
+                    m.Close();
                     res = true;
                 }
             }

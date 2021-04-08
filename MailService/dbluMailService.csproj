@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>netcoreapp5</TargetFramework>
     <UserSecretsId>dotnet-dbluMailService-27524BD6-24FC-42F1-AF45-3019153FAF86</UserSecretsId>
     <RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
     <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
@@ -12,12 +12,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.0.78" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="3.1.12" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.12" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.12" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="3.1.12" />
-    <PackageReference Include="NLog" Version="4.7.8" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="1.7.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="5.0.1" />
+    <PackageReference Include="NLog" Version="4.7.9" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="1.7.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\dblubpm\dblu.CamundaClient\dblu.CamundaClient.csproj" />

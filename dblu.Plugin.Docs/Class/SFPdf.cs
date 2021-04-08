@@ -885,7 +885,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                         {
                             flAnn = true;
                             nn.Flatten = true;                   
-                            if (nn is PdfLoadedInkAnnotation)    // 18.4.39 non funziona flatten per le note manuali
+                            if (nn is PdfLoadedInkAnnotation  || nn is  PdfLoadedFreeTextAnnotation)    // 18.4.39 non funziona flatten per le note manuali
                             {
                                 flNoteManuali = true;
                             }
@@ -893,7 +893,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                       }
 
                     if (flNoteManuali) {
-                          ControllaPag.Add(pn.ToString());
+                          ControllaPag.Add((pn+1).ToString());
                         _logger.LogWarning($"ElaboraPdfStream: presenza di note manuali pag {pn}  {fileName}. ");
                     }
                 };

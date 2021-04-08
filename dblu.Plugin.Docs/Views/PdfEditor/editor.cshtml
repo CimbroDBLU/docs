@@ -123,11 +123,9 @@
     function pdf_exportSuccess(args) {
 
         if (CurrentPdf.iAzione == docsAzioniPdf.Salva) {
-
             var pdfEditorViewer = document.getElementById('pdfEditorViewer').ej2_instances[0];
             pdfEditorViewer.load(JSON.stringify(CurrentPdf))
             pdfEditorViewer.downloadFileName = CurrentPdf.IdAllegato + ".pdf";
-
         }
     }
 
@@ -176,10 +174,7 @@
         }
     }
 
-
-
 </script>
-
 
 <section class="pdf-editor-section">
     <!-- Main row -->
@@ -212,8 +207,6 @@
                        toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
         </ejs-pdfviewer>
     </div>
-
-    <ejs-scripts></ejs-scripts>
 </section>
 
-
+<ejs-scripts></ejs-scripts>

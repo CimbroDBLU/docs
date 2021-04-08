@@ -2941,7 +2941,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     }
                         }
                
-                        i = 1;
+                        i = nrpag;
                         foreach (Syncfusion.Pdf.PdfLoadedPage lptmp in pdftmp.Pages) {
                             
 
@@ -3013,7 +3013,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                             
                             i++;
                             reportSource.Parameters.Add("NPag", i);
-                            reportSource.Parameters.Add("TPag", pdftmp.Pages.Count+1);
+                            reportSource.Parameters.Add("TPag", pdftmp.Pages.Count+nrpag);
                             reportSource.Parameters.Add("flRiepilogo", true);
 
                             RenderingResult curEti = reportProcessor.RenderReport("PDF", reportSource, null);

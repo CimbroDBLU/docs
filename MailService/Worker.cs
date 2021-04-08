@@ -57,8 +57,11 @@ namespace dbluMailService
                 //await mailMan.TestProcess("msg_assegna_cliente_email", "056673AF-2760-4F5C-8F6D-5F89AC6FCE9F", stoppingToken);
 
                 _logger.LogDebug($"Processa server di posta");
-               // _logger.LogDebug(mailMan.RemoveSpecialChars("\\systemadmin@cccoco")  );
+                // _logger.LogDebug(mailMan.RemoveSpecialChars("\\systemadmin@cccoco")  );
 
+                //RestartProcess rp = new RestartProcess(_logger , _conf);
+                //rp.AvviaProcessi("PRO_COMPAB", "Compab_GestioneOrdine", stoppingToken);
+                //rp.CompletaTask( "Compab_GestioneOrdine", stoppingToken);
                 await mailMan.ProcessaEmail( stoppingToken);
                 await Task.Delay(intervallo, stoppingToken);
 
@@ -66,9 +69,6 @@ namespace dbluMailService
             catch (Exception ex){
                 _logger.LogError($"Errore: {ex.Message}");
             };
-
         }
-
-
     }
 }
