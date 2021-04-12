@@ -2888,7 +2888,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                             if (p > 0) {
                                 page = document.Pages.Add();
                                 graphics = page.Graphics;
-                                curpos = MarginPoints;
+                                curpos = 20;
                             }
                             for (i=0; i< 12;i++)
                         {
@@ -2935,7 +2935,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 
                             graphics.DrawPdfTemplate(template, posizione,
                                 new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height));
-                            curpos += etiHeight + MarginPoints;
+                            curpos += etiHeight + 20;
                             pdfEti.Close();
 
                     }
