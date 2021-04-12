@@ -10,7 +10,7 @@ namespace dblu.Docs.Models
     [Table("EmailSoggetti")]
     public partial class EmailSoggetti
     {
-        [ExplicitKey]
+        //[ExplicitKey]
         public string Email { get; set; }
         public string CodiceSoggetto { get; set; }
 

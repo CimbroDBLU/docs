@@ -48,7 +48,6 @@ gridEmailOnChange = function (e) {
 
     elementoItem = null;
     
-
     PulisciDettaglio();
 
     $("#IdAllegato").val(data.Id);
@@ -73,15 +72,51 @@ gridEmailOnChange = function (e) {
             $("#IdElemento").val("");
             }
             MostraPdfCompleto($("#IdElemento").val());
+
+         
+            $('#cSogg').data('kendoGrid').dataSource.read();
+
+           
+
         },
         error: function (data) {
 
         }
         
     });
+
+   
+}
+
+function cSoggonDataBound(arg) {
+    var gridData = $("#cSogg").data().kendoGrid.dataSource.data();
+    //for (var i = 0; i < gridData.length
+    if (gridData.length > 1) {
+        var dialog = $("#wSoggetti").data("kendoWindow");
+        dialog.center();
+        dialog.open();
+    }
+}
+
+function cSoggonChange(arg) {
+    var data = this.dataItem(this.select());
+    var myWindow = $("#wSoggetti").data("kendoWindow");
+    myWindow.close();
+    $('#CodiceSoggetto').val(data.Codice);
+    $('#NomeSoggetto').val(data.Nome);
+
+    CaricaSoggetto(data.Codice);
+    NotificaAssociazione(data.Codice);
     
 }
 
+
+function GetMail() {
+
+    return {
+        mail: mailChiave1,
+    };
+}
 
 function CaricaElemento(elemento) {
     $('#IdFascicolo').val(elemento.IdFascicolo);
@@ -1149,6 +1184,7 @@ function GetLogsItem() {
 
     };
 }
+
 
 
 function error_handler(e) {

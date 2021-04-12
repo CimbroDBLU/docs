@@ -58,7 +58,7 @@
         IsPrintedLocally = "false";
         Printer = P["Printer"];
     }
-   
+
 
     List<dblu.Docs.Models.Colonna> ElCols = _allservice.GetColonne("vELEMENTO");
 
@@ -178,6 +178,7 @@
         MailView_ApriFile: '@Url.Action("ApriFile", "MailView" )',
         MailView_AllegaAElementoFascicolo: '@Url.Action("AllegaAElementoFascicolo","MailView")',
         MailView_GetSoggetto: '@Url.Action("GetSoggetto", "MailView")',
+        MailView_GetSoggettiByMail: '@Url.Action("GetSoggettiByMail", "MailView")',
         MailView_NotificaAssociazione: '@Url.Action("NotificaAssociazione","MailView" )',
         MailView_CreaElementoFascicolo: '@Url.Action("CreaElementoFascicolo","MailView")',
         MailView_DuplicaElemento: '@Url.Action("DuplicaElemento","MailView")',
@@ -209,7 +210,7 @@
         else
             return false;
     }
-   
+
 
 </script>
 
@@ -299,7 +300,7 @@
                             columns.Command(command => command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewHistory").IconClass("k-icon ").HtmlAttributes(new { style = "width:30px " })).Hidden();
                         })
                              .ToolBar(toolbar =>
-                             {                                
+                             {
                                  toolbar.Custom().Text("Inoltra").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:75px", onclick = "InoltraEmail()" });
                                  toolbar.Custom().Text("Sposta").IconClass("k-icon my-icon-class-sposta").HtmlAttributes(new { style = "width:75px", onclick = "SpostaEmail()" });
                                  toolbar.Custom().Text("Rispondi").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:90px", onclick = "RispondiEmail()" });
@@ -333,7 +334,7 @@
                          )
                          .Resizable(resize => resize.Columns(true))
                          .HtmlAttributes(new { Height = "100%", style = "font-size:10" })
-                       
+
                         .Search(s=> { s.Field(c => c.Descrizione ); s.Field(c => c.Chiave1); s.Field(c => c.Chiave3); s.Field(c => c.Chiave4); })
                             .PersistSelection()
                             .Height(900)
@@ -357,7 +358,7 @@
                     <form>
                         <div class="row" id="divCliente">
                             <div class="form-group">
-                                 <div class="col-md-12" style="width:80%;">
+                                <div class="col-md-12" style="width:80%;">
                                     <div class="form-row">
                                         <div class="form-group col-md-2">
                                             <input type="text" class="form-control" id="CodiceSoggetto" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
@@ -377,7 +378,7 @@
                                                 .Content("Associa Elemento")
                                                 .Events(e => e.Click("AssociaElementoOnClick"))
                                         )
-                                       
+
                                     </div>
                                 </div>
                             </div>
@@ -435,7 +436,7 @@
                 <div class="box-body">
                     <form>
                         <div class="form-group">
-                             <div class="col-md-12" style="width:100%;">
+                            <div class="col-md-12" style="width:100%;">
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <input type="text" class="form-control" id="DescrizioneElemento" placeholder="" value="" />
@@ -509,7 +510,7 @@
                                                     })
                                                     .ToolBar(toolbar =>
                                                     {
-                                                      
+
                                                         toolbar.Custom().Text("Apri").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:75px", onclick = "ApriElementoGrid()" });
                                                         toolbar.Custom().Text("Agg.").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:75px", onclick = "AggiungiElementoGrid()" });
                                                         toolbar.Custom().Text("Canc.").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaElemento()" });
@@ -643,7 +644,7 @@
                     <div class="form-group">
 
                         <div class="col-md-12" style="width:100%; margin-top:10px" id="anteprimapdf">
-                       
+
                             @(Html.Kendo().ToolBar()
                .Name("pdfToolBar")
                .Items(items =>
@@ -756,7 +757,7 @@
 .Height(450)
 .Events(e =>
 {
-   
+
 })
 .DataSource(source =>
 {
@@ -861,7 +862,7 @@
         <div class="box-body">
             <form>
                 <div class="form-group">
-                
+
                     <div class="form-group col-md-8">
                          @(Html.Kendo().ComboBox()
                             .Name("emailServer_sposta")
@@ -933,5 +934,47 @@
         .Modal(true)
                 .Events(e => e.Close("wPdfEditorClose").Open("wPdfEditorOpen"))
         );
+
+
+@(Html.Kendo().Window()
+    .Name("wSoggetti")
+    .Size("auto")
+    .Title("Soggetti:")
+    .Visible(false)
+    .Actions(actions => actions.Close())
+    .Content(@<text>
+        <div class="box-body">
+            <div class="form-group col-md-11">
+              @(Html.Kendo().Grid<Soggetti>()
+                .Name("cSogg")
+                .Columns(columns =>
+                {
+                    columns.Bound(p => p.Codice).Title("Codice").Width("20%");
+                    columns.Bound(p => p.Nome).Title("Nome").Width("80%");
+                })
+                .DataSource(dataSource => dataSource
+                    .Ajax()
+                    //.Model(model => model.Id(p => p.ID))
+                    .Read(read => read.Action("GetSoggettiByMail", "MailView").Data("GetMail"))
+
+                    )
+                    
+                 .HtmlAttributes(new { style = "font-size:12" })
+                 .Events(events => events
+                    .DataBound("cSoggonDataBound")
+                    .Change("cSoggonChange")
+                  )
+                 .Selectable(selectable => selectable
+                    .Mode(GridSelectionMode.Single )
+                    .Type(GridSelectionType.Row))
+                )
+            </div>
+        </div >
+    </text>)
+    .Width(600)
+    .Height(300)
+    .Modal(true)
+ )
+
 
 <ejs-scripts></ejs-scripts>

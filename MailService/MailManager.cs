@@ -78,6 +78,7 @@ namespace dbluMailService
                             _logger.LogInformation($"Elaborazione di {s.Nome}");
                             using (var client = new ImapClient())
                             {
+                                client.CheckCertificateRevocation = false;
                                 await client.ConnectAsync(s.Server, s.Porta, s.Ssl, cancel);
 
                                 // If you want to disable an authentication mechanism,
@@ -90,7 +91,33 @@ namespace dbluMailService
                                 IMailFolder archivio = null;
                                 if (!string.IsNullOrEmpty(s.Cartella))
                                 {
-                                    inbox = client.GetFolder(s.Cartella, cancel);
+                                    //inbox = client.GetFolder(s.Cartella, cancel);
+                                    try
+                                    {
+                                        IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0], true, cancel);
+                                        //
+                                        inbox = mf.Where(c => c.Name == s.Cartella).FirstOrDefault();
+                                        if (inbox == null)
+                                        {
+                                            mf = inbox.GetSubfolders(true, cancel);
+                                            inbox = mf.Where(c => c.Name == s.Cartella).FirstOrDefault();
+                                        }
+                                        if (inbox == null)
+                                        {
+                                            inbox = client.GetFolder(s.Cartella, cancel);
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        inbox = client.Inbox;
+                                        s.Cartella = inbox.FullName;
+                                        _logger.LogError($"Cartella non valida ( {s.Cartella}).");
+
+                                    }
+
+
+
+
                                 }
                                 else
                                 {
@@ -232,18 +259,27 @@ namespace dbluMailService
 
                                                 //using (SqlConnection cn = new SqlConnection(Connessione))
                                                 //{
-                                                var p = new DynamicParameters();
+                                                //var p = new DynamicParameters();
 
-                                                p.Add("@Mittente", emailmitt, dbType: DbType.String, direction: ParameterDirection.Input);
-                                                p.Add("@Codice", "", dbType: DbType.String, direction: ParameterDirection.Output);
-                                                p.Add("@Nome", "", dbType: DbType.String, direction: ParameterDirection.Output);
+                                                //p.Add("@Mittente", emailmitt, dbType: DbType.String, direction: ParameterDirection.Input);
+                                                //p.Add("@Codice", "", dbType: DbType.String, direction: ParameterDirection.Output);
+                                                //p.Add("@Nome", "", dbType: DbType.String, direction: ParameterDirection.Output);
 
-                                                var sql = "exec dbo.sp_GetSoggettoEmail @Mittente, @Codice OUT, @Nome OUT";
-                                                cn.Execute(sql, p);
+                                                //var sql = "exec dbo.sp_GetSoggettoEmail @Mittente, @Codice OUT, @Nome OUT";
+                                                
+                                                //cn.Execute(sql, p);
 
-                                                allm.SetAttributo("CodiceSoggetto", p.Get<string>("@Codice"));
-                                                allm.SetAttributo("NomeSoggetto", p.Get<string>("@Nome"));
+                                                //allm.SetAttributo("CodiceSoggetto", p.Get<string>("@Codice"));
+                                                //allm.SetAttributo("NomeSoggetto", p.Get<string>("@Nome"));
 
+                                                string sql = "SELECT CodiceSoggetto, Nome FROM EmailSoggetti JOIN soggetti ON soggetti.Codice = EmailSoggetti.CodiceSoggetto WHERE email ='" + emailmitt + "' ";
+
+                                                var xx = cn.Query(sql).ToList();
+                                                if (xx.Count == 1)
+                                                {
+                                                    allm.SetAttributo("CodiceSoggetto", xx[0].CodiceSoggetto);
+                                                    allm.SetAttributo("NomeSoggetto", xx[0].Nome);
+                                                }
                                                 //}
                                             }
                                             catch (Exception ex)

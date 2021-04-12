@@ -41,6 +41,8 @@ namespace dblu.Docs.Interfacce
 
         List<ISoggetti> GetSoggetti();
 
+        List<ISoggetti> GetSoggettiByMail(string Mail);
+
         ISoggetti GetSoggetto(string Codice);
 
         string UrlServizio();

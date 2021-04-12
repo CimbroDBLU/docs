@@ -50,6 +50,12 @@ namespace dblu.Portale.Plugin.Docs.Services
             return _sggMan.GetAll();
         }
 
+
+        public List<ISoggetti> GetSoggettiByMail(string mail)
+        {
+            return _sggMan.GetbyMail(mail);
+        }
+
         public async Task<List<ISoggetti>> GetSoggettiAsync()
         {
             return await _sggMan.GeAllAsync();

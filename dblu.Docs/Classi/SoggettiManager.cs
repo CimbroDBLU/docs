@@ -1,4 +1,5 @@
-﻿using Dapper.Contrib.Extensions;
+﻿using Dapper;
+using Dapper.Contrib.Extensions;
 using dblu.Docs.Interfacce;
 using dblu.Docs.Models;
 using Microsoft.Data.SqlClient;
@@ -73,6 +74,26 @@ namespace dblu.Docs.Classi
             return l;
         }
 
+        public List<ISoggetti> GetbyMail(string Mail)
+        {
+            List<ISoggetti> l = new List<ISoggetti>();
+            try
+            {
+                //l = _context.Soggetti
+                //    .ToList<ISoggetti>();
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    l = cn.Query<Soggetti>("select Soggetti.* from EmailSoggetti left join Soggetti on soggetti.Codice =EmailSoggetti.CodiceSoggetto  where  EmailSoggetti.email= '" + Mail + "'").ToList<ISoggetti>();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GeAll: {ex.Message}");
+            }
+            return l;
+        }
+
         public List<ISoggetti> GetAll()
         {
             List<ISoggetti> l = new List<ISoggetti>();
@@ -93,7 +114,7 @@ namespace dblu.Docs.Classi
             return l;
         }
 
-
+      
         public bool Salva(Soggetti soggetto, bool isNew)
         {
             var bres = false;

@@ -301,6 +301,30 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             }
           
         }
+        [HasPermission("50.1.3")]
+        public ActionResult GetSoggettiByMail([DataSourceRequest] DataSourceRequest request, string mail)
+        {
+            try
+            {
+                IEnumerable<ISoggetti> soggetti = new List<ISoggetti>();
+                if (!string.IsNullOrEmpty(mail))
+                {
+                   soggetti = _soggetti.GetSoggettiByMail(mail);
+                    return Json(soggetti.ToDataSourceResult(request));
+                }
+                else
+                {
+                    return Json(soggetti.ToDataSourceResult(request));
+                }
+            
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
+
+        }
+
 
 
         [HasPermission("50.1.3")]
