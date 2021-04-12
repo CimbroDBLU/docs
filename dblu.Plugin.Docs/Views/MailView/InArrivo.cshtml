@@ -357,27 +357,28 @@
                     <form>
                         <div class="row" id="divCliente">
                             <div class="form-group">
-                                 <div class="col-md-12" style="width:80%;">
+                                 <div class="col-md-12" >
                                     <div class="form-row">
                                         <div class="form-group col-md-2">
                                             <input type="text" class="form-control" id="CodiceSoggetto" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
                                         </div>
-                                        <div class="form-group col-md-6">
-                                            <input type="text" class="form-control" id="NomeSoggetto" placeholder="" disabled value="" />
+                                        <div class="form-group col-md-5">
+                                            <input type="text"  style="width:100%;" class="form-control" id="NomeSoggetto" placeholder="" disabled value="" />
                                         </div>
-                                        @(Html.Kendo().Button()
+                                        <div class="form-group col-md-5">
+                                            @(Html.Kendo().Button()
                                         .Name("CercaSoggetti")
                                         .HtmlAttributes(new { type = "button", @class = "k-primary" })
                                                 .Content("Cerca Soggetto")
                                         .Events(e => e.Click("CercaSoggettiOnClick"))
                                     )
-                                        @(Html.Kendo().Button()
+                                            @(Html.Kendo().Button()
                                                 .Name("AssociaElemento")
                                                 .HtmlAttributes(new { type = "button", @class = "k-primary" })
                                                 .Content("Associa Elemento")
                                                 .Events(e => e.Click("AssociaElementoOnClick"))
                                         )
-                                       
+                                        </div>
                                     </div>
                                 </div>
                             </div>
