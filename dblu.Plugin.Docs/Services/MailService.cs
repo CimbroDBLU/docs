@@ -2879,10 +2879,13 @@ namespace dblu.Portale.Plugin.Docs.Services
 
 
                         float curpos = MarginPoints;
-                        float etiHeight = page.Size.Height * (float) .05;
+                        
+                        float etiHeight = (page.Size.Height) * (float) .05;
+
+                        int number =(int) ((page.Size.Height - 2 * MarginPoints) / (20 + etiHeight));
                         int i = 0;
                         //foreach (Elementi e in el)
-                        int nrpag = (int)Math.Round(el.Count() / 12.0+0.5,0,MidpointRounding.AwayFromZero) ;
+                        int nrpag = (int)Math.Round(el.Count() / number + 0.5,0,MidpointRounding.AwayFromZero) ;
 
                         for(int p=0; p< nrpag; p++) {
                             if (p > 0) {
@@ -2890,9 +2893,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 graphics = page.Graphics;
                                 curpos = 20;
                             }
-                            for (i=0; i< 12;i++)
+                            for (i=0; i< number; i++)
                         {
-                                int j = p * 12 + i;
+                                int j = p * number + i;
                                 if (j >= el.Count())
                                     break;
                                 
