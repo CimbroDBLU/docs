@@ -362,9 +362,9 @@ namespace dblu.Portale.Plugin.Docs.Class
                                     {
                                         finalDoc.ImportPage(l, q);
                                     }
-                                    catch (Exception ex)
+                                    catch (Exception)
                                     {
-                                        _logger.LogError($"Unable to import page {q}, skipping it");
+                                        _logger.LogError($"SFpdf.CreaTmpPdfCompletoSF: Unable to import page {q}, skipping it...");
                                     }
                                 }
                             }
