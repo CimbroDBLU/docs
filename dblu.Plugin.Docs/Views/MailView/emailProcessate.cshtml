@@ -320,7 +320,7 @@
                             </div>
                             <label class="control-label col-md-2" style="font-size:12px">Testo: </label>
                             <div class="form-group col-md-8">
-                                 @Html.TextArea("testoRiposta", "", new { @class = "k-textbox", style = "width: 100%;", rows = 10 });
+                                 @Html.TextArea("testoRiposta", "", new { @class = "k-textbox", style = "width: 100%;", rows = 5 })
                             </div>
                             <div class="form-group col-md-2">
                                 @(Html.Kendo().Button()
@@ -399,7 +399,7 @@
         </div >
     </text>)
     .Width(600)
-    .Height(120)
+    .Height(500)
     .Modal(true)
 )
 @(Html.Kendo().Window()
