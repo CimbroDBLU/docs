@@ -294,22 +294,34 @@ namespace dblu.Docs.Classi
             }
             return bres;
         }
-
+        /// <summary>
+        /// check if a Categoria has Fascicoli associated
+        /// </summary>
+        /// <param name="Cod"></param>
+        /// <returns></returns>
+        public bool CheckIfDeletable(string Cod)
+        {
+            bool Res = false;
+            List<Fascicoli> e = new();
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    e = cn.Query<Fascicoli>("select * from Fascicoli where Categoria = @cod", new { cod = Cod }).ToList();
+                    if (e.Count == 0) Res = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"FascicoliManager.CheckIfDeletable : {ex}");
+            }
+            return Res;
+        }
         public bool CancellaCategoria(Categorie cat)
         {
             var bres = false;
             try
             {
-
-                // var c = _context.Categorie
-                //     .FirstOrDefault(e => e.Codice == cat.Codice);
-
-                // if (c != null)
-                // {
-                //     _context.Categorie.Remove(cat);
-
-                //}
-                // _context.SaveChanges();
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
                     cn.Execute($"Delete from Categorie where Codice=@Codice", new { Codice = cat.Codice });

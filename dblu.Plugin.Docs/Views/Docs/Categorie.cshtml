@@ -21,6 +21,23 @@
 
 <!-- Main content -->
 <section class="content">
+    <div>
+        @(Html.Kendo().Dialog()
+        .Name("dialogConferma")
+        .ButtonLayout("normal")
+        .Title("Attenzione")
+        .Content("<p>Confermi di eliminare la Categoria?<p>")
+        .Width(400)
+        .Modal(false)
+        .Closable(true)
+        .Visible(false)
+        .Actions(actions =>
+        {
+            actions.Add().Text("Cancel").Action("onAnnullaEliminazione");
+            actions.Add().Text("Ok").Primary(true).Action("onConfermaEliminazione");
+        })
+    )
+    </div>
     <div class="row">
         <div class="col-xs-12">
             <div class="box box-solid box-default">
@@ -40,7 +57,7 @@
                 columns.Command(command =>
                 {
                     command.Custom("Modifica").Click("showEditor");
-                    command.Destroy().Text("Elimina");
+                    command.Custom("Elimina").Click("eliminaCategoria");
                     command.Custom("Duplica").Click("duplica");
                 }).Width(500);
             })
@@ -86,6 +103,8 @@
 </script>
 
 <script type="text/javascript">
+    var codiceDel = '';
+
     function colonnaValorePredefinito(dato) {
         var html;
         if (dato.Tipo === 'System.DateTime') {
@@ -127,7 +146,48 @@
         });
         myWindow.open().maximize();
     }
+    /* button grid elimina catgoria 
+     * chaima la funzione su DocsController per vedere se ci sono fascicoli collegati
+     * se non ci sono apre il dialog di conferma eliminazione
+     **/
+    function eliminaCategoria(e) {
+    
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var cod = dataItem.Codice;
+        codiceDel = cod;
+        var obj2 = {
+            Tipo: "Categoria",
+            Cod: cod
+        };
 
+         $.ajax({
+            type: "POST",
+            url: "@(Url.Action("checkIfDeletable", "Docs"))",
+            data: obj2,
+            success: function (result) {
+                if (!result) alert("Impossibile eliminare: presenti fascicoli associati");
+                else {
+                    $("#dialogConferma").data("kendoDialog").open();
+                }
+
+            }
+        });
+    }
+    function onAnnullaEliminazione() {
+        $("#dialogConferma").data("kendoDialog").close();
+    }
+    //eliminazione categoria
+    function onConfermaEliminazione() {
+         $.ajax({
+            type: "POST",
+            url: "@(Url.Action("Categorie_Destroy", "Docs"))",
+            data: {codice: codiceDel},
+            success: function (result) {
+                $("#gridCategorie").data("kendoGrid").dataSource.read();
+            }
+          });
+        $("#gridCategorie").data("kendoGrid").dataSource.read();
+    }
       function duplica(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -140,8 +200,8 @@
             type: "Post"
         });
         myWindow.open().maximize();
-    
-        
+
+
     }
 </script>
 

@@ -308,22 +308,11 @@ namespace dblu.Docs.Classi
             var bres = false;
             try
             {
-
-                //var c = _context.TipiElementi
-                //    .FirstOrDefault(e => e.Codice == cat.Codice);
-
-                //if (c != null)
-                //{
-                //    _context.TipiElementi.Remove(cat);
-
-                //}
-                //_context.SaveChanges();
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
-                    cn.Execute($"Delete from TipiElementi where Codice=@Codice", new { Codice = obj.Codice });
-
+                        cn.Execute($"Delete from TipiElementi where Codice=@Codice", new { Codice = obj.Codice });
+                        bres = true;
                 }
-                bres = true;
             }
             catch (Exception ex)
             {
@@ -331,6 +320,30 @@ namespace dblu.Docs.Classi
 
             }
             return bres;
+        }
+       
+
+        /// <summary>
+        /// check if a TipoElemento has Elementi associated
+        /// </summary>
+        /// <param name="Cod"></param>
+        /// <returns></returns>
+        public bool CheckIfDeletable(string Cod)
+        {
+            bool Res = false;
+            List<Elementi> e = new();
+            try
+            {
+            using (SqlConnection cn = new SqlConnection(StringaConnessione))
+            {
+                e = cn.Query<Elementi>("select * from Elementi where Tipo = @cod", new { cod = Cod }).ToList();
+                if (e.Count == 0) Res = true;
+            }
+            }catch(Exception ex)
+            {
+                _logger.LogError($"ElementiManager.CheckIfDeletable : {ex}");
+            }
+            return Res;
         }
 
         public List<Allegati> GetAllegatiElemento(Guid elemento)
