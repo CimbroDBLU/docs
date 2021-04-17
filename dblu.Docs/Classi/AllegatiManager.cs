@@ -827,7 +827,7 @@ namespace dblu.Docs.Classi
         public bool CheckIfDeletable(string Cod)
         {
             bool Res = false;
-            List<Allegati> e = new();
+            List<Allegati> e = new List<Allegati>();
             try
             {
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))

@@ -331,7 +331,7 @@ namespace dblu.Docs.Classi
         public bool CheckIfDeletable(string Cod)
         {
             bool Res = false;
-            List<Elementi> e = new();
+            List<Elementi> e = new List<Elementi>();
             try
             {
             using (SqlConnection cn = new SqlConnection(StringaConnessione))
