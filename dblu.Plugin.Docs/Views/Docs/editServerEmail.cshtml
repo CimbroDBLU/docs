@@ -243,7 +243,6 @@
     model.Id(p => p.RoleId);
     model.Field(p => p.Code);
     model.Field(p => p.Name);
-    model.Field(p => p.Position);
 })
 .Read("RuoliServer", "Docs", new { ServerName = Model.Nome })
 .Destroy("RemoveFromRole", "Docs", new { ServerName = Model.Nome })
