@@ -302,7 +302,7 @@ namespace dblu.Docs.Classi
         public bool CheckIfDeletable(string Cod)
         {
             bool Res = false;
-            List<Fascicoli> e = new();
+            List<Fascicoli> e = new List<Fascicoli>();
             try
             {
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
