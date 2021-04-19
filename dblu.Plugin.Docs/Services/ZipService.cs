@@ -1,5 +1,7 @@
-﻿using BPMClient;
+﻿using AutoMapper;
+using BPMClient;
 using Dapper;
+using dblu.CamundaClient;
 using dblu.Docs.Classi;
 using dblu.Docs.Interfacce;
 using dblu.Docs.Models;
@@ -55,6 +57,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         public ISoggettiService _soggetti;
         
         private IApplicationUsersManager _usrManager;
+        private MapperConfiguration _mapperConfig;
 
         public ZipService(CamundaService bpm, dbluDocsContext db,
             IWebHostEnvironment appEnvironment,
@@ -77,6 +80,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             _logMan = new LogDocManager(_context.Connessione, _logger);
             _config = config;
             _usrManager = usrManager;
+            _mapperConfig = new MapperConfiguration(cfg => cfg.CreateMap<BPMProcessInfo, BPMDocsProcessInfo>());
             try
             {
                 _soggetti = sogg;
@@ -575,9 +579,8 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
 
-        public List<EmailElementi> ListaElementiZip(string IdFascicolo)
+        public List<EmailElementi> ListaElementiZip(string IdFascicolo, string IdAllegato)
         {
-
             var res = new List<EmailElementi>();
             try
             {
@@ -596,13 +599,18 @@ namespace dblu.Portale.Plugin.Docs.Services
                         //   + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'ZIP' "
                         //   + " WHERE (e.IdFascicolo = @IdFascicolo)";
 
-                        var sqlEl = " SELECT distinct  e.IdElemento, e.Revisione, e.TipoElemento, e.DscElemento, e.Campo1, e.Campo2, e.Campo3 , e.Campo4 , e.Campo5, e.DscTipoElemento , e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, e.DataC, "
-                           + "(select top 1 Operazione from LogDoc where IdOggetto=e.IdElemento Order by Data DESC) LastOp "
-                           + " FROM vListaElementi AS e "
-                          + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'ZIP' "
-                          + " WHERE (e.IdFascicolo = @IdFascicolo) ORDER BY Ultimo DESC, e.DataC DESC ";
+                        var sqlall = "";
+                        if (!string.IsNullOrEmpty(IdAllegato)) {
+                            sqlall = " and AM.Id=@IdAllegato ";
+                        }
 
-                        res = cn.Query<EmailElementi>(sqlEl, new { IdFascicolo = IdFascicolo }).ToList();
+                        var sqlEl = @$" SELECT distinct  e.IdElemento, e.Revisione, e.TipoElemento, e.DscElemento, e.Campo1, e.Campo2, e.Campo3 , e.Campo4 , e.Campo5, e.DscTipoElemento , e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, e.DataC, 
+                            (select top 1 Operazione from LogDoc where IdOggetto=e.IdElemento Order by Data DESC) LastOp 
+                             FROM vListaElementi AS e 
+                            LEFT JOIN Allegati AM on AM.idfascicolo = e.idfascicolo and AM.idelemento = e.IdElemento and AM.tipo = 'ZIP'  {sqlall}
+                              WHERE (e.IdFascicolo = @IdFascicolo  ) ORDER BY Ultimo DESC, e.DataC DESC ";
+
+                        res = cn.Query<EmailElementi>(sqlEl, new { IdFascicolo = IdFascicolo, IdAllegato = IdAllegato }).ToList();
                     }
                 }
             }
@@ -877,6 +885,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             bool AllegaZip,
             string Descrizione,
             ClaimsPrincipal User,
+            BPMDocsProcessInfo Info,
             Dictionary<string, VariableValue> variabili)
         {
             try
@@ -914,7 +923,15 @@ namespace dblu.Portale.Plugin.Docs.Services
                     var estrai = all != null;
                     var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
                     estrai = estrai && await sfdpf.MarcaAllegatoSF(all, e.elencoAttributi);
-                    estrai = estrai && AvviaProcesso(e, variabili);
+
+                    Info.StatoPrec = (int)e.Stato;
+                    Info.Stato = (int)e.Stato;
+                    if (variabili == null)
+                        variabili = new Dictionary<string, VariableValue>();
+                    if (!variabili.ContainsKey("IdAllegato"))
+                        variabili.Add("IdAllegato", VariableValue.FromObject(IdAllegato));
+                    
+                    estrai = estrai && AvviaProcesso(Info,e, variabili);
                     return estrai;
                 }
             }
@@ -1074,7 +1091,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             return all;
         }
 
-        public bool AvviaProcesso(Elementi el, Dictionary<string, VariableValue> variabili)
+        public bool AvviaProcesso(BPMDocsProcessInfo Info, Elementi el, Dictionary<string, VariableValue> variabili)
         {
             bool res = true;
             try
@@ -1090,6 +1107,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                     variabili.Add("IdElemento", v);
                     v = VariableValue.FromObject(el);
                     variabili.Add("jElemento", v);
+
+                    v = VariableValue.FromObject(JsonConvert.SerializeObject(Info));
+                    variabili.Add("_ProcessInfo", v);
 
                     var pi = pd.Start("", el.TipoNavigation.Processo, el.Id.ToString(), variabili);
 
@@ -1614,6 +1634,21 @@ namespace dblu.Portale.Plugin.Docs.Services
                 _logger.LogError($"CancellaZip : {ex.Message}");
             }
             return await Task.FromResult(res);
+        }
+
+        public BPMDocsProcessInfo GetProcessInfo(
+            TipiOggetto Tipo,
+            AzioneOggetto Azione
+            )
+        {
+            BPMProcessInfo baseinfo = _bpm.GetProcessInfo();
+            var mapper = _mapperConfig.CreateMapper();
+            BPMDocsProcessInfo info = mapper.Map<BPMDocsProcessInfo>(baseinfo);
+            info.TipoOggetto = Tipo;
+            info.Azione = Azione;
+            //info.StatoPrec = StatoPrec;
+            //info.Stato = StatoAttuale;
+            return info;
         }
 
     }

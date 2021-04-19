@@ -849,8 +849,10 @@ function getSoggetto() {
 }
 function getFascicolo() {
     var IdFascicolo = $("#IdFascicolo").val();
+    var IdAllegato = $("#IdAllegato").val();
     return {
-        IdFascicolo: IdFascicolo
+        IdFascicolo: IdFascicolo,
+        IdAllegato: IdAllegato
     };
 }
 

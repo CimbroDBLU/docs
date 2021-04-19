@@ -862,9 +862,9 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
        [HasPermission("50.1.3")]
-        public  ActionResult ListaEmailElementi([DataSourceRequest] DataSourceRequest request, string IdFascicolo)
+        public  ActionResult ListaEmailElementi([DataSourceRequest] DataSourceRequest request, string IdFascicolo, string IdAllegato)
         {
-            List<EmailElementi> lista = _mailService.ListaElementiEmail(IdFascicolo);
+            List<EmailElementi> lista = _mailService.ListaElementiEmail(IdFascicolo, IdAllegato);
             return Json(lista.ToDataSourceResult(request));
         }
 

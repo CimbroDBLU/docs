@@ -28,6 +28,7 @@ using dblu.Docs.Extensions;
 using dblu.Portale.Plugin.Docs.Models;
 using AspNetCore;
 using BPMClient;
+using dblu.Portale.Plugin.Docs.Class;
 
 namespace dblu.Portale.Plugin.Documenti.Controllers
 {
@@ -78,9 +79,9 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
         [HasPermission("50.1.3|50.1.4")]
-        public ActionResult ListaZipElementi([DataSourceRequest] DataSourceRequest request, string IdFascicolo)
+        public ActionResult ListaZipElementi([DataSourceRequest] DataSourceRequest request, string IdFascicolo, string IdAllegato)
         {
-            List<EmailElementi> lista = _zipsvc.ListaElementiZip(IdFascicolo);
+            List<EmailElementi> lista = _zipsvc.ListaElementiZip(IdFascicolo, IdAllegato);
             return Json(lista.ToDataSourceResult(request));
         }
 
@@ -170,6 +171,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         {
             if (IdAllegato != null && IdFascicolo != null && IdElemento != null)
             {
+                BPMDocsProcessInfo Info = _zipsvc.GetProcessInfo(TipiOggetto.ELEMENTO, AzioneOggetto.MODIFICA);
                 bool fl = await _zipsvc.AllegaAElementoFascicolo(IdAllegato,
                     IdFascicolo,
                     IdElemento,
@@ -177,6 +179,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     AllegaEmail,
                     Descrizione,
                     User, 
+                    Info,
                     null );
 
                 if (fl)
