@@ -58,7 +58,7 @@ using MimeKit.Utils;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
-using dblu.Portale.Core.Infrastructure.Identity.Class;
+using dblu.Portale.Core.Infrastructure.Identity.Classes;
 using dblu.CamundaClient;
 using AutoMapper;
 using Syncfusion.Pdf.Graphics;
@@ -227,7 +227,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         {
             List<string> l = new List<string>();
             IEnumerable<Role> Roles;
-            Roles = _usrManager.GetAllRolesForModule(Modulo);
+            Roles = _usrManager.GetRolesWithModule(Modulo);
 
             if (NomeServer != "")
             {

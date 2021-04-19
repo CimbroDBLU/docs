@@ -4,11 +4,12 @@
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
 @using dblu.Portale.Core.Infrastructure.Interfaces
-@using dblu.Portale.Core.Infrastructure.Identity.Class
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _zipservice
 @inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _allservice
-@inject dblu.Portale.Core.Infrastructure.Interfaces.IDashboardService _dashservice
+@inject dblu.Portale.Core.Infrastructure.Identity.Services.IUserManager _Man
+
 
 @using Kendo.Mvc.UI
 @using Syncfusion.EJ2
@@ -62,47 +63,15 @@
     }
     bool mostraSposta = ListaServer.Count > 1;
 
-    UserProperties P = _dashservice.GeUserProperties(User.Identity.Name);
     string IsPrintedLocally = "true";
     string Printer = "";
-    if (P != null && !string.IsNullOrEmpty(P["Printer"]))
+    if (!string.IsNullOrEmpty(_Man.GetCurrentUser(Context).Properties["Printer"]))
     {
         IsPrintedLocally = "false";
-        Printer = P["Printer"];
+        Printer = _Man.GetCurrentUser().Properties["Printer"];
     }
 
-
-
-    //List<SelectListItem> ListaRuoliZip = null;
-
-    //if (!string.IsNullOrEmpty(Model.Ruolo))
-    //{
-    //    ListaRuoliZip = new List<SelectListItem>();
-    //    ListaRuoliZip.Add(new SelectListItem(Model.Ruolo, Model.Ruolo));
-    //}
-    //else
-    //{
-    //    ListaRuoliZip = _zipservice.GetRuoliZip(Context.User.Claims);
-    //}
-
-    //if (ListaRuoliZip.Count() == 0)
-    //{
-    //    ListaRuoliZip.Add(new SelectListItem("(nessuno)", ".."));
-    //}
-
-
-    //List<string> ListaRuoli = new List<string>();
-    //foreach (SelectListItem s in ListaRuoliZip)
-    //    ListaRuoli.Add(s.Value);
-
-    //ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoli);
-    //var ListaServer = _zipservice._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaFile);
-
-    //bool mostraSposta = ListaServer.Count > 1;
-
     List<dblu.Docs.Models.Colonna> ElCols = _allservice.GetColonne("vELEMENTO");
-
-
 }
 
 <style>

@@ -1,6 +1,6 @@
 ﻿
 using dblu.Docs.Models;
-using dblu.Portale.Core.Infrastructure.Identity.Class;
+using dblu.Portale.Core.Infrastructure.Identity.Classes;
 using dblu.Portale.Plugin.Docs.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

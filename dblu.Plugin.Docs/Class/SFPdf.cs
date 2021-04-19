@@ -844,7 +844,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                 float mm = 10;
                 try
                 {
-                    mm = float.Parse(_config["Docs:Margini"]);
+                    mm = float.Parse(_config["Docs:Margini"]??"0");
                 }
                 catch
                 {
