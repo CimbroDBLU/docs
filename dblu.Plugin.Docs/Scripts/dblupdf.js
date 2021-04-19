@@ -128,4 +128,5 @@ function wPdfEditorOpen(e) {
     //alert("");
     $('#wPdfEditor').addClass('k-window-content-pdf');
 
+
 }

@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using dblu.Docs.Classi;
 using dblu.Docs.Models;
-using dblu.Portale.Core.Infrastructure.Class;
+using dblu.Portale.Core.Infrastructure.Classes;
 using dblu.Portale.Plugin.Docs.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

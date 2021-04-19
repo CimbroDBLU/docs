@@ -4,7 +4,7 @@ using dblu.Docs.Classi;
 using dblu.Docs.Interfacce;
 using dblu.Docs.Models;
 using dblu.Portale.Core.Infrastructure;
-using dblu.Portale.Core.Infrastructure.Identity.Class;
+using dblu.Portale.Core.Infrastructure.Identity.Classes;
 using dblu.Portale.Core.Infrastructure.Identity.Services;
 using dblu.Portale.Plugin.Docs.Class;
 using dblu.Portale.Plugin.Docs.Models;
@@ -132,11 +132,12 @@ namespace dblu.Portale.Plugin.Docs.Services
                 }   
                     
                 if (rr.Count > 0) {
-                    IEnumerable<Role> rl = _usrManager.GetAllRolesIN( String.Join(",", rr) );
 
-                    foreach (Role ur in rl) {
+                    IEnumerable<Role> rl = _usrManager.GetRoles().Where(d => rr.Contains(d.Code));
+
+                    foreach (Role ur in rl) 
                         res.Add(new SelectListItem() { Value = ur.RoleId, Text = ur.Name});
-                    }
+                    
             }
 
             }

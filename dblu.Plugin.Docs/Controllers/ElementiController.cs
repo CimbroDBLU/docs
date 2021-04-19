@@ -1,7 +1,7 @@
 ﻿
 using dblu.Docs.Classi;
 using dblu.Docs.Models;
-using dblu.Portale.Core.Infrastructure.Class;
+using dblu.Portale.Core.Infrastructure.Classes;
 using dblu.Portale.Plugin.Docs.Services;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;

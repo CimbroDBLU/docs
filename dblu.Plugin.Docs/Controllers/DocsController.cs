@@ -25,7 +25,7 @@ using System.Security.Claims;
 using dblu.Portale.Core.Infrastructure.Enums;
 using dblu.Portale.Core.PluginBase.Interfaces;
 using dblu.Portale.Core.Infrastructure;
-using dblu.Portale.Core.Infrastructure.Identity.Class;
+using dblu.Portale.Core.Infrastructure.Identity.Classes;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace dblu.Portale.Controllers
