@@ -404,7 +404,7 @@ namespace dblu.Portale.Controllers
         /// <param name="Tipo"></param>
         /// <param name="Cod"></param>
         /// <returns></returns>
-        public bool CheckIfDeletable(string Tipo, string Cod)
+        public bool IsDeletable(string Tipo, string Cod)
         {
             bool Res = false;
             if (Tipo.Equals("TipoElemento")) Res =_eleMan.CheckIfDeletable(Cod);

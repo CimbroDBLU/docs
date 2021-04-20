@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 using System.Text;
 using System.Linq;
 using Dapper;
-using dblu.Portale.Core.Infrastructure.Identity.Classes;
+using dblu.Portale.Core.Infrastructure.Identity.Class;
 using Microsoft.Extensions.Configuration;
 using dblu.Portale.Core.Infrastructure.Identity.Services;
 
@@ -35,19 +35,21 @@ namespace dblu.Portale.Plugin.Docs.Services
             IEnumerable<Role> tmpRuoli = new List<Role>();
             IEnumerable<string> xx;
 
-            if (!string.IsNullOrEmpty(ServerName))
+            if (!string.IsNullOrEmpty(ServerName)) { 
+            using (IDbConnection cn = new SqlConnection(_connDocs))
             {
-                using (IDbConnection cn = new SqlConnection(_connDocs))
-                {
-                    string sql = "SELECT RoleId FROM ServersInRole where idServer='" + ServerName + "'";
+                string sql = "SELECT RoleId FROM ServersInRole where idServer='" + ServerName + "'";
 
-                    xx = cn.Query<string>(sql);  //, new { idutente = idUtente });
-                    cn.Close();
-                }
-
-                if (xx.Count() != 0)
-                    return _usr.GetRoles().Where(d => xx.Contains(d.Code));
-
+                xx = cn.Query<string>(sql);  //, new { idutente = idUtente });
+                cn.Close();
+            }
+            string codici = null;
+            if (xx.Count() !=0) { 
+               codici = "'" + string.Join("','", xx) + "'";
+               tmpRuoli = _usr.GetAllRolesIN(codici);
+            };
+           
+           
             }
             return tmpRuoli;
 
@@ -55,7 +57,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
         public IEnumerable<Role> RuoliNonAttivi(string ServerName)
         {
-            IEnumerable<Role> tmpRuoli=new List<Role>();
+            IEnumerable<Role> tmpRuoli;
             IEnumerable<string> xx;
 
             //(select roleid from UsersinRole where userid = '" + idUtente + "')"
@@ -67,10 +69,28 @@ namespace dblu.Portale.Plugin.Docs.Services
                 cn.Close();
             }
 
-            if (xx.Count() != 0)
-             return _usr.GetRoles().Where(d => !xx.Contains(d.Code));
+            string codici = null;
+            if (xx.Count() != 0) { codici = "'" + string.Join("','", xx) + "'"; };
+            tmpRuoli = _usr.GetAllRolesNOTIN(codici); 
 
-            return  tmpRuoli;
+            //(select roleid from UsersinRole where userid = '" + idUtente + "')"
+            //using (IDbConnection cn = new SqlConnection(_connIdentity))
+            //{
+                
+            //    string sql;
+            //    if ( xx.Count() == 0 )
+            //    {
+            //        sql = "Select [ID_] RoleId,[ID_] Code,[NAME_] Name from [ACT_ID_GROUP]";
+            //    }
+            //    else
+            //    {
+            //         sql = "Select [ID_] RoleId,[ID_] Code,[NAME_] Name from[ACT_ID_GROUP] where [ID_] not in (" + xx + ")";
+            //    }
+
+            //    tmpRuoli = cn.Query<Role>(sql);  //, new { idutente = idUtente });
+            //    cn.Close();
+            //}
+            return tmpRuoli;
         }
 
         public void RemoveFromRole(string RoleID, string ServerName)
@@ -117,16 +137,26 @@ namespace dblu.Portale.Plugin.Docs.Services
                 xx = cn.Query<string>(sql, new { Tipo = TipoElemento });  //, new { idutente = idUtente });
                 cn.Close();
             }
+            string codici = null;
+            if (xx.Count() != 0) {
+                codici = "'" + string.Join("','", xx) + "'";
 
-            if (xx.Count() != 0)
-                return _usr.GetRoles().Where(d => xx.Contains(d.Code));
-            
-            return _usr.GetRoles().Take(0);
+            tmpRuoli = _usr.GetAllRolesIN(codici);
+            return tmpRuoli;
+            }
+            else
+            {
+                tmpRuoli = _usr.GetAllRoles();
+                return tmpRuoli.Take(0);
+            }
+
+
+
         }
 
         public IEnumerable<Role> RuoliNonAttivi_Elemento(string TipoElemento)
         {
-            IEnumerable<Role> tmpRuoli=new List<Role>();
+            IEnumerable<Role> tmpRuoli;
             IEnumerable<string> xx;
 
             using (IDbConnection cn = new SqlConnection(_connDocs))
@@ -137,8 +167,11 @@ namespace dblu.Portale.Plugin.Docs.Services
                 cn.Close();
             }
 
-            if (xx.Count() != 0)
-                return _usr.GetRoles().Where(d => !xx.Contains(d.Code));
+            string codici = null;
+            if (xx.Count() != 0) { codici = "'" + string.Join("','", xx) + "'"; };
+            tmpRuoli = _usr.GetAllRolesNOTIN(codici);
+
+       
             return tmpRuoli;
         }
 
@@ -186,15 +219,19 @@ namespace dblu.Portale.Plugin.Docs.Services
                 xx = cn.Query<string>(sql, new { Tipo = TipoAllegato });  //, new { idutente = idUtente });
                 cn.Close();
             }
-            
-            if (xx.Count() != 0) 
-               return _usr.GetRoles().Where(d => xx.Contains(d.Code));
-            return _usr.GetRoles().Take(0);
+            string codici = null;
+            if (xx.Count() != 0) { 
+                codici = "'" + string.Join("','", xx) + "'";
+
+            tmpRuoli = _usr.GetAllRolesIN(codici);
+            return tmpRuoli;
+            }
+            else return new List<Role>();        
         }
 
         public IEnumerable<Role> RuoliNonAttivi_Allegato(string TipoAllegato)
         {
-            IEnumerable<Role> tmpRuoli=new List<Role>();
+            IEnumerable<Role> tmpRuoli;
             IEnumerable<string> xx;
 
             using (IDbConnection cn = new SqlConnection(_connDocs))
@@ -205,8 +242,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                 cn.Close();
             }
 
-            if (xx.Count() != 0)
-                return _usr.GetRoles().Where(d => !xx.Contains(d.Code));
+            string codici = null;
+            if (xx.Count() != 0) { codici = "'" + string.Join("','", xx) + "'"; };
+            tmpRuoli = _usr.GetAllRolesNOTIN(codici);
+
 
             return tmpRuoli;
         }

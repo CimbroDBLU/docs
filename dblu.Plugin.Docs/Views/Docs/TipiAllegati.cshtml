@@ -128,7 +128,7 @@
 
          $.ajax({
             type: "POST",
-            url: "@(Url.Action("checkIfDeletable", "Docs"))",
+            url: "@(Url.Action("IsDeletable", "Docs"))",
             data: obj2,
             success: function (result) {
                 if (!result) alert("Impossibile eliminare: presenti allegati associati");

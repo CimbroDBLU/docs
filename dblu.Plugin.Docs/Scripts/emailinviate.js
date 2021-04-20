@@ -331,3 +331,48 @@ function error_handler(e) {
         alert(message);
     }
 }
+function ApriAllegato(e) {
+    //chiamata alal view della preview immagine
+    var data = this.dataItem($(e.currentTarget).closest("tr"));
+    var nomefile = data.NomeFile;
+    var idAllegato = $("#IdAllegato").val();
+    var obj = {
+        IdAllegato: idAllegato,
+        NomeFile: nomefile,
+        IsRelated: true
+    }
+    $.ajax({
+        url: UrlActions.ImagePreview,
+        method: 'POST',
+        contentType: "application/json",
+        accepts: "application/json",
+        dataType: 'json',
+        data: JSON.stringify(obj),
+        success: function (data) {
+            var myWindow = window.open("", "_blank");
+            myWindow.document.write(data.responseText);
+        },
+        error: function (data) {
+            var myWindow = window.open("", "_blank");
+            myWindow.document.write(data.responseText);
+        }
+
+    });
+}
+function onDataBoundAttachments(e) {
+    // mostra il bottone anteprima immagine solo se il record è un file immagine
+    var grid = $("#emailAttachments").data("kendoGrid");
+    var gridData = grid.dataSource.view();
+
+    for (var i = 0; i < gridData.length; i++) {
+        var currentUid = gridData[i].uid;
+        if (gridData[i].NomeFile != undefined) {
+            if (!(gridData[i].NomeFile.toLowerCase().includes(".jpg") || gridData[i].NomeFile.toLowerCase().includes(".png"))) {
+
+                var currenRow = grid.table.find("tr[data-uid='" + currentUid + "']");
+                var editButton = $(currenRow).find(".k-grid-anteprimaImg");
+                editButton.hide();
+            }
+        }
+    }
+}

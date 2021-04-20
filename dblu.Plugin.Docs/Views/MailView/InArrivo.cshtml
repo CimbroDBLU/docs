@@ -5,12 +5,11 @@
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
 @using dblu.Portale.Core.Infrastructure.Interfaces
-@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Class
 @inject dblu.Portale.Plugin.Docs.Services.MailService _mailservice
 @inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _allservice
-@inject dblu.Portale.Core.Infrastructure.Identity.Services.IUserManager _Man
-
+@inject dblu.Portale.Core.Infrastructure.Interfaces.IDashboardService _dashservice
 
 @using Kendo.Mvc.UI
 @using Syncfusion.EJ2
@@ -51,13 +50,15 @@
         ListaTipiElementiServ = ListaTipiElementi;
     }
     bool mostraSposta = ListaServerIngresso.Count > 1;
+    UserProperties P = _dashservice.GeUserProperties(User.Identity.Name);
     string IsPrintedLocally = "true";
     string Printer = "";
-    if (!string.IsNullOrEmpty(_Man.GetCurrentUser(Context).Properties["Printer"]))
+    if (P != null && !string.IsNullOrEmpty(P["Printer"]))
     {
         IsPrintedLocally = "false";
-        Printer = _Man.GetCurrentUser().Properties["Printer"];
+        Printer = P["Printer"];
     }
+
 
     List<dblu.Docs.Models.Colonna> ElCols = _allservice.GetColonne("vELEMENTO");
 
@@ -118,6 +119,7 @@
     .my-icon-class-download:before {
         content: "\e132"; /* Adds a glyph using the Unicode character number */
     }
+    
 
     body.waiting * {
         cursor: progress;
@@ -188,7 +190,8 @@
         sggservice_UrlServizioRicercaElementi: '@_sggservice.UrlServizioRicercaElementi()',
         MailPdfViewer_EditorPdf: '@Url.Action("EditorPdf", "MailPdfViewer")',
         MailPdfViewer_GetPdfEditAction: '@Url.Action("GetPdfEditAction", "MailPdfViewer")',
-        Pdf_Editor: '@Url.Action("Editor", "PdfEditor")'
+        Pdf_Editor: '@Url.Action("Editor", "PdfEditor")',
+        ImagePreview: '@Url.Action("ImagePreview", "MailView")'
     };
 
     TipoAll = {
@@ -584,7 +587,7 @@
                 </div>
             </div>
 
-            <div class="box box-default" id="divAllegati">
+            <div class="box box-default">
                 <div class="box-header with-border">
                     <i class="ion ion-folder"></i>
                     <h4 class="box-title">Allegati</h4>
@@ -606,8 +609,7 @@
                             <label class="control-label col-md-2" style="font-size:12px" hidden>Allegati da includere</label>
                             <div class="col-md-12" style="width:100%">
                                 @(Html.Kendo().Grid<EmailAttachments>()
-                            .Name("emailAttachments")
-                            .PersistSelection()
+                             .Name("emailAttachments")
                             .Columns(columns =>
                             {
                                 columns.Select().Width(50).Title("Allega");
@@ -618,7 +620,9 @@
                                 {
                                     command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon my-icon-class-download");
                                 }).Width("10%");
+                                columns.Command(command => command.Custom("anteprimaImg").Text(" ").Click("ApriAllegato").IconClass("k-icon k-i-file-image")).Width("10%");
                             })
+                            .Events(events => events.DataBound("onDataBoundAttachments"))
                             .DataSource(dataSource => dataSource
                                 .Ajax()
                                 .Model(model => model.Id(p => p.Id))
