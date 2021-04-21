@@ -625,7 +625,7 @@ function MostraPdfCompleto(idElemento) {
     PdfCorrente.Pagina = 1;
     emailpdfviewer.fileName = JSON.stringify(PdfCorrente);
     if (loadingTimes++!=0)
-        emailpdfviewer.magnification.zoomTo(90);
+        emailpdfviewer.magnification.zoomTo(110);
     emailpdfviewer.load(JSON.stringify(PdfCorrente));
    $("#tbdescrizione").html(PdfCorrente.Descrizione);
     emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";

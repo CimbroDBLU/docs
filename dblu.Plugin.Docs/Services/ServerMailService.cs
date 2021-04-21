@@ -120,8 +120,8 @@ namespace dblu.Portale.Plugin.Docs.Services
 
             if (xx.Count() != 0)
                 return _usr.GetRoles().Where(d => xx.Contains(d.Code));
-            
-            return _usr.GetRoles().Take(0);
+
+            return new List<Role>();
         }
 
         public IEnumerable<Role> RuoliNonAttivi_Elemento(string TipoElemento)
@@ -182,14 +182,13 @@ namespace dblu.Portale.Plugin.Docs.Services
             using (IDbConnection cn = new SqlConnection(_connDocs))
             {
                 string sql = "SELECT RoleId FROM [AllegatiInRoles] where [Tipo]=@Tipo ";
-
-                xx = cn.Query<string>(sql, new { Tipo = TipoAllegato });  //, new { idutente = idUtente });
+                xx = cn.Query<string>(sql, new { Tipo = TipoAllegato });
                 cn.Close();
             }
             
             if (xx.Count() != 0) 
                return _usr.GetRoles().Where(d => xx.Contains(d.Code));
-            return _usr.GetRoles().Take(0);
+            return new List<Role>();
         }
 
         public IEnumerable<Role> RuoliNonAttivi_Allegato(string TipoAllegato)
