@@ -100,7 +100,8 @@
         MailView_ApriFile: '@Url.Action("ApriFile","MailView" )',
         MailView_InArrivo_Inoltra: '@Url.Action("InArrivo_Inoltra","MailView" )',
         MailView_Processate_Riapri: '@Url.Action("Processate_Riapri", "MailView" )',
-        MailView_Processate_Cancella:'@Url.Action("Processate_Cancella", "MailView" )'
+        MailView_Processate_Cancella: '@Url.Action("Processate_Cancella", "MailView" )',
+        ImagePreview: '@Url.Action("ImagePreview", "MailView")'
     };
 
     TipoAll = {
@@ -271,7 +272,9 @@
                                     {
                                         command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon my-icon-class-download");
                                     }).Width("10%");
+                                columns.Command(command => command.Custom("anteprimaImg").Text(" ").Click("ApriAllegato").IconClass("k-icon k-i-file-image")).Width("10%");
                             })
+                            .Events(events => events.DataBound("onDataBoundAttachments"))
                             .DataSource(dataSource => dataSource
                                 .Ajax()
                                 .Model(model => model.Id(p => p.Id))

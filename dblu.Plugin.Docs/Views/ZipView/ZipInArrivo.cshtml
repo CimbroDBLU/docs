@@ -177,7 +177,8 @@
         sggservice_UrlServizio: '@_sggservice.UrlServizio()',
         sggservice_UrlServizioRicercaElementi: "@_sggservice.UrlServizioRicercaElementi()",
         Pdf_Editor: '@Url.Action("Editor", "PdfEditor")',
-        PdfEditor_GetPdfEditAction: '@Url.Action("GetPdfEditAction", "PdfEditor")'
+        PdfEditor_GetPdfEditAction: '@Url.Action("GetPdfEditAction", "PdfEditor")',
+        ImagePreview: '@Url.Action("ImagePreview", "MailView")'
     };
 
 
@@ -548,7 +549,9 @@
                                         {
                                             command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon my-icon-class-download");
                                         }).Width("10%");
+                                        columns.Command(command => command.Custom("anteprimaImg").Text(" ").Click("ApriAllegato").IconClass("k-icon k-i-file-image")).Width("10%");
                                     })
+                                    .Events(events => events.DataBound("onDataBoundAttachments"))
                                     .DataSource(dataSource => dataSource
                                         .Ajax()
                                         .Model(model => model.Id(p => p.Id))
