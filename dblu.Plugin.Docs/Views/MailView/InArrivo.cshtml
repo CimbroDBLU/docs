@@ -5,11 +5,11 @@
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
 @using dblu.Portale.Core.Infrastructure.Interfaces
-@using dblu.Portale.Core.Infrastructure.Identity.Class
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
 @inject dblu.Portale.Plugin.Docs.Services.MailService _mailservice
 @inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _allservice
-@inject dblu.Portale.Core.Infrastructure.Interfaces.IDashboardService _dashservice
+@inject dblu.Portale.Core.Infrastructure.Identity.Services.IUserManager _Man
 
 @using Kendo.Mvc.UI
 @using Syncfusion.EJ2
@@ -50,13 +50,13 @@
         ListaTipiElementiServ = ListaTipiElementi;
     }
     bool mostraSposta = ListaServerIngresso.Count > 1;
-    UserProperties P = _dashservice.GeUserProperties(User.Identity.Name);
+
     string IsPrintedLocally = "true";
     string Printer = "";
-    if (P != null && !string.IsNullOrEmpty(P["Printer"]))
+    if (!string.IsNullOrEmpty(_Man.GetCurrentUser(Context).Properties["Printer"]))
     {
         IsPrintedLocally = "false";
-        Printer = P["Printer"];
+        Printer = _Man.GetCurrentUser().Properties["Printer"];
     }
 
 
@@ -119,7 +119,7 @@
     .my-icon-class-download:before {
         content: "\e132"; /* Adds a glyph using the Unicode character number */
     }
-    
+
 
     body.waiting * {
         cursor: progress;
