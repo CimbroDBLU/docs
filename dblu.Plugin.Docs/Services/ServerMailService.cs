@@ -107,7 +107,6 @@ namespace dblu.Portale.Plugin.Docs.Services
 
         public IEnumerable<Role> GetAllRolesForElemento(string TipoElemento)
         {
-            IEnumerable<Role> tmpRuoli;
             IEnumerable<string> xx;
 
             using (IDbConnection cn = new SqlConnection(_connDocs))
@@ -126,9 +125,8 @@ namespace dblu.Portale.Plugin.Docs.Services
 
         public IEnumerable<Role> RuoliNonAttivi_Elemento(string TipoElemento)
         {
-            IEnumerable<Role> tmpRuoli=new List<Role>();
-            IEnumerable<string> xx;
-
+             IEnumerable<string> xx;
+            
             using (IDbConnection cn = new SqlConnection(_connDocs))
             {
                 string sql = "SELECT RoleId FROM ElementiInRoles where Tipo=@Tipo";
@@ -139,7 +137,9 @@ namespace dblu.Portale.Plugin.Docs.Services
 
             if (xx.Count() != 0)
                 return _usr.GetRoles().Where(d => !xx.Contains(d.Code));
-            return tmpRuoli;
+           
+            return _usr.GetRoles();
+           
         }
 
         public void RemoveElementoFromRole(string RoleID, string TipoElemento)
