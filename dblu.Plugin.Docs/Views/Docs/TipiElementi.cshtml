@@ -21,13 +21,30 @@
 
 <!-- Main content -->
 <section class="content">
+    <div>
+        @(Html.Kendo().Dialog()
+        .Name("dialogConferma")
+        .ButtonLayout("normal")
+        .Title("Attenzione")
+        .Content("<p>Confermi di eliminare il tipo elemento?<p>")
+        .Width(400)
+        .Modal(false)
+        .Closable(true)
+        .Visible(false)
+        .Actions(actions =>
+        {
+            actions.Add().Text("Cancel").Action("onAnnullaEliminazione");
+            actions.Add().Text("Ok").Primary(true).Action("onConfermaEliminazione");
+        })
+    )
+    </div>
     <div class="row">
         <div class="col-xs-12">
             <div class="box box-solid box-default">
                 <div class="box-header with-border">
                     @*     <h3 class="box-title">Categorie</h3>*@
                     @Html.Hidden("CodTipo")
-                 </div>
+                </div>
                 <div class="box-body">
 
                     @(Html.Kendo().Grid<dblu.Docs.Models.TipiElementi>()
@@ -44,7 +61,7 @@
                     columns.Command(command =>
                     {
                         command.Custom("Modifica").Click("showEditor");
-                        command.Destroy().Text("Elimina");
+                        command.Custom("Elimina").Click("eliminaTipoElemento");
                         command.Custom("Duplica").Click("duplica");
                     }).Width(500);
         })
@@ -78,6 +95,7 @@
             </div>
         </div>
     </div>
+
 </section>
 
 
@@ -91,11 +109,55 @@
 </script>
 
 <script type="text/javascript">
+    var codiceDel = '';
 
     function showEditor(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         window.location.href = '/Docs/editTipoElemento?Codice=' + dataItem.Codice;
+    }
+    /* button grid elimina tipoElemento
+ * chaima la funzione su DocsController per vedere se ci sono elementi collegati
+ * se non ci sono apre il dialog di conferma eliminazione
+ **/
+    function eliminaTipoElemento(e) {
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var cod = dataItem.Codice;
+        codiceDel = cod;
+        var obj2 = {
+            Tipo: "TipoElemento",
+            Cod: cod
+        };
+
+         $.ajax({
+            type: "POST",
+            url: "@(Url.Action("IsDeletable", "Docs"))",
+            data: obj2,
+            success: function (result) {
+                if (!result) alert("Impossibile eliminare: presenti elementi associati");
+                else {
+                    $("#dialogConferma").data("kendoDialog").open();
+                }
+
+            }
+        });
+    }
+
+    function onAnnullaEliminazione() {
+        $("#dialogConferma").data("kendoDialog").close();
+    }
+    //eliminazione tipoElemento
+    function onConfermaEliminazione() {
+         $.ajax({
+            type: "POST",
+            url: "@(Url.Action("TipiElementi_Destroy", "Docs"))",
+            data: {codice: codiceDel},
+            success: function (result) {
+               $("#gridTipiElementi").data("kendoGrid").dataSource.read();
+            }
+          });
+      $("#gridTipiElementi").data("kendoGrid").dataSource.read();
     }
 
     function duplica(e) {
@@ -111,7 +173,7 @@
 
             }
         });*@
-        
+
     }
 </script>
 

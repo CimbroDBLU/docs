@@ -50,6 +50,7 @@ gridEmailOnChange = function (e) {
     
     PulisciDettaglio();
 
+
     $("#IdAllegato").val(data.Id);
 
     $.ajax({
@@ -132,7 +133,7 @@ function CaricaElemento(elemento) {
     $("#divFascicolo").find(":input").prop("disabled", true);
     $("#CollapseFascicolo").prop("disabled", false);
     $("#CollapseFascicolo").click();
-
+    debugger;
     var dialog = $("#detElemento").data("kendoWindow");
     $.ajax({
         url: UrlActions.MailView_editDettaglioElemento,
@@ -453,7 +454,7 @@ function ApriElementoGrid() {
         $('body').addClass('waiting');
         $("#divFascicolo").find(":input").prop("disabled", true);
         $("#CollapseFascicolo").prop("disabled", false);
-        $("#CollapseFascicolo").click();
+       // $("#CollapseFascicolo").click();
 
         var dialog = $("#detElemento").data("kendoWindow");
         $.ajax({
@@ -478,38 +479,7 @@ function Attachments_OnRowSelect(arg) {
 
         var nomefile = data.NomeFile;
         var IdAllegato = $("#IdAllegato").val();
-        //if (nomefile.indexOf(".pdf") > 0) {
-        //    $('#anteprimapdf').show();
-        //    $('#anteprimajpg').hide();
-        //var pdfViewer = $("#pdfviewer").data("kendoPDFViewer");
-        //if (!pdfViewer) {
-        //    pdfViewer = $("#pdfviewer").kendoPDFViewer({
-        //        pdfjsProcessing: {
-        //            file: ""
-        //        },
-        //        width: "100%",
-        //        height: 500
-        //    }).data("kendoPDFViewer");
-        //}
-        //pdfViewer.width = "100%";
-        //pdfViewer.height = 700;
-        //var url = "IdAllegato=" + IdAllegato + "&NomeFile=" + nomefile;
-        //var pdfHandlerUrl = "/MailView/GetPdf/data?" + url;
-        //pdfViewer.fromFile(pdfHandlerUrl);
-
-        //}
-        //else {
-        //    if (nomefile.indexOf(".jpg") > 0) {
-
-        //        $('#anteprimajpg').show();
-        //        $('#anteprimapdf').hide();
-
-        //        var urlj = "IdAllegato=" + IdAllegato + "&NomeFile=" + nomefile;
-        //        var jpgHandlerUrl = window.location.host + "/MailView/Getjpg/data?" + urlj;
-        //        alert(jpgHandlerUrl);
-        //        $('#imageviewer').src = jpgHandlerUrl;
-        //    }
-        //}
+     
         try {
         }
         catch (err) {
@@ -518,6 +488,12 @@ function Attachments_OnRowSelect(arg) {
     }
 
 }
+
+$(document).ready(
+    function () {
+        PulisciDettaglio();
+    });
+
 // full pdf Ctr+Maiusc
 $(document).keydown(function (e) {
     if (e.keyCode == 16 && e.ctrlKey) {
@@ -597,24 +573,31 @@ function PulisciDettaglio() {
 
 
     $("#TestoEmail").val("");
-    $('#emailAttachments').data('kendoGrid').dataSource.data("{}")
+    try {
+        $('#emailAttachments').data('kendoGrid').dataSource.data("{}")
+    } catch (err) { }
+
     $('#divFascicolo').hide();
     $("#OggettoEmail").val("");
 
     $('#divElemento').hide();
-    //$('#ApriDettaglio').hide();
-    //$('#AggiungiAElemento').hide();
     $('#Completa').hide();
     $('#StampaRiepilogo').hide();
-    $('#gridemailElementi').data('kendoGrid').dataSource.data("{}");
-    $('#AssociaElemento').hide();
     try {
-        //    var pdfViewer = $("#pdfviewer").data("kendoPDFViewer");
-        //    pdfViewer.fromFile("");
-        //    $("#divFascicolo").find(":input").prop("disabled", false);
+    $('#gridemailElementi').data('kendoGrid').dataSource.data("{}");
+    } catch (err) { }
+    $('#AssociaElemento').hide();
+
+    $("#divSoggetto").boxWidget("collapse");
+    $("#divFascicolo").boxWidget("collapse");
+    $("#divAllegati").boxWidget("collapse");
+
+
+    try {
+
         var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
-        emailpdfviewer.fileName ='';
-        emailpdfviewer.load('');
+        emailpdfviewer.fileName = '';
+        emailpdfviewer.unload();
         $('#tbdescrizione1').text("");
         $("#tbdescrizione").html('...');
     }
@@ -666,19 +649,9 @@ function MostraDettaglio(dettaglio) {
     $('#gridemailElementi').data('kendoGrid').dataSource.read();
 }
 
+var loadingTimes = 0;
+
 function MostraPdfCompleto(idElemento) {
-    //        pdfjsProcessing: {
-    //            file: ""
-    //        },
-    //        width: "100%",
-    //        height: 500
-    //    }).data("kendoPDFViewer");
-    //}
-    //pdfViewer.width = "100%";
-    //pdfViewer.height = 800;
-    //var url = "IdAllegato=" + IdAllegato + "&IdElemento=" + IdElemento ;
-    //var pdfHandlerUrl = "/MailView/GetPdfCompleto/data?" + url;
-    //pdfViewer.fromFile(pdfHandlerUrl);
 
     PdfCorrente.IdAllegato = $("#IdAllegato").val();
     PdfCorrente.IdElemento = idElemento; // $("#IdElemento").val();
@@ -687,33 +660,11 @@ function MostraPdfCompleto(idElemento) {
                 //emailpdfviewer.downloadFileName = nome;
     PdfCorrente.Pagina = 1;
     emailpdfviewer.fileName = JSON.stringify(PdfCorrente);
+    if (loadingTimes++!=0)
+        emailpdfviewer.magnification.zoomTo(110);
     emailpdfviewer.load(JSON.stringify(PdfCorrente));
    $("#tbdescrizione").html(PdfCorrente.Descrizione);
     emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
-
-    //emailpdfviewer.importAnnotations();
-    //$.ajax({
-    //    url: UrlActions.MailPdfViewer_EditorPdf,
-    //    type: 'POST',
-    //    cache: false,
-    //    data: { param: JSON.stringify(PdfCorrente) },
-    //    success: function (data) {
-    //        PdfCorrente = data;
-    //        var param = PdfCorrente.FilePdf;
-    //        if (param.indexOf(".pdf") > 0) {
-    //            emailpdfviewer.load(param);
-    //            //emailpdfviewer.downloadFileName = nome;
-    //        }
-    //        else {
-    //            emailpdfviewer.load('');
-    //        }
-    //    },
-    //    error: function (data) {
-    //        emailpdfviewer.load('');
-    //    }
-    //});
-
-
 
 }
 
@@ -1034,8 +985,10 @@ function getSoggetto() {
 }
 function getFascicolo() {
     var IdFascicolo = $("#IdFascicolo").val();
+    var IdAllegato = $("#IdAllegato").val();
     return {
-        IdFascicolo: IdFascicolo
+        IdFascicolo: IdFascicolo,
+        IdAllegato: IdAllegato 
     };
 }
 
@@ -1416,7 +1369,9 @@ function saveAnnotations() {
 
 function documentLoaded(args) {
 
-    console.log("-loaded");
+    if (PdfCorrente)
+        console.log("Loaded pdf: " + PdfCorrente.IdAllegato + ".pdf");
+
 
     var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
     emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
@@ -1436,7 +1391,8 @@ function documentLoaded(args) {
         }
     });
 
-        //alert(PdfCorrente.Pagina);
+    
+    //alert(PdfCorrente.Pagina);
     try {
     //    var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
         emailpdfviewer.navigation.goToFirstPage();
@@ -1446,12 +1402,14 @@ function documentLoaded(args) {
     //    //alert(PdfCorrente.Pagina);
     }
     catch (err) {
-
+        console.log(err);
     }
-
     emailpdfviewer.importAnnotation(JSON.stringify(PdfCorrente));
+    emailpdfviewer.magnification.zoomTo(100);
+   // document.getElementById('emailpdfviewer_viewerContainer').scrollTop = 100;
 
 }
+
 
 
 function documentPrint(e) {
@@ -1624,3 +1582,48 @@ function templateAvvisi(dataItem) {
 
 }
 
+function ApriAllegato(e) {
+    //chiamata alal view della preview immagine
+    var data = this.dataItem($(e.currentTarget).closest("tr"));
+    var nomefile = data.NomeFile;
+    var idAllegato = $("#IdAllegato").val();
+    var obj = {
+        IdAllegato: idAllegato,
+        NomeFile: nomefile,
+        IsRelated: true
+    }
+                $.ajax({
+                url: UrlActions.ImagePreview,
+                    method: 'POST',
+                    contentType: "application/json",
+                    accepts: "application/json",
+                    dataType: 'json',
+                data: JSON.stringify(obj),
+                success: function (data) {
+                    var myWindow = window.open("", "_blank");
+                    myWindow.document.write(data.responseText);
+                    },
+                    error: function (data) {
+                        var myWindow = window.open("", "_blank");
+                        myWindow.document.write(data.responseText);
+                    }
+                
+            });
+}
+function onDataBoundAttachments(e) {
+    // mostra il bottone anteprima immagine solo se il record è un file immagine
+    var grid = $("#emailAttachments").data("kendoGrid");
+    var gridData = grid.dataSource.view();
+
+    for (var i = 0; i < gridData.length; i++) {
+        var currentUid = gridData[i].uid;
+        if (gridData[i].NomeFile != undefined) {
+            if (!(gridData[i].NomeFile.toLowerCase().includes(".jpg") || gridData[i].NomeFile.toLowerCase().includes(".png"))) { 
+
+            var currenRow = grid.table.find("tr[data-uid='" + currentUid + "']");
+            var editButton = $(currenRow).find(".k-grid-anteprimaImg");
+            editButton.hide();
+            }
+        }
+    }
+}

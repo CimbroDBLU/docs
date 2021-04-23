@@ -353,8 +353,23 @@ namespace dblu.Portale.Plugin.Docs.Class
                         //funzione merge
                         try
                         {
-
-                            PdfDocumentBase.Merge(finalDoc, ListaPdf.ToArray());
+                            foreach (Stream s in ListaPdf)
+                            {
+                                s.Position = 0;
+                                PdfLoadedDocument l = new PdfLoadedDocument(s);
+                                for (int q = 0; q < l.PageCount; q++)
+                                {
+                                    try
+                                    {
+                                        finalDoc.ImportPage(l, q);
+                                    }
+                                    catch (Exception)
+                                    {
+                                        _logger.LogError($"SFpdf.CreaTmpPdfCompletoSF: Unable to import page {q}, skipping it...");
+                                    }
+                                }
+                            }
+                           
                             //creazione stram per il file finale
                             //FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite);
                             using (FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite))
@@ -831,7 +846,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                 float mm = 10;
                 try
                 {
-                    mm = float.Parse(_config["Docs:Margini"]);
+                    mm = float.Parse(_config["Docs:Margini"]??"0");
                 }
                 catch
                 {
@@ -848,6 +863,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                 try
                 {
                     ld = new PdfLoadedDocument(m);
+                    if (ld.PageCount == 0) throw new Exception();
                 }
                 catch 
                 {

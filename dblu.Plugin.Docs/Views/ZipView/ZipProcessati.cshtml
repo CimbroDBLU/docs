@@ -132,7 +132,8 @@
         ZipView_InArrivoCaricaDettaglio: '@Url.Action("InArrivo_CaricaDettaglio", "ZipView")',
         ZipView_ApriFile: '@Url.Action("ApriFile", "ZipView")',
         ZipView_Processati_Riapri: '@Url.Action("Processati_Riapri", "ZipView")',
-        ZipView_Processati_Cancella:'@Url.Action("Processati_Cancella", "ZipView")'
+        ZipView_Processati_Cancella: '@Url.Action("Processati_Cancella", "ZipView")',
+        ImagePreview: '@Url.Action("ImagePreview", "MailView")'
     };
 
     TipoAll = {
@@ -271,7 +272,9 @@
                                     {
                                         command.Custom("download").Text(" ").Click("ScaricaFile").IconClass("k-icon my-icon-class-download");
                                     }).Width("10%");
+                                columns.Command(command => command.Custom("anteprimaImg").Text(" ").Click("ApriAllegato").IconClass("k-icon k-i-file-image")).Width("10%");
                             })
+                            .Events(events => events.DataBound("onDataBoundAttachments"))
                             .DataSource(dataSource => dataSource
                                 .Ajax()
                                 .Model(model => model.Id(p => p.Id))

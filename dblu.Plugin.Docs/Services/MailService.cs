@@ -58,7 +58,7 @@ using MimeKit.Utils;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
-using dblu.Portale.Core.Infrastructure.Identity.Class;
+using dblu.Portale.Core.Infrastructure.Identity.Classes;
 using dblu.CamundaClient;
 using AutoMapper;
 using Syncfusion.Pdf.Graphics;
@@ -227,7 +227,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         {
             List<string> l = new List<string>();
             IEnumerable<Role> Roles;
-            Roles = _usrManager.GetAllRolesForModule(Modulo);
+            Roles = _usrManager.GetRolesWithModule(Modulo);
 
             if (NomeServer != "")
             {
@@ -1952,6 +1952,11 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                     Info.StatoPrec = (int)e.Stato;  
                     Info.Stato = (int)e.Stato;
+                    if (variabili == null)
+                        variabili = new Dictionary<string, VariableValue>();
+                    if (!variabili.ContainsKey("IdAllegato"))
+                        variabili.Add("IdAllegato", VariableValue.FromObject(IdAllegato));
+                    
                     estrai = estrai && AvviaProcesso(Info, e , variabili);
 
                     return estrai;
@@ -2764,7 +2769,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             return res;
         }
 
-        public List<EmailElementi> ListaElementiEmail(string IdFascicolo)
+        public List<EmailElementi> ListaElementiEmail(string IdFascicolo, string IdAllegato)
         {
 
             var res = new List<EmailElementi>();
@@ -2780,18 +2785,25 @@ namespace dblu.Portale.Plugin.Docs.Services
                         //    + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.id and am.tipo = 'EMAIL' "
                         //    + " WHERE (e.IdFascicolo = @IdFascicolo)";
 
-                         //var sqlEl = " SELECT distinct  e.IdElemento Id, e.Revisione, e.TipoElemento Tipo, e.DscElemento Descrizione, e.Campo1 Chiave1, e.Campo2 Chiave2, e.Campo3 Chiave3, e.Campo4 Chiave4, e.Campo5 Chiave5, e.DscTipoElemento AS DescrizioneTipo, e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, "
-                         //    + "(select top 1 Operazione from LogDoc where IdOggetto=e.IdElemento Order by Data DESC) LastOp "
-                         //   + " FROM vListaElementi AS e "
-                         //   + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'EMAIL' "
-                         //   + " WHERE (e.IdFascicolo = @IdFascicolo)";
-                        var sqlEl = " SELECT distinct  e.IdElemento, e.Revisione, e.TipoElemento, e.DscElemento, e.Campo1, e.Campo2, e.Campo3 , e.Campo4 , e.Campo5, e.DscTipoElemento , e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, e.DataC, "
-                             + "(select top 1 Operazione from LogDoc where IdOggetto=e.IdElemento Order by Data DESC) LastOp "
-                            + " FROM vListaElementi AS e "
-                            + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'EMAIL' "
-                          + " WHERE (e.IdFascicolo = @IdFascicolo) ORDER BY Ultimo DESC, e.DataC DESC ";
+                        //var sqlEl = " SELECT distinct  e.IdElemento Id, e.Revisione, e.TipoElemento Tipo, e.DscElemento Descrizione, e.Campo1 Chiave1, e.Campo2 Chiave2, e.Campo3 Chiave3, e.Campo4 Chiave4, e.Campo5 Chiave5, e.DscTipoElemento AS DescrizioneTipo, e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, "
+                        //    + "(select top 1 Operazione from LogDoc where IdOggetto=e.IdElemento Order by Data DESC) LastOp "
+                        //   + " FROM vListaElementi AS e "
+                        //   + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'EMAIL' "
+                        //   + " WHERE (e.IdFascicolo = @IdFascicolo)";
 
-                    res = cn.Query<EmailElementi>(sqlEl, new { IdFascicolo = IdFascicolo }).ToList();
+                        var sqlall = "";
+                        if (!string.IsNullOrEmpty(IdAllegato))
+                        {
+                            sqlall = " and AM.Id=@IdAllegato ";
+                        }
+
+                        var sqlEl = @$" SELECT distinct  e.IdElemento, e.Revisione, e.TipoElemento, e.DscElemento, e.Campo1, e.Campo2, e.Campo3 , e.Campo4 , e.Campo5, e.DscTipoElemento , e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo, e.DataC, 
+                            (select top 1 Operazione from LogDoc where IdOggetto=e.IdElemento Order by Data DESC) LastOp 
+                            FROM vListaElementi AS e 
+                            LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'EMAIL'  {sqlall}
+                            WHERE (e.IdFascicolo = @IdFascicolo) ORDER BY Ultimo DESC, e.DataC DESC ";
+
+                    res = cn.Query<EmailElementi>(sqlEl, new { IdFascicolo = IdFascicolo, IdAllegato = IdAllegato }).ToList();
                 }
             }
             }

@@ -5,11 +5,11 @@
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
 @using dblu.Portale.Core.Infrastructure.Interfaces
-@using dblu.Portale.Core.Infrastructure.Identity.Class
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
 @inject dblu.Portale.Plugin.Docs.Services.MailService _mailservice
 @inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _allservice
-@inject dblu.Portale.Core.Infrastructure.Interfaces.IDashboardService _dashservice
+@inject dblu.Portale.Core.Infrastructure.Identity.Services.IUserManager _Man
 
 @using Kendo.Mvc.UI
 @using Syncfusion.EJ2
@@ -50,13 +50,13 @@
         ListaTipiElementiServ = ListaTipiElementi;
     }
     bool mostraSposta = ListaServerIngresso.Count > 1;
-    UserProperties P = _dashservice.GeUserProperties(User.Identity.Name);
+
     string IsPrintedLocally = "true";
     string Printer = "";
-    if (P != null && !string.IsNullOrEmpty(P["Printer"]))
+    if (!string.IsNullOrEmpty(_Man.GetCurrentUser(Context).Properties["Printer"]))
     {
         IsPrintedLocally = "false";
-        Printer = P["Printer"];
+        Printer = _Man.GetCurrentUser().Properties["Printer"];
     }
 
 
@@ -119,6 +119,7 @@
     .my-icon-class-download:before {
         content: "\e132"; /* Adds a glyph using the Unicode character number */
     }
+
 
     body.waiting * {
         cursor: progress;
@@ -190,7 +191,8 @@
         sggservice_UrlServizioRicercaElementi: '@_sggservice.UrlServizioRicercaElementi()',
         MailPdfViewer_EditorPdf: '@Url.Action("EditorPdf", "MailPdfViewer")',
         MailPdfViewer_GetPdfEditAction: '@Url.Action("GetPdfEditAction", "MailPdfViewer")',
-        Pdf_Editor: '@Url.Action("Editor", "PdfEditor")'
+        Pdf_Editor: '@Url.Action("Editor", "PdfEditor")',
+        ImagePreview: '@Url.Action("ImagePreview", "MailView")'
     };
 
     TipoAll = {
@@ -358,13 +360,13 @@
                     <form>
                         <div class="row" id="divCliente">
                             <div class="form-group">
-                                <div class="col-md-12" style="width:80%;">
+                                <div class="col-md-12">
                                     <div class="form-row">
                                         <div class="form-group col-md-2">
                                             <input type="text" class="form-control" id="CodiceSoggetto" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
                                         </div>
-                                        <div class="form-group col-md-6">
-                                            <input type="text" class="form-control" id="NomeSoggetto" placeholder="" disabled value="" />
+                                        <div class="form-group col-md-5">
+                                            <input type="text" style="width:100%;" class="form-control" id="NomeSoggetto" placeholder="" disabled value="" />
                                         </div>
                                         @(Html.Kendo().Button()
                                         .Name("CercaSoggetti")
@@ -607,8 +609,7 @@
                             <label class="control-label col-md-2" style="font-size:12px" hidden>Allegati da includere</label>
                             <div class="col-md-12" style="width:100%">
                                 @(Html.Kendo().Grid<EmailAttachments>()
-                            .Name("emailAttachments")
-                            .PersistSelection()
+                             .Name("emailAttachments")
                             .Columns(columns =>
                             {
                                 columns.Select().Width(50).Title("Allega");
@@ -619,7 +620,9 @@
                                 {
                                     command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon my-icon-class-download");
                                 }).Width("10%");
+                                columns.Command(command => command.Custom("anteprimaImg").Text(" ").Click("ApriAllegato").IconClass("k-icon k-i-file-image")).Width("10%");
                             })
+                            .Events(events => events.DataBound("onDataBoundAttachments"))
                             .DataSource(dataSource => dataSource
                                 .Ajax()
                                 .Model(model => model.Id(p => p.Id))

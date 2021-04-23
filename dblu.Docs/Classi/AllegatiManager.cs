@@ -588,17 +588,6 @@ namespace dblu.Docs.Classi
                 {
                     cn.Execute($"Delete from TipiAllegati where Codice=@Codice", new { Codice = obj.Codice});
                     bres = true;
-
-                    //var c = _context.TipiAllegati
-                    //    .FirstOrDefault(e => e.Codice == obj.Codice);
-
-                    //if (c != null)
-                    //{
-                    //    _context.TipiAllegati.Remove(obj);
-
-                    //}
-                    //_context.SaveChanges();
-                    bres = true;
                 }
             }
             catch (Exception ex)
@@ -829,6 +818,29 @@ namespace dblu.Docs.Classi
                 _logger.LogError($"GetEmailInviate: {ex.Message}");
             }
             return l;
+        }
+        /// <summary>
+        /// check if a TipoAllegato has Allegati associated
+        /// </summary>
+        /// <param name="Cod"></param>
+        /// <returns></returns>
+        public bool CheckIfDeletable(string Cod)
+        {
+            bool Res = false;
+            List<Allegati> e = new List<Allegati>();
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    e = cn.Query<Allegati>("select * from Allegati where Tipo = @cod", new { cod = Cod }).ToList();
+                    if (e.Count == 0) Res = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"AllegatiManager.CheckIfDeletable : {ex}");
+            }
+            return Res;
         }
 
 

@@ -175,7 +175,7 @@
                 processData: false,
                 contentType: false,
                 success: function (data) {
-                   $("#GridAllegati").data("kendoGrid").dataSource.read();  
+                   $("#GridAllegati").data("kendoGrid").dataSource.read();
 
                 },
                 error: function (data) {
@@ -215,7 +215,7 @@
 
           }
 
-    
+
     }
 
       function ScaricaAllegato(e) {
@@ -254,10 +254,55 @@
             PdfCorrente.iAzione = docsAzioniPdf.Ricarica;
             var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
             pdfViewer.load(JSON.stringify(PdfCorrente));
-            pdfViewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
+            pdfViewer.doUrlnloadFileName = PdfCorrente.IdAllegato + ".pdf";
         }
 
     }
+ function ApriAllegato(e) {
+    //chiamata alal view della preview immagine
+     var data = this.dataItem($(e.currentTarget).closest("tr"));
+    var nomefile = data.NomeFile;
+    var idAllegato = data.IdAllegato;
+    var obj = {
+        IdAllegato: idAllegato,
+        NomeFile: nomefile,
+        isRelated: false
+    }
+                $.ajax({
+                url: '@Url.Action("ImagePreview", "MailView")',
+                    method: 'POST',
+                    contentType: "application/json",
+                    accepts: "application/json",
+                    dataType: 'json',
+                data: JSON.stringify(obj),
+                success: function (data) {
+                    var myWindow = window.open("", "_blank");
+                    myWindow.document.write(data.responseText);
+                    },
+                    error: function (data) {
+                        var myWindow = window.open("", "_blank");
+                        myWindow.document.write(data.responseText);
+                    }
+
+            });
+}
+function onDataBoundAttachments(e) {
+    // mostra il bottone anteprima immagine solo se il record è un file immagine
+    var grid = $("#GridAllegati").data("kendoGrid");
+    var gridData = grid.dataSource.view();
+
+    for (var i = 0; i < gridData.length; i++) {
+        var currentUid = gridData[i].uid;
+        if (gridData[i].NomeFile != undefined) {
+            if (!(gridData[i].NomeFile.toLowerCase().includes(".jpg") || gridData[i].NomeFile.toLowerCase().includes(".png"))) {
+
+            var currenRow = grid.table.find("tr[data-uid='" + currentUid + "']");
+            var editButton = $(currenRow).find(".k-grid-anteprimaImg");
+            editButton.hide();
+            }
+        }
+    }
+}
 
 </script>
 
@@ -516,6 +561,7 @@
                                         {
                                             command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon k-i-download");
                                         }).Width("10%");
+                                        columns.Command(command => command.Custom("anteprimaImg").Text(" ").Click("ApriAllegato").IconClass("k-icon k-i-file-image")).Width("10%");
                                     })
                                     .DataSource(dataSource => dataSource
                                         .Ajax()
@@ -532,7 +578,9 @@
                                     )
                                 .HtmlAttributes(new { style = "font-size:10" })
                                 .Selectable()
-                                .Events(events => events.Change("Allegati_OnRowSelect"))
+                                .Events(events => events
+                                .Change("Allegati_OnRowSelect")
+                                .DataBound("onDataBoundAttachments"))
                                 )
                                         @*.Events(ev => ev.Change("xxonChange"))*@
                                     </div>

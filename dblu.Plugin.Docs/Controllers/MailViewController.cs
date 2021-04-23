@@ -221,13 +221,29 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         [HasPermission("50.1.3")]
         public async Task<FileResult> ApriFile(string IdAllegato, string NomeFile)
         {
-
-            MemoryStream ff = await _mailService.GetFileAsync(IdAllegato, NomeFile);
-            string t = _mailService._allMan.GetContentType(NomeFile);
-            if (string.IsNullOrEmpty(t)) {
+            MemoryStream ff = new MemoryStream();
+            string t = "text/csv";
+            try {
+                ff = await _mailService.GetFileAsync(IdAllegato, NomeFile);
+                t = _mailService._allMan.GetContentType(NomeFile);
+                if (string.IsNullOrEmpty(t))
+            {
                 t = "text/csv";
                 NomeFile = NomeFile + ".txt";
             }
+            }
+            catch (Exception e) {
+                Console.WriteLine(e);
+            }
+            return File(ff, t, NomeFile);
+        }
+        [HttpGet]
+        [HasPermission("50.1.3")]
+        public async Task<FileResult> GetFile(string IdAllegato, string NomeFile)
+        {
+            
+            MemoryStream ff = await _mailService._allMan.GetFileAsync(IdAllegato);
+            string t = "image/png";
             return File(ff, t, NomeFile);
         }
 
@@ -886,9 +902,9 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
 
        [HasPermission("50.1.3")]
-        public  ActionResult ListaEmailElementi([DataSourceRequest] DataSourceRequest request, string IdFascicolo)
+        public  ActionResult ListaEmailElementi([DataSourceRequest] DataSourceRequest request, string IdFascicolo, string IdAllegato)
         {
-            List<EmailElementi> lista = _mailService.ListaElementiEmail(IdFascicolo);
+            List<EmailElementi> lista = _mailService.ListaElementiEmail(IdFascicolo, IdAllegato);
             return Json(lista.ToDataSourceResult(request));
         }
 
@@ -1220,6 +1236,15 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         }
         #endregion
 
+
+
+        [HttpPost]
+        [IgnoreAntiforgeryToken]
+        [Authorize]
+        public IActionResult ImagePreview([FromBody] ImgViewModel i)
+        { 
+            return View("ImagePreview", i);
+        }
     }
 
 }

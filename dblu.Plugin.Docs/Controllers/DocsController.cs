@@ -25,7 +25,7 @@ using System.Security.Claims;
 using dblu.Portale.Core.Infrastructure.Enums;
 using dblu.Portale.Core.PluginBase.Interfaces;
 using dblu.Portale.Core.Infrastructure;
-using dblu.Portale.Core.Infrastructure.Identity.Class;
+using dblu.Portale.Core.Infrastructure.Identity.Classes;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace dblu.Portale.Controllers
@@ -122,14 +122,15 @@ namespace dblu.Portale.Controllers
         }
 
         [AcceptVerbs("Post")]
-        public ActionResult Categorie_Destroy([DataSourceRequest] DataSourceRequest request, Categorie cat)
+        public bool Categorie_Destroy(string codice)
         {
-            if (cat != null)
+            bool Res = false;
+            if (codice != null)
             {
-                _fasMan.CancellaCategoria(cat);
+                Res = _fasMan.CancellaCategoria(_fasMan.GetCategoria(codice));
             }
 
-            return Json(new[] { cat }.ToDataSourceResult(request, ModelState));
+            return Res;
         }
 
         [HttpPost("/Docs/editCategoria")]
@@ -386,16 +387,31 @@ namespace dblu.Portale.Controllers
 
             return Json(new[] { obj }.ToDataSourceResult(request, ModelState));
         }
-
         [AcceptVerbs("Post")]
-        public ActionResult TipiElementi_Destroy([DataSourceRequest] DataSourceRequest request, TipiElementi obj)
+        public bool TipiElementi_Destroy(string codice)
         {
-            if (obj != null)
+            bool Res = false;
+            if (codice != null)
             {
-                _eleMan.CancellaTipoElemento(obj);
+               Res =  _eleMan.CancellaTipoElemento(_eleMan.GetTipoElemento(codice));
             }
+            return Res;
+        }
+        /// <summary>
+        /// verify if a TipoElemento has elementi connected or a TipoAllegato ah Allegati or a Categoria has
+        /// fascicoli, depending on the param Tipo
+        /// </summary>
+        /// <param name="Tipo"></param>
+        /// <param name="Cod"></param>
+        /// <returns></returns>
+        public bool IsDeletable(string Tipo, string Cod)
+        {
+            bool Res = false;
+            if (Tipo.Equals("TipoElemento")) Res =_eleMan.CheckIfDeletable(Cod);
+            if (Tipo.Equals("TipoAllegato")) Res = _allMan.CheckIfDeletable(Cod);
+            if (Tipo.Equals("Categoria")) Res = _fasMan.CheckIfDeletable(Cod);
 
-            return Json(new[] { obj }.ToDataSourceResult(request, ModelState));
+            return Res;
         }
 
         //[HttpPost("/Docs/editTipoElemento")]
@@ -725,14 +741,14 @@ namespace dblu.Portale.Controllers
         }
 
         [AcceptVerbs("Post")]
-        public ActionResult TipiAllegati_Destroy([DataSourceRequest] DataSourceRequest request, TipiAllegati obj)
+        public bool TipiAllegati_Destroy(string codice)
         {
-            if (obj != null)
+            bool Res = false;
+            if (codice != null)
             {
-                _allMan.CancellaTipoAllegato(obj);
+               Res = _allMan.CancellaTipoAllegato(_allMan.GetTipoAllegato(codice));
             }
-
-            return Json(new[] { obj }.ToDataSourceResult(request, ModelState));
+            return Res;
         }
 
         [HttpGet("/Docs/editTipoAllegato")]

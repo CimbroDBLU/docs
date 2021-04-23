@@ -1,8 +1,8 @@
 ﻿@model dblu.Docs.Models.Allegati
 @using dblu.Portale.Core.Infrastructure.Interfaces
-@using dblu.Portale.Core.Infrastructure.Identity.Class
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _doc
-@inject dblu.Portale.Core.Infrastructure.Interfaces.IDashboardService _dashservice
+@inject dblu.Portale.Core.Infrastructure.Identity.Services.IUserManager _Man
 @using Kendo.Mvc.UI
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using Syncfusion.EJ2
@@ -14,13 +14,12 @@
 @{
     var IdAllegato = Model.Id.ToString();
 
-    UserProperties P = _dashservice.GeUserProperties(User.Identity.Name);
     string IsPrintedLocally = "true";
     string Printer = "";
-    if (P != null && !string.IsNullOrEmpty(P["Printer"]))
+    if (!string.IsNullOrEmpty(_Man.GetCurrentUser(Context).Properties["Printer"]))
     {
         IsPrintedLocally = "false";
-        Printer = P["Printer"];
+        Printer = _Man.GetCurrentUser().Properties["Printer"];
     }
 
 }
