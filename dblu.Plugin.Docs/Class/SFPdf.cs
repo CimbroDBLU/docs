@@ -30,6 +30,7 @@ using Telerik.Windows.Documents.Flow.Model;
 using Telerik.Windows.Documents.Flow.FormatProviders.Pdf;
 using Telerik.Windows.Documents.Flow.FormatProviders.Html;
 
+
 namespace dblu.Portale.Plugin.Docs.Class
 {
     class SFPdf
@@ -821,6 +822,7 @@ namespace dblu.Portale.Plugin.Docs.Class
             return r;
         }
 
+        
         private MemoryStream ElaboraPdfStream(MemoryStream m, string fileName, out string avvisi ) {
              avvisi = "";
             try
@@ -852,7 +854,6 @@ namespace dblu.Portale.Plugin.Docs.Class
                     ld = new PdfLoadedDocument(m, true);
                     flAnn = true;  // forzo la copia dello stream corretto
                 }
-
                 MemoryStream m2 = null;
                 List<string> ControllaPag = new List<string>();
                 var flNoteManuali = false;
@@ -878,31 +879,192 @@ namespace dblu.Portale.Plugin.Docs.Class
                     }
                     
                     //  appiattisco le note 
+                    
+                    
                     if (p.Annotations.Count > 0)
                     {
-                        //p.Annotations.Flatten = true;
-                        foreach (PdfAnnotation nn in p.Annotations)
+                        flAnn = true;
+                        PdfAnnotationCollection xx = new PdfAnnotationCollection();
+                        for (int i = p.Annotations.Count - 1; i >= 0; i--)
                         {
-                            flAnn = true;
-                            nn.Flatten = true;                   
-                            if (nn is PdfLoadedInkAnnotation  || nn is  PdfLoadedFreeTextAnnotation)    // 18.4.39 non funziona flatten per le note manuali
+                            PdfAnnotation nn = (PdfAnnotation)p.Annotations[i];
+                           
+                            if (nn is PdfLoadedFreeTextAnnotation )
+                            {
+
+                               
+                                if (((Syncfusion.Pdf.Interactive.PdfLoadedFreeTextAnnotation)nn).AnnotationIntent == PdfAnnotationIntent.FreeTextTypeWriter || ((Syncfusion.Pdf.Interactive.PdfLoadedFreeTextAnnotation)nn).BorderColor.IsEmpty == true)
+                                {
+
+
+                                    flNoteManuali = true;
+                                    try
+                                    {
+
+                                        p.Annotations.Remove(nn);
+
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        nn.Flatten = true;
+                                        nn.AnnotationFlags = PdfAnnotationFlags.Hidden;
+                                        _logger.LogError($"ElaboraPdfStream: impossibile cancellare la nota. {ex.Message}");
+                                    }
+
+
+
+                                    PdfStringFormat drawFormat = new PdfStringFormat();
+
+                                    drawFormat.WordWrap = PdfWordWrapType.Word;
+                                    PdfFont font = (Syncfusion.Pdf.Graphics.PdfStandardFont)((Syncfusion.Pdf.Interactive.PdfLoadedFreeTextAnnotation)nn).Font;
+                                    if (font.Size == 0)
+                                    {
+                                        PdfFont pdfFont = font;
+                                        var fontSize = pdfFont.Size;
+
+                                        fontSize = 10f;
+                                        if (font is PdfCjkStandardFont)
+                                            pdfFont = new PdfCjkStandardFont((PdfCjkStandardFont)font, fontSize, font.Style);
+                                        else if (font is PdfStandardFont)
+                                            pdfFont = new PdfStandardFont((PdfStandardFont)font, fontSize, font.Style);
+                                        else if (font is PdfTrueTypeFont)
+                                            pdfFont = new PdfTrueTypeFont((PdfTrueTypeFont)font, fontSize);
+                                        font = pdfFont;
+                                    }
+                                    PdfBrush brush = new PdfSolidBrush(((Syncfusion.Pdf.Interactive.PdfLoadedFreeTextAnnotation)nn).TextMarkupColor);
+                                    RectangleF bounds;
+
+                                    if (p.Rotation == PdfPageRotateAngle.RotateAngle90)
+                                    {
+                                        bounds = new RectangleF(p.Graphics.ClientSize.Width - nn.Bounds.Y - nn.Bounds.Height, nn.Bounds.X, nn.Bounds.Height, nn.Bounds.Width);
+                                    }
+                                    else
+                                    {
+                                        bounds = new RectangleF(nn.Bounds.X, nn.Bounds.Y, nn.Bounds.Width, nn.Bounds.Height);
+                                    }
+
+                                    PdfStringLayouter layouter = new PdfStringLayouter();
+                                    PdfStringLayoutResult result = layouter.Layout(nn.Text, font, drawFormat, new SizeF(bounds.Width, bounds.Height));
+                                    if (result.Remainder != null && result.Remainder.Length != 0)
+                                    {
+                                        PdfFont pdfFont = font;
+                                        var fontSize = pdfFont.Size;
+                                        while (fontSize > 0f && (pdfFont.MeasureString(nn.Text, drawFormat).Height > bounds.Height || pdfFont.MeasureString(nn.Text, drawFormat).Width > bounds.Width))
+                                        {
+                                            fontSize -= 0.1f;
+                                            if (font is PdfCjkStandardFont)
+                                                pdfFont = new PdfCjkStandardFont((PdfCjkStandardFont)font, fontSize, font.Style);
+                                            else if (font is PdfStandardFont)
+                                                pdfFont = new PdfStandardFont((PdfStandardFont)font, fontSize, font.Style);
+                                            else if (font is PdfTrueTypeFont)
+                                                pdfFont = new PdfTrueTypeFont((PdfTrueTypeFont)font, fontSize);
+                                        }
+                                        font = pdfFont;
+                                    }
+
+
+                                    p.Graphics.DrawString(nn.Text, font, brush, bounds, drawFormat);
+                                }
+                                else
+                                {
+                                    nn.Flatten = true;
+                                    flNoteManuali = true;
+                                }
+                            }
+                               
+                            else if (nn is PdfLoadedTextMarkupAnnotation)
+                            {
+                                //p.Annotations.RemoveAt(i);
+                                nn.Flatten = true;
+                                
+                                flNoteManuali = true;
+                                //PdfTextMarkupAnnotation xx1 = new PdfTextMarkupAnnotation(new RectangleF(nn.Location, nn.Size));
+                                //xx1.TextMarkupAnnotationType = ((Syncfusion.Pdf.Interactive.PdfLoadedTextMarkupAnnotation)nn).TextMarkupAnnotationType;
+                                //xx1.TextMarkupColor = ((Syncfusion.Pdf.Interactive.PdfLoadedTextMarkupAnnotation)nn).TextMarkupColor;
+                                
+                                //xx1.Flatten = true;
+                                
+                                //p.Annotations.Add(xx1);
+                            }
+                            else if (nn is PdfLoadedInkAnnotation)
+                            {
+                                //DrawPolygon(PdfPen pen, PdfBrush brush, PointF[] points);
+                                flNoteManuali = true;
+                                nn.Flatten = true;
+
+                            }
+                            else if (nn is PdfLoadedRubberStampAnnotation)
                             {
                                 flNoteManuali = true;
+                                //nn.Flatten = true;
+                                
+                            }
+                            else if (nn is PdfLoadedLineAnnotation)
+                            {
+                                if (((PdfLoadedLineAnnotation)nn).EndLineStyle != PdfLineEndingStyle.None)
+                                {
+                                    nn.Flatten = true;
+                                }
+                                else { 
+                                      flNoteManuali = true;
+                                    try
+                                    {
+
+                                        p.Annotations.Remove(nn);
+                                        PdfLoadedLineAnnotation yy = (PdfLoadedLineAnnotation)nn;
+                                        
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        nn.Flatten = true;
+                                        nn.AnnotationFlags = PdfAnnotationFlags.Hidden;
+                                        _logger.LogError($"ElaboraPdfStream: impossibile cancellare la nota. {ex.Message}");
+                                    }
+                                    int[] xLine= ((PdfLoadedLineAnnotation)nn).LinePoints;
+                                    PdfPen xPen = new PdfPen(nn.Color, ((PdfLoadedLineAnnotation)nn).Border.Width);
+
+                                    if (p.Rotation == PdfPageRotateAngle.RotateAngle90)
+                                    {
+                                        p.Graphics.DrawLine(xPen, new PointF(xLine[1], xLine[0]), new PointF(xLine[3],xLine[2]));
+                                    }
+                                    else
+                                    {
+                                        p.Graphics.DrawLine(xPen, new PointF(xLine[0], p.Graphics.ClientSize.Height - xLine[1]), new PointF(xLine[2], p.Graphics.ClientSize.Height - xLine[3]));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                
+                                nn.Flatten = true;
+                                
                             }
                         }
-                      }
+                        ////p.Annotations.Flatten = true;
+                        //foreach (PdfAnnotation nn in p.Annotations)
+                        //{
+                        //    flAnn = true;
+                        //    nn.Flatten = true;
+                        //    if (nn is PdfLoadedInkAnnotation || nn is PdfLoadedFreeTextAnnotation)    // 18.4.39 non funziona flatten per le note manuali
+                        //    {
+                        //        flNoteManuali = true;
+                        //    }
+                        //}
+                    }
 
                     if (flNoteManuali) {
-                          ControllaPag.Add((pn+1).ToString());
+                          ControllaPag.Add((pn).ToString());
                         _logger.LogWarning($"ElaboraPdfStream: presenza di note manuali pag {pn}  {fileName}. ");
                     }
+
                 };
 
                 if (ControllaPag.Count > 0) {
                     avvisi = $" Controllare le note manuali (pag. {string.Join(",",ControllaPag)})";
                 }
 
-                if (flAnn) {
+                if (flAnn)
+                {
                     // ricarico il documento
                     try
                     {
@@ -911,28 +1073,33 @@ namespace dblu.Portale.Plugin.Docs.Class
                         ld.Close();
                         ld = new PdfLoadedDocument(m2);
                     }
-                    catch (Exception ex){
+                    catch (Exception ex)
+                    {
                         flAnn = false;
                         avvisi += " Impossibile importare le note. ";
                         _logger.LogError($"ElaboraPdfStream: impossibile importare le note {fileName}. {ex.Message}");
                     }
                 }
-                
-                if (flResize)
+
+                if (flResize )
                 {
                     PdfDocument doc1 = new PdfDocument();
                     foreach (PdfPageBase p in ld.Pages)
                     {
+                        
                         PdfPage page = doc1.Pages.Add();
+                        
+
                         page.Section.PageSettings.Margins.All = MarginPoints;
                         
                         PdfGraphics g = page.Graphics;
                         PdfTemplate template = p.CreateTemplate();
+                       
                         // g.DrawPdfTemplate(template, PointF.Empty, PdfPageSize.A4);
                         Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
                         Syncfusion.Drawing.SizeF pDest = CalcolaProporzioni(p.Size.Width, p.Size.Height, page.Size.Width, page.Size.Height);
+                        
 
-                        //p.Annotations.Flatten = true;
                         switch (p.Rotation)
                         {
                             case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle90:
@@ -974,6 +1141,8 @@ namespace dblu.Portale.Plugin.Docs.Class
                                 }
                                 g.DrawPdfTemplate(template, posizione, pDest);
 
+
+                             
                                 if (pDest.Height < pDest.Width)
                                 {
                                     //page.Section.PageSettings.Orientation = PdfPageOrientation.Landscape;
@@ -983,6 +1152,8 @@ namespace dblu.Portale.Plugin.Docs.Class
 
                                 break;
                         }
+
+                        
                     }
                     if (flAnn) { 
                         m2.Close();
@@ -1007,4 +1178,7 @@ namespace dblu.Portale.Plugin.Docs.Class
             return null;
         }
     }
+    
+   
 }
+
