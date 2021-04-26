@@ -105,7 +105,7 @@ gridEmailOnChange = function (e) {
 function cSoggonDataBound(arg) {
     var gridData = $("#cSogg").data().kendoGrid.dataSource.data();
     //for (var i = 0; i < gridData.length
-    if (gridData.length > 1) {
+    if (gridData.length > 0) {
         var dialog = $("#wSoggetti").data("kendoWindow");
         dialog.center();
         dialog.open();
