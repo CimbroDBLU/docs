@@ -167,7 +167,6 @@
     // variabili globali
 
     UrlActions = {
-
         MailView_InArrivoCaricaDettaglio: '@Url.Action("InArrivoCaricaDettaglio", "MailView")',
         MailView_editDettaglioElemento: '@Url.Action("editDettaglioElemento", "MailView" )',
         MailView_InArrivo_Inoltra: '@Url.Action("InArrivo_Inoltra","MailView" )',
@@ -192,7 +191,8 @@
         MailPdfViewer_EditorPdf: '@Url.Action("EditorPdf", "MailPdfViewer")',
         MailPdfViewer_GetPdfEditAction: '@Url.Action("GetPdfEditAction", "MailPdfViewer")',
         Pdf_Editor: '@Url.Action("Editor", "PdfEditor")',
-        ImagePreview: '@Url.Action("ImagePreview", "MailView")'
+        ImagePreview: '@Url.Action("ImagePreview", "MailView")',
+        ControllaStampa: '@Url.Action("ControllaStampa", "MailView")'
     };
 
     TipoAll = {
@@ -369,16 +369,16 @@
                                             <input type="text" style="width:100%;" class="form-control" id="NomeSoggetto" placeholder="" disabled value="" />
                                         </div>
                                         @(Html.Kendo().Button()
-                                        .Name("CercaSoggetti")
-                                        .HtmlAttributes(new { type = "button", @class = "k-primary" })
-                                                .Content("Cerca Soggetto")
-                                        .Events(e => e.Click("CercaSoggettiOnClick"))
-                                    )
+                                            .Name("CercaSoggetti")
+                                            .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                            .Content("Cerca Soggetto")
+                                            .Events(e => e.Click("CercaSoggettiOnClick"))
+                                        )
                                         @(Html.Kendo().Button()
-                                                .Name("AssociaElemento")
-                                                .HtmlAttributes(new { type = "button", @class = "k-primary" })
-                                                .Content("Associa Elemento")
-                                                .Events(e => e.Click("AssociaElementoOnClick"))
+                                            .Name("AssociaElemento")
+                                            .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                            .Content("Associa Elemento")
+                                            .Events(e => e.Click("AssociaElementoOnClick"))
                                         )
 
                                     </div>
@@ -690,7 +690,26 @@
         </div>
     </div>
 
-    <form class="new-tab-opener" method="get" target="_blank"></form>
+ 
+    <div class="modal fade" id="MsgControllaStampa" tabindex="-1" role="dialog" aria-labelledby="MsgControllaStampaLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Attenzione</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Non tutti gli elementi del fascicolo sono stati stampati.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </section>
 
 

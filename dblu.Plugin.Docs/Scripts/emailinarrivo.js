@@ -39,6 +39,19 @@ function SpostaEmail() {
 
 // eventi
 gridEmailOnChange = function (e) {
+
+    $.ajax({
+        url: UrlActions.ControllaStampa,
+        type: 'POST',
+        cache: false,
+        data: { IdAllegato: $("#IdAllegato").val() },
+        success: function (data) {
+            if (!data) $('#MsgControllaStampa').modal();
+        }
+    });
+
+
+
     gridEmailCurrentRow = this.select();
     var data = this.dataItem(this.select());
     mailItem = data;
@@ -1463,6 +1476,17 @@ function documentPrinted() {
             //});
         }
     });
+
+    $.ajax({
+        url: UrlActions.ControllaStampa,
+        type: 'POST',
+        cache: false,
+        data: { IdAllegato: $("#IdAllegato").val() },
+        success: function (data) {
+            if (!data) $('#MsgControllaStampa').modal();
+        }
+    });
+      
 }
 
 function exportSuccess(args) {
