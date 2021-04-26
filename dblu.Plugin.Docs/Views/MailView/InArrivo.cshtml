@@ -690,7 +690,7 @@
         </div>
     </div>
 
- 
+
     <div class="modal fade" id="MsgControllaStampa" tabindex="-1" role="dialog" aria-labelledby="MsgControllaStampaLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -770,26 +770,26 @@
                                             </div>
                                         <br />
                                         <div class="form-group col-md-8">
-                        @(Html.Kendo().MultiSelect()
-.Name("multiMailInoltro")
-.DataTextField("Email")
-.DataValueField("Email")
-.Placeholder("Seleziona gli utenti")
-.ItemTemplate("#= Name # #= LastName #, <span class=\"UserName\">#= Email #</span>")
-.Height(450)
-.Events(e =>
-{
+                                        @(Html.Kendo().MultiSelect()
+                                                .Name("multiMailInoltro")
+                                                .DataTextField("Email")
+                                                .DataValueField("Email")
+                                                .Placeholder("Seleziona gli utenti")
+                                                .ItemTemplate("#if(Name != null){# #= Name # #}#  #if(LastName != null){# #= LastName # #}# #if(Email != null){# <span class=\"UserName\">#= Email #</span> #}# ")
+                                                //.ItemTemplate("#= Name # #= LastName #, <span class=\"UserName\">#= Email #</span>")
+                                                .Height(450)
+                                                .Events(e =>
+                                                {
 
-})
-.DataSource(source =>
-{
-    source
-    .Ajax()
-    .PageSize(80)
-    .Read("Utenti_Read", "Grid");
-})
-
-                )
+                                                })
+                                                .DataSource(source =>
+                                                {
+                                                    source
+                                                    .Ajax()
+                                                    .PageSize(80)
+                                                    .Read(read => read.Action("Utenti_Read", "Grid").Data("ValidMail"));
+                                                })
+                                                )
                                             </div>
                                             <div class="form-group col-md-2">
                                                 @(Html.Kendo().Button()
@@ -798,6 +798,7 @@
                                             .Events(ev => ev.Click("inoltraOnClick"))
                                                 )
                                             </div>
+                                   
                                         </div>
                 <div class="form-group">
                     <div class="form-group col-md-10" >
@@ -980,7 +981,7 @@
                     .Read(read => read.Action("GetSoggettiByMail", "MailView").Data("GetMail"))
 
                     )
-                    
+
                  .HtmlAttributes(new { style = "font-size:12" })
                  .Events(events => events
                     .DataBound("cSoggonDataBound")

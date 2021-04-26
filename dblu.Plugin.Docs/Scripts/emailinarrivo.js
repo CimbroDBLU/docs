@@ -87,8 +87,8 @@ gridEmailOnChange = function (e) {
             }
             MostraPdfCompleto($("#IdElemento").val());
 
-         
-            $('#cSogg').data('kendoGrid').dataSource.read();
+            
+            
 
            
 
@@ -129,6 +129,12 @@ function GetMail() {
 
     return {
         mail: mailChiave1,
+    };
+}
+
+function ValidMail() {
+    return {
+        AsValidEmail: true,
     };
 }
 
@@ -638,6 +644,7 @@ function MostraDettaglio(dettaglio) {
     else {
         $('#divSoggettoElementiAperti').hide();
         $('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.data("{}");
+        $('#cSogg').data('kendoGrid').dataSource.read();
     };
 
     $('#IdFascicolo').val(dettaglio.IdFascicolo);
@@ -1088,7 +1095,7 @@ function CaricaSoggetto(codice) {
         $('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.read();
 
     }
-    //$.post(window.location.origin + '/MailView/GetSoggetto?codice=' + codice, function (data, status) {
+    //$.post(window.location.origin + '/MailView/GetSogge tto?codice=' + codice, function (data, status) {
 
     //$("#inputNome").val(data.Nome);
     //$("#inputRag").val(data.Nome);
