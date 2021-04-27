@@ -855,6 +855,8 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                 _mailService._logger.LogError($"InArrivo_Stampa: {ex.Message}");
                 return await Task.FromResult(false);
             }
+
+            
             return await Task.FromResult(true);
         }
 
@@ -893,6 +895,31 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             return await Task.FromResult(true);
         }
 
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.3")]
+        public async Task<ActionResult<bool>> ControllaStampa(
+            string IdAllegato
+        )
+        {
+            bool flPrinted = true;
+
+            try
+            {
+                if (int.Parse(_config["Docs:ControllaStampa"]) == 1 && !string.IsNullOrEmpty(IdAllegato))
+                {
+                    foreach (Elementi  e in _mailService._elmMan.GetElementiDaAllegato(Guid.Parse(IdAllegato)))
+                    {
+                        if (_mailService._logMan.IsStato(e.Id.ToString() , TipiOggetto.ELEMENTO, TipoOperazione.Stampato) == false) { flPrinted = false; break; }
+                    }
+                  ;
+                }
+            }
+            catch (Exception ex)
+            {
+                return await Task.FromResult(true);
+            }
+            return await Task.FromResult(flPrinted);
+        }
 
         [HasPermission("50.1.3")]
         public async Task<ActionResult> SoggettoElementiAperti([DataSourceRequest] DataSourceRequest request, string CodiceSoggetto)

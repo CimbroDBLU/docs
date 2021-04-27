@@ -39,6 +39,19 @@ function SpostaEmail() {
 
 // eventi
 gridEmailOnChange = function (e) {
+
+    $.ajax({
+        url: UrlActions.ControllaStampa,
+        type: 'POST',
+        cache: false,
+        data: { IdAllegato: $("#IdAllegato").val() },
+        success: function (data) {
+            if (!data) $('#MsgControllaStampa').modal();
+        }
+    });
+
+
+
     gridEmailCurrentRow = this.select();
     var data = this.dataItem(this.select());
     mailItem = data;
@@ -74,8 +87,8 @@ gridEmailOnChange = function (e) {
             }
             MostraPdfCompleto($("#IdElemento").val());
 
-         
-            $('#cSogg').data('kendoGrid').dataSource.read();
+            
+            
 
            
 
@@ -92,7 +105,7 @@ gridEmailOnChange = function (e) {
 function cSoggonDataBound(arg) {
     var gridData = $("#cSogg").data().kendoGrid.dataSource.data();
     //for (var i = 0; i < gridData.length
-    if (gridData.length > 1) {
+    if (gridData.length > 0) {
         var dialog = $("#wSoggetti").data("kendoWindow");
         dialog.center();
         dialog.open();
@@ -116,6 +129,12 @@ function GetMail() {
 
     return {
         mail: mailChiave1,
+    };
+}
+
+function ValidMail() {
+    return {
+        AsValidEmail: true,
     };
 }
 
@@ -625,6 +644,7 @@ function MostraDettaglio(dettaglio) {
     else {
         $('#divSoggettoElementiAperti').hide();
         $('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.data("{}");
+        $('#cSogg').data('kendoGrid').dataSource.read();
     };
 
     $('#IdFascicolo').val(dettaglio.IdFascicolo);
@@ -1075,7 +1095,7 @@ function CaricaSoggetto(codice) {
         $('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.read();
 
     }
-    //$.post(window.location.origin + '/MailView/GetSoggetto?codice=' + codice, function (data, status) {
+    //$.post(window.location.origin + '/MailView/GetSogge tto?codice=' + codice, function (data, status) {
 
     //$("#inputNome").val(data.Nome);
     //$("#inputRag").val(data.Nome);
@@ -1463,6 +1483,17 @@ function documentPrinted() {
             //});
         }
     });
+
+    $.ajax({
+        url: UrlActions.ControllaStampa,
+        type: 'POST',
+        cache: false,
+        data: { IdAllegato: $("#IdAllegato").val() },
+        success: function (data) {
+            if (!data) $('#MsgControllaStampa').modal();
+        }
+    });
+      
 }
 
 function exportSuccess(args) {

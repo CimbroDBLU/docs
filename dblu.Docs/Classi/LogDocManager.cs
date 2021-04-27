@@ -134,6 +134,24 @@ namespace dblu.Docs.Classi
 
 
         }
-       
+        public Boolean IsStato(string IdOggetto, TipiOggetto Tipo, TipoOperazione Stato)
+        {
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    if (cn.QueryFirstOrDefault<LogDoc>("SELECT * FROM LogDoc WHERE IdOggetto = @Id and TipoOggetto = @Tipo and Operazione =@Stato",
+                        new { Id = IdOggetto, Tipo = Tipo, Stato = Stato }) != null)
+                        return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"IsStato: {ex.Message}");
+
+            }
+            return false;
+
+        }
     }
 }
