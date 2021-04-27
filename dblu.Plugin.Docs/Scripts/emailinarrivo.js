@@ -588,9 +588,9 @@ function PulisciDettaglio() {
     } catch (err) { }
     $('#AssociaElemento').hide();
 
-    $("#divSoggetto").boxWidget("collapse");
-    $("#divFascicolo").boxWidget("collapse");
-    $("#divAllegati").boxWidget("collapse");
+    //$("#divSoggetto").boxWidget("collapse");
+    //$("#divFascicolo").boxWidget("collapse");
+    //$("#divAllegati").boxWidget("collapse");
 
 
     try {
