@@ -299,39 +299,28 @@
     .Actions(actions => actions.Close())
     .Content(@<text>
         <div class="box-body">
-            <form>
+            <form id="formInoltra">
                 <div class="form-group">
-                    @*              <label class="control-label col-md-1" style="font-size:14px">indirizzo</label>*@
                     <div class="form-group col-md-8">
-                        @(Html.Kendo().TextBox()
-                        .Name("emailInoltro")
-                        .Value("")
-                        .HtmlAttributes(new { style = "width: 100%" } )
-                        )
-                    </div>
-                                                            <br />
-                                        <div class="form-group col-md-8">
-                        @(Html.Kendo().MultiSelect()
-.Name("multiMailInoltro")
-.DataTextField("Email")
-.DataValueField("Email")
-.Placeholder("Seleziona gli utenti")
-.ItemTemplate("#= Name # #= LastName #, <span class=\"UserName\">#= Email #</span>")
-.Height(450)
-.Events(e =>
-{
-    //e.Change("multiselectUC_OnChange");
-})
-.DataSource(source =>
-{
-    source
-    .Ajax()
-    .PageSize(80)
-    .Read("Utenti_Read", "Grid");
-})
 
-                )
-                                            </div>
+                        @(Html.Kendo().MultiSelect()
+                            .Name("multiMailInoltro")
+                            .DataTextField("Email")
+                            .DataValueField("Email")
+                            .Placeholder("Seleziona gli utenti")
+                            .ItemTemplate("#if(Name != null){# #= Name # #}#  #if(LastName != null){# #= LastName # #}# #if(Email != null){# <span class=\"UserName\">#= Email #</span> #}# ")
+                            .Height(450)
+                            .Events(ev => ev.DataBound("onmultiMailInoltroDataBound"))
+                            .DataSource(source =>
+                            {
+                                source
+                                .Ajax()
+                                .PageSize(80)
+                                .Read(read => read.Action("Email_Read", "MailView").Data("ValidMail"));
+
+                            })
+                         )
+                    </div>
                     <div class="form-group col-md-2">
                         @(Html.Kendo().Button()
                         .Name("okinoltra")

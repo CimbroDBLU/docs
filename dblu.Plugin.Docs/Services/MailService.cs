@@ -2349,6 +2349,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         res.Messaggio = "server di posta in uscita non definito.";
                         return res;
                     }
+                    client.CheckCertificateRevocation = false;
                     await client.ConnectAsync(srv.Server, srv.Porta, srv.Ssl, c);
                     var flOk = true;
                     if (client.IsConnected)
@@ -2534,6 +2535,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         res.Messaggio = "server di posta in uscita non definito.";
                         return res;
                     }
+                    client.CheckCertificateRevocation = false;
                     await client.ConnectAsync(srv.Server, srv.Porta, srv.Ssl, c);
                     var flOk = true;
                     if (client.IsConnected)
@@ -3151,7 +3153,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                             res.Messaggio = $"Server di posta non valido: {al.Origine}.";
                             return res;
                         }
-
+                        client.CheckCertificateRevocation = false;
                         await client.ConnectAsync(srv.Server, srv.Porta, srv.Ssl, c);
                         var flOk = true;
                         if (client.IsConnected)
