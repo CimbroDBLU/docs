@@ -50,8 +50,6 @@ gridEmailOnChange = function (e) {
         }
     });
 
-
-
     gridEmailCurrentRow = this.select();
     var data = this.dataItem(this.select());
     mailItem = data;
@@ -62,7 +60,6 @@ gridEmailOnChange = function (e) {
     elementoItem = null;
     
     PulisciDettaglio();
-
 
     $("#IdAllegato").val(data.Id);
 
@@ -86,12 +83,6 @@ gridEmailOnChange = function (e) {
             $("#IdElemento").val("");
             }
             MostraPdfCompleto($("#IdElemento").val());
-
-            
-            
-
-           
-
         },
         error: function (data) {
 
@@ -475,6 +466,7 @@ function ApriElementoGrid() {
         $("#CollapseFascicolo").prop("disabled", false);
        // $("#CollapseFascicolo").click();
 
+
         var dialog = $("#detElemento").data("kendoWindow");
         $.ajax({
             url: UrlActions.MailView_editDettaglioElemento,
@@ -607,10 +599,9 @@ function PulisciDettaglio() {
     } catch (err) { }
     $('#AssociaElemento').hide();
 
-    $("#divSoggetto").boxWidget("collapse");
-    $("#divFascicolo").boxWidget("collapse");
-    $("#divAllegati").boxWidget("collapse");
-
+    //$("#divSoggetto").boxWidget("collapse");
+    //$("#divFascicolo").boxWidget("collapse");
+    //$("#divAllegati").boxWidget("collapse");
 
     try {
 
@@ -940,7 +931,10 @@ function ApriDettaglioOnClick(e) {
     }
 
     function detElementoOpen(e) {
-            $('body').removeClass('waiting');
+        $('body').removeClass('waiting');
+        $("#divSoggetto").boxWidget("collapse");
+        $("#divFascicolo").boxWidget("collapse");
+        $("#divAllegati").boxWidget("collapse");
     }
 
     function detElementoClose(e) {
@@ -948,7 +942,11 @@ function ApriDettaglioOnClick(e) {
             //e.preventDefault();
             //$("#divFascicolo *").prop('disabled', false);
             $("#divFascicolo").find(":input").prop("disabled", false);
-        $("#CollapseFascicolo").click();
+          // $("#CollapseFascicolo").click();
+
+        $("#divSoggetto").boxWidget("expand");
+        $("#divFascicolo").boxWidget("expand");
+        $("#divAllegati").boxWidget("expand");
 
         //$('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.read();
 

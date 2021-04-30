@@ -575,12 +575,20 @@ function ApriDettaglioOnClick(e) {
 
 function detElementoOpen(e) {
     $('body').removeClass('waiting');
+
+    $("#divSoggetto").boxWidget("collapse");
+    $("#divFascicolo").boxWidget("collapse");
+    $("#divAllegati").boxWidget("collapse");
 }
 
 function detElementoClose(e) {
 
     $("#divFascicolo").find(":input").prop("disabled", false);
-    $("#CollapseFascicolo").click();
+   // $("#CollapseFascicolo").click();
+    $("#divSoggetto").boxWidget("expand");
+    $("#divFascicolo").boxWidget("expand");
+    $("#divAllegati").boxWidget("expand");
+
     var grid = $("#gridZip").data("kendoGrid"),
         rows = grid.select();
 
