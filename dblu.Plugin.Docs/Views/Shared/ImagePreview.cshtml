@@ -1,0 +1,40 @@
+﻿@model ImgViewModel
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using NToastNotify
+@using dblu.Portale.Plugin.Documenti.Controllers
+@using Newtonsoft.Json
+@addTagHelper *, Kendo.Mvc
+@using Kendo.Mvc.UI
+@using Syncfusion.EJ2
+@using Syncfusion.EJ2.Navigations;
+@addTagHelper *, Syncfusion.EJ2
+
+
+@{
+    string parametri = JsonConvert.SerializeObject(Model);
+    Layout = null;
+}
+
+<style>
+    img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        max-height: 80%;
+        max-width: 90%;
+    }
+</style>
+<title>Anteprima Immagine</title>
+
+<section class="content" style="height: 90vh">
+    <div class="control-section">
+        @if (!Model.isRelated)
+        {<img src="@Url.Action("GetFile", "MailView", new ImgViewModel() { IdAllegato = Model.IdAllegato, NomeFile = Model.NomeFile })" />}
+        else
+        {<img src="@Url.Action("ApriFile", "MailView", new ImgViewModel() { IdAllegato = Model.IdAllegato, NomeFile = Model.NomeFile })" />}
+    </div>
+
+    <ejs-scripts></ejs-scripts>
+
+
+</section>

@@ -213,7 +213,6 @@
             return false;
     }
 
-
 </script>
 
 <!-- Main content -->
@@ -758,61 +757,52 @@
     .Visible(false)
     .Actions(actions => actions.Close())
     .Content(@<text>
-                            <div class="box-body">
-                                <form>
-                                    <div class="form-group">
-                                            <div class="form-group col-md-8">
-                                                @(Html.Kendo().TextBox()
-                                            .Name("emailInoltro")
-                                            .Value("")
-                                            .HtmlAttributes(new { style = "width: 100%" })
-                                                )
-                                            </div>
-                                        <br />
-                                        <div class="form-group col-md-8">
-                                        @(Html.Kendo().MultiSelect()
-                                                .Name("multiMailInoltro")
-                                                .DataTextField("Email")
-                                                .DataValueField("Email")
-                                                .Placeholder("Seleziona gli utenti")
-                                                .ItemTemplate("#if(Name != null){# #= Name # #}#  #if(LastName != null){# #= LastName # #}# #if(Email != null){# <span class=\"UserName\">#= Email #</span> #}# ")
-                                                //.ItemTemplate("#= Name # #= LastName #, <span class=\"UserName\">#= Email #</span>")
-                                                .Height(450)
-                                                .Events(e =>
-                                                {
+            <div class="box-body">
+                <form id="formInoltra">
+                    <div class="form-group">
+                        <div class="form-group col-md-8">
+                        @(Html.Kendo().MultiSelect()
+                                .Name("multiMailInoltro")
+                                .DataTextField("Email")
+                                .DataValueField("Email")
+                                .Placeholder("Seleziona gli utenti")
+                                .ItemTemplate("#if(Name != null){# #= Name # #}#  #if(LastName != null){# #= LastName # #}# #if(Email != null){# <span class=\"UserName\">#= Email #</span> #}# ")
+                                //.ItemTemplate("#= Name # #= LastName #, <span class=\"UserName\">#= Email #</span>")
+                                .Height(450)
+                                .Events(ev => ev.DataBound("onmultiMailInoltroDataBound"))
+                                .DataSource(source =>
+                                {
+                                    source
+                                    .Ajax()
+                                    .PageSize(80)
+                                    //.Events(e => e.RequestEnd("onRequestEnd"))
+                                    .Read(read => read.Action("Email_Read", "MailView").Data("ValidMail"));
 
-                                                })
-                                                .DataSource(source =>
-                                                {
-                                                    source
-                                                    .Ajax()
-                                                    .PageSize(80)
-                                                    .Read(read => read.Action("Utenti_Read", "Grid").Data("ValidMail"));
-                                                })
-                                                )
-                                            </div>
-                                            <div class="form-group col-md-2">
-                                                @(Html.Kendo().Button()
-                                            .Name("okinoltra")
-                                            .Content("Invia")
-                                            .Events(ev => ev.Click("inoltraOnClick"))
-                                                )
-                                            </div>
-                                   
-                                        </div>
-                <div class="form-group">
-                    <div class="form-group col-md-10" >
-                        <input type="checkbox" checked  id="chkemailInoltro" title="Chiudi email">
-                        <label class="control-label col-md-3" >Chiudi email</label>
+                                })
+                         )
+                        </div>
+                        <div class="form-group col-md-2">
+                            @(Html.Kendo().Button()
+                                .Name("okinoltra")
+                                .Content("Invia")
+                                .Events(ev => ev.Click("inoltraOnClick"))
+                                    )
+                        </div>
+
                     </div>
-                </div>
-                                    </form>
-                                </div>
-                        </text>)
-                        .Width(600)
+                    <div class="form-group">
+                        <div class="form-group col-md-10" >
+                            <input type="checkbox" checked  id="chkemailInoltro" title="Chiudi email">
+                            <label class="control-label col-md-3" >Chiudi email</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            </text>)
+    .Width(600)
     .Height(450)
-                        .Modal(true)
-                 )
+    .Modal(true)
+)
 @(Html.Kendo().Window()
     .Name("wRispondi")
     .Size("auto")
@@ -821,10 +811,11 @@
     .Actions(actions => actions.Close())
     .Content(@<text>
                 <div class="box-body">
-                    <form>
+                    <form id="formRispondi">
                         <div class="form-group">
                             <label class="control-label col-md-2" style="font-size:12px">A: </label>
                             <div class="form-group col-md-8">
+
                                 @(Html.Kendo().TextBox()
                                     .Name("destinatarioRisposta")
                                     .Value("")
@@ -833,11 +824,32 @@
                             </div>
                             <label class="control-label col-md-2" style="font-size:12px">CC: </label>
                             <div class="form-group col-md-8">
-                                @(Html.Kendo().TextBox()
+                                @*@(Html.Kendo().TextBox()
                                     .Name("ccRisposta")
                                     .Value("")
                                     .HtmlAttributes(new { style = "width: 100%" })
-                                )
+                                )*@
+
+                                 @(Html.Kendo().MultiSelect()
+                                .Name("multiccRisposta")
+                                .DataTextField("Email")
+                                .DataValueField("Email")
+                                .ItemTemplate("#if(Name != null){# #= Name # #}#  #if(LastName != null){# #= LastName # #}# #if(Email != null){# <span class=\"UserName\">#= Email #</span> #}# ")
+                                .Height(450)
+                                .Events(ev => ev.DataBound("onmulticcRispostaDataBound"))
+                                .DataSource(source =>
+                                {
+                                    source
+                                    .Ajax()
+                                    .PageSize(80)
+                                    //.Events(e => e.RequestEnd("onRequestEndccRisposta"))
+                                    .Read(read => read.Action("Email_Read", "MailView").Data("ValidMail"));
+
+                                })
+                         )
+
+
+
                             </div>
                             <label class="control-label col-md-2" style="font-size:12px">Oggetto: </label>
                             <div class="form-group col-md-8">
@@ -874,7 +886,7 @@
     .Width(600)
     .Height(500)
     .Modal(true)
-                 )
+)
 @(Html.Kendo().Window()
     .Name("wSposta")
     .Size("auto")

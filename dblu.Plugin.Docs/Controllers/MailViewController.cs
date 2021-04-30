@@ -623,11 +623,15 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     email,
                     chiudi ,
                     User);
+
+                SaveEmails(email);
+
             }
             else {
                 r.Successo = false;
                 r.Messaggio = "Mail o indirizzo non validi";
             }
+
             if (r.Successo)
             {
 
@@ -637,6 +641,63 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                 _toastNotification.AddErrorToastMessage($"Inoltro fallito: {r.Messaggio}");
             }
             return Json(r.Successo);
+        }
+
+        
+        private bool SaveEmails(string Ind)
+        {
+            var user = _mailService._usrManager?.CurrentUser;
+            if (user != null)
+            {
+
+                string Emails = user.Properties["Emails"];
+                List<string> jEmails = new List<string>();
+                if (!string.IsNullOrEmpty(Emails)) jEmails = System.Text.Json.JsonSerializer.Deserialize<string[]>(Emails).ToList();
+                List<Core.Infrastructure.Identity.Classes.ApplicationUser> MailList;
+                MailList = _mailService._usrManager.GetUsers().Where(f => (!String.IsNullOrEmpty(f.Email))).ToList();
+
+                foreach (string ind in Ind.Replace(";", ",").Split(","))
+                {
+                    if (MailList.Where(f => f.Email == ind).FirstOrDefault() == null && !Emails.Contains(ind))
+                    {
+                        jEmails.Add(ind);
+                    }
+
+                }
+
+                while (jEmails.Count > 5) jEmails.RemoveAt(0);
+
+                user.Properties["Emails"] = System.Text.Json.JsonSerializer.Serialize(jEmails);
+                _mailService._usrManager?.EditUser(user);
+            }
+            return true;
+        }
+
+
+        [HasPermission("50.1.3")]
+        public IActionResult Email_read([DataSourceRequest] DataSourceRequest request, Boolean AsValidEmail = false)
+        {
+            List<Core.Infrastructure.Identity.Classes.ApplicationUser> MailList;
+            if (AsValidEmail) MailList = _mailService._usrManager.GetUsers().Where(f => (!String.IsNullOrEmpty(f.Email))).ToList(); else MailList = _mailService._usrManager.GetUsers().ToList();
+
+            var user = _mailService._usrManager?.CurrentUser;
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            string Emails = user.Properties["Emails"];
+            if (!string.IsNullOrEmpty(Emails))
+            {
+
+                string[] jEmails = System.Text.Json.JsonSerializer.Deserialize<string[]>(Emails);
+
+
+                foreach (string xEmail in jEmails)
+                {
+                    MailList.Add(new Core.Infrastructure.Identity.Classes.ApplicationUser { Email = xEmail });
+                }
+            }
+            return Json(MailList.ToDataSourceResult(request));
         }
 
         [AcceptVerbs("Post")]
@@ -665,6 +726,8 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     allegaEmail,
                      chiudiEmail ,
                     User);
+
+                SaveEmails(cc);
             }
             else
             {
@@ -1063,6 +1126,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             IEnumerable<AllegatoEmail> lista = _mailService._allMan.GetEmailInviate(Tipo, NomeServer);
             return Json(lista.ToDataSourceResult(request));
         }
+
 
         #region Smistamento
         [HasPermission("50.1.5")]

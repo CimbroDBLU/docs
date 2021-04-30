@@ -965,7 +965,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                                     {
                                         PdfFont pdfFont = font;
                                         var fontSize = pdfFont.Size;
-                                        while (fontSize > 0f && (pdfFont.MeasureString(nn.Text, drawFormat).Height > bounds.Height || pdfFont.MeasureString(nn.Text, drawFormat).Width > bounds.Width))
+                                        while (fontSize > 0f && (pdfFont.MeasureString(nn.Text, drawFormat).Height+0.5 > bounds.Height || pdfFont.MeasureString(nn.Text, drawFormat).Width+0.5 > bounds.Width))
                                         {
                                             fontSize -= 0.1f;
                                             if (font is PdfCjkStandardFont)

@@ -66,6 +66,7 @@
     .my-icon-class-undo:before {
         content: "\e100"; /* Adds a glyph using the Unicode character number */
     }
+
     .my-icon-class-rispondi:before {
         content: "\e100"; /* Adds a glyph using the Unicode character number */
     }
@@ -295,10 +296,11 @@
     .Actions(actions => actions.Close())
     .Content(@<text>
                 <div class="box-body">
-                    <form>
+                    <form id="formRispondi">
                         <div class="form-group">
                             <label class="control-label col-md-2" style="font-size:12px">A: </label>
                             <div class="form-group col-md-8">
+
                                 @(Html.Kendo().TextBox()
                                     .Name("destinatarioRisposta")
                                     .Value("")
@@ -307,11 +309,32 @@
                             </div>
                             <label class="control-label col-md-2" style="font-size:12px">CC: </label>
                             <div class="form-group col-md-8">
-                                @(Html.Kendo().TextBox()
+                                @*@(Html.Kendo().TextBox()
                                     .Name("ccRisposta")
                                     .Value("")
                                     .HtmlAttributes(new { style = "width: 100%" })
-                                )
+                                )*@
+
+                                 @(Html.Kendo().MultiSelect()
+                                .Name("multiccRisposta")
+                                .DataTextField("Email")
+                                .DataValueField("Email")
+                                .ItemTemplate("#if(Name != null){# #= Name # #}#  #if(LastName != null){# #= LastName # #}# #if(Email != null){# <span class=\"UserName\">#= Email #</span> #}# ")
+                                .Height(450)
+                                .Events(ev => ev.DataBound("onmulticcRispostaDataBound"))
+                                .DataSource(source =>
+                                {
+                                    source
+                                    .Ajax()
+                                    .PageSize(80)
+                                    //.Events(e => e.RequestEnd("onRequestEndccRisposta"))
+                                    .Read(read => read.Action("Email_Read", "MailView").Data("ValidMail"));
+
+                                })
+                         )
+
+
+
                             </div>
                             <label class="control-label col-md-2" style="font-size:12px">Oggetto: </label>
                             <div class="form-group col-md-8">
@@ -323,7 +346,7 @@
                             </div>
                             <label class="control-label col-md-2" style="font-size:12px">Testo: </label>
                             <div class="form-group col-md-8">
-                                 @Html.TextArea("testoRiposta", "", new { @class = "k-textbox", style = "width: 100%;", rows = 5 })
+                                 @Html.TextArea("testoRiposta", "", new { @class="k-textbox", style = "width: 100%;",rows=5 })
                             </div>
                             <div class="form-group col-md-2">
                                 @(Html.Kendo().Button()
@@ -348,7 +371,7 @@
     .Width(600)
     .Height(500)
     .Modal(true)
-                 )
+)
 @(Html.Kendo().Window()
     .Name("wInoltra")
     .Size("auto")
@@ -357,39 +380,26 @@
     .Actions(actions => actions.Close())
     .Content(@<text>
         <div class="box-body">
-            <form>
+            <form id="formInoltra">
                 <div class="form-group">
-                    @*              <label class="control-label col-md-1" style="font-size:14px">indirizzo</label>*@
                     <div class="form-group col-md-8">
-                        @(Html.Kendo().TextBox()
-                        .Name("emailInoltro")
-                        .Value("")
-                        .HtmlAttributes(new { style = "width: 100%" } )
-                        )
+                          @(Html.Kendo().MultiSelect()
+                            .Name("multiMailInoltro")
+                            .DataTextField("Email")
+                            .DataValueField("Email")
+                            .Placeholder("Seleziona gli utenti")
+                            .ItemTemplate("#if(Name != null){# #= Name # #}#  #if(LastName != null){# #= LastName # #}# #if(Email != null){# <span class=\"UserName\">#= Email #</span> #}# ")
+                            .Height(450)
+                            .Events(ev => ev.DataBound("onmultiMailInoltroDataBound"))
+                            .DataSource(source =>
+                            {
+                                source
+                                .Ajax()
+                                .PageSize(80)
+                                .Read(read => read.Action("Email_Read", "MailView").Data("ValidMail"));
+                            })
+                         )
                     </div>
-                                                            <br />
-                                        <div class="form-group col-md-8">
-                        @(Html.Kendo().MultiSelect()
-.Name("multiMailInoltro")
-.DataTextField("Email")
-.DataValueField("Email")
-.Placeholder("Seleziona gli utenti")
-.ItemTemplate("#= Name # #= LastName #, <span class=\"UserName\">#= Email #</span>")
-.Height(450)
-.Events(e =>
-{
-    //e.Change("multiselectUC_OnChange");
-})
-.DataSource(source =>
-{
-    source
-    .Ajax()
-    .PageSize(80)
-    .Read("Utenti_Read", "Grid");
-})
-
-                )
-                                            </div>
                     <div class="form-group col-md-2">
                         @(Html.Kendo().Button()
                         .Name("okinoltra")
@@ -402,8 +412,9 @@
         </div >
     </text>)
     .Width(600)
-    .Height(500)
+    .Height(120)
     .Modal(true)
+    
 )
 @(Html.Kendo().Window()
     .Name("wHistory")

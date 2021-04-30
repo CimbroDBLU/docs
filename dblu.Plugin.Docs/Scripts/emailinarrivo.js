@@ -173,11 +173,12 @@ function inoltraOnClick(e) {
     //alert($("#emailInoltro").val());
     //alert($("#chkemailInoltro").is(':checked'));
     var listMail = null;
-    if ($("#emailInoltro").val() == "") listMail = $("#multiMailInoltro").val().toString();
-    else {
-        if ($("#multiMailInoltro").val().toString() == "") listMail = $("#emailInoltro").val();
-        else listMail = $("#emailInoltro").val() + ';' + $("#multiMailInoltro").val();
-    }
+    listMail = $("#multiMailInoltro").val().toString();
+    //if ($("#emailInoltro").val() == "") listMail = $("#multiMailInoltro").val().toString();
+    //else {
+    //    if ($("#multiMailInoltro").val().toString() == "") listMail = $("#emailInoltro").val();
+    //    else listMail = $("#emailInoltro").val() + ';' + $("#multiMailInoltro").val();
+    //}
     var obj = {
         IdAllegato: $("#IdAllegato").val(),
         email: listMail,
@@ -1656,3 +1657,66 @@ function onDataBoundAttachments(e) {
         }
     }
 }
+
+function onmultiMailInoltroDataBound(e) {
+    $('.k-multiselect .k-input').unbind('keyup');
+    $('.k-multiselect .k-input').on('keyup', onClickEnterInoltra);
+}
+
+function onClickEnterInoltra(e) {
+    e.preventDefault();
+    if (e.keyCode === 13) {
+        var input = $(".k-multiselect .k-input[aria-describedby='multiMailInoltro_taglist'] ");
+        var value = input.val().trim();
+        var widget = $("#multiMailInoltro").getKendoMultiSelect();
+        var dataSource = widget.dataSource;
+        if (!value || value.length === 0) {
+            return;
+        }
+        dataSource.add({
+            Email: value,
+            Name: null,
+            LastName: null
+        });
+        dataSource.sync();
+    }
+}
+
+function onmulticcRispostaDataBound(e) {
+    $('.k-multiselect .k-input').unbind('keyup');
+    $('.k-multiselect .k-input').on('keyup', onClickEnterRispondi);
+}
+
+function onClickEnterRispondi(e) {
+    e.preventDefault();
+    if (e.keyCode === 13) {
+        var input = $(".k-multiselect .k-input[aria-describedby='multiccRisposta_taglist'] ");
+        var value = input.val().trim();
+        var widget = $("#multiccRisposta").getKendoMultiSelect();
+        var dataSource = widget.dataSource;
+        if (!value || value.length === 0) {
+            return;
+        }
+        dataSource.add({
+            Email: value,
+            Name: null,
+            LastName: null
+        });
+        dataSource.sync();
+    }
+}
+
+$(function () {
+    $('#formInoltra').on('keydown', 'input', function (event) {
+        if (event.which == 13) {
+            event.preventDefault();
+        }
+    });
+
+    $('#formRispondi').on('keydown', 'input', function (event) {
+        if (event.which == 13) {
+            event.preventDefault();
+        }
+    });
+})
+
