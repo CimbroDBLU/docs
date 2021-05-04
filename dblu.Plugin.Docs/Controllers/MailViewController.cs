@@ -655,15 +655,15 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                 if (!string.IsNullOrEmpty(Emails)) jEmails = System.Text.Json.JsonSerializer.Deserialize<string[]>(Emails).ToList();
                 List<Core.Infrastructure.Identity.Classes.ApplicationUser> MailList;
                 MailList = _mailService._usrManager.GetUsers().Where(f => (!String.IsNullOrEmpty(f.Email))).ToList();
-
-                foreach (string ind in Ind.Replace(";", ",").Split(","))
-                {
-                    if (MailList.Where(f => f.Email == ind).FirstOrDefault() == null && !Emails.Contains(ind))
+                if(Ind is not null)
+                    foreach (string ind in Ind?.Replace(";", ",").Split(","))
                     {
-                        jEmails.Add(ind);
-                    }
+                        if (MailList.Where(f => f.Email == ind).FirstOrDefault() == null && !Emails.Contains(ind))
+                        {
+                            jEmails.Add(ind);
+                        }
 
-                }
+                    }
 
                 while (jEmails.Count > 5) jEmails.RemoveAt(0);
 
