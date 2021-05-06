@@ -17,6 +17,13 @@
   <ItemGroup>
      <EmbeddedResource Include="Styles\**;Views\**;Scripts\**" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="Interfaces\**" />
+    <Content Remove="Interfaces\**" />
+    <EmbeddedResource Remove="Interfaces\**" />
+    <None Remove="Interfaces\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Remove="Components\PdfEditor.razor" />
@@ -48,7 +55,6 @@
 
   <ItemGroup>
     <Folder Include="Components\" />
-    <Folder Include="Interfaces\" />
   </ItemGroup>
 
   <ItemGroup>
