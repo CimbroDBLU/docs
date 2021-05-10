@@ -1,33 +1,27 @@
 ﻿@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
-
+@using dblu.Portale.Core.UI
 @using Kendo.Mvc.UI
 @{
-    ViewBag.Title = "Gestione Fascicoli";
+
     List<dblu.Docs.Models.Colonna> Cols = _ele.GetColonne("vFASCICOLO");
+    var Title = "Gestione Fascicoli";
 }
-<section class="content-header">
-    <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li><a href="#">Fascicoli</a></li>
-        <li class="active">All</li>
-    </ol>
-</section>
 
-<br />
-<br />
-<section class="content">
-    <div class="container-fluid">
-        <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Tutti i Fascicoli</h3>
+
+@(await Html.RenderComponentAsync<PageTitle>(RenderMode.Server,  new { nTitle = Title}))
+
+<div class="e-card">
+    <div class="e-card-header">
+        <div class="e-card-header-caption">
+            <div class="e-card-header-title">
+                @Title
             </div>
-            <!-- /.card-header -->
-            <div class="box-body">
-                <div class="row">
-                    <div class="col-xs-12">
-
-
-                        @(Html.Kendo().Grid<dblu.Docs.Models.viewFascicoli>()
+        </div>
+    </div>
+    <div class="e-card-separator"></div>
+    <div class="e-card-content">
+        <section class="content">         
+                @(Html.Kendo().Grid<dblu.Docs.Models.viewFascicoli>()
                             .Name("Grid")
                             .Columns(columns =>
                             {
@@ -72,9 +66,10 @@
                             .Filterable()
                             .Scrollable()
                             .Sortable()
+                            .Height(730)
                             .DataSource(dataSource => dataSource
                                 .Ajax()
-                                .PageSize(20)
+                                .PageSize(13)
                                 .ServerOperation(false)
                                 .Events(events => events.Error("error_handler"))
                                 .Model(model =>
@@ -87,12 +82,10 @@
                                 .DataBound("GridonDataBound")
                             )
                         )
-                    </div>
-                </div>
-            </div>
-        </div>
+        </section>
     </div>
-</section>
+</div>
+
 
 
 <script id="GridToolbarTemplate" type="text/x-kendo-template">
@@ -144,32 +137,6 @@
 
         if (value) {
             grid.dataSource.filter({ field: "CodCategoria", operator: "eq", value: value });
-            @*var dropdownlist = $("#categories").data("kendoDropDownList");
-
-            var dataItem = dropdownlist.dataItem();
-            $.ajax({
-                url: '@Url.Action("Descrizioni","Docs")',
-                data: { Cat: dataItem },
-                success: function (data) {
-                    $("#Grid th[data-field=Chiave1]").html(dataItem.Attributi.DescrizioneChiave("Chiave1"))
-
-                    //call is successfully completed and we got result in data
-                },
-                error: function (xhr, ajaxOptions, thrownError) {
-                    //some errror, some show err msg to user and log the error
-                    alert(xhr.responseText);
-                }
-            });
-
-            //var dropdownlist = $("#categories").data("kendoDropDownList");
-
-            //var xx = dropdownlist.dataItem();
-            ////xx.ListaAttributi;
-            //var Chiave1 = xx.Attributi.GetAttributo("Chiave1");
-            //$("#Grid th[data-field=Chiave1]").html(dataItem.Attributi[i].Descrizione)*@
-
-
-
         } else {
             grid.dataSource.filter({});
             $("#Grid th[data-field=Campo1]").html("Campo1");
@@ -185,25 +152,11 @@
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var itemId = dataItem.IdFascicolo;
         window.location.href = '@Url.Action("Fascicolo", "Docs")/' + dataItem.IdFascicolo;
-        @*$.ajax({
-            url: '@Url.Action("Fascicolo","Docs")',
-            data: { id: itemId },
-            success: function (data) {
-                //call is successfully completed and we got result in data
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                //some errror, some show err msg to user and log the error
-                alert(xhr.responseText);
-            }
-        });*@
     }
 
 
     function GridonDataBound(arg) {
-       // var grid = $("#Grid").data("kendoGrid");
-       // for (var i = 0; i < grid.columns.length; i++) {
-       //     grid.autoFitColumn(i);
-       // }
+
     }
 </script>
 

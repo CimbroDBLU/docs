@@ -99,17 +99,7 @@ namespace dblu.Portale.Controllers
             return Json(lista.ToDataSourceResult(request));
         }
 
-        [AcceptVerbs("Post")]
-        public ActionResult Categorie_Create([DataSourceRequest] DataSourceRequest request, Categorie cat)
-        {
-            if (cat != null && ModelState.IsValid)
-            {
-                _fasMan.SalvaCategoria(cat);
-            }
-
-            return Json(new[] { cat }.ToDataSourceResult(request, ModelState));
-        }
-
+  
         [AcceptVerbs("Post")]
         public ActionResult Categorie_Update([DataSourceRequest] DataSourceRequest request, Categorie cat)
         {
@@ -145,7 +135,7 @@ namespace dblu.Portale.Controllers
             }
             else
             {
-                model = new Categorie();
+                model = new Categorie() { Codice = "",Descrizione="", ViewAttributi = "" };
             }
             PopulateTipi();
             PopulateVisibilita();
@@ -324,6 +314,19 @@ namespace dblu.Portale.Controllers
             }
             return Json(new[] { att }.ToDataSourceResult(request, ModelState));
         }
+
+        [AcceptVerbs("Post")]
+        public ActionResult Categorie_Create([DataSourceRequest] DataSourceRequest request, Categorie cat)
+        {
+            if (cat != null && ModelState.IsValid)
+            {
+                _fasMan.SalvaCategoria(cat);
+            }
+
+            return Json(new[] { cat }.ToDataSourceResult(request, ModelState));
+        }
+
+
 
         [HttpPost]
         [Authorize]

@@ -5,40 +5,51 @@
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using Kendo.Mvc.UI
 
+<style>
+    .k-window-content * {
+        box-sizing: border-box !important;
+    }
+</style>
 <section class="content">
     <!-- Main row -->
-    <div class="row">
+    <div class="container-fluid">
         <div class="box-body">
             <form class="form-horizontal" role="form" method="post">
-                <div class="form-group">
-                    <label class="control-label col-md-2">Codice</label>
-                    <div class="col-md-10" style="width:20%">
+                <div class="row form-group">
+                    <div class="col-2">
+                        <label class="control-label ">Codice</label>
+                    </div>
+                    <div class="col-10" >
                         <input type="text"
                                name="Codice"
                                class="form-control" value="@Model.Codice" />
                     </div>
-                   
+
                 </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">Descrizione</label>
-                    <div class="col-md-10" style="width:50%">
-                        <input type="text"
-                               name="Descrizione"
-                               class="form-control" value="@Model.Descrizione" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label col-md-2">View atttributi </label>
-                    <div class="col-md-10" style="width:50%">
-                        <input type="text"
-                               name="ViewAttributi"
-                               class="form-control" value="@Model.ViewAttributi" />
-                    </div>
-                        <div class="col-md-2" >
-                    <button formaction="/Docs/SalvaCategoria" method="post" type="submit" class="btn btn-info pull-left">Salva</button>
+                <div class="row form-group">
+                        <div class="col-2">
+                            <label class="control-label">Descrizione</label>
                         </div>
-                </div>
-            </form>
+                        <div class="col-10">
+                            <input type="text"
+                                   name="Descrizione"
+                                   class="form-control" value="@Model.Descrizione" />
+                        </div>
+                    </div>
+                <div class="row form-group">
+                        <div class="col-2">
+                            <label class="control-label">View atttributi </label>
+                        </div>
+                        <div class="col-8">
+                            <input type="text"
+                                   name="ViewAttributi"
+                                   class="form-control" value="@Model.ViewAttributi" />
+                        </div>
+                        <div class="col-2">
+                            <button formaction="/Docs/SalvaCategoria" method="post" type="submit" class="btn btn-info pull-left">Salva</button>
+                        </div>
+                    </div>
+</form>
             <form class="form-horizontal" role="form" method="post">
                 <div class="form-group">
 
@@ -84,7 +95,7 @@
                      )
 
                     )
-
+    
                 </div>
             </form>
         </div>

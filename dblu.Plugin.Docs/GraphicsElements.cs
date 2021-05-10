@@ -69,7 +69,7 @@ namespace dblu.Portale.Plugin.Documenti
                     new MenuItem("50.1.4", 5, "ZipView/ZipProcessati", "File processati", "fas fa-file-archive", null),
                     new MenuItem("50.1.4", 6, "ZipView/ZipInArrivo?Tipo=REQ", "Ordini Dealers in arrivo", "fas fa-ruler", null),
                     new MenuItem("50.1.4", 6, "ZipView/ZipProcessati?Tipo=REQ", "Ordini Dealers processati", "fas fa-pencil-ruler", null),
-                    new MenuItem("50.2", 1, "Docs/Logs", "Gestione Log", "fas fa-history", null),
+                  //  new MenuItem("50.2", 1, "Docs/Logs", "Gestione Log", "fas fa-history", null),
                 };
             }
         }

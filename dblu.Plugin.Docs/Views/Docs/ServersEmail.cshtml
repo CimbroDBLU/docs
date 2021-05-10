@@ -1,35 +1,40 @@
 ﻿@model dblu.Docs.Models.EmailServer
 @using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.ViewModels
+@using dblu.Portale.Core.UI
 @using Kendo.Mvc.UI
 @addTagHelper *, Kendo.Mvc
+
 @{
-    ViewData["Title"] = "Server eMail";
+    var Title = "Server eMail";
 }
 
-<section class="content-header">
-    <h1>
-        Server eMail
-    </h1>
-    <ol class="breadcrumb">
-        <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
-        <li><a href="/Docs/ServersEmail">Server Email</a></li>
-    </ol>
-</section>
 
+@(await Html.RenderComponentAsync<PageTitle>(RenderMode.Server,  new { nTitle = Title}))
 
-<!-- Main content -->
-<section class="content">
-    <div class="row">
-        <div class="col-xs-12">
-            <div class="box box-solid box-default">
-                <div class="box-header with-border">
-                    @*     <h3 class="box-title">Categorie</h3>*@
-                    @Html.Hidden("Nome")
-                </div>
-                <div class="box-body">
+<div class="e-card">
+    <div class="e-card-header">
+        <div class="e-card-header-caption">
+            <div class="e-card-header-title">
+                @Title
+            </div>
+        </div>
+    </div>
+    <div class="e-card-separator"></div>
+    <div class="e-card-content">
 
-                    @(Html.Kendo().Grid<dblu.Docs.Models.EmailServer>()
+        <!-- Main content -->
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box box-solid box-default">
+                        <div class="box-header with-border">
+                            @*     <h3 class="box-title">Categorie</h3>*@
+                            @Html.Hidden("Nome")
+                        </div>
+                        <div class="box-body">
+
+                            @(Html.Kendo().Grid<dblu.Docs.Models.EmailServer>()
             .Name("gridEmailServer")
             .Columns(columns =>
             {
@@ -41,7 +46,7 @@
                 columns.Bound(p => p.TipoRecord).Hidden();
                 columns.Command(command => command.Custom("Modifica").Click("showEditor")).Width(150);
                 columns.Command(command => command.Destroy().Text("Elimina")).Width(150);
-          
+
             })
             .ToolBar(toolbar =>
                 {
@@ -52,10 +57,10 @@
             .Pageable()
             .Sortable()
             .Scrollable()
-
+            .Height(730)
             .DataSource(dataSource => dataSource
                 .Ajax()
-                .PageSize(20)
+                .PageSize(20)                
                 .Events(events => events.Error("error_handler"))
                 .Group(groups => groups.Add(p => p.TipoRecord))
                 .Model(model =>
@@ -68,11 +73,15 @@
                             .Destroy(update => update.Action("EmailServer_Destroy", "Docs"))
                         )
                     )
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
-</section>
+</div>
+
+
 
 
 
@@ -89,9 +98,9 @@
     function showEditor(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        window.location.href = '/Docs/editServerEmail?Nome=' + dataItem.Nome + '&Tipo='+ dataItem.TipoRecord;
+        window.location.href = '/Docs/editServerEmail?Nome=' + dataItem.Nome + '&Tipo=' + dataItem.TipoRecord;
 
-        
+
         //$("#EmailServer").val(dataItem.Nome);
         //var myWindow = $("#window").data("kendoWindow");
         //myWindow.refresh({
@@ -103,20 +112,20 @@
     }
 
 
-        function Edit(e) {
-            e.preventDefault();
-            var item = this.dataItem($(e.currentTarget).closest("tr"));
-            // window.location.href = '/Management/Utente?id=' + item.UserId;
-            $("#EmailServer").val(dataItem.Nome);
-            var myWindow = $("#window").data("kendoWindow");
-            myWindow.refresh({
-                url: "/Docs/editServerEmail",
-                data: { Nome: dataItem.Nome },
-                type: "Post"
-            });
-            myWindow.open().maximize();
+    function Edit(e) {
+        e.preventDefault();
+        var item = this.dataItem($(e.currentTarget).closest("tr"));
+        // window.location.href = '/Management/Utente?id=' + item.UserId;
+        $("#EmailServer").val(dataItem.Nome);
+        var myWindow = $("#window").data("kendoWindow");
+        myWindow.refresh({
+            url: "/Docs/editServerEmail",
+            data: { Nome: dataItem.Nome },
+            type: "Post"
+        });
+        myWindow.open().maximize();
 
-        }
+    }
 </script>
 
 <script type="text/javascript">

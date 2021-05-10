@@ -3,55 +3,261 @@
 @using Newtonsoft.Json.Linq
 @using dblu.Docs.Models
 @using Newtonsoft.Json
+@using dblu.Portale.Core.UI   
 @using Kendo.Mvc.UI
 @addTagHelper *, Kendo.Mvc
 @removeTagHelper "*, Microsoft.AspNet.Mvc.Razor"
 @removeTagHelper "*, Microsoft.AspNetCore.Mvc.Razor"
 @{
-    ViewBag.Title = "Fascicolo " + Model.Fascicolo.Id;
 
     var elementi = Model.Fascicolo.vElementi;
     List<dblu.Docs.Models.Colonna> Cols = _ele.GetColonne("vELEMENTO");
     var attributi = Model.Fascicolo.CategoriaNavigation._listaAttributi;
     List<dblu.Docs.Models.Colonna> ColsAl = _ele.GetColonne("vALLEGATO");
 
+    var Title = "Fascicolo " + Model.Fascicolo.Id;
 }
 
-<section class="content-header">
-    <h1>
-        @*Fascicolo
-            <small>Fascicolo @Model.Fascicolo.Id</small>*@
-    </h1>
-    <br />
-    <br />
 
-    <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li><a href="#">Documenti</a></li>
-        <li class="active">Fascicolo</li>
-    </ol>
-</section>
+@(await Html.RenderComponentAsync<PageTitle>(RenderMode.Server,  new { nTitle = Title}))
 
-@if (Model.IsInsideTask)
-{
-    <form method="post">
-        <button style="margin-left:30px" formaction='@Model.UrlRefer'
-                formmethod="post" class="btn btn-app">
-            <i class="fa fa-backward"></i> Indietro
-        </button>
+<div class="e-card">
+    <div class="e-card-header">
+        <div class="e-card-header-caption">
+            <div class="e-card-header-title">
+                @Title
+            </div>
+        </div>
+    </div>
+    <div class="e-card-separator"></div>
+    <div class="e-card-content">
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
 
-    </form>
-}
-else
-{
-    <form action="@Model.UrlRefer" method="get">
-        <button style="margin-left:30px" type="submit" class="btn btn-app">
-            <i class="fa fa-backward"></i> Indietro
-        </button>
-    </form>
+                    <div class="col-6">
+                        <form class='form-horizontal'>
 
-}
+                                <div class='form-group row'>
+                                    <label for='' class='col-4 col-form-label'>ID Fascicolo</label>
+                                    <!--
+                    <label for='' class='col-8 '>@Model.Fascicolo.Id</label>
+                        -->
+                                    <div class='col-8'>
+                                        <input type='text' class='form-control form-control-sm' id='' placeholder='' value='@Model.Fascicolo.Id' disabled>
+                                    </div>
 
+                                </div>
+                                <div class='form-group row'>
+                                    <label for='' class='col-4 col-form-label '>Creato il</label>
+                                    <!--
+                    <label for='' class='col-8 '>@Model.Fascicolo.DataC</label>
+                            -->
+                                    <div class='col-8'>
+                                        <input type='datetime' class='form-control  form-control-sm' id='' placeholder='' value='@Model.Fascicolo.DataC' disabled>
+                                    </div>
+
+                                </div>
+                                <div class='form-group row'>
+                                    <label for='' class='col-4 col-form-label'>Utente Creazione</label>
+                                    <!--
+                    <label for='' class='col-8 '>@Model.Fascicolo.UtenteC</label>
+                        -->
+                                    <div class='col-8'>
+                                        <input type='text' class='form-control  form-control-sm' id='' placeholder='Nome' value='@Model.Fascicolo.UtenteC' disabled>
+                                    </div>
+
+                    
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-6">
+                        <div class='form-group row'>
+                            <label for='' class='col-4 col-form-label'>Modificato il</label>
+                            <!--
+            <label for='' class='col-8 '>@Model.Fascicolo.DataUM</label>
+                -->
+                            <div class='col-8'>
+                                <input type='datetime' class='form-control  form-control-sm' id='' placeholder='' value='@Model.Fascicolo.DataUM' disabled>
+                            </div>
+
+                        </div>
+                        <div class='form-group row'>
+                            <label for='' class='col-4 col-form-label'>Utente Ultima Modifica</label>
+                            <!--
+            <label for='' class='col-8 '>@Model.Fascicolo.UtenteUM</label>
+                -->
+                            <div class='col-8'>
+                                <input type='text' class='form-control  form-control-sm' id='' placeholder='Nome' value='@Model.Fascicolo.UtenteUM' disabled>
+                            </div>
+
+                        </div>
+                        <div class='form-group row' style="display: flex; justify-content: center;">
+                            @(Html.Kendo().Button()
+                                    .Name("info")
+                                    .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                    .Content("EDIT")
+                                    .Events(ev => ev.Click("infoDialog"))
+                            )
+                        </div>
+                    </div>
+
+                </div>                     
+                  <div class="row" style="border: 2px solid #ccc!important;margin: 0px;padding:15px">
+
+                            <div class="col-6">
+                                <form class='form-horizontal'>
+                                    @*<div class='card-body'>*@
+                                    <div class='form-group row'>
+                                        <label for='' class='col-4 col-form-label'>@attributi.ElementAt(0).Descrizione</label>
+                                        <div class='col-8'>
+                                            <input type='text' class='form-control form-control-sm' id='' placeholder='' value='@Model.Fascicolo.Chiave1' disabled>
+                                        </div>
+                                    </div>
+                                    <div class='form-group row'>
+                                        <label for='' class='col-4 col-form-label'>@attributi.ElementAt(1).Descrizione</label>
+                                        <div class='col-8'>
+                                            <input type='text' class='form-control form-control-sm' id='' placeholder='' value='@Model.Fascicolo.Chiave2' disabled>
+                                        </div>
+                                    </div>
+                                    <div class='form-group row'>
+                                        <label for='' class='col-4 col-form-label'>@attributi.ElementAt(2).Descrizione</label>
+                                        <div class='col-8'>
+                                            <input type='text' class='form-control form-control-sm' id='' placeholder='' value='@Model.Fascicolo.Chiave3' disabled>
+                                        </div>
+                                    </div>
+                                    @*</div>*@
+                                </form>
+                            </div>
+                            <div class="col-6">
+                                <form class='form-horizontal'>
+                                    <div class='card-body'>
+                                        <div class='form-group row'>
+                                            <label for='' class='col-4 col-form-label'>@attributi.ElementAt(3).Descrizione</label>
+                                            <div class='col-8'>
+                                                <input type='text' class='form-control form-control-sm' id='' placeholder='' value='@Model.Fascicolo.Chiave4' disabled>
+                                            </div>
+                                        </div>
+                                        <div class='form-group row'>
+                                            <label for='' class='col-4 col-form-label'>@attributi.ElementAt(4).Descrizione</label>
+                                            <div class='col-8'>
+                                                <input type='text' class='form-control' form-control-sm id='' placeholder='' value='@Model.Fascicolo.Chiave5' disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                   
+
+                  <div class="box box-warning row mt-3">
+                      <div class="box-header col-6">
+                          <h6 class="box-title">Elementi Fascicolo</h6>
+                      </div>
+                      <div class="box-header col-6">
+                          <h6 class="box-title">Allegati Elemento</h6>
+
+                      </div>
+                      <div class="box-body">
+                          <div class="row">
+                              <div class="col-6">
+                                  @(Html.Kendo().Grid(elementi)
+                            .Name("Grid")
+                            .Columns(columns =>
+                            {
+                                columns.Bound(p => p.DscTipoElemento).Title("Tipo").Width(80);
+                                columns.Bound(p => p.DscElemento).Title("Descrizione").Width(100);
+                                columns.Bound(p => p.Campo1 ).Title(Cols.ElementAt(0).Des).Visible(Cols.ElementAt(0).Visible).Width(100);
+                                columns.Bound(p => p.Campo2).Title(Cols.ElementAt(1).Des).Visible(Cols.ElementAt(1).Visible).Width(100);
+                                columns.Bound(p => p.Campo3).Title(Cols.ElementAt(2).Des).Visible(Cols.ElementAt(2).Visible).Width(100);
+                                columns.Bound(p => p.Campo4 ).Title(Cols.ElementAt(3).Des).Visible(Cols.ElementAt(3).Visible).Width(100);
+                                columns.Bound(p => p.Campo5 ).Title(Cols.ElementAt(4).Des).Visible(Cols.ElementAt(4).Visible).Width(100);
+                                columns.Bound(p => p.Campo6).Title(Cols.ElementAt(5).Des).Visible(Cols.ElementAt(5).Visible).Width(100);
+                                columns.Bound(p => p.Campo7).Title(Cols.ElementAt(6).Des).Visible(Cols.ElementAt(6).Visible).Width(100);
+                                columns.Bound(p => p.Campo8).Title(Cols.ElementAt(7).Des).Visible(Cols.ElementAt(7).Visible).Width(100);
+                                columns.Bound(p => p.Campo9).Title(Cols.ElementAt(8).Des).Visible(Cols.ElementAt(8).Visible).Width(100);
+                                columns.Bound(p => p.Campo10).Title(Cols.ElementAt(9).Des).Visible(Cols.ElementAt(9).Visible).Width(100);
+                                columns.Bound(d => d.IdElemento ).Title("AZIONE").ClientTemplate("<a class='k-button k-button-icontext kendoDanger' style = 'border-color: gray;' href='" +
+                                        Url.Action("EditorElemento", "Fascicolo") +
+                                        "?id=#= IdElemento #&rev=#=Revisione#'" +
+                                    ">EDIT</a>").Width(60);
+                            })
+                            .Pageable()
+                            .Sortable()
+                            .Scrollable(scr => scr.Height(250))
+                            .Filterable()
+                            .DataSource(dataSource => dataSource
+                                .Custom()
+                                .PageSize(20)
+                                .Schema(schema => schema.Model(m => m.Id(p => p.IdElemento)))
+                            )
+                            .Selectable()
+                            .Events(e => e.Change("onChange"))
+                        )
+
+                                  <br />
+                              </div>
+                              <div class="col-6">
+  
+
+                                      <div class="box-body">
+                                          @(Html.Kendo().Grid<dblu.Docs.Models.viewAllegati>()
+
+                                .Name("Allegati")
+                                .Columns(columns =>
+                                {
+                                    columns.Bound(p => p.Descrizione).Title("Descrizione").Width(100);
+                                    columns.Bound(p => p.NomeFile).Title("File").Width(100);
+                                    columns.Bound(p => p.UtenteC).Title("Utente").Width(40);
+                                    columns.Bound(p => p.Campo1).Title(ColsAl.ElementAt(0).Des).Visible(ColsAl.ElementAt(0).Visible).Width(100);
+                                    columns.Bound(p => p.Campo2).Title(ColsAl.ElementAt(1).Des).Visible(ColsAl.ElementAt(1).Visible).Width(100);
+                                    columns.Bound(p => p.Campo3).Title(ColsAl.ElementAt(2).Des).Visible(ColsAl.ElementAt(2).Visible).Width(100);
+                                    columns.Bound(p => p.Campo4).Title(ColsAl.ElementAt(3).Des).Visible(ColsAl.ElementAt(3).Visible).Width(100);
+                                    columns.Bound(p => p.Campo5).Title(ColsAl.ElementAt(4).Des).Visible(ColsAl.ElementAt(4).Visible).Width(100);
+                                    columns.Bound(p => p.Campo6).Title(ColsAl.ElementAt(5).Des).Visible(ColsAl.ElementAt(5).Visible).Width(100);
+                                    columns.Bound(p => p.Campo7).Title(ColsAl.ElementAt(6).Des).Visible(ColsAl.ElementAt(6).Visible).Width(100);
+                                    columns.Bound(p => p.Campo8).Title(ColsAl.ElementAt(7).Des).Visible(ColsAl.ElementAt(7).Visible).Width(100);
+                                    columns.Bound(p => p.Campo9).Title(ColsAl.ElementAt(8).Des).Visible(ColsAl.ElementAt(8).Visible).Width(100);
+                                    columns.Bound(p => p.Campo10).Title(ColsAl.ElementAt(9).Des).Visible(ColsAl.ElementAt(9).Visible).Width(100);
+                                    //columns.Bound(p => p.DataC).Title("Data Creazione").Format("{0:dd/MM/yyyy}").Width(70);
+                                    columns.Command(column =>
+                                    {
+                                        column.Custom("VEDI").Click("vedi").HtmlAttributes(new
+                                        { @class = "kendoDanger", style = "border-color: gray;" });
+                                    }).Width(40);
+
+                                })
+                                .Pageable()
+                                .Sortable()
+                                .Scrollable(scr => scr.Height(250))
+                                .Filterable()
+                                .DataSource(dataSource => dataSource
+                              .Ajax()
+                                .PageSize(5)
+                                        ))
+
+                                          <br />
+
+                                          @(Html.Kendo().Button()
+
+                                    .Name("addAllegato")
+                                    .HtmlAttributes(new { type = "button", @class = "k-primary", style = "display:none" })
+                                    .Content("Aggiungi Allegato")
+                                    .Enable(false)
+                                    .Events(ev => ev.Click("showDialog"))
+                                )
+
+                                      </div>
+              
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+            </div>
+        </section>
+    </div>
+</div>
 
 <style>
     .k-primary {
@@ -71,18 +277,16 @@ else
 .Visible(false)
 .Actions(actions => actions.Pin().Minimize().Maximize().Close())
 )
-
-
 @(Html.Kendo().Window()
  .Name("window").Modal(true)
  .Title("Allega file")
  .Content(@<text>
-        <div class="col-md-6">
+        <div class="col-6">
             <form class='form-horizontal'>
                 <div class='card-body'>
                     <div class='form-group row'>
-                        <label for='' class='col-sm-2 col-form-label'>Elemento</label>
-                        <div class='col-xs-6'>
+                        <label for='' class='col-2 col-form-label'>Elemento</label>
+                        <div class='col-6'>
                             <input type='datetime' class='form-control' id='wuElemento' placeholder='Descrizione' value='' disabled>
                         </div>
                     </div>
@@ -145,15 +349,7 @@ else
     })
 )
 
-<style>
-    h3 {
-        text-align: center;
-    }
 
-    p {
-        text-align: center;
-    }
-</style>
 
 <script>
 
@@ -215,10 +411,10 @@ else
                         success: function (result) {
                             var destinationgrid = $('#Allegati').data('kendoGrid');
                             console.log(result);
-                          
+
                             destinationgrid.dataSource.data(result.Data);
                             destinationgrid.refresh();
-                             //options.success(result);
+                            //options.success(result);
                         },
                         error: function (result) {
                             // notify the data source that the request failed
@@ -272,238 +468,7 @@ else
     }
 
 </script>
-<section class="content">
-    <div class="container-fluid">
-        <div class="box box-primary">
-            <div class="box-header">
-                <h3 class="box-title">Gestione Fascicolo</h3>
-            </div>
-            <!-- /.card-header -->
-            <div class="box-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <form class='form-horizontal'>
-                            <div class='card-body'>
-                                <div class='form-group row'>
-                                    <label for='' class='col-sm-4 col-form-label'>ID Fascicolo</label>
-                                    <!--
-    <label for='' class='col-sm-8 '>@Model.Fascicolo.Id</label>
-        -->
-                                    <div class='col-sm-8'>
-                                        <input type='text' class='form-control form-control-sm' id='' placeholder='' value='@Model.Fascicolo.Id' disabled>
-                                    </div>
 
-                                </div>
-                                <div class='form-group row'>
-                                    <label for='' class='col-sm-4 col-form-label '>Creato il</label>
-                                    <!--
-    <label for='' class='col-sm-8 '>@Model.Fascicolo.DataC</label>
-            -->
-                                    <div class='col-sm-8'>
-                                        <input type='datetime' class='form-control  form-control-sm' id='' placeholder='' value='@Model.Fascicolo.DataC' disabled>
-                                    </div>
-
-                                </div>
-                                <div class='form-group row'>
-                                    <label for='' class='col-sm-4 col-form-label'>Utente Creazione</label>
-                                    <!--
-    <label for='' class='col-sm-8 '>@Model.Fascicolo.UtenteC</label>
-        -->
-                                    <div class='col-sm-8'>
-                                        <input type='text' class='form-control  form-control-sm' id='' placeholder='Nome' value='@Model.Fascicolo.UtenteC' disabled>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="col-md-6">
-                        <div class='form-group row'>
-                            <label for='' class='col-sm-4 col-form-label'>Modificato il</label>
-                            <!--
-    <label for='' class='col-sm-8 '>@Model.Fascicolo.DataUM</label>
-        -->
-                            <div class='col-sm-8'>
-                                <input type='datetime' class='form-control  form-control-sm' id='' placeholder='' value='@Model.Fascicolo.DataUM' disabled>
-                            </div>
-
-                        </div>
-                        <div class='form-group row'>
-                            <label for='' class='col-sm-4 col-form-label'>Utente Ultima Modifica</label>
-                            <!--
-    <label for='' class='col-sm-8 '>@Model.Fascicolo.UtenteUM</label>
-        -->
-                            <div class='col-sm-8'>
-                                <input type='text' class='form-control  form-control-sm' id='' placeholder='Nome' value='@Model.Fascicolo.UtenteUM' disabled>
-                            </div>
-
-                        </div>
-                        <div class='form-group row'>
-                            @(Html.Kendo().Button()
-                                    .Name("info")
-                                    .HtmlAttributes(new { type = "button", @class = "k-primary" })
-                                    .Content("EDIT")
-                                    .Events(ev => ev.Click("infoDialog"))
-                            )
-                        </div>
-                    </div>
-
-    <!-- /.card -->
-                                    <!-- /.col (right) -->
-                                </div>
-                <div class="row" style="border: 2px solid #ccc!important;margin: 0px;padding:15px">
-
-                    <div class="col-md-6">
-                        <form class='form-horizontal'>
-                            @*<div class='card-body'>*@
-                            <div class='form-group row'>
-                                <label for='' class='col-sm-4 col-form-label'>@attributi.ElementAt(0).Descrizione</label>
-                                <div class='col-sm-8'>
-                                    <input type='text' class='form-control form-control-sm' id='' placeholder='' value='@Model.Fascicolo.Chiave1' disabled>
-                                </div>
-                            </div>
-                            <div class='form-group row'>
-                                <label for='' class='col-sm-4 col-form-label'>@attributi.ElementAt(1).Descrizione</label>
-                                <div class='col-sm-8'>
-                                    <input type='text' class='form-control form-control-sm' id='' placeholder='' value='@Model.Fascicolo.Chiave2' disabled>
-                                </div>
-                            </div>
-                            <div class='form-group row'>
-                                <label for='' class='col-sm-4 col-form-label'>@attributi.ElementAt(2).Descrizione</label>
-                                <div class='col-sm-8'>
-                                    <input type='text' class='form-control form-control-sm' id='' placeholder='' value='@Model.Fascicolo.Chiave3' disabled>
-                                </div>
-                            </div>
-                            @*</div>*@
-                        </form>
-                    </div>
-                    <div class="col-md-6">
-                        <form class='form-horizontal'>
-                            <div class='card-body'>
-                                <div class='form-group row'>
-                                    <label for='' class='col-sm-4 col-form-label'>@attributi.ElementAt(3).Descrizione</label>
-                                    <div class='col-sm-8'>
-                                        <input type='text' class='form-control form-control-sm' id='' placeholder='' value='@Model.Fascicolo.Chiave4' disabled>
-                                    </div>
-                                </div>
-                                <div class='form-group row'>
-                                    <label for='' class='col-sm-4 col-form-label'>@attributi.ElementAt(4).Descrizione</label>
-                                    <div class='col-sm-8'>
-                                        <input type='text' class='form-control' form-control-sm id='' placeholder='' value='@Model.Fascicolo.Chiave5' disabled>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-        <div class="box box-warning">
-            <div class="box-header">
-                <h3 class="box-title">Elementi Fascicolo</h3>
-            </div>
-            <div class="box-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        @(Html.Kendo().Grid(elementi)
-                            .Name("Grid")
-                            .Columns(columns =>
-                            {
-                                columns.Bound(p => p.DscTipoElemento).Title("Tipo").Width(80);
-                                columns.Bound(p => p.DscElemento).Title("Descrizione").Width(100);
-                                columns.Bound(p => p.Campo1 ).Title(Cols.ElementAt(0).Des).Visible(Cols.ElementAt(0).Visible).Width(100);
-                                columns.Bound(p => p.Campo2).Title(Cols.ElementAt(1).Des).Visible(Cols.ElementAt(1).Visible).Width(100);
-                                columns.Bound(p => p.Campo3).Title(Cols.ElementAt(2).Des).Visible(Cols.ElementAt(2).Visible).Width(100);
-                                columns.Bound(p => p.Campo4 ).Title(Cols.ElementAt(3).Des).Visible(Cols.ElementAt(3).Visible).Width(100);
-                                columns.Bound(p => p.Campo5 ).Title(Cols.ElementAt(4).Des).Visible(Cols.ElementAt(4).Visible).Width(100);
-                                columns.Bound(p => p.Campo6).Title(Cols.ElementAt(5).Des).Visible(Cols.ElementAt(5).Visible).Width(100);
-                                columns.Bound(p => p.Campo7).Title(Cols.ElementAt(6).Des).Visible(Cols.ElementAt(6).Visible).Width(100);
-                                columns.Bound(p => p.Campo8).Title(Cols.ElementAt(7).Des).Visible(Cols.ElementAt(7).Visible).Width(100);
-                                columns.Bound(p => p.Campo9).Title(Cols.ElementAt(8).Des).Visible(Cols.ElementAt(8).Visible).Width(100);
-                                columns.Bound(p => p.Campo10).Title(Cols.ElementAt(9).Des).Visible(Cols.ElementAt(9).Visible).Width(100);
-                                columns.Bound(d => d.IdElemento ).Title("AZIONE").ClientTemplate("<a class='k-button k-button-icontext kendoDanger' style = 'border-color: gray;' href='" +
-                                        Url.Action("EditorElemento", "Fascicolo") +
-                                        "?id=#= IdElemento #&rev=#=Revisione#'" +
-                                    ">EDIT</a>").Width(60);
-                            })
-                            .Pageable()
-                            .Sortable()
-                            .Scrollable(scr => scr.Height(350))
-                            .Filterable()
-                            .DataSource(dataSource => dataSource
-                                .Custom()
-                                .PageSize(20)
-                                .Schema(schema => schema.Model(m => m.Id(p => p.IdElemento)))
-                            )
-                            .Selectable()
-                            .Events(e => e.Change("onChange"))
-                        )
-
-                        <br />
-                    </div>
-                    <div class="col-md-6">
-                        <div class="box box-info">
-                            <div class="box-header">
-                                <h3 class="box-title">Allegati Elemento</h3>
-
-                            </div>
-
-                            <div class="box-body">
-                                @(Html.Kendo().Grid<dblu.Docs.Models.viewAllegati>()
-
-                                .Name("Allegati")
-                                .Columns(columns =>
-                                {
-                                    columns.Bound(p => p.Descrizione).Title("Descrizione").Width(100);
-                                    columns.Bound(p => p.NomeFile).Title("File").Width(100);
-                                    columns.Bound(p => p.UtenteC).Title("Utente").Width(40);
-                                    columns.Bound(p => p.Campo1).Title(ColsAl.ElementAt(0).Des).Visible(ColsAl.ElementAt(0).Visible).Width(100);
-                                    columns.Bound(p => p.Campo2).Title(ColsAl.ElementAt(1).Des).Visible(ColsAl.ElementAt(1).Visible).Width(100);
-                                    columns.Bound(p => p.Campo3).Title(ColsAl.ElementAt(2).Des).Visible(ColsAl.ElementAt(2).Visible).Width(100);
-                                    columns.Bound(p => p.Campo4).Title(ColsAl.ElementAt(3).Des).Visible(ColsAl.ElementAt(3).Visible).Width(100);
-                                    columns.Bound(p => p.Campo5).Title(ColsAl.ElementAt(4).Des).Visible(ColsAl.ElementAt(4).Visible).Width(100);
-                                    columns.Bound(p => p.Campo6).Title(ColsAl.ElementAt(5).Des).Visible(ColsAl.ElementAt(5).Visible).Width(100);
-                                    columns.Bound(p => p.Campo7).Title(ColsAl.ElementAt(6).Des).Visible(ColsAl.ElementAt(6).Visible).Width(100);
-                                    columns.Bound(p => p.Campo8).Title(ColsAl.ElementAt(7).Des).Visible(ColsAl.ElementAt(7).Visible).Width(100);
-                                    columns.Bound(p => p.Campo9).Title(ColsAl.ElementAt(8).Des).Visible(ColsAl.ElementAt(8).Visible).Width(100);
-                                    columns.Bound(p => p.Campo10).Title(ColsAl.ElementAt(9).Des).Visible(ColsAl.ElementAt(9).Visible).Width(100);
-                                    //columns.Bound(p => p.DataC).Title("Data Creazione").Format("{0:dd/MM/yyyy}").Width(70);
-                                    columns.Command(column =>
-                                    {
-                                        column.Custom("VEDI").Click("vedi").HtmlAttributes(new
-                                        { @class = "kendoDanger", style = "border-color: gray;" });
-                                    }).Width(40);
-
-                                })
-                                .Pageable()
-                                .Sortable()
-                                .Scrollable(scr => scr.Height(300))
-                                .Filterable()
-                                .DataSource(dataSource => dataSource
-                              .Ajax()
-                                .PageSize(5)
-                                        ))
-
-                                <br />
-
-                                @(Html.Kendo().Button()
-
-                                    .Name("addAllegato")
-                                    .HtmlAttributes(new { type = "button", @class = "k-primary", style = "display:none" })
-                                    .Content("Aggiungi Allegato")
-                                    .Enable(false)
-                                    .Events(ev => ev.Click("showDialog"))
-                                )
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 <!-- /.content -->
 <script>
 
