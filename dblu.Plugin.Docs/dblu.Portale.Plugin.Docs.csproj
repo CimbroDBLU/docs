@@ -59,6 +59,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\dblu.portale\Core\dblu.Portale.Core.Infrastructure\dblu.Portale.Core.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\dblu.portale\Core\dblu.Portale.Core.UI\dblu.Portale.Core.UI.csproj" />
     <ProjectReference Include="..\..\dblubpm\dblu.Portale.Plugin.TaskListBase\dblu.Portale.Plugin.TaskListBase.csproj" />
     <ProjectReference Include="..\dblu.Docs\dblu.Docs.csproj" />
   </ItemGroup>
