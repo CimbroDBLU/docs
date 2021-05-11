@@ -168,8 +168,8 @@ function onConfermaElimina() {
 
 }
 
-function SpostaZip() {
-
+function SpostaZip(e) {
+    e.preventDefault();
     if (zipItem != null) {
         $("#IdAllegato").val(zipItem.Id);
         var dialog = $("#wSposta").data("kendoWindow");
@@ -437,8 +437,8 @@ function AggiungiAElementoGrid() {
 }
 
 
-function CancellaElemento() {
-
+function CancellaElemento(e) {
+    e.preventDefault();
     if (elementoItem != null) {
         if (elementoItem.Stato > 1) {
             alert("Non è possibile eliminare un elemento già processato.");

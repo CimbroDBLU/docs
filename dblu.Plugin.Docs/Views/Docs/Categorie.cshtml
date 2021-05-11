@@ -8,7 +8,6 @@
     var Title = "Categorie";
 }
 
-
 @(await Html.RenderComponentAsync<PageTitle>(RenderMode.Server,  new { nTitle = Title}))
 
 <div class="e-card">
@@ -22,8 +21,9 @@
     <div class="e-card-separator"></div>
     <div class="e-card-content">
         <section class="content">
-            <div>
-                @(Html.Kendo().Dialog()
+            <div class="container-fluid">
+                <div>
+                    @(Html.Kendo().Dialog()
         .Name("dialogConferma")
         .ButtonLayout("normal")
         .Title("Attenzione")
@@ -38,17 +38,16 @@
             actions.Add().Text("Ok").Primary(true).Action("onConfermaEliminazione");
         })
     )
-            </div>
-            <div class="row">
-                <div class="col-xs-12">
-                    <div class="box box-solid box-default">
-                        <div class="box-header with-border">
-                            @*     <h3 class="box-title">Categorie</h3>*@
-                            @Html.Hidden("CodCategoria")
-                        </div>
-                        <div class="box-body">
+                </div>
+                <div class="row">
+                    <div class="col-12">
 
-                            @(Html.Kendo().Grid<dblu.Portale.Plugin.Docs.ViewModels.CategorieViewModel>()
+
+                        @Html.Hidden("CodCategoria")
+
+
+
+                        @(Html.Kendo().Grid<dblu.Portale.Plugin.Docs.ViewModels.CategorieViewModel>()
             .Name("gridCategorie")
             .Columns(columns =>
             {
@@ -71,8 +70,7 @@
             .Pageable()
             .Sortable()
             .Scrollable()
-            .Height(730)
-            .HtmlAttributes(new { style = "font-size:8px" })
+            .Height(710)
             .DataSource(dataSource => dataSource
                 .Ajax()
                 .PageSize(20)
@@ -89,11 +87,9 @@
                             .Destroy(update => update.Action("Categorie_Destroy", "Docs"))
                         )
                     )
-                        </div>
                     </div>
                 </div>
             </div>
-
 
         </section>
     </div>

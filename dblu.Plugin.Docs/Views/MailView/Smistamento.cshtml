@@ -354,29 +354,29 @@
                         <div class="card-body">
                             <form>
                                 <div class="row" id="divTipoElemento">
-                                    <div class="form-group">
-                                        <div class="col-12" style="width:80%;">
-                                            <div class="form-row">
-                                                @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
-                                                {
-                                                    <div class="col-3">
-                                                        @(Html.Kendo().Button()
+                                    <div class="col form-group">
+                                            <div class="container">
+                                                <div class="row">
+                                                    @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
+                                                    {
+                                                        <div class="col-4">
+                                                            @(Html.Kendo().Button()
                                                     .Name(item.Codice)
-                                                            .HtmlAttributes(new { type = "button", @class = "k-primary k-button", @style = "width:100%;", categoria = item.Categoria, codice = item.Codice, aggrega= item.AggregaAElemento , viewattributi = item.ViewAttributi })
+                                                            .HtmlAttributes(new { type = "button", @class = "k-button", @style = "width:100%;", categoria = item.Categoria, codice = item.Codice, aggrega= item.AggregaAElemento , viewattributi = item.ViewAttributi })
                                                         .Content(item.Descrizione)
                                                     .Events(e => e.Click("NuovoElemento"))
                                                 )
-                                                    </div>
+                                                        </div>
 
-                                                }
-                                            </div>
-                                        </div>
+                                                    }
+                                                </div>
+                                            </div>                                            
                                     </div>
                                 </div>
                             </form>
                         </div>
                     </div>
-                    <div class="card card-outline card-secondary card-default" id="divSoggetto" hidden>
+                    <div class="card card-outline card-secondary card-default" id="divSoggetto" style="display:none">
                         <div class="card-header p-1">
                             <i class="mt-2 fas fa-user float-left"></i>
                             <div class="card-title mt-1 ml-2">
@@ -389,35 +389,35 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <form>
+                            <form class="form-group">
                                 <div class="row" id="divCliente">
-                                    <div class="form-group">
-                                        @*   <label class="control-label col-4" style="font-size:12px">Cliente</label> *@
-                                        <div class="col-12" style="width:80%;">
-                                            <div class="form-row">
-                                                <div class="form-group col-2">
-                                                    <input type="text" class="form-control" id="CodiceSoggetto" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
-                                                </div>
-                                                <div class="form-group col-6">
-                                                    <input type="text" class="form-control" id="NomeSoggetto" placeholder="" disabled value="" />
-                                                </div>
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="form-group col-2" style="display:flex">
+                                                <input type="text" id="CodiceSoggetto" style="width:100%" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
+                                            </div>
+                                            <div class="form-group col-6" style="display:flex">
+                                                <input type="text" id="NomeSoggetto" style="width:100%" placeholder="" disabled value="" />
+                                            </div>
+                                            <div class="form-group col-2">
                                                 @(Html.Kendo().Button()
                                             .Name("CercaSoggetti")
-                                            .HtmlAttributes(new { type = "button", @class = "k-primary" })
-                                                    .Content("Cerca Soggetto")
+                                            .HtmlAttributes(new { type = "button" })
+                                            .Content("Cerca Soggetto")
                                             .Events(e => e.Click("CercaSoggettiOnClick"))
                                         )
+                                            </div>
+                                            <div class="form-group col-2">
                                                 @(Html.Kendo().Button()
-                                                .Name("AssociaElemento")
-                                                .HtmlAttributes(new { type = "button", @class = "k-primary" })
-                                                .Content("Associa ordine")
-                                                .Events(e => e.Click("AssociaElementoOnClick"))
+                                            .Name("AssociaElemento")
+                                            .HtmlAttributes(new { type = "button" })
+                                            .Content("Associa Elemento")
+                                            .Events(e => e.Click("AssociaElementoOnClick"))
                                         )
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-
+                                </div>   
                             </form>
                         </div>
                     </div>
@@ -527,6 +527,7 @@
                             </form>
                         </div>
                     </div>
+
                     @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
                     {
                         if (!item.AggregaAElemento || !string.IsNullOrEmpty(item.ViewAttributi))
@@ -534,9 +535,9 @@
                             var fName = "div" + item.Codice;
                             var fNameForm = "form" + item.Codice;
                             var sPartialview = $"Smistamento/{item.ViewAttributi}";
-                            <div id=@{@fName} class="card card-outline card-secondary card-default" hidden>
+                            <div id=@{@fName} class="card card-outline card-secondary card-default" style="display:none">
                                 <div class="card-header p-1 ">
-                                    <i class="mt-2 far fa-file-alt" float-left"></i>
+                                    <i class="mt-2 far fa-file-alt float-left"></i>
                                     <div class="card-title mt-1 ml-2">
                                         @item.Descrizione
                                     </div>
@@ -550,7 +551,7 @@
                                     @if (string.IsNullOrEmpty(item.ViewAttributi))
                                     {
                                         <div class="row">
-                                            <div class="col-12 col-sm-12">
+                                            <div class="col-12">
                                                 <div class="pad">
                                                     <form class="form-horizontal" role="form" method="post" id="@{@fNameForm}" autocomplete="off">
                                                         <div class="card-body">
@@ -623,7 +624,7 @@
                                 </button>
                             </div>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-0 m-0">
                         <div class="form-group">
                             <div class="col-12" style="width:100%; margin-top:10px" id="anteprimapdf">
                                 @(Html.Kendo().ToolBar()
@@ -664,7 +665,8 @@
                         </div>
                     </div>
                 </div>
-                    <div class="card card-outline card-secondary card-default">
+
+                <div class="card card-outline card-secondary card-default">
                         <div class="card-header p-1  with-border">
                             <i class="mt-2 fas fa-paperclip float-left"></i>
                             <div class="card-title  mt-1 ml-2">
@@ -678,14 +680,164 @@
                         </div>
                         <div class="card-body">
                             <form>
-                                <div class="form-group" hidden>
+                                <div class="form-group"                     <div class="card card-outline card-secondary card-default" id="divSoggetto" hidden>
+                        <div class="card-header p-1">
+                            <i class="mt-2 fas fa-user float-left"></i>
+                            <div class="card-title mt-1 ml-2">
+                                Cliente
+                            </div>
+                            <div class="card-tools pull-right">
+                                <button type="button" class="btn btn-card-tool" data-card-widget="collapse">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form class="form-group">
+                                <div class="row" id="divCliente">
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="form-group col-2" style="display:flex">
+                                                <input type="text" id="CodiceSoggetto" style="width:100%" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
+                                            </div>
+                                            <div class="form-group col-6" style="display:flex">
+                                                <input type="text" id="NomeSoggetto" style="width:100%" placeholder="" disabled value="" />
+                                            </div>
+                                            <div class="form-group col-2">
+                                                @(Html.Kendo().Button()
+                                            .Name("CercaSoggetti")
+                                            .HtmlAttributes(new { type = "button" })
+                                            .Content("Cerca Soggetto")
+                                            .Events(e => e.Click("CercaSoggettiOnClick"))
+                                        )
+                                            </div>
+                                            <div class="form-group col-2">
+                                                @(Html.Kendo().Button()
+                                            .Name("AssociaElemento")
+                                            .HtmlAttributes(new { type = "button" })
+                                            .Content("Associa Elemento")
+                                            .Events(e => e.Click("AssociaElementoOnClick"))
+                                        )
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>   
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card card-outline card-secondary card-default" id="divFascicolo" hidden>
+                        @Html.Hidden("IdFascicolo")
+                        @Html.Hidden("IdElemento")
+                        <div class="card-header p-1  with-border p-1 ">
+                            <i class="mt-2 fas fa-archive float-left"></i>
+                            <div class="card-title mt-1 ml-2">
+                                Fascicolo\Elementi
+                            </div>
+                            <div class="card-tools pull-right">
+                                <button type="button" class="btn btn-card-tool" data-card-widget="collapse" id="CollapseFascicolo">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="form-group">
+                                    @* <label class="control-label col-4" style="font-size:12px">Fascicolo / Elemento</label>*@
+                                    <div class="col-12" style="width:100%;">
+                                        <div class="form-row">
+                                            <div class="form-group col-6">
+                                                <input type="text" class="form-control" id="DescrizioneElemento" placeholder="" value="" />
+                                            </div>
+                                            <div class="form-group col-2">
+                                                @(Html.Kendo().Button()
+                                            .Name("CercaFascicolo")
+                                            .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                            .Content("Cerca")
+                                            .Events(e => e.Click("CercaElementiOnClick"))
+                                        )
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="divElemento">
+                                    <div class="col-12" style="width:100%;">
+                                        <div class="form-row">
+                                            <div class="form-group col-2">
+                                                @(Html.Kendo().Button()
+                                            .Name("ApriDettaglio")
+                                            .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                            .Content("Apri")
+                                            .Events(e => e.Click("ApriDettaglioOnClick"))
+                                        )
+                                            </div>
+                                            <div class="form-group col-4">
+                                                @(Html.Kendo().Button()
+                                            .Name("AggiungiAElemento")
+                                            .HtmlAttributes(new { type = "button", @class = "k-primary" })
+                                            .Content("Aggiungi a Elemento")
+                                            .Events(e => e.Click("AggiungiAElementoOnClick"))
+                                        )
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-12">
+                                                @(Html.Kendo().Grid<EmailElementi>()
+                                            .Name("gridemailElementi")
+                                            .Columns(columns =>
+                                            {
+                                                columns.Bound(p => p.Id).Title("Id").Hidden(true);
+                                                columns.Bound(p => p.IsUltimo).Title("Ult.").Width(30);
+                                                columns.Bound(p => p.DscTipoElemento).Title("Tipo").Width(60);
+                                                columns.Bound(p => p.DscElemento).Title("Descrizione").Width("40%");
+                                                columns.Bound(p => p.Campo1 ).Title(ElCols.ElementAt(0).Des).Visible(ElCols.ElementAt(0).Visible).Width(50);
+                                                columns.Bound(p => p.Campo2).Title(ElCols.ElementAt(1).Des).Visible(ElCols.ElementAt(1).Visible).Width(50);
+                                                columns.Bound(p => p.Campo3).Title(ElCols.ElementAt(2).Des).Visible(ElCols.ElementAt(2).Visible).Width(50);
+                                                columns.Bound(p => p.Campo4 ).Title(ElCols.ElementAt(3).Des).Visible(ElCols.ElementAt(3).Visible).Width(50);
+                                                columns.Bound(p => p.Campo5 ).Title(ElCols.ElementAt(4).Des).Visible(ElCols.ElementAt(4).Visible).Width(50);
+                                                })
+                                            .ToolBar(toolbar =>
+                                            {
+                                                // toolbar.ClientTemplateId("GridToolbarTemplate");
+                                                toolbar.Custom().Text("Apri").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:75px", onclick = "ApriElementoGrid()" });
+                                                toolbar.Custom().Text("Agg.").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:75px", onclick = "AggiungiElementoGrid()" });
+                                                toolbar.Custom().Text("Canc.").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaElemento()" });
+                                                toolbar.Search();
+                                            })
+                                            .DataSource(dataSource => dataSource
+                                                .Ajax()
+                                                .PageSize(4)
+                                                .Batch(false)
+                                                .ServerOperation(true)
+                                                .AutoSync(true)
+                                                .Events(events => events.Error("error_handler"))
+                                                .Model(model =>
+                                                {
+                                                    model.Id(p => p.Id);
+                                                })
+                                                .Read(read => read.Action("ListaEmailElementi", "MailView").Data("getFascicolo"))
+                                            )
+                                            .Pageable()
+                                            .Groupable(false)
+                                            .Selectable()
+                                            .HtmlAttributes(new { style = "font-size:10" })
+                                            .Events(events => events
+                                                .Change("gridemailElementionChange")
+                                            )
+                                        )
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>>
                                     <label class="control-label col-2" style="font-size:12px">Testo</label>
                                     <div class="col-12" style="width:100%">
                                         <textarea class="form-control" id="TestoEmail" name="TestoEmail" rows="5" style="width:100%" readonly="readonly"></textarea>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="control-label col-2" style="font-size:12px" hidden>Allegati da includere</label>
+                                    <label class="control-label col-2" style="font-size:12px;display:none">Allegati da includere</label>
                                     <div class="col-12" style="width:100%">
                                         @(Html.Kendo().Grid<EmailAttachments>()
                                     .Name("emailAttachments")
@@ -717,7 +869,7 @@
                                     </div>
                                     <br /><br />
                                 </div>
-                                <div class="form-group" style="margin-top:10px" hidden>
+                                <div class="form-group" style="margin-top:10px;display:none" >
                                     <div class="col-10" style="font-size:15px">
                                         @(Html.Kendo().CheckBox().Name("allegamail")
                                     .Checked(true).Label("Allega il testo della Mail")
@@ -727,55 +879,7 @@
                             </form>
                         </div>
                     </div>
-                    @*
-                                <div id="divViewAttributi" class="card card-outline card-secondary card-success" hidden>
-                                <div class="card-body no-padding">
-                                <div class="row">
-                                    <div class="col-12 col-sm-12">
-                                        <div class="pad">
-                                            <form class="form-horizontal" role="form" method="post" id="attributi" autocomplete="off">
-                                                <div class="card-body">
-
-                                                    @foreach (var attributo in listaAttributi)
-                                                    {
-
-                                                        <div class="form-group">
-                                                            @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione)
-
-
-                                                            @switch (attributo.Tipo)
-                                                            {
-                                                                case "System.DateTime":
-                                                                    @(Html.Kendo().DatePicker()
-                                                                                    .Name($"ctl_{attributo.Nome}")
-                                                                                    .Value(attributo.Valore)
-                                                                    )
-                                                                    break;
-                                                                case "System.Boolean":
-                                                                    @(Html.Kendo().ComboBox()
-                                                                                    .Name($"ctl_{attributo.Nome}")
-                                                                                    .Checked(attributo.Valore)
-                                                                    )
-                                                                    break;
-                                                                default:
-
-                                                                    @(Html.Kendo().TextBox()
-                                                                      .Name($"ctl_{attributo.Nome}")
-                                                                      .Value(attributo.Valore == null ? "" : attributo.Valore.ToString())
-                                                                      .HtmlAttributes(new { style = "width: 100%" })
-                                                                      )
-                                                                    break;
-                                                            }
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    *@
+                  
                 </div>
             </div>
             <form class="new-tab-opener" method="get" target="_blank"></form>

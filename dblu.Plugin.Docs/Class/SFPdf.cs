@@ -80,14 +80,7 @@ namespace dblu.Portale.Plugin.Docs.Class
             {
                 PdfUnitConverter convertor = new PdfUnitConverter();
                 float mm = 10;
-                try
-                {
-                    mm = float.Parse(_config["Docs:Margini"]);
-                }
-                catch
-                {
-                    mm = 10;
-                }
+                float.TryParse(_config["Docs:Margini"], out mm);
                 float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
 
                 var testfile = NomePdf + ".tmp";

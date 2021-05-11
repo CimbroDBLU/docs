@@ -490,7 +490,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             m.IdAllegato = Id;
 
             MailViewModel mvModel = await _mailService.GetMailViewModel(Guid.Parse(Id));
-            m.TestoEmail = mvModel.Messaggio.TextBody;
+            m.TestoEmail = mvModel?.Messaggio?.TextBody??"";
             m.FileAllegati = mvModel.FileAllegati;
             m.CodiceSoggetto = mvModel.CodiceSoggetto;
             if (mvModel.Soggetto == null)
@@ -968,7 +968,8 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
             try
             {
-                if (int.Parse(_config["Docs:ControllaStampa"]) == 1 && !string.IsNullOrEmpty(IdAllegato))
+                int.TryParse(_config["Docs:ControllaStampa"], out int ToCheck);
+                if (ToCheck == 1 && !string.IsNullOrEmpty(IdAllegato))
                 {
                     foreach (Elementi  e in _mailService._elmMan.GetElementiDaAllegato(Guid.Parse(IdAllegato)))
                     {

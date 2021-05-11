@@ -1296,7 +1296,8 @@ function wPdfEditorClose(e) {
 }
 
 function NuovoElemento(e) {
-
+    e.preventDefault();
+    
     if (mailItem == null) {
         alert("Seleziona una mail");
     }
@@ -1307,22 +1308,24 @@ function NuovoElemento(e) {
     var view = this.element.attr("viewattributi");
 
     var fNameDiv = "div" + TipoElemento;
-   
+ 
     listaTipiElementi.forEach(function (tipo) {
-        //if (tipo.AggregaAElemento == false) { 
+        
         try {
             $('#div' + tipo.Codice).hide();
         }
         catch { };
     });
+    
     $('body').addClass('waiting');
     if (Aggrega === 'True') {
         if (view === '') {
+          
         $('#divSoggetto').show();
-        //  $('#divElemento').show();
-        //$('#divFascicolo').show();
+    
     }
-    else {
+        else {
+         
         $('#divSoggetto').hide();
             $('#' + fNameDiv).show();
         }
@@ -1330,9 +1333,11 @@ function NuovoElemento(e) {
     else {
         $('#divSoggetto').hide();
         $('#divElemento').hide();
-        //$('#divFascicolo').hide();
+        
         $('#' + fNameDiv).show();
+       
     }
+ 
     $('body').removeClass('waiting')
 }
 

@@ -27,7 +27,8 @@ var PdfCorrente = {
     Printer: ''
 }
 
-function SpostaEmail() {
+function SpostaEmail(e) {
+    e.preventDefault();
     if (mailItem != null) {
     $("#IdAllegato").val(mailId);
 
@@ -159,7 +160,8 @@ function CaricaElemento(elemento) {
 }
 
 
-function InoltraEmail() {
+function InoltraEmail(e) {
+    e.preventDefault();
     if (mailItem != null) { 
     $("#IdAllegato").val(mailId);
     var dialog = $("#wInoltra").data("kendoWindow");
@@ -212,7 +214,8 @@ function inoltraOnClick(e) {
     });
 }
 
-function RispondiEmail() {
+function RispondiEmail(e) {
+    e.preventDefault();
     if (mailItem != null) {
     $("#IdAllegato").val(mailId);
     $("#destinatarioRisposta").val(mailChiave1);
@@ -255,7 +258,8 @@ function onElimina() {
     });
    
         }
-function CancellaEmail() {
+function CancellaEmail(e) {
+    e.preventDefault();
     if (mailItem != null) {
         $("#dialog").data("kendoDialog").open();
 	}
