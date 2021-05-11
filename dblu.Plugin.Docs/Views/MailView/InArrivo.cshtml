@@ -396,7 +396,7 @@
                                                 </div>
                                             </div>
                                     </div>
-                                <div class="row" id="divSoggettoElementiAperti" hidden>
+                                <div class="row" id="divSoggettoElementiAperti" style="display:none">
                                     <div class="form-group col-12">
                                         @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggettoElementiAperti>()
                                     .Name("gridSoggettoElementiAperti")
@@ -435,7 +435,7 @@
                         </div>
                     </div>
 
-                    <div class="card card-outline card-secondary card-solid card-default" id="divFascicolo" hidden>
+                    <div class="card card-outline card-secondary card-solid card-default" id="divFascicolo" style="display:none">
                         @Html.Hidden("IdFascicolo")
                         @Html.Hidden("IdElemento")
                         <div class="card-header p-1  with-border p-1 ">
