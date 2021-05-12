@@ -1400,6 +1400,7 @@ function templateAvvisi(dataItem) {
 }
 function ApriAllegato(e) {
     //chiamata alal view della preview immagine
+    e.preventDefault();
     var data = this.dataItem($(e.currentTarget).closest("tr"));
     var nomefile = data.NomeFile;
     var idAllegato = $("#IdAllegato").val();
