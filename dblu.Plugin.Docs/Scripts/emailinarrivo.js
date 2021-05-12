@@ -1617,6 +1617,7 @@ function templateAvvisi(dataItem) {
 }
 
 function ApriAllegato(e) {
+    e.preventDefault();
     //chiamata alal view della preview immagine
     var data = this.dataItem($(e.currentTarget).closest("tr"));
     var nomefile = data.NomeFile;

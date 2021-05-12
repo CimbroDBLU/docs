@@ -487,7 +487,7 @@
                                 </div>
                                 <div class="form-group" id="divElemento">
                                     <div class="col-12" style="width:100%;">
-                                        <div class="form-row" hidden>
+                                        <div class="form-row" style="display:none">
                                             <div class="form-group col-2">
                                                 @(Html.Kendo().Button()
                                         .Name("ApriDettaglio")
@@ -615,14 +615,14 @@
                         </div>
                         <div class="card-body">
                             <form>
-                                <div class="form-group" hidden>
+                                <div class="form-group" style="display:none">
                                     <label class="control-label col-2" style="font-size:12px">Testo</label>
                                     <div class="col-12" style="width:100%">
                                         <textarea class="form-control" id="TestoEmail" name="TestoEmail" rows="5" style="width:100%" readonly="readonly"></textarea>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="control-label col-2" style="font-size:12px" hidden>Allegati da includere</label>
+                                    <label class="control-label col-2" style="font-size:12px" style="display:none">Allegati da includere</label>
                                     <div class="col-12" style="width:100%">
                                         @(Html.Kendo().Grid<EmailAttachments>()
                              .Name("emailAttachments")
@@ -648,7 +648,7 @@
                                     </div>
                                 </div>
 
-                                <div class="form-group" style="margin-top:10px" hidden>
+                                <div class="form-group" style="margin-top:10px" style="display:none">
                                     <div class="col-10" style="font-size:15px">
                                         @(Html.Kendo().CheckBox().Name("allegamail")
                                 .Checked(true).Label("Allega il testo della Mail")
