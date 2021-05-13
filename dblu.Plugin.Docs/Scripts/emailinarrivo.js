@@ -131,31 +131,22 @@ function ValidMail() {
 }
 
 function CaricaElemento(elemento) {
-    console.log('a');
+  
     $('#IdFascicolo').val(elemento.IdFascicolo);
     $('#IdElemento').val(elemento.Id);
     IdNuovoElemento = elemento.Id;
-    console.log('a2');
-    //alert(dettaglio.DescrizioneElemento);
     $('#DescrizioneElemento').val(elemento.Descrizione);
     $('#divElemento').show();
-    //$('#ApriDettaglio').show();
-    //$('#AggiungiAElemento').show();
-    //$('#ApriDettaglio').click();
-    console.log('a3');
-
     $("#divFascicolo").find(":input").prop("disabled", true);
     $("#CollapseFascicolo").prop("disabled", false);
     $("#CollapseFascicolo").click();
-    console.log('a4');
-    debugger;
+
     var dialog = $("#detElemento").data("kendoWindow");
     $.ajax({
         url: UrlActions.MailView_editDettaglioElemento,
         type: 'POST',
         data: { IdElemento: $("#IdElemento").val() },
         success: function (data) {
-            console.log('OK');
             $("#IdElemento").val(data.Id);
             dialog.content(data);
             dialog.open();
