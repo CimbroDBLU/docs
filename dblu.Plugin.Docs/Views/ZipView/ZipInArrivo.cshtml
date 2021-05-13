@@ -452,9 +452,9 @@
                                             .ToolBar(toolbar =>
                                             {
                                                 // toolbar.ClientTemplateId("GridToolbarTemplate");
-                                                toolbar.Custom().Text("Apri").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:75px", onclick = "ApriElementoGrid()" });
-                                                toolbar.Custom().Text("Agg.").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:75px", onclick = "AggiungiAElementoGrid()" });
-                                                toolbar.Custom().Text("Canc.").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaElemento()" });
+                                                toolbar.Custom().Text("Apri").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:75px", onclick = "ApriElementoGrid(event)" });
+                                                toolbar.Custom().Text("Agg.").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:75px", onclick = "AggiungiAElementoGrid(event)" });
+                                                toolbar.Custom().Text("Canc.").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaElemento(event)" });
                                                 toolbar.Search();
                                             })
                                             .DataSource(dataSource => dataSource

@@ -359,8 +359,8 @@ function CaricaElemento(elemento) {
         }
     });
 }
-function ApriElementoGrid() {
-    //e.preventDefault();
+function ApriElementoGrid(e) {
+    e.preventDefault();
     if (elementoItem != null) {
         $('body').addClass('waiting');
         $("#divFascicolo").find(":input").prop("disabled", true);
@@ -382,7 +382,8 @@ function ApriElementoGrid() {
     }
 }
 
-function AggiungiAElementoGrid() {
+function AggiungiAElementoGrid(e) {
+    e.preventDefault();
     if (elementoItem != null) {
 
         var idElemento = elementoItem.Id;
@@ -576,18 +577,18 @@ function ApriDettaglioOnClick(e) {
 function detElementoOpen(e) {
     $('body').removeClass('waiting');
 
-    $("#divSoggetto").boxWidget("collapse");
-    $("#divFascicolo").boxWidget("collapse");
-    $("#divAllegati").boxWidget("collapse");
+    $("#divSoggetto").CardWidget("collapse");
+    $("#divFascicolo").CardWidget("collapse");
+    $("#divAllegati").CardWidget("collapse");
 }
 
 function detElementoClose(e) {
 
     $("#divFascicolo").find(":input").prop("disabled", false);
    // $("#CollapseFascicolo").click();
-    $("#divSoggetto").boxWidget("expand");
-    $("#divFascicolo").boxWidget("expand");
-    $("#divAllegati").boxWidget("expand");
+    $("#divSoggetto").CardWidget("expand");
+    $("#divFascicolo").CardWidget("expand");
+    $("#divAllegati").CardWidget("expand");
 
     var grid = $("#gridZip").data("kendoGrid"),
         rows = grid.select();

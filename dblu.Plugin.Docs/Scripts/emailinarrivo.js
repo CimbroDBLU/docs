@@ -131,19 +131,23 @@ function ValidMail() {
 }
 
 function CaricaElemento(elemento) {
+    console.log('a');
     $('#IdFascicolo').val(elemento.IdFascicolo);
     $('#IdElemento').val(elemento.Id);
     IdNuovoElemento = elemento.Id;
+    console.log('a2');
     //alert(dettaglio.DescrizioneElemento);
     $('#DescrizioneElemento').val(elemento.Descrizione);
     $('#divElemento').show();
     //$('#ApriDettaglio').show();
     //$('#AggiungiAElemento').show();
     //$('#ApriDettaglio').click();
+    console.log('a3');
 
     $("#divFascicolo").find(":input").prop("disabled", true);
     $("#CollapseFascicolo").prop("disabled", false);
     $("#CollapseFascicolo").click();
+    console.log('a4');
     debugger;
     var dialog = $("#detElemento").data("kendoWindow");
     $.ajax({
@@ -151,6 +155,7 @@ function CaricaElemento(elemento) {
         type: 'POST',
         data: { IdElemento: $("#IdElemento").val() },
         success: function (data) {
+            console.log('OK');
             $("#IdElemento").val(data.Id);
             dialog.content(data);
             dialog.open();
@@ -366,7 +371,8 @@ function ScaricaAllegato(e) {
 
 
 // gridElementi toolbar actions
-function CancellaElemento() {
+function CancellaElemento(e) {
+    e.preventDefault();
     if (elementoItem != null) {
         if (elementoItem.Stato > 1) {
             alert("Non è possibile eliminare un elemento già processato.");
@@ -411,7 +417,8 @@ function onEliminaElemento() {
 }
 
 
-function AggiungiElementoGrid() {
+function AggiungiElementoGrid(e) {
+    e.preventDefault();
     if (elementoItem != null) {
     var idElemento = elementoItem.Id;
     var IdElementoCorrente = $("#IdElemento").val();
@@ -464,7 +471,8 @@ function AggiungiElementoGrid() {
 
 }
 }
-function ApriElementoGrid() {
+function ApriElementoGrid(e) {
+    e.preventDefault();
     if (elementoItem != null) {
         $('body').addClass('waiting');
         $("#divFascicolo").find(":input").prop("disabled", true);
@@ -604,9 +612,9 @@ function PulisciDettaglio() {
     } catch (err) { }
     $('#AssociaElemento').hide();
 
-    //$("#divSoggetto").boxWidget("collapse");
-    //$("#divFascicolo").boxWidget("collapse");
-    //$("#divAllegati").boxWidget("collapse");
+    //$("#divSoggetto").CardWidget("collapse");
+    //$("#divFascicolo").CardWidget("collapse");
+    //$("#divAllegati").CardWidget("collapse");
 
     try {
 
@@ -692,7 +700,7 @@ function FascicoliData() {
 
 
 function NuovoElemento(e, Categoria, TipoElemento) {
-
+    //e.preventDefault();
     $('body').addClass('waiting');
 
     var idElemento = $('#IdElemento').val();
@@ -782,7 +790,8 @@ function AggiungiAElementoOnClick(e) {
     $('body').removeClass('waiting');
 }
 
-function DuplicaElemento() {
+function DuplicaElemento(e) {
+    e.preventDefault();
     if (elementoItem != null) {
         var TipoElemento = elementoItem.TipoElemento;
         var IdElementoCorrente = elementoItem.Id;
@@ -937,9 +946,9 @@ function ApriDettaglioOnClick(e) {
 
     function detElementoOpen(e) {
         $('body').removeClass('waiting');
-        $("#divSoggetto").boxWidget("collapse");
-        $("#divFascicolo").boxWidget("collapse");
-        $("#divAllegati").boxWidget("collapse");
+        $("#divSoggetto").CardWidget("collapse");
+        $("#divFascicolo").CardWidget("collapse");
+        $("#divAllegati").CardWidget("collapse");
     }
 
     function detElementoClose(e) {
@@ -949,9 +958,9 @@ function ApriDettaglioOnClick(e) {
             $("#divFascicolo").find(":input").prop("disabled", false);
           // $("#CollapseFascicolo").click();
 
-        $("#divSoggetto").boxWidget("expand");
-        $("#divFascicolo").boxWidget("expand");
-        $("#divAllegati").boxWidget("expand");
+        $("#divSoggetto").CardWidget("expand");
+        $("#divFascicolo").CardWidget("expand");
+        $("#divAllegati").CardWidget("expand");
 
         //$('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.read();
 

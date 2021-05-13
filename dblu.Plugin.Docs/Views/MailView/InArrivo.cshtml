@@ -527,10 +527,10 @@
                                                     .ToolBar(toolbar =>
                                                     {
 
-                                                        toolbar.Custom().Text("Apri").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:75px", onclick = "ApriElementoGrid()" });
-                                                        toolbar.Custom().Text("Agg.").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:75px", onclick = "AggiungiElementoGrid()" });
-                                                        toolbar.Custom().Text("Canc.").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaElemento()" });
-                                                        toolbar.Custom().Text("Duplica.").IconClass("k-icon k-i-copy").HtmlAttributes(new { style = "width:85px", onclick = "DuplicaElemento()" });
+                                                        toolbar.Custom().Text("Apri").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:75px", onclick = "ApriElementoGrid(event)" });
+                                                        toolbar.Custom().Text("Agg.").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:75px", onclick = "AggiungiElementoGrid(event)" });
+                                                        toolbar.Custom().Text("Canc.").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaElemento(event)" });
+                                                        toolbar.Custom().Text("Duplica.").IconClass("k-icon k-i-copy").HtmlAttributes(new { style = "width:85px", onclick = "DuplicaElemento(event)" });
                                                         toolbar.Search();
                                     })
                                     .DataSource(dataSource => dataSource
