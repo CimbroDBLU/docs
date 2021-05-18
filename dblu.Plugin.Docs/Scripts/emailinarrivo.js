@@ -150,7 +150,7 @@ function CaricaElemento(elemento) {
         success: function (data) {
             $("#IdElemento").val(data.Id);
             dialog.content(data);
-            dialog.open();
+            dialog.center().open();
 
         }
     });
@@ -728,8 +728,7 @@ function NuovoElemento(e, Categoria, TipoElemento) {
             success: function (elemento) {
                 CaricaElemento(elemento);
             },
-            error: function () {
-                console.log("AAAA");
+            error: function () {             
                 $('body').removeClass('waiting');
             }
         });
