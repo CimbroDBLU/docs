@@ -131,6 +131,7 @@ function ValidMail() {
 }
 
 function CaricaElemento(elemento) {
+
   
     $('#IdFascicolo').val(elemento.IdFascicolo);
     $('#IdElemento').val(elemento.Id);
@@ -728,6 +729,7 @@ function NuovoElemento(e, Categoria, TipoElemento) {
                 CaricaElemento(elemento);
             },
             error: function () {
+                console.log("AAAA");
                 $('body').removeClass('waiting');
             }
         });

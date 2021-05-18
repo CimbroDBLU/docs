@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -119,14 +120,17 @@ namespace dblu.Docs.Classi
                    
                     dynamic v = Valori[Nome].Valore;
                     DateTime? dt = null;
-                    if (v.GetType() == typeof(DateTime))
-                    {
-                        dt = (DateTime)v;
-                    }
-                    else { 
-                        dt = System.Convert.ToDateTime(v);
-                    }
-                    
+                    if (v != null)
+                        if (v.GetType() == typeof(DateTime))
+                        {
+                            dt = (DateTime)v;
+                        }
+                        else
+                        {
+                            DateTime dt1;
+                            DateTime.TryParse(v, out dt1);
+                            dt = dt1;
+                        }
                     return dt;
                 }
             }
@@ -235,7 +239,9 @@ namespace dblu.Docs.Classi
                                     a.Valore = System.Convert.ToBoolean(valore);
                                     break;
                                 case "System.Double":
-                                    a.Valore = System.Convert.ToDouble(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+                                    double v = 0;
+                                    double.TryParse(valore, NumberStyles.Number, System.Globalization.CultureInfo.GetCultureInfo("en-US"), out v);
+                                    a.Valore = v;                                    
                                     break;
                                 case "System.Int32":
                                     a.Valore = System.Convert.ToInt32(valore, System.Globalization.CultureInfo.GetCultureInfo("en-US"));

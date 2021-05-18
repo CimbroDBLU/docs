@@ -144,7 +144,7 @@
 
     function getAllegato() {
         return {
-            IdAllegato: '@Allegato.Id'
+            IdAllegato: '@Allegato?.Id'
         };
     }
 
@@ -155,7 +155,7 @@
         var dataItem = this.dataItem(this.select());
         if (dataItem != null) {
 
-            var IdAllegato = '@Allegato.Id';
+            var IdAllegato = '@Allegato?.Id';
             var nome = dataItem.NomeFile.toLowerCase();
             var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
 
@@ -176,7 +176,7 @@
         var data = this.dataItem($(e.currentTarget).closest("tr"));
         var nomefile = data.NomeFile;
         //var idAllegato = $("#IdAllegato").val()
-        var idAllegato = '@Allegato.Id.ToString()';
+        var idAllegato = '@Allegato?.Id.ToString()';
         var obj = {
             IdAllegato: idAllegato,
             NomeFile: nomefile
@@ -207,7 +207,7 @@
         var data = this.dataItem($(e.currentTarget).closest("tr"));
         var nomefile = data.NomeFile;
         //var idAllegato = $("#IdAllegato").val()
-        var idAllegato = '@Allegato.Id.ToString()';
+        var idAllegato = '@Allegato?.Id.ToString()';
         var obj = {
             IdAllegato: idAllegato,
             NomeFile: nomefile
@@ -221,7 +221,7 @@
                 grid.dataSource.read();
             },
              error: function (data) {
-                alert(data);
+                alert("Eliminazione non riuscita");
             }
         });
     }
@@ -234,7 +234,7 @@
         var file = $("#files")[0].files[0];
 
         fdata.append("files", file);
-        fdata.append("IdAllegato", '@Allegato.Id.ToString()');
+        fdata.append("IdAllegato", '@Allegato?.Id.ToString()');
 
         $.ajax(
             {
@@ -248,7 +248,7 @@
 
                 },
                 error: function (data) {
-                    alert(data);
+                    alert("Impossibile aggiungere il file");
                 }
             });
     }
@@ -300,7 +300,7 @@
                    // alert("Ok");
                 },
                 error: function (data) {
-                    alert(data);
+                    alert("Salvataggio attributi non riuscito");
                 }
             });
     }
@@ -355,112 +355,102 @@
 
 
 <section class="content">
-
     <div class="container-fluid">
         <div class="row">
-            <div class="box box-">
-                <div class="box-header">
-                    <i class="ion ion-clipboard"></i>
-                    <h3 class="box-title">Dati Allegato</h3>
-                    <div class="box-tools pull-right">
-                        <button type="button" class="btn btn-box-tool" data-widget="collapse">
-                            <i class="fa fa-minus"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- /.card-header -->
-                <div class="box-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <form class='form-horizontal'>
-                                <div class='card-body'>
-                                    <div class='form-group row'>
-                                        <label for='' class='col-sm-2 col-form-label'>ID Allegato</label>
-                                        <div class='col-sm-10'>
-                                            <input type='text' class='form-control' id='' placeholder='' value='@Allegato.Id' disabled>
-                                        </div>
-                                    </div>
-                                    <div class='form-group row'>
-                                        <label for='' class='col-sm-2 col-form-label'>Creato il</label>
-                                        <div class='col-sm-10'>
-                                            <input type='datetime' class='form-control' id='' placeholder='' value='@Allegato.DataC' disabled>
-                                        </div>
-
-                                    </div>
-                                    <div class='form-group row'>
-                                        <label for='' class='col-sm-2 col-form-label'>Utente Creazione</label>
-                                        <div class='col-sm-10'>
-                                            <input type='text' class='form-control' id='' placeholder='Nome' value='@Allegato.UtenteC' disabled>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </form>
-
+            <div class="col">
+                <div class="card card-outline card-secondary card-solid card-default">
+                    <div class="card-header p-1">
+                        <i class="mt-2 fas fa-paperclip float-left"></i>
+                        <div class="card-title mt-1 ml-2">
+                            Dati Allegato
                         </div>
-                        <div class="col-md-6">
-                            <div class='form-group row'>
-                                <label for='' class='col-sm-2 col-form-label'>Descrizione</label>
-                                <div class='col-sm-10'>
-                                    <input type='text' class='form-control' id='' placeholder='' value='@Allegato.Descrizione' disabled>
-                                </div>
-
-                            </div>
-                            <div class='form-group row'>
-                                <label for='' class='col-sm-2 col-form-label'>Modificato il</label>
-                                <div class='col-sm-10'>
-                                    <input type='datetime' class='form-control' id='' placeholder='' value='@Allegato.DataUM' disabled>
-                                </div>
-
-                            </div>
-                            <div class='form-group row'>
-                                <label for='' class='col-sm-2 col-form-label'>Utente Ultima Modifica</label>
-                                <div class='col-sm-10'>
-                                    <input type='text' class='form-control' id='' placeholder='Nome' value='@Allegato.UtenteUM' disabled>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- /.card -->
-                        <!-- /.col (right) -->
-                    </div>
-                    <!-- /.row -->
-                </div>
-            </div>
-
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-                <div class="box box-">
-                    <div class="box-header">
-
-                        <i class="ion ion-clipboard"></i>
-                        <h3 class="box-title">Gestione Allegato</h3>
-                        <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                        <div class="card-tools pull-right">
+                            <button type="button" class="btn btn-card-tool" data-card-widget="collapse">
                                 <i class="fa fa-minus"></i>
                             </button>
                         </div>
                     </div>
-                    <form id="formAttributi" >
-                    <div class="box-body">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group row">
+                                    <div class="col-2"><label for='' class="control-label">ID Allegato</label></div>
+                                    <div class="col-10"><input type='text' class='form-control' id='' placeholder='' value='@Allegato?.Id' disabled></div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-2"><label for='' class="control-label">Creato il</label></div>
+                                    <div class="col-10">
+                                        <input type='datetime' class='form-control' id='' placeholder='' value='@Allegato?.DataC' disabled>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-2"><label for='' class="control-label">Utente Creazione</label></div>
+                                    <div class="col-10">
+                                        <input type='text' class='form-control' id='' placeholder='Nome' value='@Allegato?.UtenteC' disabled>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group row">
+                                    <div class="col-2"><label for='' class="control-label">Descrizione</label></div>
+                                    <div class="col-10">
+                                        <input type='text' class='form-control' id='' placeholder='' value='@Allegato?.Descrizione' disabled>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-2"><label for='' class="control-label">Modificato il</label></div>
+                                    <div class="col-10">
+                                        <input type='datetime' class='form-control' id='' placeholder='' value='@Allegato?.DataUM' disabled>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-2"><label for='' class="control-label">Utente Ultima Modifica</label></div>
+                                    <div class="col-10">
+                                        <input type='text' class='form-control' id='' placeholder='Nome' value='@Allegato?.UtenteUM' disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div style="align-self: auto" class="col-4">
+                <div class="card card-outline card-secondary card-solid card-default">
+                    <div class="card-header p-1">
+                        <i class="mt-2 fas fa-paperclip float-left"></i>
+                        <div class="card-title mt-1 ml-2">
+                            Gestione Allegato
+                        </div>
+                        <div class="card-tools pull-right">
+                            <button type="button" class="btn btn-card-tool" data-card-widget="collapse">
+                                <i class="fa fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
                         <div class="form-group">
+                            @if(Allegato!=null)
+                            {
                             @foreach (var attributo in Allegato.elencoAttributi.ToList().OrderBy(f => (f.Sequenza)))
                             {
 
 
-                                @if (attributo.Visibilità != dblu.Docs.Classi.Visibilita_Attributi.HIDDEN)
+                            @if (attributo.Visibilità != dblu.Docs.Classi.Visibilita_Attributi.HIDDEN)
                                 {
-                                    <div class='form-group row'>
-                                        <div class='col-sm-4'>  @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione) </div>
-                                        <div class='col-sm-8'>
+                            <div class='form-group row'>
+                                <div class='col-4'>  @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione) </div>
+                                <div class='col-8'>
 
-                                            @switch (attributo.Tipo)
+                                    @switch (attributo.Tipo)
 
                                             {
                                                 case "System.DateTime":
                                                     bool xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
-                                                    @(Html.Kendo().DatePicker()
+                                    @(Html.Kendo().DatePicker()
                                                             .Name($"ctl_{attributo.Nome}")
                                                             .Enable(xEditable)
                                                             .Value(Allegato.elencoAttributi.GetDateTime(attributo.Nome))
@@ -469,7 +459,7 @@
                                                 case "System.Boolean":
                                                     xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
                                                     bool xx = attributo.Valore == null ? false : (bool)Allegato.elencoAttributi.GetBoolean(attributo.Nome);
-                                                    @(Html.Kendo().Switch()
+                                    @(Html.Kendo().Switch()
                                                           .Name($"ctl_{attributo.Nome}")
                                                           .Enabled(xEditable)
                                                           .Messages(c => c.Checked("Si").Unchecked("No"))
@@ -478,7 +468,7 @@
                                                     break;
                                                 default:
                                                     xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
-                                                    @(Html.Kendo().TextBox()
+                                    @(Html.Kendo().TextBox()
                                                           .Name($"ctl_{attributo.Nome}")
                                                           .Enable(xEditable)
                                                           .Value(Allegato.GetAttributo(attributo.Nome,"").ToString())
@@ -486,37 +476,36 @@
                                                     )
                                                     break;
                                             }
-                                        </div>
-                                    </div>
+                                </div>
+                            </div>
                                 }
                             }
-                        </div>
-                            @if (isEdit)
-                            {
-                              <button type="button" class="btn margin btn-info pull-right" id="bSalvaAtt" onclick="SalvaAttributi(event)">Salva</button>
                             }
+                        </div>
+                        @if (isEdit)
+                        {
+                        <button type="button" class="btn margin btn-default" id="bSalvaAtt" onclick="SalvaAttributi(event)">Salva</button>
+                        }
                     </div>
-                    </form>
                 </div>
-
             </div>
-            <div class="col-md-8">
-                <div class="box box-">
-                    <div class="box-header">
 
-                        <i class="ion ion-clipboard"></i>
-                        <h3 class="box-title">Allegati</h3>
-                        <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-box-tool" data-widget="collapse">
+            <div style="align-self: auto" class="col-8">
+                <div class="card card-outline card-secondary card-solid card-default">
+                    <div class="card-header p-1">
+                        <i class="mt-2 fas fa-paperclip float-left"></i>
+                        <div class="card-title mt-1 ml-2">
+                            Allegati
+                        </div>
+                        <div class="card-tools pull-right">
+                            <button type="button" class="btn btn-card-tool" data-card-widget="collapse">
                                 <i class="fa fa-minus"></i>
                             </button>
                         </div>
                     </div>
-
-
-                    <div class="box-body">
+                    <div class="card-body">
                         <div class="form-group" style="margin-top:10px">
-                            <div class="col-md-12">
+                            <div class="col-12">
                                 @*Griglia con l'elenco dei file presenti nello zip. Se non è uno zip non mostrare solo il file legato a questo allegato*@
                                 @(Html.Kendo().Grid<EmailAttachments>()
                             .Name("gridFiles")
@@ -544,91 +533,82 @@
                         @if (isEdit)
                         {
                             //Possibilità di aggiungere un file allo zip ---- solo se allegato di tipo Zip?
-                            <div class="form-group" style="margin-top:10px">
+                        <div class="form-group" style="margin-top:10px">
 
-                                <div class="col-md-12" style="width:100%">
-                                    @*action da verificare*@
-                                    <form class="col-md-12" method="post" action="/Allegato/AddFile" enctype="multipart/form-data">
-                                        <div class="form-group">
-                                            <input class="form-control-file col-md-8" name="files" id="files" type="file" aria-label="files" />
-                                            <p style="text-align: right">
-                                                <button type="submit" class="k-button k-primary  col-md-2" onclick="SubmitForm(this.parentElement, event)">Aggiungi</button>
-                                            </p>
-                                        </div>
-                                    </form>
-                                    <br /><br />
-                                </div>
+                            <div class="col-12" style="width:100%">
+                                @*action da verificare*@
+                                <form class="col-12" method="post" action="/Allegato/AddFile" enctype="multipart/form-data">
+                                    <div class="form-group">
+                                        <input class="form-control-file col-8" name="files" id="files" type="file" aria-label="files" />
+                                        <p style="text-align: right">
+                                            <button type="submit" class="k-button k-primary  col-2" onclick="SubmitForm(this.parentElement, event)">Aggiungi</button>
+                                        </p>
+                                    </div>
+                                </form>
+                                <br /><br />
                             </div>
+                        </div>
                         }
 
-                    </div>
-                    @*Visualizzazione dei file*@
-                    <div class="form-group" style="margin-top:10px">
-                        <div class="col-md-12" style="width:100%" id="anteprimapdf">
-                            @*cosa facciamo con le annotazioni??*@
-                            @*<button type="button" onclick="saveAnnotations();" class="btn btn-success btn-lg">Salva Annotazioni</button>
-        <br />
-        <br />*@
-                            <ejs-pdfviewer id="pdfviewer" serviceUrl="/api/ZipPdfViewer" documentPath=""
-                                           enablePrint="true"
-                                           documentLoad="documentLoaded"
-                                           annotationAdd="annotationAdd"
-                                           enableStampAnnotations="false"
-                                           locale="it-IT"
+                        <div class="row form-group">
+                            <div class="col-12" style="width:100%" id="anteprimapdf">
+                                <ejs-pdfviewer id="pdfviewer" serviceUrl="/api/ZipPdfViewer" documentPath=""
+                                               enablePrint="true"
+                                               documentLoad="documentLoaded"
+                                               annotationAdd="annotationAdd"
+                                               enableStampAnnotations="false"
+                                               locale="it-IT"
                                                downloadFileName="@string.Concat("",".pdf")" height="1000px">
-                            </ejs-pdfviewer>
-                        </div>
-                    </div>
-
-                    <div class="form-group row" style="margin-top:10px" >
-                    
-                        @if (fromTask)
-                        {
-                        <form class="form-horizontal" role="form" method="post" id="formcompleta" autocomplete="off" kendo-validator="true">
-
-                            @if (@flRuoliCandidati)
-                            {
-                                <div class="col-md-8" style="margin-top:10px">
-                                    <label class="control-label col-md-3">Ruoli candidati</label>
-                                    @Html.Hidden("_RuoliCandidati", "")
-                                    <div class="col-md-5">
-                                        @(Html.Kendo().MultiSelect()
-                                    .Name("_ms_RuoliCandidati")
-                                    .Placeholder("seleziona ...")
-                                    .BindTo(vRuoliCandidati)
-                                    .Events(e =>
-                                    {
-                                        e.Change("RuoliCandidati_OnChange");
-                                    })
-                                    .HtmlAttributes(new { required = "required", validationmessage = "Selezionare almeno un ruolo" })
-
-                                //.Value(vUtentiCandidati)
-                                )
-                                    </div>
-                                </div>
-                            }
-
-                            @if (flAnnulla)
-                            {
-                                <button type="button" id="bAnnulla" class="btn margin btn-info pull-right" onclick="AnnullaOnClick()">Annulla</button>
-                            }
-                            @*<button formaction="/Action/TaskView/Complete/@taskId" method="post" type="submit" class="btn margin btn-info pull-right">Completa</button>
-                            *@
-                            <input name="_Annulla" type="hidden" value="false">
-                            <button type="button" id="bCompleta" class="btn margin btn-info pull-right" onclick="CompletaOnClick()">Completa</button>
-
-
-                            <div id="validation-summary">
+                                </ejs-pdfviewer>
                             </div>
-
-                        </form>
-                            }
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
+
+
+        @if (fromTask)
+                {
+                <form class="form-horizontal" role="form" method="post" id="formcompleta" autocomplete="off" kendo-validator="true">
+                    <div class="row form-group">
+
+
+                        @if (@flRuoliCandidati)
+                                {
+                        <div class="col-2"><label class="control-label">Ruoli candidati</label>@Html.Hidden("_RuoliCandidati", "")</div>
+                        <div class="col-10">
+                            @(Html.Kendo().MultiSelect()
+                                                    .Name("_ms_RuoliCandidati")
+                                                    .Placeholder("seleziona ...")
+                                                    .BindTo(vRuoliCandidati)
+                                                    .Events(e =>
+                                                    {
+                                                        e.Change("RuoliCandidati_OnChange");
+                                                    })
+                                                    .HtmlAttributes(new { Style="width:100%", required = "required", validationmessage = "Selezionare almeno un ruolo" })
+                                                )
+                        </div>
+                                }
+                    </div>
+
+                    <div class="row form-group">
+                        @if (flAnnulla)
+                                        {
+                        <button type="button" id="bAnnulla" class="btn ml-2 btn-default pull-right" onclick="AnnullaOnClick()">Annulla</button>
+                                        }
+                        <input name="_Annulla" type="hidden" value="false">
+                        <button type="button" id="bCompleta" class="btn ml-2 btn-default pull-right" onclick="CompletaOnClick()">Completa</button>
+
+
+                        <div id="validation-summary">
+                        </div>
+                    </div>
+                 </form>
+                }
+    </div>
 </section>
+
 
 
