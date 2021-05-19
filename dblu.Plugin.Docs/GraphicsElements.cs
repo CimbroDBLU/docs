@@ -82,33 +82,35 @@ namespace dblu.Portale.Plugin.Documenti
                 var myMail = new IndexItem("50.1.3", 1, "", "Mail", "MailDash", "");
                 myMail.Size = new System.Drawing.Size(2, 6);
                 myMail.ElementType = OBJECT_TYPE.TEMPLATE;
-                myMail.Template = "TemplateMail";
+                myMail.Template = "dblu.Portale.Plugin.Docs.Pages.MailTile";
+
                 // FILE
                 var myFile = new IndexItem("50.1.4", 2, "", "File", "FileDash", "");
                 myFile.Size = new System.Drawing.Size(2, 6);
                 myFile.ElementType = OBJECT_TYPE.TEMPLATE;
-                myFile.Template = "TemplateFile";
+                myFile.Template = "dblu.Portale.Plugin.Docs.Pages.FileTile";
+
                 // DEALERS
                 var myREQ = new IndexItem("50.1.4", 2, "", "Richieste", "FileDash", "");
                 myREQ.Size = new System.Drawing.Size(2, 6);
                 myREQ.ElementType = OBJECT_TYPE.TEMPLATE;
-                myREQ.Template = "TemplateDealers";
+                myREQ.Template = "dblu.Portale.Plugin.Docs.Pages.RequestTile";
+
                 // FASCICOLI
                 var myFascicoli = new IndexItem("50.1.2", 3, "", "Fascicoli", "FascicoliDash", "");
                 myFascicoli.Size = new System.Drawing.Size(2, 6);
                 myFascicoli.ElementType = OBJECT_TYPE.TEMPLATE;
-                myFascicoli.Template = "TemplateFascicoli";
+                myFascicoli.Template = "dblu.Portale.Plugin.Docs.Pages.DossierTile";
 
                 // Smistamento
                 var mySmista = new IndexItem("50.1.5", 4, "", "Smistamento", "MailDash", "");
                 mySmista.Size = new System.Drawing.Size(2, 6);
                 mySmista.ElementType = OBJECT_TYPE.TEMPLATE;
-                mySmista.Template = "TemplateSmistamento";
+                mySmista.Template = "dblu.Portale.Plugin.Docs.Pages.AddressingTile";
 
                 return new IndexItem[]
                 {
-                    myMail, myFile, myREQ, myFascicoli, mySmista
-                 // new IndexItem("50.1.3", 1,  "", "Index", "DocsDash", "")
+                    myMail, myFile, myREQ, myFascicoli, mySmista                
                 };
             }
         }

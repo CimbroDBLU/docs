@@ -1,0 +1,30 @@
+﻿@*
+    Component for displaying a Tile with the incoming emails
+*@
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+
+<Tile nTitle="@Number"
+      nDescription="Email in arrivo"
+      nLink="MailView/InArrivo"
+      nIcon="fas fa-envelope-open-text"
+      nBackColor="#17a2b8" nForeColor="white"></Tile>
+
+
+@code {
+    /// <summary>
+    /// Number of the icoming emails
+    /// </summary>
+    public string Number { get; set; }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        Number = _MailService.CountEmailInArrivo("EMAIL", user.Claims).ToString();
+    }
+
+}
