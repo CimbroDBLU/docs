@@ -1,0 +1,429 @@
+﻿@*
+    Component for creating/editing a user
+*@
+@page "/Docs/EditServer/{Name}"
+@page "/Docs/EditServer"
+@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+@using dblu.Portale.Plugin.Docs.Services
+@inject NavigationManager  _NavigationManager
+@inject ServerMailService  _ServiceMailServer
+@inject IApplicationUsersManager  _ApplicationUsersManager
+@inject dbluDocsContext    _DbContext
+@inject ILogger<EditServer> _Logger
+
+<PageTitle nTitle="@CardTitle" />
+
+<section class="content">
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
+
+
+    <SfCard>
+        <CardHeader Title="@CardTitle" />
+        <div class="container-fluid" style="margin:5px">
+            <CardContent EnableSeperator="true">
+                <div class="form-group row">
+                    <div class="col-1">
+                        <label>Nome:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="Nome del server" @bind-Value="@nEditServer.Nome"></SfTextBox>
+                    </div>
+                    <div class="col-1">
+                        <label>Tipo:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfComboBox Placeholder="Tipo" @bind-Value="@IsEmail" DataSource="@ServerTypeList">
+                            <ComboBoxFieldSettings Value="Val" Text="Name"></ComboBoxFieldSettings>
+                        </SfComboBox>
+                    </div>
+                </div>
+
+                @if (!IsEmail)
+                {
+                    <div class="form-group row">
+                        <div class="col-1">
+                            <label>Cartella:</label>
+                        </div>
+                        <div class="col-11">
+                            <SfTextBox Placeholder="Cartella" @bind-Value="@nEditServer.Cartella"></SfTextBox>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group row">
+                        <div class="col-1">
+                            <label>Email:</label>
+                        </div>
+                        <div class="col-5">
+                            <SfTextBox Placeholder="Email" @bind-Value="@nEditServer.Email"></SfTextBox>
+
+                        </div>
+                        <div class="col-1">
+                            <label>Server e Porta:</label>
+                        </div>
+                        <div class="col-4">
+                            <SfTextBox Placeholder="Email" @bind-Value="@nEditServer.Server"></SfTextBox>
+                        </div>
+                        <div class="col-1">
+                            <SfNumericTextBox @bind-Value="@nEditServer.Porta"></SfNumericTextBox>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-1">
+                            <label>SSL:</label>
+                        </div>
+                        <div class="col-2">
+                            <SfSwitch @bind-Checked="@nEditServer.Ssl" OnLabel="Sì" OffLabel="No"></SfSwitch>
+                        </div>
+                        <div class="col-1">
+                            <label>Cartella:</label>
+                        </div>
+                        <div class="col-2">
+                            <SfTextBox Placeholder="Cartella" @bind-Value="@nEditServer.Cartella"></SfTextBox>
+                        </div>
+                        <div class="col-1">
+                            <label>Utente:</label>
+                        </div>
+                        <div class="col-2">
+                            <SfTextBox Placeholder="Utente" @bind-Value="@nEditServer.Utente"></SfTextBox>
+                        </div>
+                        <div class="col-1">
+                            <label>Password:</label>
+                        </div>
+                        <div class="col-2">
+                            <SfTextBox Placeholder="Password" @bind-Value="@nEditServer.Password"></SfTextBox>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-1">
+                            <label>Intervallo:</label>
+                        </div>
+                        <div class="col-2">
+                            <SfNumericTextBox @bind-Value="@nEditServer.Intervallo"></SfNumericTextBox>
+                        </div>
+                        <div class="col-1">
+                            <label>Attivo:</label>
+                        </div>
+                        <div class="col-2">
+                            <SfSwitch @bind-Checked="@nEditServer.Attivo" OnLabel="Sì" OffLabel="No"></SfSwitch>
+                        </div>
+                        <div class="col-1">
+                            <label>Cartella Archivio:</label>
+                        </div>
+                        <div class="col-2">
+                            <SfTextBox Placeholder="Cartella Archivio" @bind-Value="@nEditServer.CartellaArchivio"></SfTextBox>
+                        </div>
+                        <div class="col-1">
+                            <label>In uscita:</label>
+                        </div>
+                        <div class="col-2">
+                            <SfSwitch @bind-Checked="@nEditServer.InUscita" OnLabel="Sì" OffLabel="No"></SfSwitch>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-1">
+                            <label>Server in uscita:</label>
+                        </div>
+                        <div class="col-2">
+                            <SfComboBox Placeholder="Nome server in uscita" @bind-Value="@nEditServer.NomeServerInUscita" DataSource="@ServersManager.GetServerEmailInUscita()">
+                                <ComboBoxFieldSettings Value="Nome" Text="Nome"></ComboBoxFieldSettings>
+                            </SfComboBox>
+                        </div>
+                        <div class="col-1">
+                            <label>Nome Processo:</label>
+                        </div>
+                        <div class="col-2">
+                            <SfTextBox Placeholder="Nome del processo" @bind-Value="@nEditServer.NomeProcesso"></SfTextBox>
+                        </div>
+                    </div>
+                }
+
+
+                <div style=" display: flex; align-items: center;" class="form-group row">
+                    <div style="height: @TableHeight;" class="col-5">
+                        <label class="mb-2">Ruoli Assegnati</label>
+                        <SfGrid @ref="AssignedRoleGrid" DataSource="@AssignedRoles" SelectedRowIndex="1" AllowPaging="true" AllowSorting="true">
+                            <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
+                            <GridPageSettings PageSize="9"></GridPageSettings>
+                            <GridColumns>
+                                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Role.RoleId) HeaderText="Id Ruolo"></GridColumn>
+                                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Role.Name) HeaderText="Ruolo"></GridColumn>
+                            </GridColumns>
+                        </SfGrid>
+                    </div>
+                    <div style="text-align:center" class="col-2">
+                        <div class="row form-group">
+                            <SfButton CssClass="e-button-arrow" OnClick="OnAddRole"><span class="fa fa-angle-left"></span></SfButton>
+                        </div>
+                        <div class="row form-group">
+                            <SfButton CssClass="e-button-arrow" OnClick="OnAddAll"><span class="fa fa-angle-double-left"></span></SfButton>
+                        </div>
+                        <div class="row form-group">
+                            <SfButton CssClass="e-button-arrow" OnClick="OnRemRole"><span class="fa fa-angle-right"></span></SfButton>
+                        </div>
+                        <div class="row form-group">
+                            <SfButton CssClass="e-button-arrow" OnClick="OnRemAll"><span class="fa fa-angle-double-right"></span></SfButton>
+                        </div>
+                    </div>
+                    <div style="height: @TableHeight;" class="col-5">
+                        <label class="mb-2">Ruoli Disponibili</label>
+                        <SfGrid @ref="AvailableRoleGrid" DataSource="@RemainingRoles" SelectedRowIndex="1" AllowPaging="true" AllowSorting="true">
+                            <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
+                            <GridPageSettings PageSize="9"></GridPageSettings>
+                            <GridColumns>
+                                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Role.RoleId) HeaderText="Id Ruolo"></GridColumn>
+                                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Role.Name) HeaderText="Ruolo"></GridColumn>
+                            </GridColumns>
+                        </SfGrid>
+                    </div>
+                </div>
+            </CardContent>
+            <CardContent EnableSeperator="true">
+                <div class="row">
+                    <div class="col-12">
+                        <SfButton CssClass="e-primary" OnClick="OnClickSave">Salva</SfButton>
+                        <SfButton OnClick="OnClickExit">Annulla</SfButton>
+                    </div>
+                </div>
+            </CardContent>
+        </div>
+    </SfCard>
+
+    <AlertDialog nTitle="Attenzione" nText="L'indirizzo EMail è obbligatiorio" OnOKPressed="OnCloseDialog" OnClose="OnCloseDialog" nShowDialog="@ShowDialog"></AlertDialog>
+
+</section>
+
+@code
+{
+    /// <summary>
+    /// Name of the Server
+    /// </summary>
+    [Parameter]
+    public string Name { get; set; }
+
+    /// <summary>
+    /// Title of the Card and Page
+    /// </summary>
+    public string CardTitle { get; set; }
+
+    /// <summary>
+    /// Manager (service) class for accessign to the Serves table
+    /// </summary>
+    private ServerEmailManager ServersManager { get; set; }
+
+    /// <summary>
+    /// Key-Value dynamic list for filling a Combo (TRUE=>EMAIL,FALSE=FILE)
+    /// </summary>
+    private List<dynamic> ServerTypeList => new List<dynamic>() { new { Val = true, Name = "Casella EMail" }, new { Val = false, Name = "Cartella File" } };
+
+    /// <summary>
+    /// Height of the table to full fill the page
+    /// </summary>
+    public string TableHeight { get => (IsEmail) ? "450px" : "570px"; }
+
+    /// <summary>
+    /// User that is in create or in edit
+    /// </summary>
+    public EmailServer nEditServer { get; set; } = new();
+
+    /// <summary>
+    /// Indicates if the server is an email server or a file server
+    /// Do the conversion from a bool value to the model enumeration
+    /// </summary>
+    private bool IsEmail
+    {
+        get => (nEditServer.TipoRecord == TipiRecordServer.CartellaMail);
+        set
+        {
+            nEditServer.TipoRecord = (value) ? TipiRecordServer.CartellaMail : TipiRecordServer.CartellaFile;
+        }
+    }
+
+    /// <summary>
+    /// Indicate if the user is a new one
+    /// </summary>
+    private bool IsNew { get; set; } = false;
+
+    /// <summary>
+    /// List of the roles
+    /// </summary>
+    private List<Role> Roles { get; set; }
+
+    /// <summary>
+    /// Grid with assigned roles
+    /// </summary>
+    private SfGrid<Role> AssignedRoleGrid { get; set; }
+
+    /// <summary>
+    /// Grid with not assigned roles
+    /// </summary>
+    private SfGrid<Role> AvailableRoleGrid { get; set; }
+
+    /// <summary>
+    /// Show/Hide the spinner
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// Get a Observable of the remaining roles
+    /// </summary>
+    private ObservableCollection<Role> RemainingRoles { get => new ObservableCollection<Role>(Roles.Where(p => !AssignedRoles.Any(l => p.RoleId == l.RoleId))); }
+
+    /// <summary>
+    /// Observable for the assigned roles
+    /// </summary>
+    private ObservableCollection<Role> AssignedRoles { get; set; }
+
+    /// <summary>
+    /// List that contains the roles that the server has at beginning of edit
+    /// (for understanding what i have to add and remove)
+    /// </summary>
+    private List<Role> AlreadyAssignedRoles { get; set; }
+
+    /// <summary>
+    /// Prompt the dialog for avoiding an empty email
+    /// </summary>
+    private bool ShowDialog { get; set; } = false;
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        IsSpinnerVisible = true;
+
+        List<ApplicationUser> Users = _ApplicationUsersManager.GetUsersAndRoles().ToList();
+        ServersManager = new ServerEmailManager(_DbContext.Connessione, _Logger);
+        nEditServer = ServersManager.GetAllServersEmail().FirstOrDefault(x => x.Nome == Name);
+
+        if (nEditServer == null)
+        {
+            CardTitle = "Nuovo server";
+            nEditServer = new() { Email = "",Server="",Utente="",Password="" }; IsNew = true;
+        }
+        else
+            CardTitle = $"Modifica server [{nEditServer.Nome}]";
+
+        AlreadyAssignedRoles = _ServiceMailServer.GetAllRolesForServer(nEditServer.Nome).ToList();
+        AssignedRoles = new ObservableCollection<Role>(AlreadyAssignedRoles);
+        Roles = _ApplicationUsersManager.GetRoles().ToList();
+        IsSpinnerVisible = false;
+    }
+
+    /// <summary>
+    /// Add selected role to the user
+    /// </summary>
+    public async void OnAddRole()
+    {
+        List<Role> SelectedRoles = await AvailableRoleGrid.GetSelectedRecords();
+        if (SelectedRoles.Count == 0) return;
+
+        foreach (Role R in SelectedRoles)
+            AssignedRoles.Add(R);
+
+    }
+
+    /// <summary>
+    /// Remove selected role from the user
+    /// </summary>
+    public async void OnRemRole()
+    {
+        List<Role> SelectedRoles = await AssignedRoleGrid.GetSelectedRecords();
+        if (SelectedRoles.Count == 0) return;
+
+        foreach (Role R in SelectedRoles)
+            foreach (Role Q in AssignedRoles.ToList().Where(x => x.RoleId == R.RoleId))
+                AssignedRoles.Remove(Q);
+
+    }
+
+    /// <summary>
+    /// Add all role to the user
+    /// </summary>
+    public async void OnAddAll()
+    {
+        foreach (Role R in RemainingRoles)
+            AssignedRoles.Add(R);
+    }
+
+    /// <summary>
+    /// Remove all role from the user
+    /// </summary>
+    public async void OnRemAll()
+    {
+        AssignedRoles.Clear();
+    }
+
+    /// <summary>
+    /// Close the dialog
+    /// </summary>
+    public async void OnCloseDialog()
+    {
+        ShowDialog = false;
+    }
+    /// <summary>
+    /// Save the user
+    /// </summary>
+    public async void OnClickSave()
+    {
+        IsSpinnerVisible = true;
+        Stopwatch SW = new Stopwatch(); SW.Start();
+        if (string.IsNullOrEmpty(nEditServer.Email))
+        {
+            IsSpinnerVisible = false;
+            ShowDialog = true; return;
+        }
+
+        if (IsNew)
+        {
+            ServersManager.SalvaServerEmail(nEditServer);
+
+            ///Rimuovo ruoli non piu presenti
+            foreach (Role R in AlreadyAssignedRoles)
+                if (AssignedRoles.FirstOrDefault(y => y.RoleId == R.RoleId) == null)
+                    _ServiceMailServer.RemoveFromRole(R.RoleId, nEditServer.Nome);
+
+            ///Aggiungo nuovi ruoli
+            foreach (Role R in AssignedRoles.ToList())
+                if (AlreadyAssignedRoles.FirstOrDefault(y => y.RoleId == R.RoleId) == null)
+                    _ServiceMailServer.AddRoleToServer(R.RoleId, nEditServer.Nome);
+
+            _Logger.LogInformation($"EditServer.OnClickSave: Added Server {nEditServer.Nome} in {SW.ElapsedMilliseconds} ms");
+        }
+        else
+        {
+            ServersManager.SalvaServerEmail(nEditServer);
+
+            ///Rimuovo ruoli non piu presenti
+            foreach (Role R in AlreadyAssignedRoles)
+                if (AssignedRoles.FirstOrDefault(y => y.RoleId == R.RoleId) == null)
+                    _ServiceMailServer.RemoveFromRole(R.RoleId, nEditServer.Nome);
+
+            ///Aggiungo nuovi ruoli
+            foreach (Role R in AssignedRoles.ToList())
+                if (AlreadyAssignedRoles.FirstOrDefault(y => y.RoleId == R.RoleId) == null)
+                    _ServiceMailServer.AddRoleToServer(R.RoleId, nEditServer.Nome);
+
+            _Logger.LogInformation($"EditUser.OnClickSave: Update Server {nEditServer.Nome} in {SW.ElapsedMilliseconds} ms");
+        }
+
+        IsSpinnerVisible = false;
+        _NavigationManager.NavigateTo($"/Docs/Servers");
+    }
+
+    /// <summary>
+    /// Goes back to the Users
+    /// </summary>
+    public async void OnClickExit()
+    {
+        _NavigationManager.NavigateTo($"/Docs/Servers");
+    }
+}

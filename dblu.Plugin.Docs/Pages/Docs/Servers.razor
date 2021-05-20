@@ -1,0 +1,201 @@
+﻿@*
+    Component for showing a list of Servers, and performing CRUD operations
+*@
+
+@page "/Docs/Servers"
+@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Services
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@inject ILogger<Servers> _Logger
+@inject dbluDocsContext _DbContext
+@inject ServerMailService  _ServiceMailServer
+@inject NavigationManager  _NavigationManager
+
+<PageTitle nTitle="Lista Servers" />
+
+<section class="content">
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
+
+
+    <SfCard>
+        <CardHeader Title="Lista Servers" />
+        <CardContent EnableSeperator="true">
+            <SfGrid @ref="@Grid" AllowGrouping="true" DataSource="@nServers" SelectedRowIndex="1" AllowPaging="true" AllowSorting="true" Toolbar=@Tool>
+                <GridGroupSettings ShowDropArea="false" Columns="@(new string[]{ "TipoRecord"})"></GridGroupSettings>
+                <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick" OnToolbarClick="OnToolbarClick" TValue="EmailServer"></GridEvents>
+                <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
+                <GridPageSettings PageSize="12"></GridPageSettings>
+                <GridColumns>
+                    <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Nome) HeaderText="Nome"></GridColumn>
+                    <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Email) HeaderText="Emaiil"></GridColumn>
+                    <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Cartella) HeaderText="Cartella"></GridColumn>
+                    <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.CartellaArchivio) HeaderText="Cartella Archivio"></GridColumn>
+                    <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.NomeServerInUscita) HeaderText="Nome Uscita"></GridColumn>
+                    <GridColumn Visible="false" AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.TipoRecord) HeaderText="Tipo"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </CardContent>
+    </SfCard>
+
+    <QuestionDialog nTitle="Conferma"
+                    nText="Rimuovo il record selezionato?"
+                    OnExitPressed="OnCloseDialog"
+                    OnNoPressed="OnCloseDialog"
+                    OnYesPressed="OnDeleteConfirmed"
+                    OnClose="OnCloseDialog"
+                    nShowDialog="@ShowConfirm">
+    </QuestionDialog>
+
+</section>
+
+
+
+@code
+{
+    /// <summary>
+    /// Indicates if spinner has to be visible
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// Manager (service) class for accessign to the Serves table
+    /// </summary>
+
+    private ServerEmailManager ServersManager { get; set; }
+
+    /// <summary>
+    /// List of Users that we are managing
+    /// </summary>
+    public ObservableCollection<EmailServer> nServers { get; set; } = new();
+
+    /// <summary>
+    /// Grid users serf object
+    /// </summary>
+    private SfGrid<EmailServer> Grid;
+
+    /// <summary>
+    /// Show/Hide the dialog for deleting users
+    /// </summary>
+    private bool ShowConfirm { get; set; } = false;
+
+    /// <summary>
+    /// List of the buttons on toolbar of the grid
+    /// </summary>
+    private List<Object> Tool = new List<Object>()
+{
+            new ItemModel(){ Id="New",Text="Nuovo", TooltipText="Nuovo", PrefixIcon="e-add" } ,
+            new ItemModel(){ Id="Edit",Text="Modifica", TooltipText="Modifica", PrefixIcon="e-edit" } ,
+            new ItemModel(){ Id="Delete",Text="Elimina", TooltipText="Elimina", PrefixIcon="e-delete" }
+    };
+
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        IsSpinnerVisible = true;
+        ServersManager = new ServerEmailManager(_DbContext.Connessione, _Logger);
+        nServers = new ObservableCollection<EmailServer>(ServersManager.GetAllServersEmail());
+        IsSpinnerVisible = false;
+    }
+
+    /// <summary>
+    /// On double click edit the selected user
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnDoubleClick(RecordDoubleClickEventArgs<EmailServer> args)
+    {
+        _NavigationManager.NavigateTo($"/Docs/EditServer/{args.RowData.Nome.ToString()}");
+    }
+
+    /// <summary>
+    /// Manage the actions that has to be done on toolbar click
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnToolbarClick(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        if (args.Item.Id == "New") _NavigationManager.NavigateTo("/Docs/EditServer");
+
+        List<EmailServer> SelectedServers = await Grid.GetSelectedRecords();
+
+        if (SelectedServers.Count == 0) return;
+
+        switch (args.Item.Id)
+        {
+            case "Edit":
+                foreach (EmailServer U in SelectedServers)
+                {
+                    _NavigationManager.NavigateTo($"/Docs/EditServer/{U.Nome.ToString()}");
+                    break;
+                }
+                break;
+            case "Delete":
+                ShowConfirm = true;
+                break;
+
+        }
+    }
+
+    /// <summary>
+    /// When the grid do something, show the spinner
+    /// </summary>
+    private void OnActionBegin()
+    {
+        IsSpinnerVisible = true;
+    }
+
+    /// <summary>
+    /// When the grid stop doing something, hide the spinner
+    /// </summary>
+    private void OnActionEnd()
+    {
+        IsSpinnerVisible = false;
+    }
+
+    /// <summary>
+    /// On Deletion confirmed, remove the data
+    /// </summary>
+    public async void OnDeleteConfirmed()
+    {
+        ShowConfirm = false;
+        IsSpinnerVisible = true;
+        Stopwatch SW = new Stopwatch(); SW.Start();
+        try
+        {
+            List<EmailServer> SelectedServers = await Grid.GetSelectedRecords();
+            if (SelectedServers.Count == 0) return;
+            foreach (EmailServer U in SelectedServers)
+            {
+
+                List<Role> RL = _ServiceMailServer.GetAllRolesForServer(U.Nome).ToList();
+                foreach (Role R in RL)
+                    _ServiceMailServer.RemoveFromRole(R.RoleId, U.Nome);
+                ServersManager.CancellaServerEmail(U);
+
+                nServers.Remove(nServers.ToList().FirstOrDefault(x => x.Nome == U.Nome));
+                _Logger.LogInformation($"Servers.OnDeleteConfirmed: Removed Server {U.Nome} in {SW.ElapsedMilliseconds} ms");
+                SW.Reset();
+            }
+        } catch (Exception ex)
+        {
+            _Logger.LogError($"Servers.OnDeleteConfirmed: Unable to delete server! Unexpected error => {ex} ");
+        }
+        finally
+        {         
+            IsSpinnerVisible = false;
+        }
+    }
+
+    /// <summary>
+    /// Close the dialog without deletion
+    /// </summary>
+    public async void OnCloseDialog()
+    {
+        ShowConfirm = false;
+    }
+}
+
+
