@@ -262,6 +262,37 @@ function CancellaEmail(e) {
 	}
 }
 
+function MostraEmail(e) 
+{
+    e.preventDefault();
+    $("#IdAllegato").val(mailId);
+    if (mailId != null) {
+       
+        var obj = {
+            IdAllegato: mailId,      
+        };
+       
+        $.ajax({
+            url: UrlActions.MailView_GetHTML,
+            type: 'POST',
+            cache: false,
+            data: obj,
+            success: function (data) {
+             
+                var dialog = $("#wMostraEmail").data("kendoWindow");                
+                dialog.content(data);
+                
+                dialog.center().open();
+            },
+            error: function (data) {   
+                
+            }
+        });
+
+       
+    }
+}
+
 function rispondiOnClick(e) {
     e.preventDefault();
     var server = "";

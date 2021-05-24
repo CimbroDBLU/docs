@@ -6,7 +6,7 @@
 @using dblu.Docs.Models
 @using dblu.Portale.Core.Infrastructure.Interfaces
 @using dblu.Portale.Core.Infrastructure.Identity.Classes
-@using dblu.Portale.Core.UI 
+@using dblu.Portale.Core.UI
 @inject dblu.Portale.Plugin.Docs.Services.MailService _mailservice
 @inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _allservice
@@ -125,6 +125,7 @@
         content: "\e132"; /* Adds a glyph using the Unicode character number */
     }
 
+.my-icon-class-mostra:before { content: "\e501"; /* Adds a glyph using the Unicode character number */ }
 
     body.waiting * {
         cursor: progress;
@@ -189,7 +190,10 @@
         MailPdfViewer_GetPdfEditAction: '@Url.Action("GetPdfEditAction", "MailPdfViewer")',
         Pdf_Editor: '@Url.Action("Editor", "PdfEditor")',
         ImagePreview: '@Url.Action("ImagePreview", "MailView")',
-        ControllaStampa: '@Url.Action("ControllaStampa", "MailView")'
+        ControllaStampa: '@Url.Action("ControllaStampa", "MailView")',
+        MailView_GetHTML:'@Url.Action("GetHTML", "MailView")'
+
+        
     };
 
     TipoAll = {
@@ -223,13 +227,13 @@
     <div class="e-card-separator"></div>
     <div class="e-card-content">
         <section class="content">
-            <div class="container-fluid mb-2" >
+            <div class="container-fluid mb-2">
                 <div class="row" hidden="@(ListaServer.Count <= 1)">
                     <div class="col-5">
                         <div class="row">
-                                    <label class="control-label col-4 mt-1" style="font-size:12px">Casella di posta:</label>
-                                    <div class="col-6">
-                                        @(Html.Kendo().ComboBox()
+                            <label class="control-label col-4 mt-1" style="font-size:12px">Casella di posta:</label>
+                            <div class="col-6">
+                                @(Html.Kendo().ComboBox()
                     .Name("emailServer")
                     .Placeholder("Seleziona Server...")
                     .DataTextField("Nome")
@@ -244,7 +248,7 @@
                     })
 
                 )
-                                    </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-7"></div>
@@ -316,6 +320,7 @@
                                  toolbar.Custom().Text("Sposta").IconClass("k-icon my-icon-class-sposta").HtmlAttributes(new { style = "width:75px", onclick = "SpostaEmail(event)" });
                                  toolbar.Custom().Text("Rispondi").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:90px", onclick = "RispondiEmail(event)" });
                                  toolbar.Custom().Text("Canc.").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:70px", onclick = "CancellaEmail(event)" });
+                                 toolbar.Custom().Text("Mostra").IconClass("k-icon my-icon-class-mostra").HtmlAttributes(new { style = "width:80px", onclick = "MostraEmail(event)" });
                                  toolbar.Search();
 })
                         .Selectable()
@@ -369,36 +374,36 @@
                         </div>
                         <div class="card-body">
                             <form class="form-group">
-                                <div class="row" id="divCliente">                                  
-                                        <div class="col">
-                                            <div class="row">
-                                                <div class="form-group col-2" style="display:flex">
-                                                    <input type="text" id="CodiceSoggetto" style="width:100%" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
-                                                </div>
-                                                <div class="form-group col-6" style="display:flex">
-                                                    <input type="text" id="NomeSoggetto" style="width:100%" placeholder="" disabled value="" />
-                                                </div>
-                                                <div class="form-group col-2">
-                                                    @(Html.Kendo().Button()
+                                <div class="row" id="divCliente">
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="form-group col-2" style="display:flex">
+                                                <input type="text" id="CodiceSoggetto" style="width:100%" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
+                                            </div>
+                                            <div class="form-group col-6" style="display:flex">
+                                                <input type="text" id="NomeSoggetto" style="width:100%" placeholder="" disabled value="" />
+                                            </div>
+                                            <div class="form-group col-2">
+                                                @(Html.Kendo().Button()
                                             .Name("CercaSoggetti")
                                             .HtmlAttributes(new { type = "button" })
                                             .Content("Cerca Soggetto")
                                             .Events(e => e.Click("CercaSoggettiOnClick"))
                                         )
-                                                </div>
-                                                <div class="form-group col-2">
-                                                    @(Html.Kendo().Button()
+                                            </div>
+                                            <div class="form-group col-2">
+                                                @(Html.Kendo().Button()
                                             .Name("AssociaElemento")
                                             .HtmlAttributes(new { type = "button" })
                                             .Content("Associa Elemento")
                                             .Events(e => e.Click("AssociaElementoOnClick"))
                                         )
-                                                </div>
                                             </div>
+                                        </div>
                                     </div>
-                                <div class="row" id="divSoggettoElementiAperti" style="display:none">
-                                    <div class="form-group col-12">
-                                        @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggettoElementiAperti>()
+                                    <div class="row" id="divSoggettoElementiAperti" style="display:none">
+                                        <div class="form-group col-12">
+                                            @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggettoElementiAperti>()
                                     .Name("gridSoggettoElementiAperti")
                                     .Columns(columns =>
                                     {
@@ -428,8 +433,8 @@
                                     .Resizable(resize => resize.Columns(true))
                                     .HtmlAttributes(new { style = "font-size:10" })
                                 )
+                                        </div>
                                     </div>
-                                </div>
                                 </div>
                             </form>
                         </div>
@@ -649,7 +654,7 @@
                                 </div>
 
                                 <div class="form-group" style="margin-top:10px;display:none">
-                                    <div class="col-10" >
+                                    <div class="col-10">
                                         @(Html.Kendo().CheckBox().Name("allegamail")
                                 .Checked(true).Label("Allega il testo della Mail")
                             )
@@ -715,6 +720,13 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col-5" style="align-self: auto;">
+                    <component type="typeof(dblu.Portale.Plugin.Docs.Pages.Mail.MailBrowser)" render-mode="Server" />
                 </div>
             </div>
 
@@ -1000,8 +1012,20 @@
         .Scrollable(true)
         .Modal(true)
                 .Events(e => e.Close("wPdfEditorClose").Open("wPdfEditorOpen"))
-        );
+        )
 
+@(Html.Kendo().Window()
+        .Name("wMostraEmail")
+        .Size("auto")
+        .Width(800)
+        .Title("Email in formato HTML")
+        .Visible(false)
+        .Actions(actions => actions.Refresh().Close())
+        .Content("")
+        .Scrollable(true)
+        .Modal(true)
+                )
+        )
 
 @(Html.Kendo().Window()
     .Name("wSoggetti")

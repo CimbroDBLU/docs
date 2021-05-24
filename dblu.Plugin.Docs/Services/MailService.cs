@@ -1523,6 +1523,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 Allegato.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 Allegato.SetAttributo("NomeSoggetto", NomeSoggetto);
+                
                 //var attr = Allegato.Attributi;
                 //attr["CodiceCliente"] = CodiceCliente;
                 //Allegato.Attributi = attr;
@@ -1614,9 +1615,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                         e.SetAttributo(att.Nome, Allegato.GetAttributo(att.Nome));
                     }
                 }
+                
                 e.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 e.SetAttributo("NomeSoggetto", NomeSoggetto);
-
+                e.SetAttributo("DataRichiesta", e.GetAttributo("Data"));
                 if (_elmMan.Salva(e,isNew) == false) return null;
 
                 //-------- Memorizzo l'operazione----------------------

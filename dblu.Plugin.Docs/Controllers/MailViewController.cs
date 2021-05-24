@@ -700,6 +700,16 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             return Json(MailList.ToDataSourceResult(request));
         }
 
+
+        [HttpPost]
+        public async Task<ActionResult<string>> GetHTML(string IdAllegato)
+        {
+            var a = _mailService._allMan.Get(IdAllegato);
+            MemoryStream MS=await _mailService._allMan.GetFileAsync(IdAllegato);
+            var message = MimeMessage.Load(MS);                       
+            return message.HtmlBody;
+        }
+
         [AcceptVerbs("Post")]
         [HasPermission("50.1.3")]
         public async Task<ActionResult<bool>> InArrivo_Rispondi(
