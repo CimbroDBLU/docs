@@ -150,7 +150,7 @@ function CaricaElemento(elemento) {
         success: function (data) {
             $("#IdElemento").val(data.Id);
             dialog.content(data);
-            dialog.center().open();
+            dialog.open();
 
         }
     });
