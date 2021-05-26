@@ -220,9 +220,10 @@
             <div class="container-fluid mb-2">
                 <div class="row" hidden="@(ListaServer.Count <= 1)">
                     <div class="col-5">
-                        <label class="control-label col-4 mt-1" style="font-size:12px">Cartella:</label>
-                        <div class="col-6">
-                            @(Html.Kendo().ComboBox()
+                        <div class="row">
+                            <label class="control-label col-4 mt-1" style="font-size:12px">Cartella:</label>
+                            <div class="col-6">
+                                @(Html.Kendo().ComboBox()
                     .Name("cmbCartelleZip")
                     .Placeholder("Seleziona cartella...")
                     .DataTextField("Nome")
@@ -236,12 +237,12 @@
                         e.Select("onSelectCartella");
                     })
                 )
+                            </div>
                         </div>
+                        <div class="col-7"></div>
                     </div>
-                    <div class="col-7"></div>
                 </div>
-            </div>  
-            <div class="row">
+                <div class="row mt-2">
                     <div class="col-5" style="align-self: auto;">
                         <div class="card card-outline card-secondary card-solid card-default">
                             @Html.Hidden("IdAllegato")
@@ -377,7 +378,7 @@
                             </div>
                         </div>
 
-                        <div class="card card-outline card-secondary card-solid card-default" id="divFascicolo" hidden>
+                        <div class="card card-outline card-secondary card-solid card-default" id="divFascicolo" style="display:none">
                             @Html.Hidden("IdFascicolo")
                             @Html.Hidden("IdElemento")
                             <div class="card-header p-1  with-border p-1 ">
@@ -569,9 +570,9 @@
                                     .HtmlAttributes(new { style = "font-size:12" })
                                     )
                                             @*
-                             .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
-                             .Events(events => events.Change("Attachments_OnRowSelect"))
-                            .Events(ev => ev.Change("xxonChange"))*@
+                                             .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
+                                             .Events(events => events.Change("Attachments_OnRowSelect"))
+                                            .Events(ev => ev.Change("xxonChange"))*@
                                         </div><br /><br />
                                     </div>
 
@@ -585,7 +586,7 @@
                                 </form>
                             </div>
                         </div>
-                        
+
                         <div class="card card-outline card-secondary card-solid card-default">
                             <div class="card-header p-1 ">
                                 <i class="mt-2 far fa-file-pdf float-left"></i>
@@ -599,10 +600,10 @@
                                 </div>
                             </div>
                             <div class="card-body p-0 m-0">
-                              
 
-                                    <div class="col-12 p-0 m-0" style="width:100%; margin-top:10px" id="anteprimapdf">
-                                        @(Html.Kendo().ToolBar()
+
+                                <div class="col-12 p-0 m-0" style="width:100%; margin-top:10px" id="anteprimapdf">
+                                    @(Html.Kendo().ToolBar()
                                        .Name("pdfToolBar")
                                        .Items(items =>
                                        {
@@ -621,29 +622,29 @@
                                        .Events(e => e.Click("tbpdf_click"))
                                    )
 
-                                        <ejs-pdfviewer id="zippdfviewer" serviceUrl="/api/PdfEditor" documentPath=""
-                                                       enablePrint="true"
-                                                       printEnd="documentPrinted"
-                                                       documentLoad="documentLoaded"
-                                                       annotationAdd="annotationAdd"
-                                                       enableStampAnnotations="false"
-                                                       exportSuccess="exportSuccess"
-                                                       printStart="documentPrint"
-                                                       locale="it-IT"
-                                                       downloadFileName="@string.Concat("",".pdf")" height="900px"
-                                                       toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
-                                        </ejs-pdfviewer>
+                                    <ejs-pdfviewer id="zippdfviewer" serviceUrl="/api/PdfEditor" documentPath=""
+                                                   enablePrint="true"
+                                                   printEnd="documentPrinted"
+                                                   documentLoad="documentLoaded"
+                                                   annotationAdd="annotationAdd"
+                                                   enableStampAnnotations="false"
+                                                   exportSuccess="exportSuccess"
+                                                   printStart="documentPrint"
+                                                   locale="it-IT"
+                                                   downloadFileName="@string.Concat("",".pdf")" height="900px"
+                                                   toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
+                                    </ejs-pdfviewer>
 
-                                    </div>
-                                    <div class="col-12 p-0 m-0" style="width:80%" id="anteprimajpg" hidden>
-                                        <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
-                                    </div>
                                 </div>
+                                <div class="col-12 p-0 m-0" style="width:80%" id="anteprimajpg" hidden>
+                                    <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
+                                </div>
+                            </div>
                         </div>
                     </div>
-            </div>
-            
-            <form class="new-tab-opener" method="get" target="_blank"></form>
+                </div>
+
+                <form class="new-tab-opener" method="get" target="_blank"></form>
         </section>
     </div>
 </div>

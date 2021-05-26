@@ -1184,6 +1184,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 f.CodiceSoggetto = CodiceSoggetto;
                 f.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 f.SetAttributo("NomeSoggetto", NomeSoggetto);
+
                 if (_fasMan.Salva(f, isNew) == false) return null;
 
                 //-------- Memorizzo l'operazione----------------------
@@ -1216,7 +1217,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 } 
                 e.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 e.SetAttributo("NomeSoggetto", NomeSoggetto);
-
+                e.SetAttributo("DataRichiesta", e.GetAttributo("Data"));
                 if (_elmMan.Salva(e, isNew) == false) return null;
 
                 //-------- Memorizzo l'operazione----------------------

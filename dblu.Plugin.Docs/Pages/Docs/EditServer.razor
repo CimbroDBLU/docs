@@ -376,7 +376,7 @@
     {
         IsSpinnerVisible = true;
         Stopwatch SW = new Stopwatch(); SW.Start();
-        if (string.IsNullOrEmpty(nEditServer.Email))
+        if (string.IsNullOrEmpty(nEditServer.Email) &&nEditServer.TipoRecord== TipiRecordServer.CartellaMail)
         {
             IsSpinnerVisible = false;
             ShowDialog = true; return;

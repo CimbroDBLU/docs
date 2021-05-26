@@ -129,10 +129,10 @@
     </div>
     <div class="e-card-separator"></div>
     <div class="e-card-content">
-        <section class="content">
-            <div class="container-fluid mb-2">
-                <div class="row" hidden="@(ListaServer.Count <= 1)">
-                    <div class="col-5">
+        <div class="container-fluid mb-2">
+            <div class="row" hidden="@(ListaServer.Count <= 1)">
+                <div class="col-5">
+                    <div class="row">
                         <label class="control-label col-4 mt-1" style="font-size:12px">Cartella:</label>
                         <div class="col-6">
                             @(Html.Kendo().ComboBox()
@@ -156,7 +156,7 @@
             </div>
 
 
-            <div class="row">
+            <div class="row mt-2">
                 <div class="col-5 " style="align-self: auto;">
                     <div class="card card-outline card-secondary card-solid card-default">
                         @Html.Hidden("IdAllegato")
@@ -285,9 +285,9 @@
                     </div>
                 </div>
             </div>
-        </section>
+            </section>
+        </div>
     </div>
-</div>
 
 
 <!-- Main content -->
