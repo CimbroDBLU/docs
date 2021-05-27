@@ -119,6 +119,7 @@ namespace dblu.Docs.Classi
                    
                     dynamic v = Valori[Nome].Valore;
                     DateTime? dt = null;
+                    if (v is null) return null;
                     if (v.GetType() == typeof(DateTime))
                     {
                         dt = (DateTime)v;
