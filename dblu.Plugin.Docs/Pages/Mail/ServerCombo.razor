@@ -1,0 +1,51 @@
+﻿@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Services
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+@using Microsoft.AspNetCore.Http;
+@using System.Security.Claims;
+
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject IHttpContextAccessor _HttpContextAccessor
+
+
+    <div class="row form-group">
+        <div class="col" style="align-self: center;">
+            <label>@nLabel</label>
+        </div>
+        <div class="col">
+            <SfComboBox @bind-Value="@nMailBox" DataSource="@MailBoxes">
+                <ComboBoxFieldSettings Value="Nome"></ComboBoxFieldSettings>
+            </SfComboBox>
+        </div>
+    </div>
+
+    @code {
+    [Parameter]
+    public string nLabel { get; set; } = "Casella di posta :";
+
+    [Parameter]
+    public EmailServer nMailBox { get; set; }
+
+    private ObservableCollection<EmailServer> MailBoxes { get; set; }
+
+    [Parameter]
+    public EventCallback<EmailServer> nMailBoxChanged { get; set; }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        MailBoxes = new ObservableCollection<EmailServer>(_MailService._serMan.GetServersEmailinRoles(_MailService.getRuoli(_HttpContextAccessor.HttpContext.User.Claims, ""), TipiRecordServer.CartellaMail));
+        if (MailBoxes.Count > 0 && nMailBox is null)
+        {
+            nMailBox = MailBoxes[0];
+            await nMailBoxChanged.InvokeAsync(nMailBox);
+
+        }
+
+
+    }
+    }
