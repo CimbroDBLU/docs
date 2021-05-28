@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using dblu.Portale.Core.PluginBase.Interfaces;
-using dblu.Portale.Core.PluginBase.Class;
+using dblu.Portale.Core.PluginBase.Classes;
 using ExtCore.Infrastructure;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
