@@ -43,7 +43,7 @@
 
     if (ListaServer != null && ListaServer.Count > 0)
     {
-        var ListaRuoliServ = _mailservice.getRuoli(ListaRuoli, ListaServer.ElementAt(0).Nome);
+        var ListaRuoliServ = _mailservice.getRuoli(ListaRuoli, ListaServer);
         ListaTipiElementiServ = _mailservice._elmMan.GetAllTipiElementi(ListaRuoliServ);
     }
     else
@@ -569,7 +569,7 @@
                                     <div class="col-10" style="width:80%;">
                                         <div id="DivGridElementi">
                                             <div class="grid-container">
-                                                @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
+                                                @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementiServ)
                                                 {
                                                     @if (item.AggregaAElemento == false)
                                                     {

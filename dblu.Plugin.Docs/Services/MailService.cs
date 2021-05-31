@@ -131,7 +131,6 @@ namespace dblu.Portale.Plugin.Docs.Services
         {
             List<string> l = new List<string>();
 
-
             if (NomeServer != "")
             {
 
@@ -166,61 +165,39 @@ namespace dblu.Portale.Plugin.Docs.Services
                     if (x.Type == ClaimTypes.Role) l.Add(x.Value);
                 }
             }
-
             return l;
-
-
-
             
         }
 
 
-        public List<String> getRuoli(List<string> Ruoli, string NomeServer)
+        public List<String> getRuoli(List<string> Ruoli, List<EmailServer> ElencoServer)
         {
             List<string> l = new List<string>();
 
-
-            if (NomeServer != "")
+            if (ElencoServer!=null && ElencoServer.Count() >0)
             {
-
-                //string xRol = "'";
-                //foreach (Claim x in Roles)
-                //{
-                //    if (x.Type == ClaimTypes.Role) xRol = xRol + x.Value + "','";
-                //}
-                //xRol = xRol.Substring(0, xRol.Length - 2);
                 try
                 {
+                    List<string>nomiServer = (from s in ElencoServer select s.Nome).ToList();
 
                     using (SqlConnection cn = new SqlConnection(_context.Connessione))
                     {
-
-                        string sql = "Select RoleID FROM [ServersInRole] where [RoleID] IN ('" + string.Join("','", Ruoli) + "') and [idServer]='" + NomeServer + "'";
+                        // string sql = "Select RoleID FROM [ServersInRole] where [RoleID] IN ('" + string.Join("','", Ruoli) + "') and [idServer]='" + NomeServer + "'";
+                        string sql = "Select RoleID FROM [ServersInRole] where [RoleID] IN ('" + string.Join("','", Ruoli) + "') and [idServer] IN ('" + string.Join("','", nomiServer) + "')";
                         l = cn.Query<string>(sql).ToList();
-
                     }
                 }
-
                 catch (Exception ex)
                 {
                     _logger.LogError($"getRuoli: {ex.Message}");
                 }
-
             }
             else
             {
-                //foreach (Claim x in Roles)
-                //{
-                //    if (x.Type == ClaimTypes.Role) l.Add(x.Value);
-                //}
                 l = Ruoli;
             }
 
             return l;
-
-
-
-
         }
 
         public List<String> getRuoli(string Modulo, string NomeServer)

@@ -36,7 +36,7 @@
                         <label>Tipo:</label>
                     </div>
                     <div class="col-5">
-                        <SfComboBox Placeholder="Tipo" @bind-Value="@IsEmail" DataSource="@ServerTypeList">
+                        <SfComboBox Placeholder="Tipo" @bind-Value="@nEditServer.TipoRecord" DataSource="@ServerTypeList">
                             <ComboBoxFieldSettings Value="Val" Text="Name"></ComboBoxFieldSettings>
                         </SfComboBox>
                     </div>
@@ -222,7 +222,11 @@
     /// <summary>
     /// Key-Value dynamic list for filling a Combo (TRUE=>EMAIL,FALSE=FILE)
     /// </summary>
-    private List<dynamic> ServerTypeList => new List<dynamic>() { new { Val = true, Name = "Casella EMail" }, new { Val = false, Name = "Cartella File" } };
+    private List<dynamic> ServerTypeList => new List<dynamic>() {
+        new { Val =TipiRecordServer.CartellaMail , Name = "Casella EMail" },
+        new { Val = TipiRecordServer.CartellaFile , Name = "Cartella File" } ,
+        new { Val = TipiRecordServer.CartellaAltreMail, Name = "Cartella altre EMail" }
+    };
 
     /// <summary>
     /// Height of the table to full fill the page
@@ -240,11 +244,11 @@
     /// </summary>
     private bool IsEmail
     {
-        get => (nEditServer.TipoRecord == TipiRecordServer.CartellaMail);
-        set
-        {
-            nEditServer.TipoRecord = (value) ? TipiRecordServer.CartellaMail : TipiRecordServer.CartellaFile;
-        }
+        get => (nEditServer.TipoRecord != TipiRecordServer.CartellaFile);
+        //set
+        //{
+        //    nEditServer.TipoRecord = (value);//? TipiRecordServer.CartellaMail : TipiRecordServer.CartellaFile;
+        //}
     }
 
     /// <summary>

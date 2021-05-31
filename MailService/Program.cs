@@ -42,7 +42,5 @@ namespace dbluMailService
                     services.AddHostedService<Worker>();
                 });
   
-            
-
     }
 }
