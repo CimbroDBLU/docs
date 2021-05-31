@@ -46,7 +46,7 @@ namespace dblu.Portale.Plugin.Documenti
 
                 var subItemT = new MenuItem[]
                 {
-                    new MenuItem("50.1.1", 1, "Docs/Categorie", "Categorie", "fas fa-table", null),
+                    new MenuItem("50.1.1", 1, "Docs/Categories", "Categorie", "fas fa-table", null),
                     new MenuItem("50.1.1", 2, "Docs/TipiElementi", "Tipi elementi", "fas fa-folder", null),
                     new MenuItem("50.1.1", 3, "Docs/TipiAllegati", "Tipi allegati", "fas fa-paperclip", null),
                     new MenuItem("50.1.1", 4, "Docs/ConfigGrid", "Configurazione griglie", "fas fa-sliders-h", null),
