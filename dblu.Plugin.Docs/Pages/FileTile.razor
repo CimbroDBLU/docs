@@ -26,4 +26,5 @@
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         Number = _ZipService.CountZipInArrivo("ZIP", user.Claims).ToString();
-    } }
+    }
+    }
