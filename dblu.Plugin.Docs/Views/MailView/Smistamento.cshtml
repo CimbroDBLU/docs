@@ -29,7 +29,7 @@
     }
     else
     {
-        ListaRuoli = _mailservice.getRuoli(Context.User.Claims, "");
+        ListaRuoli = _mailservice.getRuoli(Context.User.Claims,"");
     }
 
     ListaTipiElementi = _mailservice._elmMan.GetAllTipiElementi(ListaRuoli);
@@ -40,7 +40,7 @@
     if (ListaServer != null && ListaServer.Count > 0)
     {
         //var ListaRuoliServ = _mailservice.getRuoli(Context.User.Claims, ListaServer.ElementAt(0).Nome);
-        var ListaRuoliServ = _mailservice.getRuoli(ListaRuoli, ListaServer.ElementAt(0).Nome);
+        var ListaRuoliServ = _mailservice.getRuoli(ListaRuoli, ListaServer);
         ListaTipiElementiServ = _mailservice._elmMan.GetAllTipiElementi(ListaRuoliServ);
     }
     else
