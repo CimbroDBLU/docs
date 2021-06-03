@@ -704,10 +704,13 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         [HttpPost]
         public async Task<ActionResult<string>> GetHTML(string IdAllegato)
         {
-            var a = _mailService._allMan.Get(IdAllegato);
             MemoryStream MS=await _mailService._allMan.GetFileAsync(IdAllegato);
-            var message = MimeMessage.Load(MS);                       
-            return message.HtmlBody;
+            var message = MimeMessage.Load(MS);
+            var html = message.ToHtml();
+            if (string.IsNullOrEmpty(html)) {
+                html = $"<html><body>{message.TextBody.Replace("\n", "<br />")}</body><html>";
+            }
+            return html;
         }
 
         [AcceptVerbs("Post")]

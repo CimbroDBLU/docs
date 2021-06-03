@@ -90,7 +90,8 @@ namespace dblu.Portale.Plugin.Docs.Class
                 var mittente = $"{Messaggio.From.Mailboxes.First().Name} ({Messaggio.From.Mailboxes.First().Address})";
                 var oggetto = Messaggio.Subject;
                 var txt = Messaggio.TextBody == null ? "" : Messaggio.TextBody;
-                var htxt = Messaggio.HtmlBody == null ? "" : Messaggio.HtmlBody;
+                //var htxt = Messaggio.HtmlBody == null ? "" : Messaggio.HtmlBody;
+                var htxt = Messaggio.ToHtml();
                 var pdfstream = new MemoryStream();
                 var ListaPdf = new List<MemoryStream>();
                 //FileStream pdfstream = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite);
@@ -99,33 +100,51 @@ namespace dblu.Portale.Plugin.Docs.Class
                 HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
                 WebKitConverterSettings settings = new WebKitConverterSettings();
 
-                if (htxt == "") {
-                    // controlla presenza testo rtf exchange/outlook (winmail.dat)
-                    // estrae rtf e converte in pdf
-                    var rtxt = "";
-                    try
-                    {
-                        var tnef = Messaggio.BodyParts.OfType<TnefPart>().FirstOrDefault();
-                        if (tnef != null)
-                        {
-                            foreach (var attachment in tnef.ExtractAttachments())
-                            {
-                                var mime_part = attachment as MimePart;
-                                var text = attachment as TextPart;
-                                if (text != null)
-                                {
-                                    rtxt += text.Text;
-                                }
-                            }
-                        }
-                    }
-                    catch { 
-                    }
-                    if (rtxt != "") {
-                        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                        htxt= RtfPipe.Rtf.ToHtml(rtxt);
-                    }
-                }
+                //if (htxt == "")
+                //{ 
+                //    // cerco allegati di tipo testo/html
+                //    htmlContent = Messaggio.BodyParts.OfType<TextPart>().FirstOrDefault(x =>x.IsAttachment && x.IsHtml && x.FileName is null  );
+                //    if (htmlContent != null)
+                //    {
+                //        htxt =htmlContent.Text;
+                //    }
+                //}
+
+
+                //if (htxt == "") {
+                //    // controlla presenza testo rtf exchange/outlook (winmail.dat)
+                //    // estrae rtf e converte in pdf
+                //    var rtxt = "";
+                //    try
+                //    {
+                //        var tnef = Messaggio.BodyParts.OfType<TnefPart>().FirstOrDefault();
+                //        if (tnef != null)
+                //        {
+                //            foreach (var attachment in tnef.ExtractAttachments())
+                //            {
+                //                var mime_part = attachment as MimePart;
+                //                var text = attachment as TextPart;
+                //                if (text != null)
+                //                {
+                //                    if (text.IsHtml) {
+                //                        htxt = text.Text;
+                //                    }
+                //                    else
+                //                    {
+                //                        rtxt += text.Text;
+                //                    }
+                //                }
+                //            }
+                //        }
+                //    }
+                //    catch { 
+                //    }
+                //    if (rtxt != "") {
+                //        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                //        htxt= RtfPipe.Rtf.ToHtml(rtxt);
+                //    }
+                //}
+               
 
                 if (htxt == "")
                     {
@@ -156,29 +175,35 @@ namespace dblu.Portale.Plugin.Docs.Class
                         //document = htmlFormatProvider.Import(htxt);
 
                         //intestazione
-                        if (!htxt.Contains("<body>"))
-                            {
-                                htxt = $"<body>{htxt}</body>";
-                            }
-                            htxt = PulisciHtml(htxt);
+                        if (!htxt.Contains("<body"))
+                        {
+                            htxt = $"<body>{htxt}</body>";
+                        }
+                        htxt = PulisciHtml(htxt);
+                        //htxt = htxt.Replace("<body>", $"<body><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm ")}<br></div>");
+                        int bodys = htxt.IndexOf("<body");
+                        if (bodys >= 0) {
+                            int bodye = htxt.IndexOf(">", bodys);
+                            htxt = htxt.Substring(0, bodye+1) + 
+                                $"<div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm ")}</div><br>"
+                                + htxt.Substring(bodye+1) ;
+                        }
 
-                            htxt = htxt.Replace("<body>", $"<body><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm ")}<br></div>");
+                        //File.WriteAllText("d:\\temp\\testo.html", htxt);
+                        string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
 
-                            //File.WriteAllText("d:\\temp\\testo.html", htxt);
-                            string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
-
-                            //Set WebKit path
-                            settings.WebKitPath = _config["Docs:PercorsoWebKit"];
-                            settings.EnableJavaScript = false;
-                            settings.EnableHyperLink = false;
-                            settings.EnableOfflineMode = true;
-                            settings.SplitTextLines = true;
-                            settings.SplitImages = true;
-                            //settings.SinglePageLayout = Syncfusion.Pdf.HtmlToPdf.SinglePageLayout.FitHeight;
-                            settings.Margin.Right = MarginPoints;
-                            settings.Margin.Left = MarginPoints;
-                            settings.Margin.Top = MarginPoints;
-                            settings.Margin.Bottom = MarginPoints;
+                        //Set WebKit path
+                        settings.WebKitPath = _config["Docs:PercorsoWebKit"];
+                        settings.EnableJavaScript = false;
+                        settings.EnableHyperLink = false;
+                        settings.EnableOfflineMode = true;
+                        settings.SplitTextLines = true;
+                        settings.SplitImages = true;
+                        //settings.SinglePageLayout = Syncfusion.Pdf.HtmlToPdf.SinglePageLayout.FitHeight;
+                        settings.Margin.Right = MarginPoints;
+                        settings.Margin.Left = MarginPoints;
+                        settings.Margin.Top = MarginPoints;
+                        settings.Margin.Bottom = MarginPoints;
                         //Assign WebKit settings to HTML converter
                         htmlConverter.ConverterSettings = settings;
 
@@ -227,6 +252,13 @@ namespace dblu.Portale.Plugin.Docs.Class
                     {
                         var part = (MimePart)attachment;
                         fileName = part.NomeAllegato(i);
+                       
+                        if ( part.FileName is null && part is TextPart ) {
+                            var tp = (TextPart)part;
+                            if (tp.IsHtml && tp.IsAttachment) { 
+                                continue;
+                            }
+                        }
                         part.Content.DecodeTo(m);
                     }
                     try

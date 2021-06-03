@@ -43,8 +43,6 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />
     <PackageReference Include="ExtCore.Mvc.Infrastructure" Version="6.0.0" />
-    <PackageReference Include="MailKit" Version="2.12.0" />
-    <PackageReference Include="RtfPipe" Version="2.0.7677.4303" />
     <PackageReference Include="Telerik.DataSource" Version="2.0.9" />
     <PackageReference Include="Telerik.Documents.Core" Version="2021.1.222" />
     <PackageReference Include="Telerik.Documents.Fixed" Version="2021.1.222" />

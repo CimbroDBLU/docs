@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using MimeKit;
 using System.IO;
+using MimeKit.Tnef;
 
 namespace dblu.Docs.Extensions
 {
@@ -73,6 +74,60 @@ namespace dblu.Docs.Extensions
             return elenco.Values.ToList();
         }
 
+        public static string ToHtml(this MimeMessage Messaggio)
+        {
+            var htxt = Messaggio.HtmlBody == null ? "" : Messaggio.HtmlBody;
+            if (htxt == "")
+            {
+                // cerco allegati di tipo testo/html
+                var htmlContent = Messaggio.BodyParts.OfType<TextPart>().FirstOrDefault(x => x.IsAttachment && x.IsHtml && x.FileName is null);
+                if (htmlContent != null)
+                {
+                    htxt = htmlContent.Text;
+                }
+            }
+
+            if (htxt == "")
+            {
+                // controlla presenza testo rtf exchange/outlook (winmail.dat)
+                // estrae rtf e converte in pdf
+                var rtxt = "";
+                try
+                {
+                    var tnef = Messaggio.BodyParts.OfType<TnefPart>().FirstOrDefault();
+                    if (tnef != null)
+                    {
+                        foreach (var attachment in tnef.ExtractAttachments())
+                        {
+                            var mime_part = attachment as MimePart;
+                            var text = attachment as TextPart;
+                            if (text != null)
+                            {
+                                if (text.IsHtml)
+                                {
+                                    htxt = text.Text;
+                                }
+                                else
+                                {
+                                    rtxt += text.Text;
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                }
+                if (rtxt != "")
+                {
+                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                    htxt = RtfPipe.Rtf.ToHtml(rtxt);
+                }
+            }
+
+            return htxt;
+        }
+
 
         public static string NomeAllegato(this MimeEntity attachment, int Index=-1)
         {
@@ -128,6 +183,9 @@ namespace dblu.Docs.Extensions
             }
             return attachment.ContentId;
         }
+
+
+
 
     }
 
