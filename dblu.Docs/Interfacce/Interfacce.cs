@@ -9,25 +9,25 @@ using System.Threading.Tasks;
 
 namespace dblu.Docs.Interfacce
 {
-    public class ISoggetti
+    public interface ISoggetti
     {
-         public string Codice { get; set; }
+          string Codice { get; set; }
 
-        public string Nome { get; set; }
-        public string Indirizzo { get; set; }
-        public string CAP { get; set; }
-        public string Localita { get; set; }
-        public string Provincia { get; set; }
-        public string Nazione { get; set; }
-        public string Note { get; set; }
-        public StatoSoggetto Stato { get; set; }
-        public DateTime DataC { get; set; }
-        public string UtenteC { get; set; }
-        public DateTime DataUM { get; set; }
-        public string UtenteUM { get; set; }
-        public string Nomignolo { get; set; }
-        public string PartitaIVA { get; set; }
-        public ElencoAttributi elencoAttributi { get; set; }
+         string Nome { get; set; }
+         string Indirizzo { get; set; }
+         string CAP { get; set; }
+         string Localita { get; set; }
+         string Provincia { get; set; }
+         string Nazione { get; set; }
+         string Note { get; set; }
+         StatoSoggetto Stato { get; set; }
+         DateTime DataC { get; set; }
+         string UtenteC { get; set; }
+         DateTime DataUM { get; set; }
+         string UtenteUM { get; set; }
+         string Nomignolo { get; set; }
+         string PartitaIVA { get; set; }
+         ElencoAttributi elencoAttributi { get; set; }
 
 
     }
