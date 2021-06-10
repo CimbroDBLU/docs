@@ -187,28 +187,40 @@ function onAnnulla() {
 }
 function onElimina() {
     var grid = $("#gridEmail").data("kendoGrid");
-    //alert(mailId);
-    $("#IdAllegato").val(mailId);
-    var obj = {
-        Id: mailId
-    };
-    $.ajax({
-        url: UrlActions.MailView_InArrivo_Cancella,
-        type: 'POST',
-        cache: false,
-        data: obj,
-        success: function (data) {
-            //var ok = $.parseJSON(data);
-            PulisciDettaglio();
-            grid.dataSource.remove(mailItem);
-            mailId = null;
-            mailItem = null;        },
-        error: function (data) {
-            var ok = $.parseJSON(data);
-        }
-    });
-   
-        }
+
+    var rows = grid.select();
+ //   var rowsDel=[];
+
+    for (var i = 0; i < rows.length; i++)
+    {
+        var item = grid.dataItem(rows[i]);
+       // rowsDel.push(item);        
+        var obj = {
+            Id: item.id
+        };
+        $.ajax({
+            url: UrlActions.Smistamento_Cancella,
+            type: 'POST',
+            cache: false,
+            data: obj,
+            success: function (data) {                               
+            },
+            error: function (data) {                
+                var ok = $.parseJSON(data);
+            }
+            
+        });
+    }
+
+    //for (var i = 0; i < rowsDel.length; i++)
+    //    grid.dataSource.remove(rowsDel[i]);
+    
+    mailId = null;
+    mailItem = null;
+    PulisciDettaglio();
+    grid.dataSource.read();
+}
+
 function CancellaEmail(e) {
     e.preventDefault();
     if (mailItem != null) {

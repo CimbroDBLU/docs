@@ -448,6 +448,37 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
         [AcceptVerbs("Post")]
         [HasPermission("50.1.3")]
+        public ActionResult<bool> Smistamento_Cancella(string Id)
+        {
+            if (Id != null && ModelState.IsValid)
+            {
+                // if (_mailService._allMan.Cancella(Id)) {
+                var all = _mailService._allMan.Get(Id);
+                if (all != null)
+                {
+                    // all.Stato = StatoAllegato.Annullato;
+                   _mailService._allMan.Cancella(all.Id);
+
+                    //-------- Memorizzo l'operazione----------------------
+                    LogDoc log = new LogDoc()
+                    {
+                        Data = DateTime.Now,
+                        IdOggetto = Guid.Parse(Id),
+                        TipoOggetto = TipiOggetto.ALLEGATO,
+                        Utente = User.Identity.Name,
+                        Operazione = TipoOperazione.Cancellato
+                    };
+                    _mailService._logMan.Salva(log, true);
+                    //-------- Memorizzo l'operazione----------------------
+
+                    return Json(true);
+                }
+            }
+            return Json(false);
+        }
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.3")]
 		
 		public ActionResult<bool> InArrivo_Completa(string Id)
         {

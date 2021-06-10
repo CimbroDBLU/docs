@@ -164,7 +164,7 @@
         MailView_InArrivo_Rispondi: '@Url.Action("InArrivo_Rispondi","MailView" )',
         MailView_InArrivo_Sposta: '@Url.Action("InArrivo_Sposta", "MailView" )',
         MailView_InArrivoApri: '@Url.Action("InArrivoApri", "MailView" )',
-        MailView_InArrivo_Cancella: '@Url.Action("InArrivo_Cancella", "MailView" )',
+        Smistamento_Cancella: '@Url.Action("Smistamento_Cancella", "MailView" )',
         MailView_InArrivo_Completa: '@Url.Action("InArrivo_Completa","MailView" )',
         MailView_ApriFile: '@Url.Action("ApriFile", "MailView" )',
         MailView_AllegaAElementoFascicolo: '@Url.Action("AllegaAElementoFascicolo","MailView")',
@@ -238,7 +238,7 @@
                 @(Html.Kendo().Dialog()
         .Name("dialog")
         .Title("Eliminazione")
-        .Content("<p>Sei sicuro di eliminare l'email?<p>")
+        .Content("<p>Sei sicuro di eliminare l'email o le email selezionate?<p>")
         .Width(400)
         .Modal(false)
         .Visible(false)
