@@ -711,7 +711,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             List<Core.Infrastructure.Identity.Classes.ApplicationUser> MailList;
             if (AsValidEmail) MailList = _mailService._usrManager.GetUsers().Where(f => (!String.IsNullOrEmpty(f.Email))).ToList(); else MailList = _mailService._usrManager.GetUsers().ToList();
 
-            var user = _mailService._usrManager?.CurrentUser;
+            var user = _mailService._usrManager.GetUser(HttpContext.User.Identity.Name);
             if (user == null)
             {
                 return BadRequest();
