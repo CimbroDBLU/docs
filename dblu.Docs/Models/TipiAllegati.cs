@@ -44,6 +44,8 @@ namespace dblu.Docs.Models
         }
         
         public string ViewAttributi { get; set; }
+        public string CronPulizia { get; set; }
+        public int GiorniDaMantenere { get; set; }
 
         [JsonIgnore]
         [Write(false)] 
