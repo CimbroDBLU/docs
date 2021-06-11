@@ -17,6 +17,13 @@
   <ItemGroup>
      <EmbeddedResource Include="Styles\**;Views\**;Scripts\**" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="Interfaces\**" />
+    <Content Remove="Interfaces\**" />
+    <EmbeddedResource Remove="Interfaces\**" />
+    <None Remove="Interfaces\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Remove="Components\PdfEditor.razor" />
@@ -36,7 +43,6 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />
     <PackageReference Include="ExtCore.Mvc.Infrastructure" Version="6.0.0" />
-    <PackageReference Include="RtfPipe" Version="2.0.7677.4303" />
     <PackageReference Include="Telerik.DataSource" Version="2.0.9" />
     <PackageReference Include="Telerik.Documents.Core" Version="2021.1.222" />
     <PackageReference Include="Telerik.Documents.Fixed" Version="2021.1.222" />
@@ -48,11 +54,11 @@
 
   <ItemGroup>
     <Folder Include="Components\" />
-    <Folder Include="Interfaces\" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\dblu.Portale_3\Core\dblu.Portale.Core.Infrastructure\dblu.Portale.Core.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\dblu.portale\Core\dblu.Portale.Core.Infrastructure\dblu.Portale.Core.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\dblu.portale\Core\dblu.Portale.Core.UI\dblu.Portale.Core.UI.csproj" />
     <ProjectReference Include="..\..\dblubpm\dblu.Portale.Plugin.TaskListBase\dblu.Portale.Plugin.TaskListBase.csproj" />
     <ProjectReference Include="..\dblu.Docs\dblu.Docs.csproj" />
   </ItemGroup>

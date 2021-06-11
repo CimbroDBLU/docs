@@ -1,6 +1,7 @@
 ﻿@model dblu.Portale.Plugin.Docs.ViewModels.EditorElementoViewModel
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _doc
 @using Kendo.Mvc.UI
+@using dblu.Portale.Core.UI
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using Syncfusion.EJ2
 @using dblu.Docs.Classi
@@ -17,8 +18,315 @@
 
 
     bool isEdit = Model.IsEdit();
+    var Title = "Editor Elemento";
 }
 
+
+@(await Html.RenderComponentAsync<PageTitle>(RenderMode.Server,  new { nTitle = Title}))
+
+<div class="e-card">
+    <div class="e-card-header">
+        <div class="e-card-header-caption">
+            <div class="e-card-header-title">
+                @Title
+            </div>
+        </div>
+    </div>
+    <div class="e-card-separator"></div>
+    <div class="e-card-content">
+
+
+        <section class="content">
+            <div class="container-fluid">
+
+
+                <div class="row">
+                    <div class="col">
+                        <div class="card  card-outline card-secondary collapsed-card col ">
+                            <div class="card-header  p-1">
+
+                                <div class="card-title">Dati Elemento</div>
+                                <div class="card-tools">
+                                    <button type="button" class="btn btn-card-tool" data-card-widget="collapse">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                           
+                                <!-- /.card-header -->
+                            <div class="card-body">
+                                <form class='form-horizontal'>
+                                    <div class="card-body row">
+
+                                        <div class="col-6">
+
+             
+                                                <div class='form-group row'>
+                                                    <label for='' class='col-2 col-form-label'>ID Elemento</label>
+                                                    <div class='col-10'>
+                                                        <input type='text' class='form-control' id='' placeholder='' value='@Model.Oggetto.Id' disabled>
+                                                    </div>
+                                                </div>
+                                                <div class='form-group row'>
+                                                    <label for='' class='col-2 col-form-label'>Creato il</label>
+                                                    <div class='col-10'>
+                                                        <input type='datetime' class='form-control' id='' placeholder='' value='@Model.Oggetto.DataC' disabled>
+                                                    </div>
+
+                                                </div>
+                                                <div class='form-group row'>
+                                                    <label for='' class='col-2 col-form-label'>Utente Creazione</label>
+                                                    <div class='col-10'>
+                                                        <input type='text' class='form-control' id='' placeholder='Nome' value='@Model.Oggetto.UtenteC' disabled>
+                                                    </div>
+                                                </div>
+
+                      
+
+
+                                        </div>
+                                        <div class="col-6">
+                                            <div class='form-group row'>
+                                                <label for='' class='col-2 col-form-label'>Descrizione</label>
+                                                <div class='col-10'>
+                                                    <input type='text' class='form-control' id='' placeholder='' value='@Model.Oggetto.Descrizione' disabled>
+                                                </div>
+
+                                            </div>
+                                            <div class='form-group row'>
+                                                <label for='' class='col-2 col-form-label'>Modificato il</label>
+                                                <div class='col-10'>
+                                                    <input type='datetime' class='form-control' id='' placeholder='' value='@Model.Oggetto.DataUM' disabled>
+                                                </div>
+
+                                            </div>
+                                            <div class='form-group row'>
+                                                <label for='' class='col-2 col-form-label'>Utente Ultima Modifica</label>
+                                                <div class='col-10'>
+                                                    <input type='text' class='form-control' id='' placeholder='Nome' value='@Model.Oggetto.UtenteUM' disabled>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- /.card -->
+                                        <!-- /.col (right) -->
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <div class="row">
+                    <div class="col-4" style="align-self: auto;">
+                        <div class="card card-outline card-secondary">
+                            <div class="card-header  p-1">
+                                <div class="card-title">Gestione Elemento</div>
+                                <div class="card-tools pull-right">
+                                    <button type="button" class="btn btn-card-tool" data-card-widget="collapse">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="form-group">
+                                    @foreach (var attributo in Model.Oggetto.elencoAttributi.ToList().OrderBy(f => (f.Sequenza)))
+                                    {
+
+
+                                        @if (attributo.Visibilità != dblu.Docs.Classi.Visibilita_Attributi.HIDDEN)
+                                        {
+                                            <!--<div class="row">-->
+
+                                            <div class='form-group row'>
+                                                <div class='col-4'>  @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione) </div>
+                                                <div class='col-8'>
+
+                                                    @switch (attributo.Tipo)
+
+                                                    {
+                                                        case "System.DateTime":
+                                                            bool xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
+                                                            @(Html.Kendo().DatePicker()
+                                            .Name($"ctl_{attributo.Nome}")
+                                             .Enable(xEditable)
+                                        .Value(Model.Oggetto.elencoAttributi.GetDateTime(attributo.Nome))
+
+                                                    )
+                                                            break;
+                                                        case "System.Boolean":
+                                                            xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
+                                                            bool xx = attributo.Valore == null ? false : (bool)Model.Oggetto.elencoAttributi.GetBoolean(attributo.Nome);
+                                                            @(Html.Kendo().Switch()
+                                  .Name($"ctl_{attributo.Nome}")
+                                   .Enabled(xEditable)
+                                  .Messages(c => c.Checked("Si").Unchecked("No"))
+                                  .Checked(xx)
+                                                    )
+                                                            break;
+                                                        default:
+                                                            xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
+                                                            @(Html.Kendo().TextBox()
+                              .Name($"ctl_{attributo.Nome}")
+                              .Enable(xEditable)
+                        .Value(attributo.Valore == null ? "" : attributo.Valore.ToString())
+                              .HtmlAttributes(new { style = "width: 100%" })
+
+                                                    )
+                                                            break;
+                                                    }
+                                                </div>
+
+                                            </div>
+
+                                            <!--</div>-->
+
+                                        }
+
+
+
+
+
+
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-8" style="align-self: auto;">
+                        <div class="card  card-outline card-secondary">
+                            <div class="card-header  p-1">
+                                <div class="card-title">Allegati</div>
+                                <div class="card-tools pull-right">
+                                    <button type="button" class="btn btn-card-tool"data-card-widget="collapse">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+
+                            <div class="card-body">
+
+                                <div class="form-group" style="margin-top:10px">
+                                    @Html.Hidden("IdAllegato")
+                                    @Html.Hidden("NomeAllegato")
+                                    <div class="col-12">
+                                        @(Html.Kendo().Grid<dblu.Docs.Models.viewAllegati>()
+                                    .Name("GridAllegati")
+                                    .Editable(editable => editable.Mode(GridEditMode.InCell))
+                                    .Columns(columns =>
+                                    {
+                                        columns.Bound(p => p.NomeFile).Title("Nome file").Width(100);
+                                        columns.Bound(p => p.Descrizione).Title("Descrizione").Width(200);
+                                        columns.Bound(p => p.Campo1).Title(ColsAl.ElementAt(0).Des).Visible(ColsAl.ElementAt(0).Visible).Width(100);
+                                        columns.Bound(p => p.Campo2).Title(ColsAl.ElementAt(1).Des).Visible(ColsAl.ElementAt(1).Visible).Width(100);
+                                        columns.Bound(p => p.Campo3).Title(ColsAl.ElementAt(2).Des).Visible(ColsAl.ElementAt(2).Visible).Width(100);
+                                        columns.Bound(p => p.Campo4).Title(ColsAl.ElementAt(3).Des).Visible(ColsAl.ElementAt(3).Visible).Width(100);
+                                        columns.Bound(p => p.Campo5).Title(ColsAl.ElementAt(4).Des).Visible(ColsAl.ElementAt(4).Visible).Width(100);
+                                        columns.Bound(p => p.Campo6).Title(ColsAl.ElementAt(5).Des).Visible(ColsAl.ElementAt(5).Visible).Width(100);
+                                        columns.Bound(p => p.Campo7).Title(ColsAl.ElementAt(6).Des).Visible(ColsAl.ElementAt(6).Visible).Width(100);
+                                        columns.Bound(p => p.Campo8).Title(ColsAl.ElementAt(7).Des).Visible(ColsAl.ElementAt(7).Visible).Width(100);
+                                        columns.Bound(p => p.Campo9).Title(ColsAl.ElementAt(8).Des).Visible(ColsAl.ElementAt(8).Visible).Width(100);
+                                        columns.Bound(p => p.Campo10).Title(ColsAl.ElementAt(9).Des).Visible(ColsAl.ElementAt(9).Visible).Width(100);
+                                        columns.Command(command =>
+                                        {
+                                            command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon k-i-download");
+                                        }).Width("10%");
+                                        columns.Command(command => command.Custom("anteprimaImg").Text(" ").Click("ApriAllegato").IconClass("k-icon k-i-file-image")).Width("10%");
+                                    })
+                                    .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .Batch(true)
+                                        .ServerOperation(false)
+                                        .AutoSync(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.IdAllegato);
+                                            model.Field(p => p.NomeFile).Editable(false);
+                                        })
+                                    .Read("GetvAllegatiElemento", "Fascicolo", new { elemento = Model.Oggetto.Id })
+                                    //.Update("UpdateAllegati", "Fascicolo")
+                                    )
+                                .HtmlAttributes(new { style = "font-size:10" })
+                                .Selectable()
+                                .Events(events => events
+                                .Change("Allegati_OnRowSelect")
+                                .DataBound("onDataBoundAttachments"))
+                                )
+                                        @*.Events(ev => ev.Change("xxonChange"))*@
+                                    </div>
+                                </div>
+                                @if (isEdit)
+                                {
+                                    <div class="form-group" style="margin-top:10px">
+
+                                        <div class="col-12" style="width:100%">
+                                             <form class="col-12" method="post" action="/Fascicolo/AddAllegato" enctype="multipart/form-data">
+                                                <div class="form-group">
+
+                                                      <input class="form-control-file col-8" name="files" id="files" type="file" aria-label="files" />
+                                                    <p style="text-align: right">
+                                                        <button type="submit" class="k-button k-primary  col-2" onclick="SubmitForm(this.parentElement, event)">Aggiungi</button>
+                                                    </p>
+
+                                                </div>
+                                            </form>
+                                            <br /><br />
+                                        </div>
+                                    </div>
+                                }
+
+                            </div>
+                            <div class="form-group" style="margin-top:10px">
+                                <div class="col-12" style="width:100%" id="anteprimapdf">
+                                    @(Html.Kendo().ToolBar()
+                                .Name("pdfToolBar")
+                                .Items(items =>
+                                                        {
+                                    items.Add().Type(CommandType.Button).Id("tbruotasx").Text("-90°").Icon("undo");
+                                    items.Add().Type(CommandType.Button).Id("tbruotadx").Text("+90°").Icon("redo");
+                                    items.Add().Type(CommandType.Button).Id("tbcanc").Text("Canc.").Icon("delete");
+                                    items.Add().Type(CommandType.Separator);
+                                    items.Add().Type(CommandType.Button).Id("tbrefresh").Text("Ricarica").Icon("refresh");
+                                    items.Add().Type(CommandType.Separator);
+                                    items.Add().Type(CommandType.Button).Id("tbsalva").Text("Salva").Icon("save");
+                                    items.Add().Type(CommandType.Separator);
+                                    items.Add().Type(CommandType.Button).Id("tbespandi").Text("Espandi").Icon("zoom-in");
+
+                                                        })
+                                .Events(e => e.Click("tbpdf_click"))
+                                                    )
+
+                                    <ejs-pdfviewer id="pdfviewer" serviceUrl="/api/PdfEditor" documentPath=""
+                                                   enablePrint="true"
+                                                   documentLoad="documentLoaded"
+                                                   annotationAdd="annotationAdd"
+                                                   exportSuccess="exportSuccess"
+                                                   enableStampAnnotations="false"
+                                                   locale="it-IT"
+                                                   downloadFileName="@string.Concat("",".pdf")" height="1000px">
+                                    </ejs-pdfviewer>
+
+
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>
 
 <script src="~/Scripts/dblupdf.js"></script>
 
@@ -201,17 +509,7 @@
 
             CaricaPdf(pdfViewer, nome);
 
-            //var IdAllegato = dataItem.Id;
-            //$("#IdAllegato").val(IdAllegato);
-            //var nome = dataItem.NomeFile.toLowerCase();
-            //var pdfViewer = document.getElementById('pdfviewer').ej2_instances[0];
-            //if (nome.indexOf(".pdf") > 0) {
-            //    pdfViewer.load(IdAllegato);
-            //    pdfViewer.downloadFileName = nome;
-            //}
-            //else {
-            //    pdfViewer.load('');
-            //}
+
 
           }
 
@@ -305,482 +603,17 @@ function onDataBoundAttachments(e) {
 }
 
 </script>
+<style>
 
+    html body #pdfviewer {
+        width: 100% !important;
+    }
 
-        <style>
+    .k-state-selected {
+        color: black;
+    }
+</style>
 
-            html body #pdfviewer {
-                width: 100% !important;
-            }
-
-            .k-state-selected {
-                color: black;
-            }
-
-        </style>
-
-
-        <section class="content-header" style="padding: 10px">
-            <h1>
-            </h1>
-            <ol class="breadcrumb">
-                <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-                <li class="active">Elemento</li>
-            </ol>
-        </section>
-
-        <br>
-@*
-        @if (Model.IsInsideTask)
-        {
-            <form method="post">
-                <button style="margin-left:30px" formaction='@Model.UrlRefer'
-                        formmethod="post" class="btn btn-app">
-                    <i class="fa fa-backward"></i> Indietro
-                </button>
-
-            </form>
-        }
-        else
-        {
-            <form action="@Model.UrlRefer" method="get">
-                <button style="margin-left:30px" type="submit" class="btn btn-app">
-                    <i class="fa fa-backward"></i> Indietro
-                </button>
-            </form>
-
-        }
-*@
-
-        <script>
-            $('#return').click(function (evt) {
-
-                window.history.back();
-            });
-        </script>
-
-
-        <section class="content">
-            <div class="container-fluid">
-
-
-                <div class="row">
-            <div class="box box-default collapsed-box">
-                        <div class="box-header">
-                            <i class="ion ion-clipboard"></i>
-                            <h3 class="box-title">Dati Elemento</h3>
-                            <div class="box-tools pull-right">
-                                <button type="button" class="btn btn-box-tool" data-widget="collapse">
-                            <i class="fa fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- /.card-header -->
-                        <div class="box-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <form class='form-horizontal'>
-                                        <div class='card-body'>
-                                            <div class='form-group row'>
-                                                <label for='' class='col-sm-2 col-form-label'>ID Elemento</label>
-                                                <div class='col-sm-10'>
-                                                    <input type='text' class='form-control' id='' placeholder='' value='@Model.Oggetto.Id' disabled>
-                                                </div>
-                                            </div>
-                                            <div class='form-group row'>
-                                                <label for='' class='col-sm-2 col-form-label'>Creato il</label>
-                                                <div class='col-sm-10'>
-                                                    <input type='datetime' class='form-control' id='' placeholder='' value='@Model.Oggetto.DataC' disabled>
-                                                </div>
-
-                                            </div>
-                                            <div class='form-group row'>
-                                                <label for='' class='col-sm-2 col-form-label'>Utente Creazione</label>
-                                                <div class='col-sm-10'>
-                                                    <input type='text' class='form-control' id='' placeholder='Nome' value='@Model.Oggetto.UtenteC' disabled>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                    </form>
-
-                                </div>
-                                <div class="col-md-6">
-                                    <div class='form-group row'>
-                                        <label for='' class='col-sm-2 col-form-label'>Descrizione</label>
-                                        <div class='col-sm-10'>
-                                            <input type='text' class='form-control' id='' placeholder='' value='@Model.Oggetto.Descrizione' disabled>
-                                        </div>
-
-                                    </div>
-                                    <div class='form-group row'>
-                                        <label for='' class='col-sm-2 col-form-label'>Modificato il</label>
-                                        <div class='col-sm-10'>
-                                            <input type='datetime' class='form-control' id='' placeholder='' value='@Model.Oggetto.DataUM' disabled>
-                                        </div>
-
-                                    </div>
-                                    <div class='form-group row'>
-                                        <label for='' class='col-sm-2 col-form-label'>Utente Ultima Modifica</label>
-                                        <div class='col-sm-10'>
-                                            <input type='text' class='form-control' id='' placeholder='Nome' value='@Model.Oggetto.UtenteUM' disabled>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- /.card -->
-                                <!-- /.col (right) -->
-                            </div>
-                            <!-- /.row -->
-                        </div>
-                    </div>
-
-                </div>
-
-
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="box box-">
-                            <div class="box-header">
-
-                                <i class="ion ion-clipboard"></i>
-                                <h3 class="box-title">Gestione Elemento</h3>
-                                <div class="box-tools pull-right">
-                                    <button type="button" class="btn btn-box-tool" data-widget="collapse">
-                                        <i class="fa fa-minus"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="box-body">
-                                <div class="form-group">
-                                    @foreach (var attributo in Model.Oggetto.elencoAttributi.ToList().OrderBy(f => (f.Sequenza)))
-                                    {
-
-
-                                        @if (attributo.Visibilità != dblu.Docs.Classi.Visibilita_Attributi.HIDDEN)
-                                        {
-                                            <!--<div class="row">-->
-
-                                            <div class='form-group row'>
-                                                <div class='col-sm-4'>  @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione) </div>
-                                                <div class='col-sm-8'>
-
-                                                    @switch (attributo.Tipo)
-
-                                                    {
-                                                        case "System.DateTime":
-                                                            bool xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
-                                                            @(Html.Kendo().DatePicker()
-                                            .Name($"ctl_{attributo.Nome}")
-                                             .Enable(xEditable)
-                                        .Value(Model.Oggetto.elencoAttributi.GetDateTime(attributo.Nome))
-
-                                                    )
-                                                            break;
-                                                        case "System.Boolean":
-                                                            xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
-                                                            bool xx = attributo.Valore == null ? false : (bool)Model.Oggetto.elencoAttributi.GetBoolean(attributo.Nome);
-                                                            @(Html.Kendo().Switch()
-                                  .Name($"ctl_{attributo.Nome}")
-                                   .Enabled(xEditable)
-                                  .Messages(c => c.Checked("Si").Unchecked("No"))
-                                  .Checked(xx)
-                                                    )
-                                                            break;
-                                                        default:
-                                                            xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
-                                                            @(Html.Kendo().TextBox()
-                              .Name($"ctl_{attributo.Nome}")
-                              .Enable(xEditable)
-                        .Value(attributo.Valore == null ? "" : attributo.Valore.ToString())
-                              .HtmlAttributes(new { style = "width: 100%" })
-
-                                                    )
-                                                            break;
-                                                    }
-                                                </div>
-
-                                            </div>
-
-                                            <!--</div>-->
-
-                                        }
-
-
-
-
-
-
-                                    }
-
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="col-md-8">
-                        <div class="box box-">
-                            <div class="box-header">
-
-                                <i class="ion ion-clipboard"></i>
-                                <h3 class="box-title">Allegati</h3>
-                                <div class="box-tools pull-right">
-                                    <button type="button" class="btn btn-box-tool" data-widget="collapse">
-                                        <i class="fa fa-minus"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-
-                            <div class="box-body">
-
-                                <div class="form-group" style="margin-top:10px">
-                                    @Html.Hidden("IdAllegato")
-                            @Html.Hidden("NomeAllegato")
-                                    <div class="col-md-12">
-                                        @(Html.Kendo().Grid<dblu.Docs.Models.viewAllegati>()
-                                    .Name("GridAllegati")
-                                    .Editable(editable => editable.Mode(GridEditMode.InCell))
-                                    .Columns(columns =>
-                                    {
-                                        columns.Bound(p => p.NomeFile).Title("Nome file").Width(100);
-                                        columns.Bound(p => p.Descrizione).Title("Descrizione").Width(200);
-                                        columns.Bound(p => p.Campo1).Title(ColsAl.ElementAt(0).Des).Visible(ColsAl.ElementAt(0).Visible).Width(100);
-                                        columns.Bound(p => p.Campo2).Title(ColsAl.ElementAt(1).Des).Visible(ColsAl.ElementAt(1).Visible).Width(100);
-                                        columns.Bound(p => p.Campo3).Title(ColsAl.ElementAt(2).Des).Visible(ColsAl.ElementAt(2).Visible).Width(100);
-                                        columns.Bound(p => p.Campo4).Title(ColsAl.ElementAt(3).Des).Visible(ColsAl.ElementAt(3).Visible).Width(100);
-                                        columns.Bound(p => p.Campo5).Title(ColsAl.ElementAt(4).Des).Visible(ColsAl.ElementAt(4).Visible).Width(100);
-                                        columns.Bound(p => p.Campo6).Title(ColsAl.ElementAt(5).Des).Visible(ColsAl.ElementAt(5).Visible).Width(100);
-                                        columns.Bound(p => p.Campo7).Title(ColsAl.ElementAt(6).Des).Visible(ColsAl.ElementAt(6).Visible).Width(100);
-                                        columns.Bound(p => p.Campo8).Title(ColsAl.ElementAt(7).Des).Visible(ColsAl.ElementAt(7).Visible).Width(100);
-                                        columns.Bound(p => p.Campo9).Title(ColsAl.ElementAt(8).Des).Visible(ColsAl.ElementAt(8).Visible).Width(100);
-                                        columns.Bound(p => p.Campo10).Title(ColsAl.ElementAt(9).Des).Visible(ColsAl.ElementAt(9).Visible).Width(100);
-                                        columns.Command(command =>
-                                        {
-                                            command.Custom("download").Text(" ").Click("ScaricaAllegato").IconClass("k-icon k-i-download");
-                                        }).Width("10%");
-                                        columns.Command(command => command.Custom("anteprimaImg").Text(" ").Click("ApriAllegato").IconClass("k-icon k-i-file-image")).Width("10%");
-                                    })
-                                    .DataSource(dataSource => dataSource
-                                        .Ajax()
-                                        .Batch(true)
-                                        .ServerOperation(false)
-                                        .AutoSync(true)
-                                        .Model(model =>
-                                        {
-                                            model.Id(p => p.IdAllegato);
-                                            model.Field(p => p.NomeFile).Editable(false);
-                                        })
-                                    .Read("GetvAllegatiElemento", "Fascicolo", new { elemento = Model.Oggetto.Id })
-                                    //.Update("UpdateAllegati", "Fascicolo")
-                                    )
-                                .HtmlAttributes(new { style = "font-size:10" })
-                                .Selectable()
-                                .Events(events => events
-                                .Change("Allegati_OnRowSelect")
-                                .DataBound("onDataBoundAttachments"))
-                                )
-                                        @*.Events(ev => ev.Change("xxonChange"))*@
-                                    </div>
-                                </div>
-                                @if (isEdit)
-                                {
-                                    <div class="form-group" style="margin-top:10px">
-
-                                        <div class="col-md-12" style="width:100%">
-                                            @*<form class="col-md-12" method="post" action="/Fascicolo/AddNewsAllegato" enctype="multipart/form-data">*@
-                                            <form class="col-md-12" method="post" action="/Fascicolo/AddAllegato" enctype="multipart/form-data">
-                                                <div class="form-group">
-
-                                                    @*<input type="hidden" name="idelemento" value="@Model.Oggetto.Id" />
-                                                <input type="hidden" name="idfascicolo" value="@Model.Oggetto.IdFascicolo" />
-                                                <input type="hidden" name="descrizione" value="@Model.Oggetto.Descrizione" />
-                                                <input type="hidden" name="rev" value="@Model.Oggetto.Revisione" />*@
-                                                    <input class="form-control-file col-md-8" name="files" id="files" type="file" aria-label="files" />
-                                                    <p style="text-align: right">
-                                                        <button type="submit" class="k-button k-primary  col-md-2" onclick="SubmitForm(this.parentElement, event)">Aggiungi</button>
-                                                    </p>
-
-                                                </div>
-                                            </form>
-                                            <br /><br />
-                                        </div>
-                                    </div>
-                                }
-
-                            </div>
-                            <div class="form-group" style="margin-top:10px">
-                                <div class="col-md-12" style="width:100%" id="anteprimapdf">
-                            @(Html.Kendo().ToolBar()
-                                .Name("pdfToolBar")
-                                .Items(items =>
-                                                        {
-                                    items.Add().Type(CommandType.Button).Id("tbruotasx").Text("-90°").Icon("undo");
-                                    items.Add().Type(CommandType.Button).Id("tbruotadx").Text("+90°").Icon("redo");
-                                    items.Add().Type(CommandType.Button).Id("tbcanc").Text("Canc.").Icon("delete");
-                                    items.Add().Type(CommandType.Separator);
-                                    items.Add().Type(CommandType.Button).Id("tbrefresh").Text("Ricarica").Icon("refresh");
-                                    items.Add().Type(CommandType.Separator);
-                                    items.Add().Type(CommandType.Button).Id("tbsalva").Text("Salva").Icon("save");
-                                    items.Add().Type(CommandType.Separator);
-                                    items.Add().Type(CommandType.Button).Id("tbespandi").Text("Espandi").Icon("zoom-in");
-
-                                                        })
-                                .Events(e => e.Click("tbpdf_click"))
-                                                    )
-
-                            <ejs-pdfviewer id="pdfviewer" serviceUrl="/api/PdfEditor" documentPath=""
-                                                   enablePrint="true"
-                                                   documentLoad="documentLoaded"
-                                                   annotationAdd="annotationAdd"
-                                           exportSuccess="exportSuccess"
-                                                   enableStampAnnotations="false"
-                                                   locale="it-IT"
-                                           downloadFileName="@string.Concat("",".pdf")" height="1000px">
-                                    </ejs-pdfviewer>
-
-
-                                </div>
-
-
-                            </div>
-                            @*
-                        <div class="form-group row">
-                            <form class="form-horizontal" role="form" method="post">
-                                @if (fromTask)
-                                {
-                                    <button formaction="/Action/TaskView/Complete/@taskId" method="post" type="submit" class="btn margin btn-info pull-right">Completa</button>
-                                }
-                                <button class="btn btn-info margin pull-left" id="salvanote" onclick="saveAnnotations() ">Salva Annotazioni</button>
-                            </form>
-                        </div>
-                            *@
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            @*
-        <div class="row">
-            <div class="col-md-6">
-                <div class="box box-primary">
-                    <div class="box-header">
-                        <i class="ion ion-clipboard"></i>
-                        <h3 class="box-title">Gestione Elemento</h3>
-                        <div class="box-tools pull-right">
-                            <button type="button" class="btn btn-box-tool" data-widget="collapse">
-                                <i class="fa fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <!-- /.card-header -->
-                    <div class="box-body">
-
-
-
-
-
-                        @await Html.PartialAsync("EditorAttributi", new EditorAttributiViewModel() { })
-                    </div>
-                    </div>
-                    </div>
-                    </div>
-
-                    <row>
-                        @(Html.Kendo().Grid<dblu.Docs.Models.Elementi>()
-                 .Name("Grid")
-                 .Columns(columns =>
-                 {
-                     //columns
-                     //.ClientTemplate(
-                     //    @"<div class='product-photo'
-                     //            style='background-image: url(" + @Url.Content("~/shared/web/foods/#:data.ProductID#.jpg") + ");'></div><div class='product-name'>#: ProductName #</div>").Width(320);
-                     columns.Bound(p => p.Tipo).Width(150);
-                     columns.Bound(p => p.Descrizione).Width(150).MinScreenWidth(800);
-                     //columns.Bound(p => p.Category.CategoryName).EditorTemplateName("ClientCategoryEditor").Width(180);
-                     //columns.Bound(p => p.UnitsOnOrder).Width(150).MinScreenWidth(800);
-                     //columns.Bound(p => p.Discontinued).Width(130);
-                     columns.Command(command => command.Destroy()).Width(160);
-                 })
-                 //.ToolBar(toolbar =>
-                 //{
-                 //    toolbar.Create();
-                 //    toolbar.Save();
-                 //})
-                 //.Editable(editable => editable.Mode(GridEditMode.InCell))
-                 .Pageable()
-                 .Navigatable()
-                 .Sortable()
-                 .Groupable()
-                 .Filterable()
-                 .Scrollable()
-                 .DataSource(dataSource => dataSource
-                     .Ajax()
-                     .Batch(true)
-                     .PageSize(20)
-                     .ServerOperation(false)
-                     .Events(events => events.Error("error_handler"))
-                     .Model(model =>
-                     {
-                         model.Id(p => p.IdFascicolo);
-                         //model.Field(p => p.ProductID).Editable(false);
-                         //model.Field(p => p.Category).DefaultValue(
-                         //    ViewData["defaultCategory"] as Kendo.Mvc.Examples.Models.CategoryViewModel);
-                     })
-                     .Create("Elemento_Create", "Elemento")
-                     .Read("Elemento_Read", "Elemento")
-                     .Update("Elemento_Update", "Elemento")
-                     .Destroy("Elemento_Destroy", "Elemento")
-                 )
-                        )
-
-                        <script type="text/javascript">
-                            function error_handler(e) {
-                                if (e.errors) {
-                                    var message = "Errors:\n";
-                                    $.each(e.errors, function (key, value) {
-                                        if ('errors' in value) {
-                                            $.each(value.errors, function () {
-                                                message += this + "\n";
-                                            });
-                                        }
-                                    });
-                                    alert(message);
-                                }
-                            }
-                        </script>
-
-
-                        <style>
-                            .product-photo {
-                                display: inline-block;
-                                width: 32px;
-                                height: 32px;
-                                border-radius: 50%;
-                                background-size: 32px 35px;
-                                background-position: center center;
-                                vertical-align: middle;
-                                line-height: 32px;
-                                box-shadow: inset 0 0 1px #999, inset 0 0 10px rgba(0,0,0,.2);
-                                margin-left: 5px;
-                            }
-
-                            .product-name {
-                                display: inline-block;
-                                vertical-align: middle;
-                                line-height: 32px;
-                                padding-left: 3px;
-                            }
-                        </style>
-                    </row>
-            </div>
-            *@
-
-
-        </section>
 
 @(Html.Kendo().Window()
         .Name("wPdfEditor")
@@ -794,4 +627,4 @@ function onDataBoundAttachments(e) {
         .Events(e => e.Close("wPdfEditorClose"))
     )
 
-        <ejs-scripts></ejs-scripts>
+<ejs-scripts></ejs-scripts>

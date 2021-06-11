@@ -354,33 +354,36 @@ namespace dblu.Portale.Plugin.Docs.Services
                 {
                     using (var resultZip = new ZipArchive(resultms, ZipArchiveMode.Create, true))
                     {
-                MemoryStream m = await _allMan.GetFileAsync(IdAllegato);
-                m.Position = 0;
-                        using (ZipArchive za = new ZipArchive(m, ZipArchiveMode.Read))
-                {
-                    foreach (ZipArchiveEntry entry in za.Entries)
-                    {
-                                if (string.Compare(entry.Name, NomeFile, true) != 0)
+                    MemoryStream m = await _allMan.GetFileAsync(IdAllegato);
+                    if (m != null)
+                        {
+                            m.Position = 0;
+                            using (ZipArchive za = new ZipArchive(m, ZipArchiveMode.Read))
+                            {
+                                foreach (ZipArchiveEntry entry in za.Entries)
                                 {
-                                    //entry.Delete();
-                                    //break;
-                                    using (var entryS = entry.Open())
+                                    if (string.Compare(entry.Name, NomeFile, true) != 0)
                                     {
-                                        ZipArchiveEntry e = resultZip.CreateEntry(entry.Name, CompressionLevel.Fastest);
-                                        using (var eS = e.Open())
+                                        //entry.Delete();
+                                        //break;
+                                        using (var entryS = entry.Open())
                                         {
-                                            entryS.CopyTo(eS);
+                                            ZipArchiveEntry e = resultZip.CreateEntry(entry.Name, CompressionLevel.Fastest);
+                                            using (var eS = e.Open())
+                                            {
+                                                entryS.CopyTo(eS);
+                                            }
                                         }
+
                                     }
-
+                                }
+                            }
                         }
-                    }
-                        }
-                        ZipArchiveEntry enew = resultZip.CreateEntry(NomeFile, CompressionLevel.Fastest);
-                        using (var eS = enew.Open()) {
+                    ZipArchiveEntry enew = resultZip.CreateEntry(NomeFile, CompressionLevel.Fastest);
+                     using (var eS = enew.Open()) 
+                        {
                             mfile.CopyTo(eS);
-                    }
-
+                        }
                     }
                     resultms.Position = 0;
                     res = await _allMan.SalvaFileAsync(IdAllegato, resultms);                
@@ -1181,6 +1184,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 f.CodiceSoggetto = CodiceSoggetto;
                 f.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 f.SetAttributo("NomeSoggetto", NomeSoggetto);
+
                 if (_fasMan.Salva(f, isNew) == false) return null;
 
                 //-------- Memorizzo l'operazione----------------------
@@ -1214,7 +1218,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                 e.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 e.SetAttributo("NomeSoggetto", NomeSoggetto);
                 e.SetAttributo("DataRichiesta", e.GetAttributo("Data"));
-
                 if (_elmMan.Salva(e, isNew) == false) return null;
 
                 //-------- Memorizzo l'operazione----------------------

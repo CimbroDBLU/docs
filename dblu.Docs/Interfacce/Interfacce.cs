@@ -11,7 +11,7 @@ namespace dblu.Docs.Interfacce
 {
     public interface ISoggetti
     {
-         string Codice { get; set; }
+          string Codice { get; set; }
 
          string Nome { get; set; }
          string Indirizzo { get; set; }

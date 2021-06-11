@@ -131,7 +131,6 @@ namespace dblu.Portale.Plugin.Docs.Services
         {
             List<string> l = new List<string>();
 
-
             if (NomeServer != "")
             {
 
@@ -166,61 +165,39 @@ namespace dblu.Portale.Plugin.Docs.Services
                     if (x.Type == ClaimTypes.Role) l.Add(x.Value);
                 }
             }
-
             return l;
-
-
-
             
         }
 
 
-        public List<String> getRuoli(List<string> Ruoli, string NomeServer)
+        public List<String> getRuoli(List<string> Ruoli, List<EmailServer> ElencoServer)
         {
             List<string> l = new List<string>();
 
-
-            if (NomeServer != "")
+            if (ElencoServer!=null && ElencoServer.Count() >0)
             {
-
-                //string xRol = "'";
-                //foreach (Claim x in Roles)
-                //{
-                //    if (x.Type == ClaimTypes.Role) xRol = xRol + x.Value + "','";
-                //}
-                //xRol = xRol.Substring(0, xRol.Length - 2);
                 try
                 {
+                    List<string>nomiServer = (from s in ElencoServer select s.Nome).ToList();
 
                     using (SqlConnection cn = new SqlConnection(_context.Connessione))
                     {
-
-                        string sql = "Select RoleID FROM [ServersInRole] where [RoleID] IN ('" + string.Join("','", Ruoli) + "') and [idServer]='" + NomeServer + "'";
+                        // string sql = "Select RoleID FROM [ServersInRole] where [RoleID] IN ('" + string.Join("','", Ruoli) + "') and [idServer]='" + NomeServer + "'";
+                        string sql = "Select RoleID FROM [ServersInRole] where [RoleID] IN ('" + string.Join("','", Ruoli) + "') and [idServer] IN ('" + string.Join("','", nomiServer) + "')";
                         l = cn.Query<string>(sql).ToList();
-
                     }
                 }
-
                 catch (Exception ex)
                 {
                     _logger.LogError($"getRuoli: {ex.Message}");
                 }
-
             }
             else
             {
-                //foreach (Claim x in Roles)
-                //{
-                //    if (x.Type == ClaimTypes.Role) l.Add(x.Value);
-                //}
                 l = Ruoli;
             }
 
             return l;
-
-
-
-
         }
 
         public List<String> getRuoli(string Modulo, string NomeServer)
@@ -1523,6 +1500,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 Allegato.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 Allegato.SetAttributo("NomeSoggetto", NomeSoggetto);
+                
                 //var attr = Allegato.Attributi;
                 //attr["CodiceCliente"] = CodiceCliente;
                 //Allegato.Attributi = attr;
@@ -1614,10 +1592,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                         e.SetAttributo(att.Nome, Allegato.GetAttributo(att.Nome));
                     }
                 }
+                
                 e.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 e.SetAttributo("NomeSoggetto", NomeSoggetto);
                 e.SetAttributo("DataRichiesta", e.GetAttributo("Data"));
-
                 if (_elmMan.Salva(e,isNew) == false) return null;
 
                 //-------- Memorizzo l'operazione----------------------
@@ -3317,5 +3295,62 @@ namespace dblu.Portale.Plugin.Docs.Services
             //info.Stato = StatoAttuale;
             return info;
         }
+
+
+        /// <summary>
+        ///  metodo di servizio per rigenerare il file pdf di un allegato di un elemento a partire dalla email
+        /// </summary>
+        public async Task<bool> RigeneraPdfCompleto(string IdAllegato,
+               string IdFascicolo,
+               string IdElemento,
+               ClaimsPrincipal User)
+        {
+            try
+            {
+                var cancel = new CancellationToken();
+
+                var Allegato = _allMan.Get(IdAllegato);
+
+               var Descrizione = Allegato.Descrizione;
+
+                TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
+                Fascicoli f = _fasMan.Get(Allegato.IdFascicolo);
+                Elementi e = _elmMan.Get(Allegato.IdElemento, 0);
+                Allegati mail = null;
+                using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                {
+                    mail = cn.Query<Allegati>("select * from allegati where tipo='EMAIL' and IdFascicolo=@IdFascicolo and IdElemento=@IdElemento ", 
+                        new { IdFascicolo , IdElemento }).FirstOrDefault();
+                }
+
+                if (tipoAll != null && f != null & e != null & mail !=null)
+                {
+                    //estrae i file dalla mail presenti in lista e li assegna all'elemento
+                    var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
+                    string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp", $"{Allegato.Id}.pdf");
+                    var m = await _allMan.GetFileAsync(mail.Id.ToString());
+                    var Messaggio = MimeKit.MimeMessage.Load(m, cancel);
+                    
+                    var l= sfdpf.CreaTmpPdfCompletoSF(NomePdf, Messaggio);
+                    MemoryStream mpdf = new MemoryStream();
+                    using (FileStream fileStream = File.OpenRead(NomePdf))
+                    {
+                        mpdf.SetLength(fileStream.Length);
+                        fileStream.Read(mpdf.GetBuffer(), 0, (int)fileStream.Length);
+                    }
+                    var all = await _allMan.SalvaAsync(Allegato, mpdf, false);
+
+                    var res = await sfdpf.MarcaAllegatoSF(all, e.elencoAttributi);
+
+                    return res;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"RigeneraPdfCompleto : {ex.Message}");
+            }
+            return false;
+        }
+    
     }
 }

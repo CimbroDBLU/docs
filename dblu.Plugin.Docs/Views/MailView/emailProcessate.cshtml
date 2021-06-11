@@ -1,6 +1,7 @@
 ﻿@model dblu.Docs.Models.Allegati
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
+@using dblu.Portale.Core.UI
 @inject dblu.Portale.Plugin.Docs.Services.MailService _mailservice
 @inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
 
@@ -23,7 +24,7 @@
 
     if (ListaServer != null)
     {
-        var ListaRuoliServ = _mailservice.getRuoli(Context.User.Claims, ListaServer.ElementAt(0).Nome);
+        var ListaRuoliServ = _mailservice.getRuoli(ListaRuoli, ListaServer);
         ListaTipiElementiServ = _mailservice._elmMan.GetAllTipiElementi(ListaRuoliServ);
     }
     else
@@ -32,7 +33,11 @@
     }
 
 
+    var Title = "Email processate";
 }
+
+
+@(await Html.RenderComponentAsync<PageTitle>(RenderMode.Server,  new { nTitle = Title}))
 
 <style>
 
@@ -48,8 +53,6 @@
         padding-top: 0em;
         padding-bottom: 0em;
     }
-</style>
-<style>
 
     .my-icon-class-download:before {
         content: "\e132"; /* Adds a glyph using the Unicode character number */
@@ -73,20 +76,8 @@
 </style>
 
 
-
-<section class="content-header">
-    <h1>
-        Email processate
-    </h1>
-    <ol class="breadcrumb">
-        <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
-        <li class="active">Email processate</li>
-    </ol>
-</section>
-
 <script src="~/Scripts/dblugrid.js"></script>
 <script src="~/Scripts/emailprocessate.js"></script>
-
 
 <script>
 
@@ -109,13 +100,27 @@
 
 </script>
 
-<!-- Main content -->
-<section class="content">
-    <div class="row">
-        <div class="col-xs-5">
-            <label class="control-label col-md-4" style="font-size:12px">Casella di posta:</label>
-            <div class="col-md-6">
-                @(Html.Kendo().ComboBox()
+
+
+<div class="e-card">
+    <div class="e-card-header">
+        <div class="e-card-header-caption">
+            <div class="e-card-header-title">
+                @Title
+            </div>
+        </div>
+    </div>
+    <div class="e-card-separator"></div>
+    <div class="e-card-content">
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid mb-2">
+                <div class="row">
+                    <div class="col-5">
+                        <div class="row">
+                            <label class="control-label col-4 mt-1" style="font-size:12px">Casella di posta:</label>
+                            <div class="col-6">
+                                @(Html.Kendo().ComboBox()
                     .Name("emailServer")
                     .Placeholder("Seleziona Server...")
                     .DataTextField("Nome")
@@ -129,11 +134,15 @@
                         e.Select("onSelectServer");
                     })
                 )
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-7"></div>
+                </div>
             </div>
-        </div>
-    </div>
-    <div>
-        @(Html.Kendo().Dialog()
+
+            <div>
+                @(Html.Kendo().Dialog()
         .Name("dialog")
         .Title("Eliminazione")
         .Content("<p>Sei sicuro di eliminare <strong>completamente</strong> l'email?<p>")
@@ -150,14 +159,14 @@
             .Action("onElimina");
         })
     )
-    </div>
-    <div class="row">
-        <div class="col-xs-5">
-            <div class="box box-solid box-default">
-                @Html.Hidden("IdAllegato")
-                <div class="box-body">
-                    <div class="k-grid">
-                        @(Html.Kendo().Grid<dblu.Docs.Models.AllegatoEmail>()
+            </div>
+            <div class="row">
+                <div class="col-5" style="align-self: auto;">
+                    <div class="card card-outline card-secondary card-solid card-default">
+                        @Html.Hidden("IdAllegato")
+                        <div class="card-body p-0 m-0">
+                            <div class="k-grid">
+                                @(Html.Kendo().Grid<dblu.Docs.Models.AllegatoEmail>()
                         .Name("gridEmail")
                         .Columns(columns =>
                         {
@@ -169,30 +178,16 @@
                                             + "<span> #: Mittente# </span><br/>");
                             columns.Bound(p => p.Oggetto).Title("Oggetto").Width(150);
                             columns.Bound(p => p.Data).Title("Data").Width(100).Format("{0:dd/MM/yy HH:mm}");
-                            @*
-                            columns.Command(command =>
-                            {
-                                command.Custom("Inoltra").Text("").Click("InoltraEmail").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:80px" });
-                                command.Custom("Riapri").Text("").Click("RiapriEmail").IconClass("k-icon my-icon-class-undo").HtmlAttributes(new { style = "width:80px" });
-                                command.Custom("Elimina").Text("").Click("gridEmailOnRemove").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:80px" });
-                                // command.Custom("*Elimina*").Click("DeleteEmail");
-                                //command.Destroy().Text("Cancella").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:80px" });
-                                //columns.Bound(p => p.Stato).Width(50).ClientTemplate("#if (data.Stato == 3){#<span class='k-icon k-i-printer'></span>#} else if (data.Stato==2){#<span class='k-icon k-i-file-add'></span>#}#");
-
-                                //command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewHistory").HtmlAttributes(new { style = " hidden: 'hidden' " }) ;
-                            }).Width(90);
-                             *@
                             columns.Bound(p => p.LastOp).Width(50).Title("Operaz.").ClientTemplate("#= xIconLastOp(data) #").Width(80);
                             columns.Command(command => command.Custom("History").Template("#= xIconLastOp(data) #").Click("viewHistory")).Width(100).Hidden();
-                            //columns.Bound(p => p.Stato).Width(50).ClientTemplate("#if (data.Stato == 5){#<span class='k-icon k-i-check-outline' style='color: green;'></span>#} else if (data.Stato==9){#<span class='k-icon k-i-close-outline' style='color: red;'></span>#}#");
                         })
                         .ToolBar(toolbar =>
                         {
-                            // toolbar.ClientTemplateId("GridToolbarTemplate");
-                            toolbar.Custom().Text("Rispondi").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:90px", onclick = "RispondiEmail()" });
-                            toolbar.Custom().Text("Inoltra").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:75px", onclick = "InoltraMail()", id="btnInoltra" }) ;
-                            toolbar.Custom().Text("Riapri").IconClass("k-icon my-icon-class-undo").HtmlAttributes(new { style = "width:75px", onclick = "RiapriMail()", id = "btnRiapri" });
-                            toolbar.Custom().Text("Elimina").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaEmail()", id = "btnCancella" });
+
+                            toolbar.Custom().Text("Rispondi").IconClass("k-icon my-icon-class-rispondi").HtmlAttributes(new { style = "width:90px", onclick = "RispondiEmail(event)" });
+                            toolbar.Custom().Text("Inoltra").IconClass("k-icon my-icon-class-inoltra").HtmlAttributes(new { style = "width:75px", onclick = "InoltraMail(event)", id="btnInoltra" }) ;
+                            toolbar.Custom().Text("Riapri").IconClass("k-icon my-icon-class-undo").HtmlAttributes(new { style = "width:75px", onclick = "RiapriMail(event)", id = "btnRiapri" });
+                            toolbar.Custom().Text("Elimina").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaEmail(event)", id = "btnCancella" });
                             toolbar.Search();
                         })
                         .Pageable()
@@ -220,49 +215,47 @@
                          )
                          .Resizable(resize => resize.Columns(true))
                          .HtmlAttributes(new { Height = "100%", style = "font-size:10" })
-                         //.ToolBar(toolbar => { toolbar.Search(); })
+
                          .Search(s => { s.Field(c => c.Descrizione); s.Field(c => c.Chiave1); s.Field(c => c.Chiave3); s.Field(c => c.Chiave4); })
                         )
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-xs-7">
-            <div class="box box-solid box-default">
-                <div class="box-body">
-                    <form>
-                        <div class="form-group">
-                            <label class="control-label col-md-4" style="font-size:12px">Cliente</label>
-                            <div class="col-md-10" style="width:80%;">
+                <div class="col-7" style="align-self: auto;">
+                    <div class="card card-outline card-secondary card-solid card-default">
+                        <div class="card-body">
+                            <form>
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <label class="control-label col-4 pl-0" style="font-size:12px">Cliente</label>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-2">
+                                                <input type="text" style="width:100%" id="CodiceSoggetto" placeholder="" disabled value="" />
+                                            </div>
+                                            <div class="form-group col-6">
+                                                <input type="text" style="width:100%" id="NomeSoggetto" placeholder="" disabled value="" />
+                                            </div>
+                                        </div>
+                                    </div>
+</form>
+                        </div>
+                    </div>
+
+                    <div class="card card-outline card-secondary card-solid card-default">
+                        <div class="card-body">
+                            <div class="form-group">
                                 <div class="form-row">
-                                    <div class="form-group col-md-2">
-                                        <input type="text" class="form-control" id="CodiceSoggetto" placeholder="" disabled value="" />
-                                    </div>
-                                    <div class="form-group col-md-6">
-                                        <input type="text" class="form-control" id="NomeSoggetto" placeholder="" disabled value="" />
-                                    </div>
+                                    <label class="control-label col-2 pl-0" style="font-size:12px">Testo</label>                                   
+                                    <textarea id="TestoEmail" name="TestoEmail" rows="10" style="width:100%" readonly="readonly"></textarea>
                                 </div>
                             </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
 
-            <div class="box box-solid box-default">
-                <div class="box-body">
-                    <div class="form-group">
-                        <div class="form-row">
-                            <label class="control-label col-md-2" style="font-size:12px">Testo</label>
-                            <div style="width:95%">
-                                <textarea class="form-control" id="TestoEmail" name="TestoEmail" rows="10" style="width:100%" readonly="readonly"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="control-label col-md-2" style="font-size:12px">Allegati </label>
-                        <div class="col-md-12" style="width:100%">
-                            @(Html.Kendo().Grid<EmailAttachments>()
+                            <div class="form-group">
+                                <label class="control-label col-2 pl-0" style="font-size:12px">Allegati </label>
+                                <div style="width:100%">
+                                    @(Html.Kendo().Grid<EmailAttachments>()
                             .Name("emailAttachments")
                             .PersistSelection()
                             .Columns(columns =>{
@@ -281,13 +274,20 @@
                             .HtmlAttributes(new { style = "font-size:12" })
                             )
 
-                        </div><br /><br />
+                            </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
-</section>
+</div>
+
+
+
+
+
 @(Html.Kendo().Window()
     .Name("wRispondi")
     .Size("auto")
@@ -295,11 +295,11 @@
     .Visible(false)
     .Actions(actions => actions.Close())
     .Content(@<text>
-                <div class="box-body">
+                <div class="card-body">
                     <form id="formRispondi">
                         <div class="form-group">
-                            <label class="control-label col-md-2" style="font-size:12px">A: </label>
-                            <div class="form-group col-md-8">
+                            <label class="control-label col-2" style="font-size:12px">A: </label>
+                            <div class="form-group col-8">
 
                                 @(Html.Kendo().TextBox()
                                     .Name("destinatarioRisposta")
@@ -307,8 +307,8 @@
                                     .HtmlAttributes(new { style = "width: 100%" })
                                 )
                             </div>
-                            <label class="control-label col-md-2" style="font-size:12px">CC: </label>
-                            <div class="form-group col-md-8">
+                            <label class="control-label col-2" style="font-size:12px">CC: </label>
+                            <div class="form-group col-8">
                                 @*@(Html.Kendo().TextBox()
                                     .Name("ccRisposta")
                                     .Value("")
@@ -336,19 +336,19 @@
 
 
                             </div>
-                            <label class="control-label col-md-2" style="font-size:12px">Oggetto: </label>
-                            <div class="form-group col-md-8">
+                            <label class="control-label col-2" style="font-size:12px">Oggetto: </label>
+                            <div class="form-group col-8">
                                 @(Html.Kendo().TextBox()
                                     .Name("oggettoRisposta")
                                     .Value("")
                                     .HtmlAttributes(new { style = "width: 100%" })
                                 )
                             </div>
-                            <label class="control-label col-md-2" style="font-size:12px">Testo: </label>
-                            <div class="form-group col-md-8">
+                            <label class="control-label col-2" style="font-size:12px">Testo: </label>
+                            <div class="form-group col-8">
                                  @Html.TextArea("testoRiposta", "", new { @class="k-textbox", style = "width: 100%;",rows=5 })
                             </div>
-                            <div class="form-group col-md-2">
+                            <div class="form-group col-2">
                                 @(Html.Kendo().Button()
                             .Name("okrispondi")
                             .Content("Invia")
@@ -357,13 +357,13 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <div class="form-group col-md-10" >
+                            <div class="form-group col-10" >
                                 <input type="checkbox" checked  id="chkemailRispondi" title="Allega originale">
-                                <label class="control-label col-md-3" >Allega originale</label>
+                                <label class="control-label col-3" >Allega originale</label>
                             </div>
-                            <div class="form-group col-md-10" >
+                            <div class="form-group col-10" >
                                 <input type="checkbox" checked  id="chkemailRispondiChiudi" title="Chiudi email">
-                                <label class="control-label col-md-3" >Chiudi email</label>                            </div>
+                                <label class="control-label col-3" >Chiudi email</label>                            </div>
                         </div>
                         </form>
                     </div>
@@ -379,10 +379,10 @@
     .Visible(false)
     .Actions(actions => actions.Close())
     .Content(@<text>
-        <div class="box-body">
+        <div class="card-body">
             <form id="formInoltra">
                 <div class="form-group">
-                    <div class="form-group col-md-8">
+                    <div class="form-group col-8">
                           @(Html.Kendo().MultiSelect()
                             .Name("multiMailInoltro")
                             .DataTextField("Email")
@@ -400,7 +400,7 @@
                             })
                          )
                     </div>
-                    <div class="form-group col-md-2">
+                    <div class="form-group col-2">
                         @(Html.Kendo().Button()
                         .Name("okinoltra")
                         .Content("Invia")
@@ -414,7 +414,7 @@
     .Width(600)
     .Height(120)
     .Modal(true)
-    
+
 )
 @(Html.Kendo().Window()
     .Name("wHistory")
@@ -423,8 +423,8 @@
     .Visible(false)
     .Actions(actions => actions.Close())
     .Content(@<text>
-        <div class="box-body">
-            <div class="form-group col-md-11">
+        <div class="card-body">
+            <div class="form-group col-11">
               @(Html.Kendo().Grid<LogDoc>()
                 .Name("logs")
                 .Columns(columns =>

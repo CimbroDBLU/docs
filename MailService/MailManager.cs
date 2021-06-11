@@ -54,7 +54,7 @@ namespace dbluMailService
                 //            .ToList();
                 using (SqlConnection cn = new SqlConnection(Connessione))
                 {
-                    var serverIn = cn.Query<EmailServer>("select * from EmailServer where Attivo<>0 and InUscita =0 and TipoRecord=0").ToList();
+                    var serverIn = cn.Query<EmailServer>($"select * from EmailServer where Attivo<>0 and InUscita =0 and TipoRecord in ({(int)TipiRecordServer.CartellaMail},{(int)TipiRecordServer.CartellaAltreMail})").ToList();
 
                     if (serverIn.Count > 0)
                     {
@@ -114,10 +114,6 @@ namespace dbluMailService
                                         _logger.LogError($"Cartella non valida ( {s.Cartella}).");
 
                                     }
-
-
-
-
                                 }
                                 else
                                 {

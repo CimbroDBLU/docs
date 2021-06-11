@@ -1,0 +1,216 @@
+﻿@*
+    Component for showing a list of categories, and performing CRUD operations
+*@
+
+@page  "/Docs/Categories"
+@using dblu.Docs.Classi
+@using dblu.Docs.Models
+@inject ILogger<Categories> _Logger
+@inject dbluDocsContext _DbContext
+@inject NavigationManager  _NavigationManager
+
+<PageTitle nTitle="Lista Categorie" />
+<style>
+
+    .e-duplicate:before {
+        content: '\e70a';
+    }
+</style>
+<section class="content">
+
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
+
+    <SfCard>
+        <CardHeader Title="Lista Categorie" />
+        <CardContent EnableSeperator="true">
+            <SfGrid @ref="@Grid" DataSource="@nCategories" SelectedRowIndex="1" AllowPaging="true" AllowSorting="true" Toolbar=@Tool>
+                <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
+                <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick" OnToolbarClick="OnToolbarClick" TValue="Categorie"></GridEvents>
+                <GridPageSettings PageSize="20"></GridPageSettings>
+                <GridColumns>
+                    <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Categorie.Codice) HeaderText="Codice"></GridColumn>
+                    <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Categorie.Descrizione) HeaderText="Descrizione"></GridColumn>
+                    <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Categorie.ViewAttributi) HeaderText="Attributi"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </CardContent>
+    </SfCard>
+
+
+    <QuestionDialog nTitle="Conferma"
+                    nText="Rimuovo il record selezionato?"
+                    OnExitPressed="OnCloseDialog"
+                    OnNoPressed="OnCloseDialog"
+                    OnYesPressed="OnDeleteConfirmed"
+                    OnClose="OnCloseDialog"
+                    nShowDialog="@ShowConfirm">
+    </QuestionDialog>
+</section>
+
+@code
+{
+
+
+    /// <summary>
+    /// Observable list of showed categories
+    /// </summary>
+    private ObservableCollection<Categorie> nCategories { get; set; } = new();
+
+    /// <summary>
+    /// Injected Dossier Managewr for editing categories
+    /// </summary>
+    private FascicoliManager _DossierManager { get; set; }
+
+    /// <summary>
+    /// Grid users serf object
+    /// </summary>
+    private SfGrid<Categorie> Grid;
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        _DossierManager = new FascicoliManager(_DbContext.Connessione, _Logger);
+        nCategories = new ObservableCollection<Categorie>(_DossierManager.GetAllCategorie());
+
+
+    }
+
+    /// <summary>
+    /// List of the buttons on toolbar of the grid
+    /// </summary>
+    private List<Object> Tool = new List<Object>()
+    {
+            new ItemModel(){ Id="New",Text="Nuovo", TooltipText="Nuovo", PrefixIcon="e-add" } ,
+            new ItemModel(){ Id="Edit",Text="Modifica", TooltipText="Modifica", PrefixIcon="e-edit" } ,
+            new ItemModel(){ Id="Delete",Text="Elimina", TooltipText="Elimina", PrefixIcon="e-delete" },
+            new ItemModel(){ Id="Duplicate",Text="Duplica", TooltipText="Duplica", PrefixIcon="e-duplicate" }
+        };
+
+    /// <summary>
+    /// Show/Hide the dialog for deleting categories
+    /// </summary>
+    private bool ShowConfirm { get; set; } = false;
+
+    /// <summary>
+    /// On double click edit the selected category
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnDoubleClick(RecordDoubleClickEventArgs<Categorie> args)
+    {
+        _NavigationManager.NavigateTo($"/Docs/EditCategories/{args.RowData.Codice.ToString()}");
+    }
+
+    /// <summary>
+    /// Indicates if spinner has to be visible
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// When the grid do something, show the spinner
+    /// </summary>
+    private void OnActionBegin()
+    {
+        IsSpinnerVisible = true;
+    }
+
+    /// <summary>
+    /// When the grid stop doing something, hide the spinner
+    /// </summary>
+    private void OnActionEnd()
+    {
+        IsSpinnerVisible = false;
+    }
+
+
+
+    /// <summary>
+    /// Manage the actions that has to be done on toolbar click
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnToolbarClick(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        if (args.Item.Id == "New") _NavigationManager.NavigateTo("/Docs/EditCategories");
+
+        List<Categorie> SelectedCategories = await Grid.GetSelectedRecords();
+
+        if (SelectedCategories.Count == 0) return;
+
+        switch (args.Item.Id)
+        {
+            case "Edit":
+                foreach (Categorie U in SelectedCategories)
+                {
+                    _NavigationManager.NavigateTo($"/Docs/EditCategories/{U.Codice.ToString()}");
+                    break;
+                }
+                break;
+            case "Delete":
+                ShowConfirm = true;
+                break;
+
+            case "Duplicate":
+                foreach (Categorie c in SelectedCategories)
+                {
+                    Categorie c1 = new Categorie();
+                    List<Categorie> Lst = _DossierManager.GetAllCategorie();
+
+                    int i = 0;
+                    do
+                    {
+                        c1.Codice = c.Codice.Substring(0, c.Codice.Length - 1) + (++i).ToString();
+                    } while (Lst.FirstOrDefault(s => s.Codice == c1.Codice) != null);
+
+                    c1.ViewAttributi = c.ViewAttributi;
+                    c1.Descrizione = c.Descrizione;
+                    _DossierManager.SalvaCategoria(c1);
+                    _NavigationManager.NavigateTo($"/Docs/EditCategories/{c1.Codice.ToString()}");
+                    break;
+                }
+                break;
+
+        }
+    }
+
+    /// <summary>
+    /// Close the dialog without deletion
+    /// </summary>
+    public async void OnCloseDialog()
+    {
+        ShowConfirm = false;
+    }
+
+
+    /// <summary>
+    /// On Deletion confirmed, remove the data
+    /// </summary>
+    public async void OnDeleteConfirmed()
+    {
+        ShowConfirm = false;
+        IsSpinnerVisible = true;
+        Stopwatch SW = new Stopwatch(); SW.Start();
+        try
+        {
+            List<Categorie> SelectedCategories = await Grid.GetSelectedRecords();
+            if (SelectedCategories.Count == 0) return;
+            foreach (Categorie C in SelectedCategories)
+            {
+
+                nCategories.Remove(nCategories.ToList().FirstOrDefault(x => x.Codice == C.Codice));
+                _DossierManager.CancellaCategoria(C);
+                _Logger.LogInformation($"Categories.OnDeleteConfirmed: Removed Categories {C.Codice} in {SW.ElapsedMilliseconds} ms");
+                SW.Reset();
+            }
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"Categories.OnDeleteConfirmed: Unable to delete Categories! Unexpected error => {ex} ");
+        }
+        finally
+        {
+            IsSpinnerVisible = false;
+        }
+    }
+}

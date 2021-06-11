@@ -1,0 +1,31 @@
+﻿@*
+    Component for displaying a Tile with the incoming request
+*@
+
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
+
+<Tile nTitle="@Number"
+      nDescription="Richieste in arrivo"
+      nLink="/ZipView/ZipInArrivo?Tipo=REQ"
+      nIcon="fas fa-ruler"
+      nBackColor="#ffc107"
+      nForeColor="black"></Tile>
+
+
+@code {
+    /// <summary>
+    /// Number of the incoming request
+    /// </summary>
+    public string Number { get; set; }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        Number = _ZipService.CountZipInArrivo("REQ", user.Claims).ToString();
+    }
+}

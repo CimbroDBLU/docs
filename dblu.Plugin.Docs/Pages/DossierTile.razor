@@ -1,0 +1,26 @@
+﻿@*
+    Component for displaying a Tile for linking Dossiers
+*@
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachmentsService
+<Tile nTitle="@Number"
+      nDescription="Fascicoli"
+      nLink="Docs/Fascicolo"
+      nIcon="fas fa-archive"
+      nBackColor="#6d4c41"
+      nForeColor="white"></Tile>
+
+
+@code {
+    /// <summary>
+    /// Number of available dossiers
+    /// </summary>
+    public string Number { get; set; }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        Number = _AttachmentsService.CountFascicoli().ToString();
+    }
+}

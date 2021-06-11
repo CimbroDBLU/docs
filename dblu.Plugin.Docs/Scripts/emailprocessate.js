@@ -28,7 +28,8 @@ gridEmailOnChange = function (e) {
     });
 }
 
-function InoltraMail() {
+function InoltraMail(e) {
+    e.preventDefault();
     if (mailItem != null) {
         $("#IdAllegato").val(mailItem.Id);
 
@@ -307,8 +308,8 @@ function InoltraEmail(e) {
 
 
 
-function CancellaEmail() {
-    //e.preventDefault();   
+function CancellaEmail(e) {
+    e.preventDefault();   
     //var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
     if (mailItem != null) {
@@ -357,7 +358,8 @@ function MostraDettaglio(dettaglio) {
     }
     $('#emailAttachments').data('kendoGrid').dataSource.data(dettaglio.FileAllegati);
 }
-function RispondiEmail() {
+function RispondiEmail(e) {
+    e.preventDefault();
     if (mailItem != null) {
         $("#IdAllegato").val(mailItem.Id);
         $("#destinatarioRisposta").val(mailItem.Chiave1);

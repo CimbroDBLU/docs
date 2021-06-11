@@ -19,7 +19,7 @@ namespace dblu.Portale.Plugin.Documenti.Actions
             //18.3.52
             //SyncfusionLicenseProvider.RegisterLicense("MzMwMTg0QDMxMzgyZTMzMmUzME5jenNTSGIvaDBHN3ptdE9LcXlndU9Wa05KL1BXeld6ak9OTmE5MVVZSkU9;MzMwMTg1QDMxMzgyZTMzMmUzMFVvSWtpWkE2UVIwUEpzdTY3dXU3b2pPRU9YMGlrTndxRk5wTjVNQnM5NHc9;MzMwMTg2QDMxMzgyZTMzMmUzMEkxTlZLM2FEa0xuN1h4U0c4NzR1RUpobmlHSzlsZitTSklKTXJnZ2QyZGc9");
             //18.4.35
-            SyncfusionLicenseProvider.RegisterLicense("Mzg2NDgyQDMxMzgyZTM0MmUzMGhIdk9wajRvOWQvdUdZNkcyckFzK1VRY3NLcTVnSEdjd3IxSCtIaG5GZjA9; Mzg2NDgzQDMxMzgyZTM0MmUzMEpCNXJjUDVVWnNpVHV2S1BFenVhYXV4YTNqeFFKZERYM0RJUkRDZVAyZVU9");
+      //      SyncfusionLicenseProvider.RegisterLicense("Mzg2NDgyQDMxMzgyZTM0MmUzMGhIdk9wajRvOWQvdUdZNkcyckFzK1VRY3NLcTVnSEdjd3IxSCtIaG5GZjA9; Mzg2NDgzQDMxMzgyZTM0MmUzMEpCNXJjUDVVWnNpVHV2S1BFenVhYXV4YTNqeFFKZERYM0RJUkRDZVAyZVU9");
             //19.1.55
            //SyncfusionLicenseProvider.RegisterLicense("NDI1NDc5QDMxMzkyZTMxMmUzMEVtV2pXZU5JanFMdFAwZnZLcG9EZnNzNm5nSzYxeGN0U0ZYQ1pHcDFRd1E9");
         }

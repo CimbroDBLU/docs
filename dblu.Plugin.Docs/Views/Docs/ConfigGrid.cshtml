@@ -1,25 +1,31 @@
 ﻿
-
+@using dblu.Portale.Core.UI 
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using Kendo.Mvc.UI
 @model List<dblu.Docs.Models.Colonna>
 
-<section class="content-header">
-    <h1>
-        Configurazione griglie
-    </h1>
-    <ol class="breadcrumb">
-        <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
-        <li class="active">Griglie</li>
-    </ol>
-</section>
+@{
+    var Title = " Configurazione griglie";
+}
 
-<section class="content">
-    <div class="row">
-        <div class="col-md-12">
-            <label class="control-label col-md-4" style="font-size:12px">Tipo griglia:</label>
-            <div class="col-md-6">
-                @(Html.Kendo().ComboBox()
+@(await Html.RenderComponentAsync<PageTitle>(RenderMode.Server,  new { nTitle = Title}))
+
+<div class="e-card">
+    <div class="e-card-header">
+        <div class="e-card-header-caption">
+            <div class="e-card-header-title">
+                @Title
+            </div>
+        </div>
+    </div>
+    <div class="e-card-separator"></div>
+    <div class="e-card-content">
+        <section class="content">
+            <div class="row">
+                <div class="col-12">
+                    <label class="control-label col-4" style="font-size:12px">Tipo griglia:</label>
+                    <div class="col-6">
+                        @(Html.Kendo().ComboBox()
                     .Name("ConfigGrid")
                     .Placeholder("Seleziona Griglia...")
                     .DataTextField("Text")
@@ -44,15 +50,15 @@
                     })
 
                 )
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
 
-    <!-- Main row -->
-    <div class="row">
-        <div class="box-body">
-           
+            <!-- Main row -->
+            <div class="row mt-2 ml-2">
+                <div class="box-body">
+
 
                     @(Html.Kendo().Grid<dblu.Docs.Models.Colonna>()
                            .Name("gridColonne")
@@ -70,6 +76,7 @@
                            .Editable(editable => editable.Mode(GridEditMode.InLine))
                            .Pageable()
                            .Sortable()
+                           .Height(680)                 
                            .Scrollable()
                            .DataSource(dataSource => dataSource
                                 .Ajax()
@@ -81,60 +88,64 @@
                                 })
                                 .Read(read => read.Action("ConfigGrid_Read", "Configurazione").Data("getConfigurazione"))
                                 .Update(update => update.Action("ConfigGrid_Update", "Configurazione").Data("getConfigurazione"))
-                            
+
                          )
 
                         )
 
                 </div>
 
-           
+
+            </div>
+
+
+            <script type="text/javascript">
+                var NomeConfig = null;
+
+                function error_handler(e) {
+                    if (e.errors) {
+                        var message = "Errors:\n";
+                        $.each(e.errors, function (key, value) {
+                            if ('errors' in value) {
+                                $.each(value.errors, function () {
+                                    message += this + "\n";
+                                });
+                            }
+                        });
+                        alert(message);
+                    }
+                }
+                function onSelectGrid(e) {
+
+                    if (e.item) {
+                        //var dataItem = this.dataItem(e.item.index());
+                        NomeConfig = e.dataItem.Value;
+
+                        $("#gridColonne").data("kendoGrid").dataSource.read();
+
+
+                    }
+                }
+                function getConfigurazione() {
+                    var configurazione = "";
+                    if (NomeConfig != null) {
+                        configurazione = NomeConfig;
+                    }
+                    else
+                        configurazione = $("#ConfigGrid").data("kendoComboBox").value();
+                    return {
+                        NomeConfig: configurazione
+                    };
+                    //var configurazione = "";
+                    //return {
+                    //    NomeConfig: $("#ConfigGrid").data("kendoComboBox").value()
+                    //};
+                }
+
+
+            </script>
+        </section>
     </div>
+</div>
 
 
-    <script type="text/javascript">
-        var NomeConfig = null;
-
-           function error_handler(e) {
-                if (e.errors) {
-                    var message = "Errors:\n";
-                    $.each(e.errors, function (key, value) {
-                        if ('errors' in value) {
-                            $.each(value.errors, function () {
-                                message += this + "\n";
-                            });
-                        }
-                    });
-                    alert(message);
-                }
-            }
-        function onSelectGrid(e) {
-
-            if (e.item) {
-                //var dataItem = this.dataItem(e.item.index());
-                NomeConfig = e.dataItem.Value;
-
-                $("#gridColonne").data("kendoGrid").dataSource.read();
-
-
-            }
-        }
-        function getConfigurazione() {
-                var configurazione = "";
-                   if (NomeConfig != null) {
-                       configurazione = NomeConfig;
-                }
-            else
-               configurazione = $("#ConfigGrid").data("kendoComboBox").value();
-            return {
-                NomeConfig: configurazione
-            };
-            //var configurazione = "";
-            //return {
-            //    NomeConfig: $("#ConfigGrid").data("kendoComboBox").value()
-            //};
-        }
-
-
-    </script>
-</section>

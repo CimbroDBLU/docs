@@ -448,6 +448,37 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
         [AcceptVerbs("Post")]
         [HasPermission("50.1.3")]
+        public ActionResult<bool> Smistamento_Cancella(string Id)
+        {
+            if (Id != null && ModelState.IsValid)
+            {
+                // if (_mailService._allMan.Cancella(Id)) {
+                var all = _mailService._allMan.Get(Id);
+                if (all != null)
+                {
+                    // all.Stato = StatoAllegato.Annullato;
+                   _mailService._allMan.Cancella(all.Id);
+
+                    //-------- Memorizzo l'operazione----------------------
+                    LogDoc log = new LogDoc()
+                    {
+                        Data = DateTime.Now,
+                        IdOggetto = Guid.Parse(Id),
+                        TipoOggetto = TipiOggetto.ALLEGATO,
+                        Utente = User.Identity.Name,
+                        Operazione = TipoOperazione.Cancellato
+                    };
+                    _mailService._logMan.Salva(log, true);
+                    //-------- Memorizzo l'operazione----------------------
+
+                    return Json(true);
+                }
+            }
+            return Json(false);
+        }
+
+        [AcceptVerbs("Post")]
+        [HasPermission("50.1.3")]
 		
 		public ActionResult<bool> InArrivo_Completa(string Id)
         {
@@ -490,7 +521,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             m.IdAllegato = Id;
 
             MailViewModel mvModel = await _mailService.GetMailViewModel(Guid.Parse(Id));
-            m.TestoEmail = mvModel.Messaggio.TextBody;
+            m.TestoEmail = mvModel?.Messaggio?.TextBody??"";
             m.FileAllegati = mvModel.FileAllegati;
             m.CodiceSoggetto = mvModel.CodiceSoggetto;
             if (mvModel.Soggetto == null)
@@ -680,7 +711,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             List<Core.Infrastructure.Identity.Classes.ApplicationUser> MailList;
             if (AsValidEmail) MailList = _mailService._usrManager.GetUsers().Where(f => (!String.IsNullOrEmpty(f.Email))).ToList(); else MailList = _mailService._usrManager.GetUsers().ToList();
 
-            var user = _mailService._usrManager?.CurrentUser;
+            var user = _mailService._usrManager.GetUser(HttpContext.User.Identity.Name);
             if (user == null)
             {
                 return BadRequest();
@@ -698,6 +729,19 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                 }
             }
             return Json(MailList.ToDataSourceResult(request));
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult<string>> GetHTML(string IdAllegato)
+        {
+            MemoryStream MS=await _mailService._allMan.GetFileAsync(IdAllegato);
+            var message = MimeMessage.Load(MS);
+            var html = message.ToHtml();
+            if (string.IsNullOrEmpty(html)) {
+                html = $"<html><body>{message.TextBody.Replace("\n", "<br />")}</body><html>";
+            }
+            return html;
         }
 
         [AcceptVerbs("Post")]
@@ -968,7 +1012,8 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
             try
             {
-                if (int.Parse(_config["Docs:ControllaStampa"]) == 1 && !string.IsNullOrEmpty(IdAllegato))
+                int.TryParse(_config["Docs:ControllaStampa"], out int ToCheck);
+                if (ToCheck == 1 && !string.IsNullOrEmpty(IdAllegato))
                 {
                     foreach (Elementi  e in _mailService._elmMan.GetElementiDaAllegato(Guid.Parse(IdAllegato)))
                     {

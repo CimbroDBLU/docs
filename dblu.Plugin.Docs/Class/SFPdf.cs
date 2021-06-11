@@ -29,7 +29,7 @@ using Telerik.Windows.Documents.Flow.FormatProviders.Rtf;
 using Telerik.Windows.Documents.Flow.Model;
 using Telerik.Windows.Documents.Flow.FormatProviders.Pdf;
 using Telerik.Windows.Documents.Flow.FormatProviders.Html;
-
+using System.Diagnostics;
 
 namespace dblu.Portale.Plugin.Docs.Class
 {
@@ -73,21 +73,39 @@ namespace dblu.Portale.Plugin.Docs.Class
             return htxt;
         }
 
+        private static MemoryStream CompressPDFStream(MemoryStream MS, int CompressRatio = 50)
+        {
+            try
+            {
+                PdfLoadedDocument loadedDocument = new(MS);
+                loadedDocument.Compression = PdfCompressionLevel.Best;
+                PdfCompressionOptions options = new();
+                options.CompressImages = true;
+                options.ImageQuality = CompressRatio;
+                loadedDocument.Compress(options);
+                MemoryStream MSOut = new();
+                loadedDocument.Save(MSOut);
+                return MSOut;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public List<EmailAttachments> CreaTmpPdfCompletoSF(string NomePdf, MimeMessage Messaggio)
         {
             List<EmailAttachments> res = new List<EmailAttachments>();
+
+            int.TryParse(_config["Docs:CompressioneImmagini"], out int Quality);
+            if (Quality < 0 || Quality > 100) Quality = 50;
+
+
             try
             {
                 PdfUnitConverter convertor = new PdfUnitConverter();
                 float mm = 10;
-                try
-                {
-                    mm = float.Parse(_config["Docs:Margini"]);
-                }
-                catch
-                {
-                    mm = 10;
-                }
+                float.TryParse(_config["Docs:Margini"], out mm);
                 float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
 
                 var testfile = NomePdf + ".tmp";
@@ -97,121 +115,71 @@ namespace dblu.Portale.Plugin.Docs.Class
                 var mittente = $"{Messaggio.From.Mailboxes.First().Name} ({Messaggio.From.Mailboxes.First().Address})";
                 var oggetto = Messaggio.Subject;
                 var txt = Messaggio.TextBody == null ? "" : Messaggio.TextBody;
-                var htxt = Messaggio.HtmlBody == null ? "" : Messaggio.HtmlBody;
+                var htxt = Messaggio.ToHtml();
                 var pdfstream = new MemoryStream();
                 var ListaPdf = new List<MemoryStream>();
-                //FileStream pdfstream = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite);
-
+             
                 PdfDocument document = new PdfDocument();
                 HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
                 WebKitConverterSettings settings = new WebKitConverterSettings();
 
-                if (htxt == "") {
-                    // controlla presenza testo rtf exchange/outlook (winmail.dat)
-                    // estrae rtf e converte in pdf
-                    var rtxt = "";
-                    try
-                    {
-                        var tnef = Messaggio.BodyParts.OfType<TnefPart>().FirstOrDefault();
-                        if (tnef != null)
-                        {
-                            foreach (var attachment in tnef.ExtractAttachments())
-                            {
-                                var mime_part = attachment as MimePart;
-                                var text = attachment as TextPart;
-                                if (text != null)
-                                {
-                                    rtxt += text.Text;
-                                }
-                            }
-                        }
-                    }
-                    catch { 
-                    }
-                    if (rtxt != "") {
-                        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                        htxt= RtfPipe.Rtf.ToHtml(rtxt);
-                    }
-                }
+
 
                 if (htxt == "")
+                {
+                    if (txt != null)
                     {
-                        if (txt != null)
-                        {
-                            PdfPage page = document.Pages.Add();
-
-                            PdfGraphics graphics = page.Graphics;
-                            //PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
-                            //graphics.DrawString($"Oggetto: {oggetto} \n\n {txt} ", font, PdfBrushes.Black, new PointF(0, 0));
-                            
-                           //intestazione
-                            PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \ndel: {Messaggio.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm")} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
-
-                            textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
-                            document.Save(pdfstream);
-                            //Close the document.
-                            document.Close(true);
-                        }
+                        PdfPage page = document.Pages.Add();
+                        PdfGraphics graphics = page.Graphics;                 
+                        PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \ndel: {Messaggio.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm")} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
+                        textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
+                        document.Save(pdfstream);
+                        document.Close(true);
                     }
-                    else   // conversione html in pdf
+                }
+                else   // conversione html in pdf
+                {
+                    try
                     {
-                        try
+
+                        if (!htxt.Contains("<body"))
                         {
-                        
-                        //var htxt = Messaggio.HtmlBody.Replace("http://", "_http://").Replace("https://", "_https://");
-                        //HtmlFormatProvider htmlFormatProvider = new HtmlFormatProvider();
-                        //document = htmlFormatProvider.Import(htxt);
+                            htxt = $"<body>{htxt}</body>";
+                        }
+                        htxt = PulisciHtml(htxt);
+                        int bodys = htxt.IndexOf("<body");
+                        if (bodys >= 0)
+                        {
+                            int bodye = htxt.IndexOf(">", bodys);
+                            htxt = htxt.Substring(0, bodye + 1) +
+                                $"<div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm ")}</div><br>"
+                                + htxt.Substring(bodye + 1);
+                        }
 
-                        //intestazione
-                        if (!htxt.Contains("<body>"))
-                            {
-                                htxt = $"<body>{htxt}</body>";
-                            }
-                            htxt = PulisciHtml(htxt);
+                        string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
 
-                            htxt = htxt.Replace("<body>", $"<body><div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Messaggio.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm ")}<br></div>");
-
-                            //File.WriteAllText("d:\\temp\\testo.html", htxt);
-                            string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
-
-                            //Set WebKit path
-                            settings.WebKitPath = _config["Docs:PercorsoWebKit"];
-                            settings.EnableJavaScript = false;
-                            settings.EnableHyperLink = false;
-                            settings.EnableOfflineMode = true;
-                            settings.SplitTextLines = true;
-                            settings.SplitImages = true;
-                            //settings.SinglePageLayout = Syncfusion.Pdf.HtmlToPdf.SinglePageLayout.FitHeight;
-                            settings.Margin.Right = MarginPoints;
-                            settings.Margin.Left = MarginPoints;
-                            settings.Margin.Top = MarginPoints;
-                            settings.Margin.Bottom = MarginPoints;
-                        //Assign WebKit settings to HTML converter
+                        settings.WebKitPath = _config["Docs:PercorsoWebKit"];
+                        settings.EnableJavaScript = false;
+                        settings.EnableHyperLink = false;
+                        settings.EnableOfflineMode = true;
+                        settings.SplitTextLines = true;
+                        settings.SplitImages = true;
+                        settings.Margin.Right = MarginPoints;
+                        settings.Margin.Left = MarginPoints;
+                        settings.Margin.Top = MarginPoints;
+                        settings.Margin.Bottom = MarginPoints;
                         htmlConverter.ConverterSettings = settings;
-
-                            //Convert HTML string to PDF
-                            document = htmlConverter.Convert(htxt, baseUrl);
-
-                            //Save and close the PDF document 
-                            document.Save(pdfstream);
-                            document.Close(true);
-
-                        }
-                        catch (Exception ex)
-                        {
-                            //document = new RadFlowDocument();
-                            //RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
-                            //editor.InsertText($"Oggetto: {oggetto}");
-                            //editor.InsertBreak(BreakType.LineBreak);
-                            //editor.InsertText(txt);
-                            _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il testo. {ex.Message}");
-                        }
-
+                        document = htmlConverter.Convert(htxt, baseUrl);
+                        document.Save(pdfstream);
+                        document.Close(true);
                     }
-//                }
-                 //pdfstream.Close();
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il testo. {ex.Message}");
+                    }
+
+                }
                 ListaPdf.Add(pdfstream);
-                //}
 
                 int i = 0;
                 foreach (var attachment in Messaggio.Allegati())
@@ -234,6 +202,13 @@ namespace dblu.Portale.Plugin.Docs.Class
                     {
                         var part = (MimePart)attachment;
                         fileName = part.NomeAllegato(i);
+                       
+                        if ( part.FileName is null && part is TextPart ) {
+                            var tp = (TextPart)part;
+                            if (tp.IsHtml && tp.IsAttachment) { 
+                                continue;
+                            }
+                        }
                         part.Content.DecodeTo(m);
                     }
                     try
@@ -257,10 +232,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                                 try
                                 {
 
-                                    PdfImage image = new PdfBitmap(m);
-                                    //graphics.DrawImage(image, 0, 0);
-
-                                    //PdfImage image = new PdfBitmap(PathToImage);
+                                    PdfImage image = new PdfBitmap(m);                                   
                                     float shrinkFactor;
                                     float myWidth = image.Width;
                                     float myHeight = image.Height;
@@ -268,16 +240,10 @@ namespace dblu.Portale.Plugin.Docs.Class
                                     if (myWidth > 100 && myHeight > 100)
                                     {
                                         document = new PdfDocument();
-                                        //PdfSection section = document.Sections.Add();
 
                                         if (image.Width > image.Height)
-                                        {
                                             document.PageSettings.Orientation = PdfPageOrientation.Landscape;
-                                            //page.Rotation = PdfPageRotateAngle.RotateAngle90;
-                                            //section.PageSettings.Rotate = PdfPageRotateAngle.RotateAngle90;
-                                            //PageWidth = page.Graphics.ClientSize.Height;
-                                            //PageHeight = page.Graphics.ClientSize.Width;
-                                        }
+                                        
                                         PdfPage page = document.Pages.Add();
                                         float PageWidth = page.Graphics.ClientSize.Width;
                                         float PageHeight = page.Graphics.ClientSize.Height;
@@ -305,7 +271,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                                         document.Save(pdfstream);
                                         document.Close(true);
 
-                                        //Close the document
+                                     
                                         ListaPdf.Add(pdfstream);
                                         incluso = true;
                                     }
@@ -335,7 +301,7 @@ namespace dblu.Portale.Plugin.Docs.Class
 
                 if (ListaPdf.Count() == 0)
                 {
-                    // aggiungo almeno l'oggetto
+                    // Aggiungo pagina riepilogo
                     PdfPage page = document.Pages.Add();
                     PdfGraphics graphics = page.Graphics;
                     PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
@@ -347,10 +313,10 @@ namespace dblu.Portale.Plugin.Docs.Class
 
                 if (ListaPdf.Count() > 0)
                 {
-                    //PdfDocument finalDoc = new PdfDocument();
+                   
                     using (PdfDocument finalDoc = new PdfDocument())
                     {
-                        //funzione merge
+                        //Fondo gli altri allegati
                         try
                         {
                             foreach (Stream s in ListaPdf)
@@ -369,26 +335,33 @@ namespace dblu.Portale.Plugin.Docs.Class
                                     }
                                 }
                             }
-                           
-                            //creazione stram per il file finale
-                            //FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite);
-                            using (FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite))
-                            {
 
-                                //salvataggio e chiusura
-                                finalDoc.Save(fileStreamMerge);
+                            ///Comprimo il tutto
+                            MemoryStream MS = new();
+                            finalDoc.Save(MS);
+                            if (Quality != 0)
+                            {
+                                Stopwatch SW = new(); SW.Start();
+                                
+                                finalDoc.Save(MS);
+                                long unc = MS?.Length ?? 0;
+                                MS = CompressPDFStream(MS, Quality);
+                                long com = MS?.Length ?? 0;
+
+                                _logger.LogInformation($"SFPdf.CreaTmpPdfCompletoSF: ONFLY Compression {unc}->{com} = {((unc - com) * 100.0) / unc:f}% in {SW.ElapsedMilliseconds} ms");
                             }
+
+                            //Creazione stram per il file finale
+                            using (FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite))
+                                    fileStreamMerge.Write(MS.ToArray());
                         }
                         catch (Exception ex)
                         {
                             _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
                         }
                         foreach (var ms in ListaPdf)
-                        {
                             ms.Close();
-                        }
                         finalDoc.Close(true);
-                        //finalDoc.Dispose();
                     }
                 }
             }
@@ -404,6 +377,9 @@ namespace dblu.Portale.Plugin.Docs.Class
         {
             List<EmailAttachments> res = new List<EmailAttachments>();
 
+            int.TryParse(_config["Docs:CompressioneImmagini"], out int Quality);
+            if (Quality < 0 || Quality > 100) Quality = 50;
+
             try
             {
                 var testfile = NomePdf + ".tmp";
@@ -412,27 +388,17 @@ namespace dblu.Portale.Plugin.Docs.Class
 
                 var pdfstream = new MemoryStream();
                 var ListaPdf = new List<MemoryStream>();
-                //FileStream pdfstream = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite);
-
                 PdfDocument document = new PdfDocument();
-                //HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
-                //WebKitConverterSettings settings = new WebKitConverterSettings();
 
-                if (Testo.Length >0 )
+
+                if (Testo.Length > 0)
                 {
                     PdfPage page = document.Pages.Add();
 
                     PdfGraphics graphics = page.Graphics;
-                    //PdfFont font = new PdfStandardFont(PdfFontFamily.Helvetica, 10);
-                    //graphics.DrawString($"Oggetto: {oggetto} \n\n {txt} ", font, PdfBrushes.Black, new PointF(0, 0));
-
                     PdfTextElement textElement = new PdfTextElement(Testo, new PdfStandardFont(PdfFontFamily.Helvetica, 10));
                     textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
-
                     document.Save(pdfstream);
-
-                    //Close the document.
-
                     document.Close(true);
                     ListaPdf.Add(pdfstream);
 
@@ -475,10 +441,9 @@ namespace dblu.Portale.Plugin.Docs.Class
                                 case ".png":
                                     try
                                     {
-                                        using (var unzippedEntryStream = entry.Open())
-                                        {
+                                        using (var unzippedEntryStream = entry.Open())  
                                             unzippedEntryStream.CopyTo(m);
-                                        }
+                                        
                                         document = new PdfDocument();
 
                                         PdfImage image = new PdfBitmap(m);
@@ -488,9 +453,8 @@ namespace dblu.Portale.Plugin.Docs.Class
                                         float myHeight = image.Height;
 
                                         if (image.Width > image.Height)
-                                        {
-                                            document.PageSettings.Orientation = PdfPageOrientation.Landscape;
-                                        }
+                                            document.PageSettings.Orientation = PdfPageOrientation.Landscape; 
+                                        
                                         PdfPage page = document.Pages.Add();
                                         float PageWidth = page.Graphics.ClientSize.Width;
                                         float PageHeight = page.Graphics.ClientSize.Height;
@@ -536,16 +500,16 @@ namespace dblu.Portale.Plugin.Docs.Class
                         {
                             _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
                         }
-                        var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = incluso, Avvisi=avvisi };
+                        var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = incluso, Avvisi = avvisi };
                         res.Add(a);
                     }
                 }
                 if (ListaPdf.Count() == 0)
                 {
-                    // aggiungo almeno l'oggetto
+                    // Aggiungo la pagina di intestazione
                     PdfPage page = document.Pages.Add();
                     PdfGraphics graphics = page.Graphics;
-                    PdfTextElement textElement = new PdfTextElement($"nomefile: {NomePdf} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
+                    PdfTextElement textElement = new PdfTextElement($"Nome del file: {NomePdf} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
                     textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
                     document.Save(pdfstream);
                     document.Close(true);
@@ -554,37 +518,42 @@ namespace dblu.Portale.Plugin.Docs.Class
 
                 if (ListaPdf.Count() > 0)
                 {
-                    //PdfDocument finalDoc = new PdfDocument();
+
                     using (PdfDocument finalDoc = new PdfDocument())
                     {
-                        //funzione merge
+                        //Aggiungo gli altri pdf
                         try
                         {
-
                             PdfDocumentBase.Merge(finalDoc, ListaPdf.ToArray());
-                            //creazione stram per il file finale
-                            //FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite);
-                            using (FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite))
-                            {
 
-                                //salvataggio e chiusura
-                                finalDoc.Save(fileStreamMerge);
+                            ///Comprimo il tutto
+                            MemoryStream MS = new();
+                            finalDoc.Save(MS);
+                            if (Quality != 0)
+                            {
+                                Stopwatch SW = new(); SW.Start();
+
+                                finalDoc.Save(MS);
+                                long unc = MS?.Length ?? 0;
+                                MS = CompressPDFStream(MS, Quality);
+                                long com = MS?.Length ?? 0;
+
+                                _logger.LogInformation($"SFPdf.CreaTmpPdfCompletoSF: ONFLY Compression {unc}->{com} = {((unc - com) * 100.0) / unc:f}% in {SW.ElapsedMilliseconds} ms");
                             }
+
+                            //Creazione stream per il file finale
+                            using (FileStream fileStreamMerge = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite))
+                                    fileStreamMerge.Write(MS.ToArray());
                         }
                         catch (Exception ex)
                         {
                             _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
                         }
-                        foreach (var ms in ListaPdf)
-                        {
+                        foreach (var ms in ListaPdf)                     
                             ms.Close();
-                        }
                         finalDoc.Close(true);
-                        //finalDoc.Dispose();
                     }
                 }
-
-
             }
             catch (Exception ex)
             {

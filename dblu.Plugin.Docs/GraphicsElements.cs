@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using dblu.Portale.Core.PluginBase.Interfaces;
-using dblu.Portale.Core.PluginBase.Class;
+using dblu.Portale.Core.PluginBase.Classes;
 using ExtCore.Infrastructure;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
@@ -46,31 +46,30 @@ namespace dblu.Portale.Plugin.Documenti
 
                 var subItemT = new MenuItem[]
                 {
-                    new MenuItem("50.1.1", 1, "Docs/Categorie", "Categorie", "fa-table", null),
-                    new MenuItem("50.1.1", 2, "Docs/TipiElementi", "Tipi elementi", "fa-table", null),
-                    new MenuItem("50.1.1", 3, "Docs/TipiAllegati", "Tipi allegati", "fa-table", null),
-                    new MenuItem("50.1.1", 4, "Docs/ConfigGrid", "Configurazione griglie", "fa-table", null),
-                    new MenuItem("50.1.3", 5, "Docs/ServersEmail", "Servers Email", "fa-table", null),
+                    new MenuItem("50.1.1", 1, "Docs/Categories", "Categorie", "fas fa-table", null),
+                    new MenuItem("50.1.1", 2, "Docs/TipiElementi", "Tipi elementi", "fas fa-folder", null),
+                    new MenuItem("50.1.1", 3, "Docs/TipiAllegati", "Tipi allegati", "fas fa-paperclip", null),
+                    new MenuItem("50.1.1", 4, "Docs/ConfigGrid", "Configurazione griglie", "fas fa-sliders-h", null),
+                    new MenuItem("50.1.3", 5, "Docs/Servers", "Servers", "fas fa-server", null),
                 };
  			var subItemF = new MenuItem[]
                 {
-                    new MenuItem("50.1.2", 2, "Docs/Fascicolo", "Fascicoli", "fa-table", null),
+                    new MenuItem("50.1.2", 2, "Docs/Fascicolo", "Fascicoli", "fas fa-archive", null),
                  };
 
                 return new MenuItem[]
                 {
-                    new MenuItem("50.1.1", 1, "Docs/Tabelle", "Tabelle", "fa-file", subItemT),
-                    new MenuItem("50.1.2", 1, "Docs/Fascicoli", "Fascicoli", "fa-file", subItemF),
-                    new MenuItem("50.1.5", 1, "MailView/Smistamento", "Smistamento", "fa-table", null),
-                    new MenuItem("50.1.3", 1, "MailView/InArrivo", "Email in arrivo", "fa-table", null),
-//                    new MenuItem("50.1.3", 1, "MailView/InArrivo?ruolo=Resi", "Email resi", "fa-table", null),
-                    new MenuItem("50.1.3", 2, "MailView/emailProcessate", "Email processate", "fa-table", null),
-                    new MenuItem("50.1.3", 3, "MailView/emailInviate", "Email inviate", "fa-table", null),
-                    new MenuItem("50.1.4", 4, "ZipView/ZipInArrivo", "File in arrivo", "fa-table", null),
-                    new MenuItem("50.1.4", 5, "ZipView/ZipProcessati", "File processati", "fa-table", null),
-                    new MenuItem("50.1.4", 6, "ZipView/ZipInArrivo?Tipo=REQ", "Ordini Dealers in arrivo", "fa-table", null),
-                    new MenuItem("50.1.4", 6, "ZipView/ZipProcessati?Tipo=REQ", "Ordini Dealers processati", "fa-table", null),
-                    new MenuItem("50.2", 1, "Docs/Logs", "Gestione Log", "fa-table", null),
+                    new MenuItem("50.1.1", 1, "Docs/Tabelle", "Tabelle", "fas fa-table", subItemT),
+                    new MenuItem("50.1.2", 1, "Docs/Fascicoli", "Fascicoli", "fas fa-archive", subItemF),
+                    new MenuItem("50.1.5", 1, "MailView/Smistamento", "Smistamento", "fas fa-map-signs", null),
+                    new MenuItem("50.1.3", 1, "MailView/InArrivo", "Email in arrivo", "fas fa-envelope-open-text", null),
+                    new MenuItem("50.1.3", 2, "MailView/emailProcessate", "Email processate", "fas fa-envelope", null),
+                    new MenuItem("50.1.3", 3, "MailView/emailInviate", "Email inviate", "fas fa-paper-plane", null),
+                    new MenuItem("50.1.4", 4, "ZipView/ZipInArrivo", "File in arrivo", "fas fa-file-archive", null),
+                    new MenuItem("50.1.4", 5, "ZipView/ZipProcessati", "File processati", "fas fa-file-archive", null),
+                    new MenuItem("50.1.4", 6, "ZipView/ZipInArrivo?Tipo=REQ", "Ordini Dealers in arrivo", "fas fa-ruler", null),
+                    new MenuItem("50.1.4", 6, "ZipView/ZipProcessati?Tipo=REQ", "Ordini Dealers processati", "fas fa-pencil-ruler", null),
+                  //  new MenuItem("50.2", 1, "Docs/Logs", "Gestione Log", "fas fa-history", null),
                 };
             }
         }
@@ -83,33 +82,35 @@ namespace dblu.Portale.Plugin.Documenti
                 var myMail = new IndexItem("50.1.3", 1, "", "Mail", "MailDash", "");
                 myMail.Size = new System.Drawing.Size(2, 6);
                 myMail.ElementType = OBJECT_TYPE.TEMPLATE;
-                myMail.Template = "TemplateMail";
+                myMail.Template = "dblu.Portale.Plugin.Docs.Pages.MailTile";
+
                 // FILE
                 var myFile = new IndexItem("50.1.4", 2, "", "File", "FileDash", "");
                 myFile.Size = new System.Drawing.Size(2, 6);
                 myFile.ElementType = OBJECT_TYPE.TEMPLATE;
-                myFile.Template = "TemplateFile";
+                myFile.Template = "dblu.Portale.Plugin.Docs.Pages.FileTile";
+
                 // DEALERS
                 var myREQ = new IndexItem("50.1.4", 2, "", "Richieste", "FileDash", "");
                 myREQ.Size = new System.Drawing.Size(2, 6);
                 myREQ.ElementType = OBJECT_TYPE.TEMPLATE;
-                myREQ.Template = "TemplateDealers";
+                myREQ.Template = "dblu.Portale.Plugin.Docs.Pages.RequestTile";
+
                 // FASCICOLI
                 var myFascicoli = new IndexItem("50.1.2", 3, "", "Fascicoli", "FascicoliDash", "");
                 myFascicoli.Size = new System.Drawing.Size(2, 6);
                 myFascicoli.ElementType = OBJECT_TYPE.TEMPLATE;
-                myFascicoli.Template = "TemplateFascicoli";
+                myFascicoli.Template = "dblu.Portale.Plugin.Docs.Pages.DossierTile";
 
                 // Smistamento
                 var mySmista = new IndexItem("50.1.5", 4, "", "Smistamento", "MailDash", "");
                 mySmista.Size = new System.Drawing.Size(2, 6);
                 mySmista.ElementType = OBJECT_TYPE.TEMPLATE;
-                mySmista.Template = "TemplateSmistamento";
+                mySmista.Template = "dblu.Portale.Plugin.Docs.Pages.AddressingTile";
 
                 return new IndexItem[]
                 {
-                    myMail, myFile, myREQ, myFascicoli, mySmista
-                 // new IndexItem("50.1.3", 1,  "", "Index", "DocsDash", "")
+                    myMail, myFile, myREQ, myFascicoli, mySmista                
                 };
             }
         }
@@ -133,7 +134,7 @@ namespace dblu.Portale.Plugin.Documenti
                 return new MenuGroupItem[]
                 {
                     
-                    new MenuGroupItem("50.1", 1,"Documenti", this.MenuItems, "fa-file"),
+                    new MenuGroupItem("50.1", 1,"Documenti", this.MenuItems, "fas fa-mail-bulk"),
                 };
             }
         }

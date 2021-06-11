@@ -118,7 +118,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
 
             if (xx.Count() != 0)
-                return _usr.GetRoles().Where(d => xx.Contains(d.Code));
+                return _usr.GetRoles().Where(d => xx.Contains(d.Code)).ToList();
 
             return new List<Role>();
         }
@@ -207,7 +207,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             if (xx.Count() != 0)
                 return _usr.GetRoles().Where(d => !xx.Contains(d.Code));
 
-            return tmpRuoli;
+            return _usr.GetRoles();
         }
 
         public void RemoveAllegatoFromRole(string RoleID, string TipoAllegato)

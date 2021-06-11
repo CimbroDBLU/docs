@@ -5,6 +5,7 @@
 @using dblu.Docs.Classi
 @using dblu.Portale.Core.Infrastructure.Interfaces
 @using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.UI 
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _zipservice
 @inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _allservice
@@ -20,9 +21,7 @@
     ViewData["Title"] = "Documenti da processare";
 
     List<dblu.Docs.Models.TipiElementi> ListaTipiElementi;
-    //List<SelectListItem> ListaRuoliZip = _zipservice.GetRuoliZip(Context.User.Claims);
 
-    //TipiAllegati TipoAll = _zipservice._allMan.GetTipoAllegato("ZIP");
     TipiAllegati TipoAll;
     if (!string.IsNullOrEmpty(Model.TipoAll))
     {
@@ -72,7 +71,11 @@
     }
 
     List<dblu.Docs.Models.Colonna> ElCols = _allservice.GetColonne("vELEMENTO");
+    var Title = "Documenti da processare";
 }
+
+
+@(await Html.RenderComponentAsync<PageTitle>(RenderMode.Server,  new { nTitle = Title}))
 
 <style>
 
@@ -202,24 +205,25 @@
 
 </script>
 
-<section class="content-header">
-    <h1>
-        Documenti in arrivo
-    </h1>
-    <ol class="breadcrumb">
-        <li><a href="/Index"><i class="fa fa-dashboard"></i>Home</a></li>
-        <li><a href="/ZipView/ZipInArrivo">Documenti in arrivo</a></li>
-    </ol>
-</section>
-
-<!-- Main content -->
-<section class="content">
-
-    <div class="row" hidden="@(ListaServer.Count <= 1)">
-        <div class="col-xs-5">
-            <label class="control-label col-md-4" style="font-size:12px">Cartella:</label>
-            <div class="col-md-6">
-                @(Html.Kendo().ComboBox()
+<div class="e-card">
+    <div class="e-card-header">
+        <div class="e-card-header-caption">
+            <div class="e-card-header-title">
+                @Title
+            </div>
+        </div>
+    </div>
+    <div class="e-card-separator"></div>
+    <div class="e-card-content">
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid mb-2">
+                <div class="row" hidden="@(ListaServer.Count <= 1)">
+                    <div class="col-5">
+                        <div class="row">
+                            <label class="control-label col-4 mt-1" style="font-size:12px">Cartella:</label>
+                            <div class="col-6">
+                                @(Html.Kendo().ComboBox()
                     .Name("cmbCartelleZip")
                     .Placeholder("Seleziona cartella...")
                     .DataTextField("Nome")
@@ -233,18 +237,19 @@
                         e.Select("onSelectCartella");
                     })
                 )
-            </div>
-        </div>
-    </div>
+                            </div>
+                        </div>
+                        <div class="col-7"></div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-5" style="align-self: auto;">
+                        <div class="card card-outline card-secondary card-solid card-default">
+                            @Html.Hidden("IdAllegato")
 
-    <div class="row">
-        <div class="col-xs-5">
-            <div class="box box-solid box-default">
-                @Html.Hidden("IdAllegato")
-
-                <div class="box-body">
-                    <div class="k-grid">
-                        @(Html.Kendo().Grid<Allegati>()
+                            <div class="card-body p-0 m-0">
+                                <div class="k-grid">
+                                    @(Html.Kendo().Grid<Allegati>()
                             .Name("gridZip")
                             .Columns(columns =>
                             {
@@ -262,8 +267,8 @@
                             })
                              .ToolBar(toolbar =>
                              {
-                                 toolbar.Custom().Text("Sposta").IconClass("k-icon my-icon-class-sposta").HtmlAttributes(new { style = "width:75px", onclick = "SpostaZip()" });
-                                 toolbar.Custom().Text("Canc.").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:70px", onclick = "CancellaZip()" });
+                                 toolbar.Custom().Text("Sposta").IconClass("k-icon my-icon-class-sposta").HtmlAttributes(new { style = "width:75px", onclick = "SpostaZip(event)" });
+                                 toolbar.Custom().Text("Canc.").IconClass("k-icon my-icon-class-cancella").HtmlAttributes(new { style = "width:70px", onclick = "CancellaZip(event)" });
                                  toolbar.Search();
                              })
                         .Pageable()
@@ -295,137 +300,141 @@
                         .Search(s => { s.Field(c => c.Descrizione); s.Field(c => c.Chiave1); s.Field(c => c.Chiave3); s.Field(c => c.Chiave4); })
 
                         )
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xs-7">
-            <div class="box box-default"  id="divSoggetto">
-                <div class="box-header">
-                    <i class="ion ion-person"></i>
-                    <h4 class="box-title">Cliente</h4>
-                    <div class="box-tools pull-right">
-                        <button type="button" class="btn btn-box-tool" data-widget="collapse">
-                            <i class="fa fa-minus"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="box-body">
-                    <form>
-                        <div class="row" id="divCliente">
-                            <div class="form-group">
-                                @*   <label class="control-label col-md-4" style="font-size:12px">Cliente</label> *@
-                                <div class="col-md-12" style="width:80%;">
-                                    <div class="form-row">
-                                        <div class="form-group col-md-2">
-                                            <input type="text" class="form-control" id="CodiceSoggetto" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
-                                        </div>
-                                        <div class="form-group col-md-6">
-                                            <input type="text" class="form-control" id="NomeSoggetto" placeholder="" disabled value="" />
-                                        </div>
-                                        @(Html.Kendo().Button()
-                                                .Name("CercaSoggetti")
-                                                .HtmlAttributes(new { type = "button", @class = "k-primary" })
-                                                .Content("Cerca")
-                                                .Events(e => e.Click("CercaSoggettiOnClick"))
-                                            )
-                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="row" id="divSoggettoElementiAperti" hidden>
-                            <div class="form-group col-md-12" style="width:80%">
-                                @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggettoElementiAperti>()
-                                .Name("gridSoggettoElementiAperti")
-                                .Columns(columns =>
-                                {
-                                    columns.Bound(p => p.Numero).Title("Numero").Width("20%");
-                                    columns.Bound(p => p.Riferimento).Title("Riferimento").Width("40%");
-                                    columns.Bound(p => p.DataConsegna).Title("Data cons.").Width("20%").Format("{0:dd/MM/yy}");
-                                    columns.Bound(p => p.Stato).Title("Stato").Width("20%");
-                                })
-                                .Pageable()
-                                .Sortable()
-                                .Scrollable(s => s.Height("auto"))
-                                .Filterable()
-                                .DataSource(dataSource => dataSource
-                                    .Ajax()
-                                    .PageSize(10)
-                                    .Batch(false)
-                                    .ServerOperation(true)
-                                    .AutoSync(true)
-                                    .Events(events => events.Error("error_handler"))
-                                    .Model(model =>
+                    </div>
+                    <div class="col-7" style="align-self: auto;">
+                        <div class="card card-outline card-secondary card-solid card-default" id="divSoggetto">
+                            <div class="card-header p-1">
+                                <i class="mt-2 fas fa-user float-left"></i>
+                                <div class="card-title mt-1 ml-2">
+                                    Cliente
+                                </div>
+                                <div class="card-tools pull-right">
+                                    <button type="button" class="btn btn-card-tool" data-card-widget="collapse">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <form class="form-group">
+                                    <div class="row" id="divCliente">
+                                        <div class="col">
+                                            <div class="row">
+                                                <div class="form-group col-2" style="display:flex">
+                                                    <input type="text" id="CodiceSoggetto" style="width:100%" placeholder="" value="" onchange="CodiceSoggettoOnChange()" />
+                                                </div>
+                                                <div class="form-group col-6" style="display:flex">
+                                                    <input type="text" id="NomeSoggetto" style="width:100%" placeholder="" disabled value="" />
+                                                </div>
+                                                <div class="form-group col-2">
+                                                    @(Html.Kendo().Button()
+                                            .Name("CercaSoggetti")
+                                            .HtmlAttributes(new { type = "button" })
+                                            .Content("Cerca Soggetto")
+                                            .Events(e => e.Click("CercaSoggettiOnClick"))
+                                        )
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div class="row" id="divSoggettoElementiAperti" hidden>
+                                            <div class="form-group col-12">
+                                                @(Html.Kendo().Grid<dblu.Docs.Interfacce.ISoggettoElementiAperti>()
+                                    .Name("gridSoggettoElementiAperti")
+                                    .Columns(columns =>
                                     {
-                                        model.Id(p => p.Numero);
+                                        columns.Bound(p => p.Numero).Title("Numero").Width("20%");
+                                        columns.Bound(p => p.Riferimento).Title("Riferimento").Width("40%");
+                                        columns.Bound(p => p.DataConsegna).Title("Data cons.").Width("20%").Format("{0:dd/MM/yy}");
+                                        columns.Bound(p => p.Stato).Title("Stato").Width("20%");
                                     })
-                                    .Read(read => read.Action("SoggettoElementiAperti", "ZipView").Data("getSoggetto"))
-                                 )
-                                .Groupable(false)
-                                .Resizable(resize => resize.Columns(true))
-                                .HtmlAttributes(new { style = "font-size:10" })
-                            )
+                                    .Pageable()
+                                    .Sortable()
+                                    .Scrollable(s => s.Height("auto"))
+                                    .Filterable()
+                                    .DataSource(dataSource => dataSource
+                                        .Ajax()
+                                        .PageSize(10)
+                                        .Batch(false)
+                                        .ServerOperation(true)
+                                        .AutoSync(true)
+                                        .Events(events => events.Error("error_handler"))
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.Numero);
+                                        })
+                                        .Read(read => read.Action("SoggettoElementiAperti", "MailView").Data("getSoggetto"))
+                                     )
+                                    .Groupable(false)
+                                    .Resizable(resize => resize.Columns(true))
+                                    .HtmlAttributes(new { style = "font-size:10" })
+                                )
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-                    </form>
-                </div>
-            </div>
 
-            <div class="box box-default" id="divFascicolo" hidden>
-                @Html.Hidden("IdFascicolo")
-                @Html.Hidden("IdElemento")
-                <div class="box-header with-border">
-                    <i class="ion ion-folder"></i>
-                    <h4 class="box-title">Fascicolo / Elementi</h4>
-                    <div class="box-tools pull-right">
-                        <button type="button" class="btn btn-box-tool" data-widget="collapse" id="CollapseFascicolo">
-                            <i class="fa fa-minus"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="box-body">
-                    <form>
-                        <div class="form-group">
-                            @* <label class="control-label col-md-4" style="font-size:12px">Fascicolo / Elemento</label>*@
-                            <div class="col-md-12" style="width:100%;">
-                                <div class="form-row">
-                                    <div class="form-group col-md-6">
-                                        <input type="text" class="form-control" id="DescrizioneElemento" placeholder="" value="" />
-                                    </div>
-                                    <div class="form-group col-md-2">
-                                        @(Html.Kendo().Button()
+                        <div class="card card-outline card-secondary card-solid card-default" id="divFascicolo" style="display:none">
+                            @Html.Hidden("IdFascicolo")
+                            @Html.Hidden("IdElemento")
+                            <div class="card-header p-1  with-border p-1 ">
+                                <i class="mt-2 fas fa-archive float-left"></i>
+                                <div class="card-title mt-1 ml-2">
+                                    Fascicolo\Elementi
+                                </div>
+                                <div class="card-tools pull-right">
+                                    <button type="button" class="btn btn-card-tool" data-card-widget="collapse" id="CollapseFascicolo">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <form>
+                                    <div class="form-group">
+                                        @* <label class="control-label col-4" style="font-size:12px">Fascicolo / Elemento</label>*@
+                                        <div class="col-12" style="width:100%;">
+                                            <div class="form-row">
+                                                <div class="form-group col-6">
+                                                    <input type="text" class="form-control" id="DescrizioneElemento" placeholder="" value="" />
+                                                </div>
+                                                <div class="form-group col-2">
+                                                    @(Html.Kendo().Button()
                                                 .Name("CercaFascicolo")
                                                 .HtmlAttributes(new { type = "button", @class = "k-primary" })
                                                 .Content("Cerca")
                                             .Events(e => e.Click("CercaElementiOnClick"))
                                         )
-                                    </div>
-                                    <div class="form-group col-md-2">
-                                        @(Html.Kendo().Button()
+                                                </div>
+                                                <div class="form-group col-2">
+                                                    @(Html.Kendo().Button()
                                     .Name("Completa")
                                     .HtmlAttributes(new { type = "button", @class = "k-primary" })
                                     .Content("Operazione Completa")
                                     .Events(e => e.Click("ZipCompleto"))
                                     )
-                                    </div>
-                                    <div class="form-group col-md-2">
-                                        @(Html.Kendo().Button()
+                                                </div>
+                                                <div class="form-group col-2">
+                                                    @(Html.Kendo().Button()
                                             .Name("StampaRiepilogo")
                                             .HtmlAttributes(new { type = "button", @class = "k-primary" })
                                             .Content("Stampa Riepilogo")
                                             .Events(e => e.Click("StampaRiepilogo"))
                                         )
+                                                </div>
+
+                                            </div>
+                                        </div>
                                     </div>
+                                    <div class="form-group" id="divElemento">
+                                        <div class="col-12" style="width:100%;">
 
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group" id="divElemento">
-                            <div class="col-md-12" style="width:100%;">
-
-                                <div class="form-row">
-                                    <div class="form-group col-md-12">
-                                        @(Html.Kendo().Grid<EmailElementi>()
+                                            <div class="form-row">
+                                                <div class="form-group col-12">
+                                                    @(Html.Kendo().Grid<EmailElementi>()
                                             .Name("gridZipElementi")
                                             .Columns(columns =>
                                             {
@@ -444,9 +453,9 @@
                                             .ToolBar(toolbar =>
                                             {
                                                 // toolbar.ClientTemplateId("GridToolbarTemplate");
-                                                toolbar.Custom().Text("Apri").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:75px", onclick = "ApriElementoGrid()" });
-                                                toolbar.Custom().Text("Agg.").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:75px", onclick = "AggiungiAElementoGrid()" });
-                                                toolbar.Custom().Text("Canc.").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaElemento()" });
+                                                toolbar.Custom().Text("Apri").IconClass("k-icon k-i-folder-open").HtmlAttributes(new { style = "width:75px", onclick = "ApriElementoGrid(event)" });
+                                                toolbar.Custom().Text("Agg.").IconClass("k-icon k-i-folder-add").HtmlAttributes(new { style = "width:75px", onclick = "AggiungiAElementoGrid(event)" });
+                                                toolbar.Custom().Text("Canc.").IconClass("k-icon k-i-delete").HtmlAttributes(new { style = "width:75px", onclick = "CancellaElemento(event)" });
                                                 toolbar.Search();
                                             })
                                             .DataSource(dataSource => dataSource
@@ -468,75 +477,77 @@
                                              .Events(events => events
                                                  .Change("gridZipElementiOnChange"))
                                         )
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-md-4" style="font-size:12px">Nuovo</label>
-                            <div class="col-md-10" style="width:80%;">
-                                <div id="DivGridElementi">
-                                    <div class="grid-container">
-                                        @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
-                                        {
-                                            @if (item.AggregaAElemento == false)
-                                            {
-                                                <div class="grid-item">
-                                                    <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info">@item.Descrizione </button>
                                                 </div>
-                                            }
-                                        }
-                                        <style>
-                                            .grid-container {
-                                                display: inline-grid;
-                                                grid-template-columns: auto auto auto;
-                                                background-color: #2196F3;
-                                                padding: 5px;
-                                            }
-
-                                            .grid-item {
-                                                background-color: rgba(255, 255, 255, 0.8);
-                                                border: 1px solid rgba(0, 0, 0, 0.8);
-                                                padding: 5px;
-                                                font-size: 15px;
-                                                text-align: center;
-                                            }
-
-                                            .b {
-                                                margin-left: 5px;
-                                            }
-                                        </style>
-
+                                            </div>
+                                        </div>
                                     </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-4" style="font-size:12px">Nuovo</label>
+                                        <div class="col-10" style="width:80%;">
+                                            <div id="DivGridElementi">
+                                                <div class="grid-container">
+                                                    @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
+                                                    {
+                                                        @if (item.AggregaAElemento == false)
+                                                        {
+                                                            <div class="grid-item">
+                                                                <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info">@item.Descrizione </button>
+                                                            </div>
+                                                        }
+                                                    }
+                                                    <style>
+                                                        .grid-container {
+                                                            display: inline-grid;
+                                                            grid-template-columns: auto auto auto;
+                                                            background-color: #2196F3;
+                                                            padding: 5px;
+                                                        }
+
+                                                        .grid-item {
+                                                            background-color: rgba(255, 255, 255, 0.8);
+                                                            border: 1px solid rgba(0, 0, 0, 0.8);
+                                                            padding: 5px;
+                                                            font-size: 15px;
+                                                            text-align: center;
+                                                        }
+
+                                                        .b {
+                                                            margin-left: 5px;
+                                                        }
+                                                    </style>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card card-outline card-secondary card-solid card-default" id="divAllegati">
+                            <div class="card-header p-1">
+                                <i class="mt-2 fas fa-paperclip float-left"></i>
+                                <div class="card-title mt-1 ml-2">
+                                    Allegati
+                                </div>
+                                <div class="card-tools pull-right">
+                                    <button type="button" class="btn btn-card-tool" data-card-widget="collapse">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <div class="box box-default" id="divAllegati">
-                <div class="box-header with-border">
-                    <i class="ion ion-folder"></i>
-                    <h4 class="box-title">Allegati</h4>
-                    <div class="box-tools pull-right">
-                        <button type="button" class="btn btn-box-tool" data-widget="collapse" id="CollapseContenuto">
-                            <i class="fa fa-minus"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="box-body">
-                    <form>
-                        <div class="form-group" hidden>
-                            <label class="control-label col-md-2" style="font-size:12px">Testo</label>
-                            <div class="col-md-12" style="width:100%">
-                                <textarea class="form-control" id="TestoEmail" name="TestoEmail" rows="5" style="width:100%" readonly="readonly"></textarea>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label col-md-2" style="font-size:12px" hidden>Allegati da includere</label>
-                            <div class="col-md-12" style="width:100%">
-                                @(Html.Kendo().Grid<EmailAttachments>()
+                            <div class="card-body">
+                                <form>
+                                    <div class="form-group" hidden>
+                                        <label class="control-label col-2" style="font-size:12px">Testo</label>
+                                        <div class="col-12" style="width:100%">
+                                            <textarea class="form-control" id="TestoEmail" name="TestoEmail" rows="5" style="width:100%" readonly="readonly"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-2" style="font-size:12px" hidden>Allegati da includere</label>
+                                        <div class="col-12" style="width:100%">
+                                            @(Html.Kendo().Grid<EmailAttachments>()
                                     .Name("zipAttachments")
                                     .PersistSelection()
                                     .Columns(columns =>
@@ -558,29 +569,41 @@
                                         )
                                     .HtmlAttributes(new { style = "font-size:12" })
                                     )
-                                @*
-                                     .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
-                                     .Events(events => events.Change("Attachments_OnRowSelect"))
-                                    .Events(ev => ev.Change("xxonChange"))*@
-                            </div><br /><br />
-                        </div>
+                                            @*
+                                             .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
+                                             .Events(events => events.Change("Attachments_OnRowSelect"))
+                                            .Events(ev => ev.Change("xxonChange"))*@
+                                        </div><br /><br />
+                                    </div>
 
-                        <div class="form-group" style="margin-top:10px" hidden>
-                            <div class="col-md-10" style="font-size:15px">
-                                @(Html.Kendo().CheckBox().Name("allegamail")
+                                    <div class="form-group" style="margin-top:10px" hidden>
+                                        <div class="col-10" style="font-size:15px">
+                                            @(Html.Kendo().CheckBox().Name("allegamail")
                                     .Checked(false).Label("Allega il testo della Mail")
                                 )
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-                    </form>
-                </div>
-            </div>
-            <div class="box box-solid box-default">
-                <div class="box-body">
-                    <div class="form-group" style="margin-top:10px">
-                        <div class="form-row">
-                            <div class="col-md-12" style="width:100%" id="anteprimapdf">
-                                @(Html.Kendo().ToolBar()
+
+                        <div class="card card-outline card-secondary card-solid card-default">
+                            <div class="card-header p-1 ">
+                                <i class="mt-2 far fa-file-pdf float-left"></i>
+                                <div class="card-title mt-1 ml-2">
+                                    Anteprima
+                                </div>
+                                <div class="card-tools float-right">
+                                    <button type="button" class=" btn btn-card-tool" data-card-widget="collapse">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0 m-0">
+
+
+                                <div class="col-12 p-0 m-0" style="width:100%; margin-top:10px" id="anteprimapdf">
+                                    @(Html.Kendo().ToolBar()
                                        .Name("pdfToolBar")
                                        .Items(items =>
                                        {
@@ -599,32 +622,34 @@
                                        .Events(e => e.Click("tbpdf_click"))
                                    )
 
-                                <ejs-pdfviewer id="zippdfviewer" serviceUrl="/api/PdfEditor" documentPath=""
-                                               enablePrint="true"
-                                               printEnd="documentPrinted"
-                                               documentLoad="documentLoaded"
-                                               annotationAdd="annotationAdd"
-                                               enableStampAnnotations="false"
-                                               exportSuccess="exportSuccess"
-                                               printStart="documentPrint"
-                                               locale="it-IT"
-                                               downloadFileName="@string.Concat("",".pdf")" height="900px"
-                                               toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
-                                </ejs-pdfviewer>
+                                    <ejs-pdfviewer id="zippdfviewer" serviceUrl="/api/PdfEditor" documentPath=""
+                                                   enablePrint="true"
+                                                   printEnd="documentPrinted"
+                                                   documentLoad="documentLoaded"
+                                                   annotationAdd="annotationAdd"
+                                                   enableStampAnnotations="false"
+                                                   exportSuccess="exportSuccess"
+                                                   printStart="documentPrint"
+                                                   locale="it-IT"
+                                                   downloadFileName="@string.Concat("",".pdf")" height="900px"
+                                                   toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
+                                    </ejs-pdfviewer>
 
-                            </div>
-                            <div class="col-md-12" style="width:80%" id="anteprimajpg" hidden>
-                                <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
+                                </div>
+                                <div class="col-12 p-0 m-0" style="width:80%" id="anteprimajpg" hidden>
+                                    <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <form class="new-tab-opener" method="get" target="_blank"></form>
-</section>
+                <form class="new-tab-opener" method="get" target="_blank"></form>
+        </section>
+    </div>
+</div>
+
+
 
 
 <script type="text/javascript">
@@ -691,11 +716,11 @@
     .Visible(false)
     .Actions(actions => actions.Close())
     .Content(@<text>
-        <div class="box-body">
+        <div class="card-body">
             <form>
                 <div class="form-group">
-                    @*              <label class="control-label col-md-1" style="font-size:14px">indirizzo</label>*@
-                    <div class="form-group col-md-8">
+                    @*              <label class="control-label col-1" style="font-size:14px">indirizzo</label>*@
+                    <div class="form-group col-8">
                          @(Html.Kendo().ComboBox()
                             .Name("zipServer_sposta")
                             .Placeholder("Seleziona cartella...")
@@ -706,7 +731,7 @@
                             .HtmlAttributes(new { style = "width:100%;" })
                         )
                     </div>
-                    <div class="form-group col-md-2">
+                    <div class="form-group col-2">
                         @(Html.Kendo().Button()
                         .Name("okSposta")
                         .Content("Sposta")
@@ -728,8 +753,8 @@
     .Visible(false)
     .Actions(actions => actions.Close())
     .Content(@<text>
-        <div class="box-body">
-            <div class="form-group col-md-11">
+        <div class="card-body">
+            <div class="form-group col-11">
               @(Html.Kendo().Grid<LogDoc>()
                 .Name("logs")
                 .Columns(columns =>

@@ -7,7 +7,8 @@ namespace dblu.Docs.Models
     public enum TipiRecordServer
     {
         CartellaMail = 0,
-        CartellaFile = 1
+        CartellaFile = 1,
+        CartellaAltreMail = 2,
     }
     [Table("EmailServer")]
     public partial class EmailServer
