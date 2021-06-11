@@ -131,7 +131,8 @@ function gridZipOnChange(e) {
 }
 
 
-function CancellaZip() {
+function CancellaZip(e) {
+    e.preventDefault();
     if (zipItem != null) {
         $("#dialogElimina").data("kendoDialog").open();
     }
