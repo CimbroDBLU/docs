@@ -208,7 +208,7 @@ namespace dblu.Docs.Classi
                 if (Valori.ContainsKey(Nome))
                 {
                     Attributo a = Valori[Nome];
-                    if (valore == null) {
+                    if (valore is null) {
                         if (a.Obbligatorio)
                         {
                             return false;

@@ -371,48 +371,50 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <div class="col-6">
-                                <div class="form-group row">
-                                    <div class="col-2"><label for='' class="control-label">ID Allegato</label></div>
-                                    <div class="col-10"><input type='text' class='form-control' id='' placeholder='' value='@Allegato?.Id' disabled></div>
-                                </div>
-                                <div class="form-group row">
-                                    <div class="col-2"><label for='' class="control-label">Creato il</label></div>
-                                    <div class="col-10">
-                                        <input type='datetime' class='form-control' id='' placeholder='' value='@Allegato?.DataC' disabled>
+                        <form class='form-horizontal'>
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="form-group row">
+                                        <div class="col-2"><label for='' class="control-label">ID Allegato</label></div>
+                                        <div class="col-10"><input type='text' class='form-control' id='' placeholder='' value='@Allegato?.Id' disabled></div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-2"><label for='' class="control-label">Creato il</label></div>
+                                        <div class="col-10">
+                                            <input type='datetime' class='form-control' id='' placeholder='' value='@Allegato?.DataC' disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-2"><label for='' class="control-label">Utente Creazione</label></div>
+                                        <div class="col-10">
+                                            <input type='text' class='form-control' id='' placeholder='Nome' value='@Allegato?.UtenteC' disabled>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="form-group row">
-                                    <div class="col-2"><label for='' class="control-label">Utente Creazione</label></div>
-                                    <div class="col-10">
-                                        <input type='text' class='form-control' id='' placeholder='Nome' value='@Allegato?.UtenteC' disabled>
+                                <div class="col-6">
+                                    <div class="form-group row">
+                                        <div class="col-2"><label for='' class="control-label">Descrizione</label></div>
+                                        <div class="col-10">
+                                            <input type='text' class='form-control' id='' placeholder='' value='@Allegato?.Descrizione' disabled>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <div class="col-2"><label for='' class="control-label">Modificato il</label></div>
+                                        <div class="col-10">
+                                            <input type='datetime' class='form-control' id='' placeholder='' value='@Allegato?.DataUM' disabled>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <div class="col-2"><label for='' class="control-label">Utente Ultima Modifica</label></div>
+                                        <div class="col-10">
+                                            <input type='text' class='form-control' id='' placeholder='Nome' value='@Allegato?.UtenteUM' disabled>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <div class="form-group row">
-                                    <div class="col-2"><label for='' class="control-label">Descrizione</label></div>
-                                    <div class="col-10">
-                                        <input type='text' class='form-control' id='' placeholder='' value='@Allegato?.Descrizione' disabled>
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <div class="col-2"><label for='' class="control-label">Modificato il</label></div>
-                                    <div class="col-10">
-                                        <input type='datetime' class='form-control' id='' placeholder='' value='@Allegato?.DataUM' disabled>
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <div class="col-2"><label for='' class="control-label">Utente Ultima Modifica</label></div>
-                                    <div class="col-10">
-                                        <input type='text' class='form-control' id='' placeholder='Nome' value='@Allegato?.UtenteUM' disabled>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            </form>
                     </div>
                 </div>
             </div>
@@ -432,60 +434,62 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="form-group">
-                            @if(Allegato!=null)
-                            {
-                            @foreach (var attributo in Allegato.elencoAttributi.ToList().OrderBy(f => (f.Sequenza)))
-                            {
-
-
-                            @if (attributo.Visibilità != dblu.Docs.Classi.Visibilita_Attributi.HIDDEN)
+                        <form id="formAttributi">
+                            <div class="form-group">
+                                @if (Allegato != null)
                                 {
-                            <div class='form-group row'>
-                                <div class='col-4'>  @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione) </div>
-                                <div class='col-8'>
+                                    @foreach (var attributo in Allegato.elencoAttributi.ToList().OrderBy(f => (f.Sequenza)))
+                                    {
 
-                                    @switch (attributo.Tipo)
 
-                                            {
-                                                case "System.DateTime":
-                                                    bool xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
-                                    @(Html.Kendo().DatePicker()
+                                        @if (attributo.Visibilità != dblu.Docs.Classi.Visibilita_Attributi.HIDDEN)
+                                        {
+                                            <div class='form-group row'>
+                                                <div class='col-4'>  @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione) </div>
+                                                <div class='col-8'>
+
+                                                    @switch (attributo.Tipo)
+
+                                                    {
+                                                        case "System.DateTime":
+                                                            bool xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
+                                                            @(Html.Kendo().DatePicker()
                                                             .Name($"ctl_{attributo.Nome}")
                                                             .Enable(xEditable)
                                                             .Value(Allegato.elencoAttributi.GetDateTime(attributo.Nome))
                                                     )
-                                                    break;
-                                                case "System.Boolean":
-                                                    xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
-                                                    bool xx = attributo.Valore == null ? false : (bool)Allegato.elencoAttributi.GetBoolean(attributo.Nome);
-                                    @(Html.Kendo().Switch()
+                                                            break;
+                                                        case "System.Boolean":
+                                                            xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
+                                                            bool xx = attributo.Valore == null ? false : (bool)Allegato.elencoAttributi.GetBoolean(attributo.Nome);
+                                                            @(Html.Kendo().Switch()
                                                           .Name($"ctl_{attributo.Nome}")
                                                           .Enabled(xEditable)
                                                           .Messages(c => c.Checked("Si").Unchecked("No"))
                                                           .Checked(xx)
                                                     )
-                                                    break;
-                                                default:
-                                                    xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
-                                    @(Html.Kendo().TextBox()
+                                                            break;
+                                                        default:
+                                                            xEditable = (attributo.Visibilità == Visibilita_Attributi.EDITABLE && isEdit == true) ? true : false;
+                                                            @(Html.Kendo().TextBox()
                                                           .Name($"ctl_{attributo.Nome}")
                                                           .Enable(xEditable)
                                                           .Value(Allegato.GetAttributo(attributo.Nome,"").ToString())
                                                           .HtmlAttributes(new { style = "width: 100%" })
                                                     )
-                                                    break;
-                                            }
-                                </div>
-                            </div>
+                                                            break;
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    }
                                 }
+                            </div>
+                            @if (isEdit)
+                            {
+                                <button type="button" class="btn margin btn-default" id="bSalvaAtt" onclick="SalvaAttributi(event)">Salva</button>
                             }
-                            }
-                        </div>
-                        @if (isEdit)
-                        {
-                        <button type="button" class="btn margin btn-default" id="bSalvaAtt" onclick="SalvaAttributi(event)">Salva</button>
-                        }
+                        </form>
                     </div>
                 </div>
             </div>
