@@ -1,0 +1,275 @@
+﻿@*
+    Component for creating/editing an item type
+*@
+@page "/Docs/EditItemsTypes"
+@page "/Docs/EditItemsTypes/{Code}"
+@using dblu.Docs.Classi
+@using dblu.Docs.Models
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+@using dblu.Portale.Plugin.Docs.Services
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+
+@inject dbluDocsContext _DbContext
+@inject NavigationManager  _NavigationManager
+@inject ILogger<EditItemsTypes> _Logger
+@inject ServerMailService _ServerMail
+
+<PageTitle nTitle="@CardTitle" />
+
+<section class="content">
+
+    <SfCard>
+        <CardHeader Title="@CardTitle"></CardHeader>
+        <div class="container-fluid" style="margin:5px">
+            <CardContent EnableSeperator="true">
+                <div class="form-group row">
+                    <div class="col-1">
+                        <label>Codice:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="Codice" @bind-Value="@nEditItemsTypes.Codice"></SfTextBox>
+                    </div>
+                    <div class="col-1">
+                        <label>Descrizione:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="Descrizione" @bind-Value="@nEditItemsTypes.Descrizione"></SfTextBox>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-1">
+                        <label>Processo:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="Processo" @bind-Value="@nEditItemsTypes.Processo"></SfTextBox>
+                    </div>
+                    <div class="col-1">
+                        <label>Categoria:</label>
+                    </div>
+                    <div class="col-5">
+                        <ComboCategories @bind-nCategory="@nEditItemsTypes.Categoria"></ComboCategories>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-1">
+                        <label>Aggrega:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfSwitch @bind-Checked="nEditItemsTypes.AggregaAElemento" OnLabel="Sì" OffLabel="No"></SfSwitch>
+                    </div>
+                    <div class="col-1">
+                        <label>View Attributi:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="View attributi" @bind-Value="@nEditItemsTypes.ViewAttributi"></SfTextBox>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-1">
+                        <label>Utente candidato:</label>
+                    </div>
+                    <div class="col-5">
+                        <ComboCandidateUsers @bind-nUsers="@CandidateUsers"></ComboCandidateUsers>
+                    </div>
+                    <div class="col-1">
+                        <label>Gruppi candidati:</label>
+                    </div>
+                    <div class="col-5">
+                        <ComboCandidateRoles @bind-nRoles="@CandidateRoles"></ComboCandidateRoles>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col">
+                        <SfTab>
+                            <TabItems>
+                                <TabItem>
+                                    <ChildContent>
+                                        <TabHeader Text="Attributi"></TabHeader>
+                                    </ChildContent>
+                                    <ContentTemplate>
+                                        <div class="p-2">
+                                            <AttributesTable nAttributes="@nAttributes"></AttributesTable>
+                                        </div>
+                                    </ContentTemplate>
+                                </TabItem>
+                                <TabItem>
+                                    <ChildContent>
+                                        <TabHeader Text="Ruoli"></TabHeader>
+                                    </ChildContent>
+                                    <ContentTemplate>
+                                        <div class="p-2">
+                                            <RoleAssignment nAssignedRoles="@nAssignedRoles"></RoleAssignment>
+                                        </div>
+                                    </ContentTemplate>
+                                </TabItem>
+                                <TabItem>
+                                    <ChildContent>
+                                        <TabHeader Text="Pulizia"></TabHeader>
+                                    </ChildContent>
+                                    <ContentTemplate>
+                                        <div class="p-2">
+                                            <CleanScheduleTable nCleanList="@(nCleanList)"></CleanScheduleTable>
+                                        </div>
+                                    </ContentTemplate>
+                                </TabItem>
+                            </TabItems>
+                        </SfTab>
+                    </div>
+                </div>
+            </CardContent>
+        </div>
+        <CardContent EnableSeperator="true">
+            <div class="row">
+                <div class="col-12">
+                    <SfButton CssClass="e-primary" OnClick="OnClickSave">Salva</SfButton>
+                    <SfButton OnClick="OnClickExit">Annulla</SfButton>
+                </div>
+            </div>
+        </CardContent>
+
+    </SfCard>
+
+</section>
+
+@code
+ {
+    /// <summary>
+    /// Manager for items
+    /// </summary>
+    private ElementiManager ItemsMan { get; set; }
+
+    /// <summary>
+    /// User that is in create or in edit
+    /// </summary>
+    public TipiElementi nEditItemsTypes { get; set; } = new();
+
+    /// <summary>
+    /// Title of the Card and Page
+    /// </summary>
+    public string CardTitle { get; set; }
+
+    /// <summary>
+    /// Indicate if the category is a new one
+    /// </summary>
+    private bool IsNew { get; set; } = false;
+
+    /// <summary>
+    /// Code of the ItemType
+    /// </summary>
+    [Parameter]
+    public string Code { get; set; }
+
+    /// <summary>
+    /// On exit go to the list page
+    /// </summary>
+    public async void OnClickExit()
+    {
+        _NavigationManager.NavigateTo($"/Docs/ItemsTypes");
+    }
+
+    /// <summary>
+    /// Show/Hide the spinner
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// List of attributes of this ItemType
+    /// </summary>
+    public List<Attributo> nAttributes { get; set; } = new();
+
+    /// <summary>
+    /// Assigned roles to this type
+    /// </summary>
+    public ObservableCollection<Role> nAssignedRoles { get; set; }
+
+    /// <summary>
+    /// List of cleaning list of this ItemType
+    /// </summary>
+    public List<CleanSchedule> nCleanList { get; set; } = new();
+
+    /// <summary>
+    /// List od candidate Users
+    /// </summary>
+    public string[] CandidateUsers { get; set; }
+
+    /// <summary>
+    /// List of candidate roles
+    /// </summary>
+    public string[] CandidateRoles { get; set; }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        IsSpinnerVisible = true;
+
+        ItemsMan = new ElementiManager(_DbContext.Connessione, _Logger);
+        nEditItemsTypes = ItemsMan.GetAllTipiElementi().FirstOrDefault(x => x.Codice == Code);
+
+        if (nEditItemsTypes == null)
+        {
+            CardTitle = "Nuovo Tipo Elemento";
+            nEditItemsTypes = new() { Codice = "", Descrizione = "" };
+            IsNew = true;
+        }
+        else
+            CardTitle = $"Modifica Tipo Elemento [{nEditItemsTypes.Codice}]";
+
+        nCleanList = nEditItemsTypes._listaCancellazioni.ToList();
+        foreach (StatoElemento A in (StatoElemento[])Enum.GetValues(typeof(StatoElemento)))
+            if (!nCleanList.Any(x => x.State == (int)A))
+                nCleanList.Add(new CleanSchedule() { CronExp = "", RetentionDays = 90, State = (int)A });
+        nAttributes = nEditItemsTypes._listaAttributi.ToList();
+        CandidateUsers = nEditItemsTypes.UtentiCandidati?.Split(',') ?? new string[] { };
+        CandidateRoles = nEditItemsTypes.UtentiCandidati?.Split(',') ?? new string[] { };
+        nAssignedRoles = new ObservableCollection<Role>(_ServerMail.GetAllRolesForElemento(nEditItemsTypes.Codice));
+
+        IsSpinnerVisible = false;
+    }
+
+    /// <summary>
+    /// Save the category
+    /// </summary>
+    public async void OnClickSave()
+    {
+        IsSpinnerVisible = true;
+        Stopwatch SW = new Stopwatch(); SW.Start();
+
+        if (IsNew)
+        {
+            ElencoAttributi EA = new ElencoAttributi();
+            foreach (Attributo A in nAttributes)
+                EA.Add(A);
+            nEditItemsTypes.Attributi = EA;
+            nEditItemsTypes._listaCancellazioni = nCleanList;
+            ItemsMan.SalvaTipoElemento(nEditItemsTypes);
+
+            _Logger.LogInformation($"EditItemsTypes.OnClickSave: Added ItemTypes {nEditItemsTypes.Codice} in {SW.ElapsedMilliseconds} ms");
+        }
+        else
+        {
+            ElencoAttributi EA = new ElencoAttributi();
+            foreach (Attributo A in nAttributes)
+                EA.Add(A);
+            nEditItemsTypes.Attributi = EA;
+            nEditItemsTypes.UtentiCandidati = string.Join(',', CandidateUsers);
+            nEditItemsTypes.RuoliCandidati = string.Join(',', CandidateRoles);
+            nEditItemsTypes._listaCancellazioni = nCleanList;
+            ItemsMan.SalvaTipoElemento(nEditItemsTypes);
+
+            _Logger.LogInformation($"EditItemsTypes.OnClickSave: Update ItemTypes {nEditItemsTypes.Codice} in {SW.ElapsedMilliseconds} ms");
+        }
+
+        IsSpinnerVisible = false;
+        _NavigationManager.NavigateTo($"/Docs/ItemsTypes");
+    }
+
+
+}

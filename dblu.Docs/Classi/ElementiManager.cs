@@ -88,6 +88,25 @@ namespace dblu.Docs.Classi
             return elm;
         }
 
+
+        public List<Elementi> GetElementi(string Tipo, int Stato)
+        {
+            List<Elementi> l = new List<Elementi>();
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    l = cn.Query<Elementi>($"Select * FROM Elementi E where Tipo=@Tipo And Stato=@Stato", new { Tipo = Tipo, Stato = Stato }).ToList();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetElementi: {ex.Message}");
+            }
+            return l;
+        }
+
         public  bool Salva(Elementi elemento, bool isNew)
         {
             var bres = false;

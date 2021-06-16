@@ -1,0 +1,149 @@
+﻿@*
+    Component for showing a list of Attributes
+*@
+
+@using dblu.Docs.Classi
+@using dblu.Docs.Models
+
+<SfGrid DataSource="@nAttributes" AllowPaging="true" Toolbar="@ToolAttributes">
+    <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Normal"></GridEditSettings>
+    <GridPageSettings PageSize="10"></GridPageSettings>
+    <GridColumns>
+        <GridColumn IsPrimaryKey="true" Field=@nameof(Attributo.Nome) HeaderText="Nome"></GridColumn>
+        <GridColumn Field=@nameof(Attributo.Descrizione) HeaderText="Descrizione"></GridColumn>
+        <GridColumn Field=@nameof(Attributo.Alias) HeaderText="Alias"></GridColumn>
+        <GridColumn Field=@nameof(Attributo.Tipo) HeaderText="Tipo">
+            <Template>
+                @{
+                    var attr = TypeSet.FirstOrDefault(x => x.Code == (context as Attributo).Tipo)?.Desc;
+                    @attr
+                }
+            </Template>
+            <EditTemplate>
+                <SfDropDownList ID=@nameof(Attributo.Tipo) TItem="TypeTranslation" TValue="string" @bind-Value="@((context as Attributo).Tipo)" DataSource="@TypeSet">
+                    <DropDownListFieldSettings Text="Desc" Value="Code"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </EditTemplate>
+        </GridColumn>
+        <GridColumn Field=@nameof(Attributo.Obbligatorio) HeaderText="Obbligatorio"></GridColumn>
+        <GridColumn Field=@nameof(Attributo.Duplicabile) HeaderText="Duplicabile"></GridColumn>
+        <GridColumn Field=@nameof(Attributo.Visibilità) HeaderText="Visibilità">
+            <Template>
+                @{
+                    var attr = VisibilitySet.FirstOrDefault(x => x.Code == (context as Attributo).Visibilità)?.Desc;
+                    @attr
+                }
+            </Template>
+            <EditTemplate>
+                <SfDropDownList ID="Visibilità" TItem="VisibilityTranslation" TValue="Visibilita_Attributi" @bind-Value="@((context as Attributo).Visibilità)" DataSource="@VisibilitySet">
+                    <DropDownListFieldSettings Text="Desc" Value="Code"></DropDownListFieldSettings>
+                </SfDropDownList>
+            </EditTemplate>
+        </GridColumn>
+        <GridColumn Field=@nameof(Attributo.ValorePredefinito) HeaderText="ValorePredefinito"></GridColumn>
+        <GridColumn Field=@nameof(Attributo.Sequenza) HeaderText="Sequenza"></GridColumn>
+    </GridColumns>
+</SfGrid>
+
+@code {
+    /// <summary>
+    /// Attriburte list
+    /// </summary>
+    [Parameter]
+    public List<Attributo> nAttributes { get; set; } = new();
+
+    /// <summary>
+    /// List of the buttons on toolbar of the grid of attributes
+    /// </summary>
+    private List<Object> ToolAttributes = new List<Object>()
+{
+                "Add","Edit", "Delete", "Cancel", "Update"
+    };
+
+    #region COMBO_TYPE IN GRID
+
+    /// <summary>
+    /// Class that rappresent the objects shown by the Type combo (in grid)
+    /// </summary>
+    private class TypeTranslation
+    {
+        /// <summary>
+        /// String in DB that rappresent a type
+        /// </summary>
+        public string Code { get; set; }
+
+        /// <summary>
+        /// Description Human readeable of the type
+        /// </summary>
+        public string Desc { get; set; }
+
+        /// <summary>
+        /// Constroctor
+        /// </summary>
+        /// <param name="nCode">String in DB that rappresent a type</param>
+        /// <param name="nDesc"> Description Human readeable of the type</param>
+        public TypeTranslation(string nCode, string nDesc)
+        {
+            Code = nCode;
+            Desc = nDesc;
+        }
+    }
+
+    /// <summary>
+    /// List of type shows by the combo
+    /// </summary>
+    private static List<TypeTranslation> TypeSet = new List<TypeTranslation>()
+{
+        new TypeTranslation("System.String","Testo"),
+        new TypeTranslation("System.Boolean","Booleano"),
+        new TypeTranslation("System.DateTime","Data"),
+        new TypeTranslation("System.Int32","Intero"),
+        new TypeTranslation("System.Double","Decimale"),
+        new TypeTranslation("System.Object","Oggetto"),
+        new TypeTranslation("System.Guid","Id univoco")
+    };
+
+    #endregion
+
+    #region COMBO_VISIBILITY IN GRID
+
+    /// <summary>
+    /// Class that rappresent the objects shown by the Visibility combo (in grid)
+    /// </summary>
+    private class VisibilityTranslation
+    {
+        /// <summary>
+        /// Enumerate in DB that rappresent a visibility
+        /// </summary>
+        public Visibilita_Attributi Code { get; set; }
+
+        /// <summary>
+        /// Description Human readeable of the visibility
+        /// </summary>
+        public string Desc { get; set; }
+
+        /// <summary>
+        /// Constrcctor
+        /// </summary>
+        /// <param name="nCode">String in DB that rappresent a type</param>
+        /// <param name="nDesc"> Description Human readeable of the type</param>
+        public VisibilityTranslation(Visibilita_Attributi nCode, string nDesc)
+        {
+            Code = nCode;
+            Desc = nDesc;
+        }
+    }
+
+    /// <summary>
+    /// List of visibility shows by the combo
+    /// </summary>
+    private static List<VisibilityTranslation> VisibilitySet = new List<VisibilityTranslation>()
+{
+        new VisibilityTranslation(Visibilita_Attributi.HIDDEN,"Nascosto"),
+        new VisibilityTranslation(Visibilita_Attributi.VISIBLE,"Visibile"),
+        new VisibilityTranslation(Visibilita_Attributi.EDITABLE,"Modificabile"),
+    };
+
+    #endregion
+
+}

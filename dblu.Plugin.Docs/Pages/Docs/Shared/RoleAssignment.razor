@@ -1,0 +1,126 @@
+﻿@*
+    Component for assigning roles 
+*@
+
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+@inject IApplicationUsersManager _ApplicationUsersManager
+
+<div style=" display: flex; align-items: center;" class="form-group row">
+    <div style=" height: 450px;" class="col-5 mt-2">
+        <label>Ruoli Assegnati</label>
+        <SfGrid @ref="AssignedRoleGrid" DataSource="@nAssignedRoles" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true">
+            <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
+            <GridPageSettings PageSize="9"></GridPageSettings>
+            <GridColumns>
+                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Role.RoleId) HeaderText="Id Ruolo"></GridColumn>
+                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Role.Name) HeaderText="Ruolo"></GridColumn>
+            </GridColumns>
+        </SfGrid>
+    </div>
+    <div style="text-align:center" class="col-2">
+        <div class="row form-group">
+            <SfButton CssClass="e-button-arrow" OnClick="OnAddRole"><span class="fa fa-angle-left"></span></SfButton>
+        </div>
+        <div class="row form-group">
+            <SfButton CssClass="e-button-arrow" OnClick="OnAddAll"><span class="fa fa-angle-double-left"></span></SfButton>
+        </div>
+        <div class="row form-group">
+            <SfButton CssClass="e-button-arrow" OnClick="OnRemRole"><span class="fa fa-angle-right"></span></SfButton>
+        </div>
+        <div class="row form-group">
+            <SfButton CssClass="e-button-arrow" OnClick="OnRemAll"><span class="fa fa-angle-double-right"></span></SfButton>
+        </div>
+    </div>
+    <div style=" height: 450px;" class="col-5 mt-2">
+        <label>Ruoli Disponibili</label>
+        <SfGrid @ref="AvailableRoleGrid" DataSource="@RemainingRoles" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true">
+            <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
+            <GridPageSettings PageSize="9"></GridPageSettings>
+            <GridColumns>
+                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Role.RoleId) HeaderText="Id Ruolo"></GridColumn>
+                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Role.Name) HeaderText="Ruolo"></GridColumn>
+            </GridColumns>
+        </SfGrid>
+    </div>
+</div>
+
+@code {
+
+    /// <summary>
+    /// Assigned roles to this type
+    /// </summary>
+    [Parameter]
+    public ObservableCollection<Role> nAssignedRoles { get; set; }
+
+    /// <summary>
+    /// Available role to this type
+    /// </summary>
+    public ObservableCollection<Role> RemainingRoles { get => new ObservableCollection<Role>(Roles.Where(p => !nAssignedRoles.Any(l => p.RoleId == l.RoleId))); }
+
+    /// <summary>
+    /// Grid with assigned roles
+    /// </summary>
+    private SfGrid<Role> AssignedRoleGrid { get; set; }
+
+    /// <summary>
+    /// Grid with not assigned roles
+    /// </summary>
+    private SfGrid<Role> AvailableRoleGrid { get; set; }
+
+    /// <summary>
+    /// List of roles into system
+    /// </summary>
+    private List<Role> Roles { get; set; }
+
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        Roles = _ApplicationUsersManager.GetRoles().ToList();
+    }
+
+    /// <summary>
+    /// Add selected role to the user
+    /// </summary>
+    public async void OnAddRole()
+    {
+        List<Role> SelectedRoles = await AvailableRoleGrid.GetSelectedRecords();
+        if (SelectedRoles.Count == 0) return;
+
+        foreach (Role R in SelectedRoles)
+            nAssignedRoles.Add(R);
+    }
+
+    /// <summary>
+    /// Remove selected role from the user
+    /// </summary>
+    public async void OnRemRole()
+    {
+        List<Role> SelectedRoles = await AssignedRoleGrid.GetSelectedRecords();
+        if (SelectedRoles.Count == 0) return;
+
+        foreach (Role R in SelectedRoles)
+            nAssignedRoles.Remove(R);
+    }
+
+    /// <summary>
+    /// Add all role to the user
+    /// </summary>
+    public async void OnAddAll()
+    {
+        foreach (Role R in RemainingRoles)
+            nAssignedRoles.Add(R);
+
+    }
+
+    /// <summary>
+    /// Remove all role from the user
+    /// </summary>
+    public async void OnRemAll()
+    {
+        nAssignedRoles.Clear();
+    }
+}

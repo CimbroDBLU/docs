@@ -28,6 +28,32 @@ namespace dblu.Docs.Models
         public string UtentiCandidati { get; set; }
         public bool AggregaAElemento { get; set; }
 
+        public string ListaCancellazioni { get; set; }
+
+        [Write(false)]
+        [JsonIgnore]
+        public IEnumerable<CleanSchedule> _listaCancellazioni
+        {
+            get
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(ListaCancellazioni)) return new List<CleanSchedule>();
+                    return JsonConvert.DeserializeObject<List<CleanSchedule>>(ListaCancellazioni);
+                }
+                catch (Exception) { return new List<CleanSchedule>(); }
+            }
+
+            set
+            {
+                try
+                {
+                    ListaCancellazioni = JsonConvert.SerializeObject(value);
+                }
+                catch (Exception) { ListaCancellazioni = ""; }
+            }
+        }
+
         //[NotMapped]
         [Write(false)] 
         public ElencoAttributi Attributi { get; set; }

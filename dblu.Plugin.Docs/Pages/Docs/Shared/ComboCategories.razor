@@ -1,0 +1,87 @@
+﻿@*
+    Component for showing a combo with caregories
+*@
+
+@using dblu.Docs.Classi
+@using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Services
+
+@inject dbluDocsContext _DbContext
+@inject ILogger<ComboCategories> _Logger
+
+<SfDropDownList TValue="string" Placeholder="Categoria" TItem="CategoryTranslation" @bind-Value="@nCategory" DataSource="@CategoryList">
+    <DropDownListFieldSettings Text="Desc" Value="Code"></DropDownListFieldSettings>
+</SfDropDownList>
+
+@code {
+
+    /// <summary>
+    /// Selected category code
+    /// </summary>
+    private string _nCategory;
+
+    /// <summary>
+    /// Selected category code
+    /// </summary>
+    [Parameter]
+    public string nCategory
+    {
+        get => _nCategory;
+        set
+        {
+            if (_nCategory == value) return;
+            _nCategory = value;
+            nCategoryChanged.InvokeAsync(value);
+        }
+    }
+
+
+    /// <summary>
+    /// Event for having two way binding
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> nCategoryChanged { get; set; }
+
+    /// <summary>
+    /// List fo all available category
+    /// </summary>
+    public List<CategoryTranslation> CategoryList { get; set; } = new();
+
+    /// <summary>
+    /// Class for relate Category Code and Description to show
+    /// </summary>
+    public class CategoryTranslation
+    {
+        /// <summary>
+        /// Code of the category
+        /// </summary>
+        public string Code { get; set; }
+        /// <summary>
+        /// Description of the category
+        /// </summary>
+        public string Desc { get; set; }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="nCode">Code of the category</param>
+        /// <param name="nDesc">Description of the category</param>
+        public CategoryTranslation(string nCode, string nDesc)
+        {
+            Code = nCode;
+            Desc = nDesc;
+        }
+    }
+
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        FascicoliManager _DossierManager = new FascicoliManager(_DbContext.Connessione, _Logger);
+        foreach (Categorie C in _DossierManager.GetAllCategorie())
+            CategoryList.Add(new(C.Codice, C.Descrizione));
+    }
+
+}

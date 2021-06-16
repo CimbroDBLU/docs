@@ -187,7 +187,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
             
             if (xx.Count() != 0) 
-               return _usr.GetRoles().Where(d => xx.Contains(d.Code));
+               return _usr.GetRoles().Where(d => xx.Contains(d.RoleId));
             return new List<Role>();
         }
 

@@ -1,0 +1,80 @@
+﻿@*
+    Component for showing a combo with candidate users
+*@
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+@inject IApplicationUsersManager _ApplicationUsersManager
+
+<SfMultiSelect Placeholder="Utenti Candidati" @bind-Value="@nUsers" DataSource="@UserList">
+    <MultiSelectFieldSettings Value="Code" Text="Desc"></MultiSelectFieldSettings>
+</SfMultiSelect>
+
+@code {
+
+    /// <summary>
+    /// Selecteds Users
+    /// </summary>
+    private string[] _nUsers = new string[] { };
+
+    /// <summary>
+    /// Selected Users
+    /// </summary>
+    [Parameter]
+    public string[] nUsers
+    {
+        get => _nUsers;
+        set
+        {
+            if (_nUsers == value) return;
+            _nUsers = value;
+            nUsersChanged.InvokeAsync(value);
+        }
+    }
+
+    /// <summary>
+    /// Event for having two way binding
+    /// </summary>
+    [Parameter]
+    public EventCallback<string[]> nUsersChanged { get; set; }
+
+
+    /// <summary>
+    /// List of all available users
+    /// </summary>
+    public List<UserTranslation> UserList { get; set; } = new();
+
+    /// <summary>
+    /// Class for relate UserIds and Description to show
+    /// </summary>
+    public class UserTranslation
+    {
+        /// <summary>
+        /// UserID
+        /// </summary>
+        public string Code { get; set; }
+        /// <summary>
+        /// User description
+        /// </summary>
+        public string Desc { get; set; }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="nCode">UserID</param>
+        /// <param name="nDesc"> User description</param>
+        public UserTranslation(string nCode, string nDesc)
+        {
+            Code = nCode;
+            Desc = nDesc;
+        }
+    }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        foreach (ApplicationUser AU in _ApplicationUsersManager.GetUsers())
+            UserList.Add(new(AU.UserId, AU.ToSignPlusID));
+    }
+}

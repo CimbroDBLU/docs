@@ -3,11 +3,19 @@ using dblu.Docs.Classi;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-//using System.ComponentModel.DataAnnotations;
-//using System.ComponentModel.DataAnnotations.Schema;
+
 
 namespace dblu.Docs.Models
 {
+    public class CleanSchedule
+    {
+        public string CronExp { get; set; }
+
+        public int State { get; set; }
+
+        public int RetentionDays { get; set; }
+    }
+
 
     [Table("TipiAllegati")]
     public partial class TipiAllegati
@@ -44,8 +52,31 @@ namespace dblu.Docs.Models
         }
         
         public string ViewAttributi { get; set; }
-        public string CronPulizia { get; set; }
-        public int GiorniDaMantenere { get; set; }
+        public string ListaCancellazioni { get; set; }
+
+        [Write(false)]
+        [JsonIgnore]
+        public IEnumerable<CleanSchedule> _listaCancellazioni
+        {
+            get
+            {
+                try
+                {
+                    if(string.IsNullOrEmpty(ListaCancellazioni)) return new List<CleanSchedule>();
+                    return JsonConvert.DeserializeObject<List<CleanSchedule>>(ListaCancellazioni);
+                }
+                catch (Exception) { return new List<CleanSchedule>(); }
+            }
+
+            set
+            {
+                try
+                {
+                    ListaCancellazioni = JsonConvert.SerializeObject(value);
+                }catch(Exception) { ListaCancellazioni = ""; }
+            }
+        }        
+       
 
         [JsonIgnore]
         [Write(false)] 

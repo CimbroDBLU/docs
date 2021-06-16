@@ -1,0 +1,169 @@
+﻿@*
+    Component for showing a list of grid confugurations
+*@
+
+@page  "/Docs/GridConfigurations"
+@using dblu.Docs.Classi
+@using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Services
+@inject ILogger<GridConfigurations> _Logger
+@inject dbluDocsContext _DbContext
+@inject AllegatiService _AttachmentService
+@inject NavigationManager  _NavigationManager
+
+<PageTitle nTitle="Configurazione Griglie" />
+
+<SfSpinner @bind-Visible="IsSpinnerVisible">
+</SfSpinner>
+
+
+<SfCard>
+    <CardHeader Title="Configurazione griglie" />
+    <CardContent EnableSeperator="true">
+        <div class="col-6">
+
+            <SfComboBox TValue="string" TItem="ViewTranslation" @bind-Value="@Vista" Placeholder="Seleziona Griglia..." DataSource="@LocalData">
+                <ComboBoxFieldSettings Value="Code" Text="Desc"></ComboBoxFieldSettings>
+            </SfComboBox>
+        </div>
+
+    </CardContent>
+
+    <CardContent EnableSeperator="true">
+        <SfGrid DataSource="@nGridConfigurations" SelectedRowIndex="0" AllowPaging="true" Toolbar="@Tool" AllowSorting="true">
+            <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Normal"></GridEditSettings>
+            <GridEvents TValue="Colonna" OnActionComplete="OnActionCompleted"></GridEvents>
+            <GridColumns>
+                <GridColumn IsPrimaryKey="true" AllowEditing="true" AllowSorting="true" Field=@nameof(Colonna.Field) HeaderText="Corpo"></GridColumn>
+                <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(Colonna.Des) HeaderText="Descrizione"></GridColumn>
+                <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(Colonna.Visible) HeaderText="Visibilità"></GridColumn>
+            </GridColumns>
+        </SfGrid>
+
+
+    </CardContent>
+
+</SfCard>
+
+
+@code {
+
+    /// <summary>
+    /// Configuration of grid
+    /// </summary>
+    private ObservableCollection<Colonna> nGridConfigurations { get; set; } = new();
+
+    /// <summary>
+    /// Selected View
+    /// </summary>
+    private string _Vista { get; set; } = "vALLEGATO";
+
+    /// <summary>
+    /// Selected view
+    /// </summary>
+    private string Vista { get => _Vista; set { _Vista = value; nGridConfigurations = new ObservableCollection<Colonna>(_AttachmentService.GetColonne(nVista)); } }
+
+    /// <summary>
+    /// Class for traslating view in a human readeable caption
+    /// </summary>
+    private class ViewTranslation
+    {
+        /// <summary>
+        /// Name of the view
+        /// </summary>
+        public string Code { get; set; }
+
+        /// <summary>
+        /// Description of the view
+        /// </summary>
+        public string Desc { get; set; }
+    }
+
+    /// <summary>
+    /// List all available view and descriptions
+    /// </summary>
+    List<ViewTranslation> LocalData = new List<ViewTranslation> {
+    new ViewTranslation() { Code= "vALLEGATO", Desc= "Allegato" },
+    new ViewTranslation() { Code= "vELEMENTO", Desc= "Elemento" },
+    new ViewTranslation() { Code= "vFASCICOLO", Desc= "Fascicolo" },
+    };
+
+    /// <summary>
+    /// On action done, configuration will be saved
+    /// </summary>
+    /// <param name="args">Parameters</param>
+    private async void OnActionCompleted(ActionEventArgs<Colonna> args)
+    {
+        OnClickSave();
+    }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+
+        nGridConfigurations = new ObservableCollection<Colonna>(_AttachmentService.GetColonne(nVista));
+
+    }
+
+    /// <summary>
+    /// Indicates if spinner has to be visible
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// List of the buttons on toolbar of the grid
+    /// </summary>
+    private List<Object> Tool = new List<Object>()
+    {
+        "Add", "Edit" , "Delete", "Cancel", "Update"
+
+    };
+
+    /// <summary>
+    /// When the grid do something, show the spinner
+    /// </summary>
+    private void OnActionBegin()
+    {
+        IsSpinnerVisible = true;
+    }
+
+    /// <summary>
+    /// When the grid stop doing something, hide the spinner
+    /// </summary>
+    private void OnActionEnd()
+    {
+        IsSpinnerVisible = false;
+    }
+
+    /// <summary>
+    /// Save the category
+    /// </summary>
+    public async void OnClickSave()
+    {
+        IsSpinnerVisible = true;
+        Stopwatch SW = new Stopwatch(); SW.Start();
+
+        if (Vista == "vALLEGATO")
+        {
+            _AttachmentService.SalvaColonne("vALLEGATO", nGridConfigurations.ToList());
+            _Logger.LogInformation($"GridConfigurations.OnClickSave: Modified Allegato in {SW.ElapsedMilliseconds} ms");
+        }
+        if (Vista == "vELEMENTO")
+        {
+            _AttachmentService.SalvaColonne("vELEMENTO", nGridConfigurations.ToList());
+            _Logger.LogInformation($"GridConfigurations.OnClickSave: Modified Elemento in {SW.ElapsedMilliseconds} ms");
+        }
+        if (Vista == "vFASCICOLO")
+        {
+            _AttachmentService.SalvaColonne("vFASCICOLO", nGridConfigurations.ToList());
+            _Logger.LogInformation($"GridConfigurations.OnClickSave: Modified Fascicolo in {SW.ElapsedMilliseconds} ms");
+        }
+
+        IsSpinnerVisible = false;
+
+    }
+
+
+}

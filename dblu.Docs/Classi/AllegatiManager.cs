@@ -598,14 +598,14 @@ namespace dblu.Docs.Classi
             return bres;
         }
 
-        public List<Allegati> GetAllegati(string Tipo)
+        public List<Allegati> GetAllegati(string Tipo, int Stato)
         {
             List<Allegati> l = new List<Allegati>();
             try
             {
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
-                        l = cn.Query<Allegati>($"Select * FROM Allegati A where Tipo=@Tipo", new { Tipo = Tipo }).ToList();
+                        l = cn.Query<Allegati>($"Select * FROM Allegati A where Tipo=@Tipo And Stato=@Stato", new { Tipo = Tipo,Stato=Stato }).ToList();
                 }
 
             }

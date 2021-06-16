@@ -1,0 +1,215 @@
+﻿@*
+    Component for showing a list of Attachments types
+*@
+@page  "/Docs/AttachmentsTypes"
+@using dblu.Docs.Classi
+@using dblu.Docs.Models
+@inject ILogger<AttachmentsTypes> _Logger
+@inject dbluDocsContext _DbContext
+@inject NavigationManager  _NavigationManager
+
+
+<PageTitle nTitle="Lista Allegati" />
+
+<style>
+
+    .e-duplicate:before {
+        content: '\e70a';
+    }
+</style>
+
+
+<section class="content">
+
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
+    <SfCard>
+        <CardHeader Title="Lista Tipi Allegati" />
+        <CardContent EnableSeperator="true">
+            <SfGrid @ref="@Grid" DataSource="@nAttachmentsTypes" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+                <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Normal"></GridEditSettings>
+                <GridPageSettings PageSize="20"></GridPageSettings>
+                <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick" OnToolbarClick="OnToolbarClick" TValue="TipiAllegati"></GridEvents>
+                <GridColumns>
+                    <GridColumn IsPrimaryKey="true" AllowEditing="true" AllowSorting="true" Field=@nameof(TipiAllegati.Codice) HeaderText="Codice"></GridColumn>
+                    <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(TipiAllegati.Descrizione) HeaderText="Descrizione"></GridColumn>
+                    <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(TipiAllegati.Cartella) HeaderText="Cartella"></GridColumn>
+                    <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(TipiAllegati.ViewAttributi) HeaderText="Attributi"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </CardContent>
+    </SfCard>
+
+    <QuestionDialog nTitle="Conferma"
+                    nText="Rimuovo il record selezionato?"
+                    OnExitPressed="OnCloseDialog"
+                    OnNoPressed="OnCloseDialog"
+                    OnYesPressed="OnDeleteConfirmed"
+                    OnClose="OnCloseDialog"
+                    nShowDialog="@ShowConfirm">
+    </QuestionDialog>
+
+
+</section>
+
+@code {
+
+
+    /// <summary>
+    /// List of AttachmentsTypes
+    /// </summary>
+    private ObservableCollection<TipiAllegati> nAttachmentsTypes { get; set; } = new();
+
+    /// <summary>
+    /// Attachments Manager, create at initialize, used as a service
+    /// </summary>
+    private AllegatiManager AttachMan { get; set; }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        AttachMan = new AllegatiManager(_DbContext.Connessione, _Logger);
+        nAttachmentsTypes = new ObservableCollection<TipiAllegati>(AttachMan.GetAllTipiAllegati());
+    }
+
+    /// <summary>
+    /// List of the buttons on toolbar of the grid
+    /// </summary>
+    private List<Object> Tool = new List<Object>()
+{
+            new ItemModel(){ Id="New",Text="Nuovo", TooltipText="Nuovo", PrefixIcon="e-add" } ,
+            new ItemModel(){ Id="Edit",Text="Modifica", TooltipText="Modifica", PrefixIcon="e-edit" } ,
+            new ItemModel(){ Id="Delete",Text="Elimina", TooltipText="Elimina", PrefixIcon="e-delete" },
+            new ItemModel(){ Id="Duplicate",Text="Duplica", TooltipText="Duplica", PrefixIcon="e-duplicate" }
+        };
+
+    /// <summary>
+    /// Show/Hide the dialog for deleting items
+    /// </summary>
+    private bool ShowConfirm { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if spinner has to be visible
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// Grid self object
+    /// </summary>
+    private SfGrid<TipiAllegati> Grid;
+
+    /// <summary>
+    /// When the grid do something, show the spinner
+    /// </summary>
+    private void OnActionBegin()
+    {
+        IsSpinnerVisible = true;
+    }
+
+    /// <summary>
+    /// When the grid stop doing something, hide the spinner
+    /// </summary>
+    private void OnActionEnd()
+    {
+        IsSpinnerVisible = false;
+    }
+    /// <summary>
+    /// On double click edit the selected category
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnDoubleClick(RecordDoubleClickEventArgs<TipiAllegati> args)
+    {
+        _NavigationManager.NavigateTo($"/Docs/EditAttachmentsTypes/{args.RowData.Codice.ToString()}");
+    }
+
+    /// <summary>
+    /// Manage the actions that has to be done on toolbar click
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnToolbarClick(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        if (args.Item.Id == "New") _NavigationManager.NavigateTo("/Docs/EditAttachmentsTypes");
+
+        List<TipiAllegati> SelectedAttachment = await Grid.GetSelectedRecords();
+
+        if (SelectedAttachment.Count == 0) return;
+
+        switch (args.Item.Id)
+        {
+            case "Edit":
+                foreach (TipiAllegati U in SelectedAttachment)
+                {
+                    _NavigationManager.NavigateTo($"/Docs/EditAttachmentsTypes/{U.Codice.ToString()}");
+                    break;
+                }
+                break;
+            case "Delete":
+                ShowConfirm = true;
+                break;
+
+            case "Duplicate":
+                foreach (TipiAllegati c in SelectedAttachment)
+                {
+                    TipiAllegati c1 = new TipiAllegati();
+                    List<TipiAllegati> Lst = AttachMan.GetAllTipiAllegati();
+
+                    int i = 0;
+                    do
+                    {
+                        c1.Codice = c.Codice.Substring(0, c.Codice.Length - 1) + (++i).ToString();
+                    } while (Lst.FirstOrDefault(s => s.Codice == c1.Codice) != null);
+
+                    c.Codice = c1.Codice;
+                    c.Descrizione = "";
+                    AttachMan.SalvaTipoAllegato(c);
+                    _NavigationManager.NavigateTo($"/Docs/EditAttachmentsTypes/{c.Codice.ToString()}");
+                    break;
+                }
+                break;
+
+        }
+    }
+
+    /// <summary>
+    /// Close the dialog without deletion
+    /// </summary>
+    public async void OnCloseDialog()
+    {
+        ShowConfirm = false;
+    }
+
+    /// <summary>
+    /// On Deletion confirmed, remove the data
+    /// </summary>
+    public async void OnDeleteConfirmed()
+    {
+        ShowConfirm = false;
+        IsSpinnerVisible = true;
+        Stopwatch SW = new Stopwatch(); SW.Start();
+        try
+        {
+            List<TipiAllegati> SelectedAttachment = await Grid.GetSelectedRecords();
+            if (SelectedAttachment.Count == 0) return;
+            foreach (TipiAllegati C in SelectedAttachment)
+            {
+
+                nAttachmentsTypes.Remove(nAttachmentsTypes.ToList().FirstOrDefault(x => x.Codice == C.Codice));
+                AttachMan.CancellaTipoAllegato(C);
+                _Logger.LogInformation($"AttachmentsTypes.OnDeleteConfirmed: Removed Attachmens type {C.Codice} in {SW.ElapsedMilliseconds} ms");
+                SW.Reset();
+            }
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"AttachmentsTypes.OnDeleteConfirmed: Unable to delete Attachmens type! Unexpected error => {ex} ");
+        }
+        finally
+        {
+            IsSpinnerVisible = false;
+        }
+    }
+
+
+}

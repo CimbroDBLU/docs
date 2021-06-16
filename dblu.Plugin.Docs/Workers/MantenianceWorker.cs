@@ -12,9 +12,13 @@ using dblu.Docs.Models;
 using Microsoft.Extensions.DependencyInjection;
 using dblu.Docs.Classi;
 using dblu.Portale.Core.Infrastructure.Classes;
+using System.Diagnostics;
 
 namespace dblu.Portale.Plugin.Docs.Workers
 {
+
+
+
     /// <summary>
     /// Class for managin the clean up of old/already managed attachments
     /// </summary>
@@ -68,20 +72,35 @@ namespace dblu.Portale.Plugin.Docs.Workers
             try
             {
                 AllegatiManager _AttachManager = new AllegatiManager(conf["ConnectionStrings:dblu.Docs"], log);
+                ElementiManager _ItemsManager = new ElementiManager(conf["ConnectionStrings:dblu.Docs"], log);
+
+
                 log.LogInformation("MantenianceWorker.Engine: Started Manteniance service");
                 if (stoppingToken.IsCancellationRequested) return;
 
-                //Recupera la lista dei tipi allegati
-                List<TipiAllegati> LTA = _AttachManager.GetAllTipiAllegati();
-                foreach (TipiAllegati TA in LTA.Where(x => !string.IsNullOrEmpty(x.CronPulizia)))
-                    Schedules.Add(new dbluScheduledTask($"PURGE {TA.Codice}", TA.CronPulizia, () => { CleanUP(TA.Codice, TA.GiorniDaMantenere); }, log));
+                    //Recupera la lista dei tipi allegati
+                    List<TipiAllegati> LTA = _AttachManager.GetAllTipiAllegati();
+                    foreach (TipiAllegati TA in LTA.Where(x => x._listaCancellazioni.Count() != 0))
+                        foreach (CleanSchedule CS in TA._listaCancellazioni)
+                            if (!string.IsNullOrEmpty(CS.CronExp))
+                                Schedules.Add(new dbluScheduledTask($"PURGE ATTACH TYPE: {TA.Codice} - STATE {CS.State}", CS.CronExp, () => { CleanUP_Attachments(TA.Codice, CS.State, CS.RetentionDays); }, log));
 
-                while (!stoppingToken.IsCancellationRequested)
-                    Thread.Sleep(100);
+                    //Recupera la lista dei tipi elementi
+                    List<TipiElementi> LTE = _ItemsManager.GetAllTipiElementi();
+                    foreach (TipiElementi TE in LTE.Where(x => x._listaCancellazioni.Count() != 0))
+                        foreach (CleanSchedule CS in TE._listaCancellazioni)
+                            if (!string.IsNullOrEmpty(CS.CronExp))
+                                Schedules.Add(new dbluScheduledTask($"PURGE ITEM TYPE: {TE.Codice} - STATE {CS.State}", CS.CronExp, () => { CleanUP_Items(TE.Codice, CS.State, CS.RetentionDays); }, log));
 
-                foreach (dbluScheduledTask S in Schedules)
-                    S.Stop();
-            }catch(Exception Ex)
+                    while (!stoppingToken.IsCancellationRequested)
+                    {
+                        Thread.Sleep(100);
+                    }
+
+                    foreach (dbluScheduledTask S in Schedules)
+                        S.Stop();                      
+            }
+            catch(Exception Ex)
             {
                 log.LogError($"MantenianceWorker.Engine: Unexpected exception {Ex}");
             }
@@ -89,39 +108,86 @@ namespace dblu.Portale.Plugin.Docs.Workers
         }
 
         /// <summary>
+        /// EXternal method for requesting to syncronize again with DB, the scheduled cleans.
+        /// </summary>
+        public void Resync()
+        {
+            log.LogInformation("MantenianceWorker.Engine: Re-syncronizing for changes into rule tables");
+            this.StopAsync(new System.Threading.CancellationToken());
+            Task.WaitAll(Schedules.Select(x => x.WorkerTask).ToArray());
+            this.StartAsync(new System.Threading.CancellationToken());
+        }
+
+        /// <summary>
         /// Procedure that phisically clean up the attachments once needed, according to retention date
         /// </summary>
         /// <param name="Code">Type of Attachments to delete</param>
         /// <param name="RetentionDays">Max retention days</param>
-        private void CleanUP(string Code,int RetentionDays)
+        private void CleanUP_Attachments(string Code,int State, int RetentionDays)
         {
             try
             {
                 AllegatiManager _AttachManager = new AllegatiManager(conf["ConnectionStrings:dblu.Docs"], log);
-                List<Allegati> LA = _AttachManager.GetAllegati(Code) ?? new();
+                List<Allegati> LA = _AttachManager.GetAllegati(Code,State) ?? new();
                 int tot = LA.Count();
 
-                LA = LA.Where(d => d.Stato > StatoAllegato.Chiuso && d.Stato > 0 && (DateTime.Now - d.DataUM).TotalDays > RetentionDays).ToList();
-                log.LogInformation($"MantenianceWorker.CleanUP[{Code}]: Identified {LA.Count}/{tot} attachments to delete ");
+                LA = LA.Where(d => ((DateTime.Now - d.DataUM).TotalDays > RetentionDays)).ToList();
+                log.LogInformation($"MantenianceWorker.CleanUP_Attachments[{Code}]: Identified {LA.Count}/{tot} attachments to delete ");
                 for (int i = 0; i < LA.Count; i++)
                 {
                     try
                     {
-                        log.LogInformation($"MantenianceWorker.CleanUP[{Code}]: Deleting Attachment {i + 1}/{LA.Count} - {LA[i].Id}-{LA[i].Descrizione} ");
-                        _AttachManager.Cancella(LA[i].Id);
+                        log.LogInformation($"MantenianceWorker.CleaCleanUP_AttachmentsnUP[{Code}]: Deleting Attachment {i + 1}/{LA.Count} - {LA[i].Id}-{LA[i].Descrizione} ");
+                    //    _AttachManager.Cancella(LA[i].Id);
                     }
                     catch (Exception Ex)
                     {
-                        log.LogError($"MantenianceWorker.CleanUP[{Code}]: Unable to delete Attachment {LA[i].Id}-{LA[i].Descrizione} ");
-                        log.LogError($"MantenianceWorker.CleanUP[{Code}]: Unable to delete Exception {Ex}");
+                        log.LogError($"MantenianceWorker.CleanUP_Attachments[{Code}]: Unable to delete Attachment {LA[i].Id}-{LA[i].Descrizione} ");
+                        log.LogError($"MantenianceWorker.CleanUP_Attachments[{Code}]: Unable to delete Exception {Ex}");
                     }
                 }
             } catch (Exception Ex)
             {
-                log.LogError($"MantenianceWorker.CleanUP[{Code}]: Unexpected exception {Ex}");
+                log.LogError($"MantenianceWorker.CleanUP_Attachments[{Code}]: Unexpected exception {Ex}");
             }
         }
 
+        /// <summary>
+        /// Procedure that phisically clean up the attachments once needed, according to retention date
+        /// </summary>
+        /// <param name="Code">Type of Attachments to delete</param>
+        /// <param name="RetentionDays">Max retention days</param>
+        private void CleanUP_Items(string Code, int State, int RetentionDays)
+        {
+            try
+            {
+                ElementiManager _ItemsManager = new ElementiManager(conf["ConnectionStrings:dblu.Docs"], log);
+                FascicoliManager _DossierManager = new FascicoliManager(conf["ConnectionStrings:dblu.Docs"], log);
+                List<Elementi> LE = _ItemsManager.GetElementi(Code,State) ?? new();
+                int tot = LE.Count();
 
+                LE = LE.Where(d => (DateTime.Now - d.DataUM).TotalDays > RetentionDays).ToList();
+                log.LogInformation($"MantenianceWorker.CleanUP_Items[{Code}]: Identified {LE.Count}/{tot} items to delete ");
+                for (int i = 0; i < LE.Count; i++)
+                {
+                    try
+                    {
+                        log.LogInformation($"MantenianceWorker.CleanUP_Items[{Code}]: Deleting item {i + 1}/{LE.Count} - {LE[i].Id}-{LE[i].Descrizione} ");
+                      //  _ItemsManager.Cancella(LE[i].Id,0);
+                    }
+                    catch (Exception Ex)
+                    {
+                        log.LogError($"MantenianceWorker.CleanUP_Items[{Code}]: Unable to delete item {LE[i].Id}-{LE[i].Descrizione} ");
+                        log.LogError($"MantenianceWorker.CleanUP_Items[{Code}]: Unable to delete Exception {Ex}");
+                    }
+                }
+
+                _DossierManager.CancellaFascicoliVuoti();
+            }
+            catch (Exception Ex)
+            {
+                log.LogError($"MantenianceWorker.CleanUP[{Code}]: Unexpected exception {Ex}");
+            }
+        }
     }
 }

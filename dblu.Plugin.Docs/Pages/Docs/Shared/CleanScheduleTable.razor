@@ -1,0 +1,93 @@
+﻿@*
+    Component for showing a list of cleaning schedules
+*@
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+@using dblu.Docs.Classi
+@using dblu.Docs.Models
+
+<SfGrid DataSource="@nCleanList" SelectedRowIndex="1" AllowPaging="true" Toolbar="@ToolCleans" AllowSorting="true">
+    <GridPageSettings PageSize="10"></GridPageSettings>
+    <GridEditSettings AllowAdding="false" AllowEditing="true" AllowDeleting="false" Mode="EditMode.Normal"></GridEditSettings>
+    <GridColumns>
+        <GridColumn IsPrimaryKey="true" AllowEditing="false" AllowSorting="true" Field=@nameof(CleanSchedule.State) HeaderText="Stato">
+            <Template>
+                @{
+                    @StateToLabel((context as CleanSchedule).State)
+                }
+            </Template>
+        </GridColumn>
+        <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(CleanSchedule.CronExp) HeaderText="Cron di cancellazione">
+            <Template>
+                @{
+                    if (string.IsNullOrEmpty((context as CleanSchedule).CronExp))
+                    {
+                        <span>Mai</span>
+                    }
+                    else
+                    {
+                        @CronExpressionDescriptor.ExpressionDescriptor.GetDescription((context as CleanSchedule).CronExp, new CronExpressionDescriptor.Options() { Use24HourTimeFormat = true, Locale = "it" })
+                    }
+                }
+            </Template>
+        </GridColumn>
+        <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(CleanSchedule.RetentionDays) HeaderText="Giorni da preservare">
+        </GridColumn>
+
+    </GridColumns>
+</SfGrid>
+
+@code {
+
+    /// <summary>
+    /// List of configurable cleans
+    /// </summary>
+    [Parameter]
+    public List<CleanSchedule> nCleanList { get; set; } = new();
+
+    /// <summary>
+    /// Grid with assigned roles
+    /// </summary>
+    private SfGrid<Role> AssignedRoleGrid { get; set; }
+
+    /// <summary>
+    /// Grid with not assigned roles
+    /// </summary>
+    private SfGrid<Role> AvailableRoleGrid { get; set; }
+
+    /// <summary>
+    /// List of the buttons on toolbar of the grid of cleans
+    /// </summary>
+    private List<Object> ToolCleans = new List<Object>()
+{
+    "Add","Edit", "Delete", "Cancel", "Update"
+    };
+
+    /// <summary>
+    /// Convert a numeric state of an Attachment to a label
+    /// </summary>
+    /// <param name="State"></param>
+    /// <returns></returns>
+    public string StateToLabel(int State)
+    {
+        switch (State)
+        {
+            case -1: return "Da smistare";
+            case 1: return "Attivo";
+            case 2: return "Elaborato";
+            case 3: return "Stampato";
+            case 5: return "Chiuso";
+            case 7: return "Spedito";
+            case 9: return "Annullato";
+        };
+        return "";
+    }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+    }
+
+}

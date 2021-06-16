@@ -1,0 +1,256 @@
+﻿@*
+    Component for creating/editing an attachment type
+*@
+@page "/Docs/EditAttachmentsTypes"
+@page "/Docs/EditAttachmentsTypes/{Code}"
+@using dblu.Docs.Classi
+@using dblu.Docs.Models
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+@using dblu.Portale.Plugin.Docs.Services
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using dblu.Portale.Plugin.Docs.Workers;
+
+@inject dbluDocsContext _DbContext
+@inject NavigationManager  _NavigationManager
+@inject ILogger<EditAttachmentsTypes> _Logger
+@inject ServerMailService _ServerMail
+@inject MantenianceWorker _MW
+
+<PageTitle nTitle="@CardTitle" />
+
+<section class="content">
+
+    <SfCard>
+        <CardHeader Title="@CardTitle"></CardHeader>
+        <div class="container-fluid" style="margin:5px">
+            <CardContent EnableSeperator="true">
+                <div class="form-group row">
+                    <div class="col-1">
+                        <label>Codice:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="Codice" @bind-Value="@nEditAttachmentsTypes.Codice"></SfTextBox>
+                    </div>
+                    <div class="col-1">
+                        <label>Descrizione:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="Descrizione" @bind-Value="@nEditAttachmentsTypes.Descrizione"></SfTextBox>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-1">
+                        <label>Cartella:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="Cartella" @bind-Value="@nEditAttachmentsTypes.Cartella"></SfTextBox>
+                    </div>
+                    <div class="col-1">
+                        <label>Estensione:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="Estensione" @bind-Value="@nEditAttachmentsTypes.Estensione"></SfTextBox>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col">
+                        <SfTab>
+                            <TabItems>
+                                <TabItem>
+                                    <ChildContent>
+                                        <TabHeader Text="Attributi"></TabHeader>
+                                    </ChildContent>
+                                    <ContentTemplate>
+                                        <div class="p-2">
+                                            <AttributesTable nAttributes="@nAttributes"></AttributesTable>
+                                        </div>
+                                    </ContentTemplate>
+                                </TabItem>
+                                <TabItem>
+                                    <ChildContent>
+                                        <TabHeader Text="Ruoli"></TabHeader>
+                                    </ChildContent>
+                                    <ContentTemplate>
+                                        <div class="p-2">
+                                            <RoleAssignment nAssignedRoles="@nAssignedRoles"></RoleAssignment>
+                                        </div>
+                                    </ContentTemplate>
+                                </TabItem>
+                                <TabItem>
+                                    <ChildContent>
+                                        <TabHeader Text="Pulizia"></TabHeader>
+                                    </ChildContent>
+                                    <ContentTemplate>
+                                        <div class="p-2">
+                                            <CleanScheduleTable nCleanList="@(nCleanList)"></CleanScheduleTable>
+                                        </div>
+                                    </ContentTemplate>
+                                </TabItem>
+                            </TabItems>
+                        </SfTab>
+                    </div>
+                </div>
+            </CardContent>
+        </div>
+        <CardContent EnableSeperator="true">
+            <div class="row">
+                <div class="col-12">
+                    <SfButton CssClass="e-primary" OnClick="OnClickSave">Salva</SfButton>
+                    <SfButton OnClick="OnClickExit">Annulla</SfButton>
+                </div>
+            </div>
+        </CardContent>
+
+    </SfCard>
+
+</section>
+
+@code
+ {
+
+    /// <summary>
+    /// Attachments Manager, create at initialize, used as a service
+    /// </summary>
+    private AllegatiManager AttachMan { get; set; }
+
+    /// <summary>
+    /// AttahcmentType that is in create or in edit
+    /// </summary>
+    public TipiAllegati nEditAttachmentsTypes { get; set; } = new();
+
+    /// <summary>
+    /// Title of the Card and Page
+    /// </summary>
+    public string CardTitle { get; set; }
+
+    /// <summary>
+    /// Indicate if the Attachment TYPE is a new one
+    /// </summary>
+    private bool IsNew { get; set; } = false;
+
+    /// <summary>
+    /// Code of the Attachment
+    /// </summary>
+    [Parameter]
+    public string Code { get; set; }
+
+    /// <summary>
+    /// Show/Hide the spinner
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// List of attributes of this Attach Type
+    /// </summary>
+    public List<Attributo> nAttributes { get; set; } = new();
+
+    /// <summary>
+    /// Assigned roles to this type
+    /// </summary>
+    public ObservableCollection<Role> nAssignedRoles { get; set; }
+
+    /// <summary>
+    /// List of cleaning list of this ItemType
+    /// </summary>
+    public List<CleanSchedule> nCleanList { get; set; } = new();
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        IsSpinnerVisible = true;
+
+        AttachMan = new AllegatiManager(_DbContext.Connessione, _Logger);
+        nEditAttachmentsTypes = AttachMan.GetAllTipiAllegati().FirstOrDefault(x => x.Codice == Code);
+
+        if (nEditAttachmentsTypes == null)
+        {
+            CardTitle = "Nuovo Allegato";
+            nEditAttachmentsTypes = new() { Codice = "", Descrizione = "", Cartella = "", Estensione = "" };
+            IsNew = true;
+        }
+        else
+            CardTitle = $"Modifica Allegato [{nEditAttachmentsTypes.Codice}]";
+
+        nCleanList = nEditAttachmentsTypes._listaCancellazioni.ToList();
+        foreach (StatoAllegato A in (StatoAllegato[])Enum.GetValues(typeof(StatoAllegato)))
+            if (!nCleanList.Any(x => x.State == (int)A))
+                nCleanList.Add(new CleanSchedule() { CronExp = "", RetentionDays = 90, State = (int)A });
+        nAttributes = nEditAttachmentsTypes._listaAttributi.ToList();
+        nAssignedRoles = new ObservableCollection<Role>(_ServerMail.GetAllRolesForAllegato(nEditAttachmentsTypes.Codice));
+
+        IsSpinnerVisible = false;
+    }
+
+    /// <summary>
+    /// Save the attach type
+    /// </summary>
+    public async void OnClickSave()
+    {
+        IsSpinnerVisible = true;
+        Stopwatch SW = new Stopwatch(); SW.Start();
+
+        if (IsNew)
+        {
+            ElencoAttributi EA = new ElencoAttributi();
+            foreach (Attributo A in nAttributes)
+                EA.Add(A);
+            nEditAttachmentsTypes.Attributi = EA;
+            nEditAttachmentsTypes._listaCancellazioni = nCleanList;
+
+            List<Role> OldRoles = _ServerMail.GetAllRolesForAllegato(nEditAttachmentsTypes.Codice).ToList();
+            foreach (Role R in OldRoles)
+                if (!nAssignedRoles.Any(r => r.RoleId == R.RoleId))
+                    _ServerMail.RemoveAllegatoFromRole(R.RoleId, nEditAttachmentsTypes.Codice);
+
+
+            foreach (Role R in nAssignedRoles)
+                _ServerMail.AddRoleToAllegato(R.RoleId, nEditAttachmentsTypes.Codice);
+            AttachMan.SalvaTipoAllegato(nEditAttachmentsTypes);
+            _MW.Resync();
+            _Logger.LogInformation($"EditAttachmentsTypes.OnClickSave: Added Attachment {nEditAttachmentsTypes.Codice} in {SW.ElapsedMilliseconds} ms");
+        }
+        else
+        {
+            ElencoAttributi EA = new ElencoAttributi();
+            foreach (Attributo A in nAttributes)
+                EA.Add(A);
+            nEditAttachmentsTypes.Attributi = EA;
+            nEditAttachmentsTypes._listaCancellazioni = nCleanList;
+
+
+
+            List<Role> OldRoles = _ServerMail.GetAllRolesForAllegato(nEditAttachmentsTypes.Codice).ToList();
+            foreach (Role R in OldRoles)
+                if (!nAssignedRoles.Any(r => r.RoleId == R.RoleId))
+                    _ServerMail.RemoveAllegatoFromRole(R.RoleId, nEditAttachmentsTypes.Codice);
+
+            foreach (Role R in nAssignedRoles)
+                if (!OldRoles.Any(r => r.RoleId == R.RoleId))
+                    _ServerMail.AddRoleToAllegato(R.RoleId, nEditAttachmentsTypes.Codice);
+
+            AttachMan.SalvaTipoAllegato(nEditAttachmentsTypes);
+            _MW.Resync();
+
+            _Logger.LogInformation($"EditAttachmentsTypes.OnClickSave: Update Attachment {nEditAttachmentsTypes.Codice} in {SW.ElapsedMilliseconds} ms");
+        }
+
+        IsSpinnerVisible = false;
+        _NavigationManager.NavigateTo($"/Docs/AttachmentsTypes");
+    }
+
+    /// <summary>
+    /// On exit back to the list
+    /// </summary>
+    public async void OnClickExit()
+    {
+        _NavigationManager.NavigateTo($"/Docs/AttachmentsTypes");
+    }
+
+
+}

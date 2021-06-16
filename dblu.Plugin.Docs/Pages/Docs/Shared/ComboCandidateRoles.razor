@@ -1,0 +1,79 @@
+﻿@*
+    Component for showing a combo with candidate roles
+*@
+
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+@inject IApplicationUsersManager _ApplicationUsersManager
+
+<SfMultiSelect Placeholder="Ruoli Candidati" @bind-Value="@nRoles" DataSource="@RolesList">
+    <MultiSelectFieldSettings Value="Code" Text="Desc"></MultiSelectFieldSettings>
+</SfMultiSelect>
+
+@code {
+    /// <summary>
+    /// Selected candidate roles
+    /// </summary>
+    private string[] _nRoles = new string[] { };
+
+    /// <summary>
+    /// Selected candidate roles
+    /// </summary>
+    [Parameter]
+    public string[] nRoles
+    {
+        get => _nRoles;
+        set
+        {
+            if (_nRoles == value) return;
+            _nRoles = value;
+            nRolesChanged.InvokeAsync(value);
+        }
+    }
+
+    /// <summary>
+    /// Event for having two way binding
+    /// </summary>
+    [Parameter]
+    public EventCallback<string[]> nRolesChanged { get; set; }
+
+    /// <summary>
+    /// List of all available roles
+    /// </summary>
+    public List<RoleTranslation> RolesList { get; set; } = new();
+
+    /// <summary>
+    /// Class for relate RolesId and Description to show
+    /// </summary>
+    public class RoleTranslation
+    {
+        /// <summary>
+        /// Role Id
+        /// </summary>
+        public string Code { get; set; }
+        /// <summary>
+        /// Description of the role
+        /// </summary>
+        public string Desc { get; set; }
+
+        /// <summary>
+        /// Contructor
+        /// </summary>
+        /// <param name="nCode">Role Id</param>
+        /// <param name="nDesc">Description of the role</param>
+        public RoleTranslation(string nCode, string nDesc)
+        {
+            Code = nCode;
+            Desc = nDesc;
+        }
+    }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        foreach (Role R in _ApplicationUsersManager.GetRoles())
+            RolesList.Add(new(R.RoleId, R.Name));
+    }
+}

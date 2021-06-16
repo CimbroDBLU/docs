@@ -24,7 +24,7 @@
     <SfCard>
         <CardHeader Title="Lista Categorie" />
         <CardContent EnableSeperator="true">
-            <SfGrid @ref="@Grid" DataSource="@nCategories" SelectedRowIndex="1" AllowPaging="true" AllowSorting="true" Toolbar=@Tool>
+            <SfGrid @ref="@Grid" DataSource="@nCategories" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar=@Tool>
                 <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
                 <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick" OnToolbarClick="OnToolbarClick" TValue="Categorie"></GridEvents>
                 <GridPageSettings PageSize="20"></GridPageSettings>
@@ -74,8 +74,6 @@
     {
         _DossierManager = new FascicoliManager(_DbContext.Connessione, _Logger);
         nCategories = new ObservableCollection<Categorie>(_DossierManager.GetAllCategorie());
-
-
     }
 
     /// <summary>

@@ -133,7 +133,14 @@ namespace dblu.Docs.Classi
             return fsc;
         }
 
-    
+        public void CancellaFascicoliVuoti()
+        {
+            using (SqlConnection cn = new SqlConnection(StringaConnessione))
+            {
+                cn.Execute("DELETE FROM FASCICOLI WHERE ID NOT IN (SELECT IDFASCICOLO FROM ELEMENTI)");
+            }
+        }
+
 
 
         public bool Salva(Fascicoli fascicolo, bool isNew)

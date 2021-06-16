@@ -1,0 +1,217 @@
+﻿@*
+    Component for showing a list of Items type
+*@
+
+@page  "/Docs/ItemsTypes"
+@using dblu.Docs.Classi
+@using dblu.Docs.Models
+@inject ILogger<ItemsTypes> _Logger
+@inject dbluDocsContext _DbContext
+@inject NavigationManager  _NavigationManager
+
+<PageTitle nTitle="Lista Tipi Elementi" />
+
+<style>
+
+    .e-duplicate:before {
+        content: '\e70a';
+    }
+</style>
+
+
+<section class="content">
+
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
+    <SfCard>
+        <CardHeader Title="Lista Tipi Elementi" />
+        <CardContent EnableSeperator="true">
+            <SfGrid @ref="@Grid" DataSource="@nItems" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+                <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Normal"></GridEditSettings>
+                <GridPageSettings PageSize="20"></GridPageSettings>
+                <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick" OnToolbarClick="OnToolbarClick" TValue="TipiElementi"></GridEvents>
+                <GridColumns>
+                    <GridColumn IsPrimaryKey="true" AllowEditing="true" AllowSorting="true" Field=@nameof(TipiElementi.Codice) HeaderText="Codice"></GridColumn>
+                    <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(TipiElementi.Descrizione) HeaderText="Descrizione"></GridColumn>
+                    <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(TipiElementi.ViewAttributi) HeaderText="Attributi"></GridColumn>
+                    <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(TipiElementi.Processo) HeaderText="Processo"></GridColumn>
+                    <GridColumn AllowEditing="true" AllowSorting="true" EditType="EditType.BooleanEdit" DisplayAsCheckBox="true" Field=@nameof(TipiElementi.AggregaAElemento) HeaderText="Aggrega a elemento"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </CardContent>
+    </SfCard>
+
+    <QuestionDialog nTitle="Conferma"
+                    nText="Rimuovo il record selezionato?"
+                    OnExitPressed="OnCloseDialog"
+                    OnNoPressed="OnCloseDialog"
+                    OnYesPressed="OnDeleteConfirmed"
+                    OnClose="OnCloseDialog"
+                    nShowDialog="@ShowConfirm">
+    </QuestionDialog>
+
+
+</section>
+
+@code {
+
+
+    /// <summary>
+    /// List of the items types
+    /// </summary>
+    private ObservableCollection<TipiElementi> nItems { get; set; } = new();
+
+    /// <summary>
+    /// Attachments Manager, create at initialize, used as a service
+    /// </summary>
+    private ElementiManager ItemsMan { get; set; }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        ItemsMan = new ElementiManager(_DbContext.Connessione, _Logger);
+        nItems = new ObservableCollection<TipiElementi>(ItemsMan.GetAllTipiElementi());
+    }
+
+    /// <summary>
+    /// List of the buttons on toolbar of the grid
+    /// </summary>
+    private List<Object> Tool = new List<Object>()
+{
+            new ItemModel(){ Id="New",Text="Nuovo", TooltipText="Nuovo", PrefixIcon="e-add" } ,
+            new ItemModel(){ Id="Edit",Text="Modifica", TooltipText="Modifica", PrefixIcon="e-edit" } ,
+            new ItemModel(){ Id="Delete",Text="Elimina", TooltipText="Elimina", PrefixIcon="e-delete" },
+            new ItemModel(){ Id="Duplicate",Text="Duplica", TooltipText="Duplica", PrefixIcon="e-duplicate" }
+        };
+
+    /// <summary>
+    /// Show/Hide the dialog for deleting items
+    /// </summary>
+    private bool ShowConfirm { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if spinner has to be visible
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// Grid users serf object
+    /// </summary>
+    private SfGrid<TipiElementi> Grid;
+
+    /// <summary>
+    /// When the grid do something, show the spinner
+    /// </summary>
+    private void OnActionBegin()
+    {
+        IsSpinnerVisible = true;
+    }
+
+    /// <summary>
+    /// When the grid stop doing something, hide the spinner
+    /// </summary>
+    private void OnActionEnd()
+    {
+        IsSpinnerVisible = false;
+    }
+    /// <summary>
+    /// On double click edit the selected category
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnDoubleClick(RecordDoubleClickEventArgs<TipiElementi> args)
+    {
+        _NavigationManager.NavigateTo($"/Docs/EditItemsTypes/{args.RowData.Codice.ToString()}");
+    }
+
+    /// <summary>
+    /// Manage the actions that has to be done on toolbar click
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnToolbarClick(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        if (args.Item.Id == "New") _NavigationManager.NavigateTo("/Docs/EditItemsTypes");
+
+        List<TipiElementi> SelectedAttachment = await Grid.GetSelectedRecords();
+
+        if (SelectedAttachment.Count == 0) return;
+
+        switch (args.Item.Id)
+        {
+            case "Edit":
+                foreach (TipiElementi U in SelectedAttachment)
+                {
+                    _NavigationManager.NavigateTo($"/Docs/EditItemsTypes/{U.Codice.ToString()}");
+                    break;
+                }
+                break;
+            case "Delete":
+                ShowConfirm = true;
+                break;
+
+            case "Duplicate":
+                foreach (TipiElementi c in SelectedAttachment)
+                {
+                    TipiElementi c1 = new TipiElementi();
+                    List<TipiElementi> Lst = ItemsMan.GetAllTipiElementi();
+
+                    int i = 0;
+                    do
+                    {
+                        c1.Codice = c.Codice.Substring(0, c.Codice.Length - 1) + (++i).ToString();
+                    } while (Lst.FirstOrDefault(s => s.Codice == c1.Codice) != null);
+
+                    c.Codice = c1.Codice;
+                    c.Descrizione = "";
+                    ItemsMan.SalvaTipoElemento(c);
+                    _NavigationManager.NavigateTo($"/Docs/EditItemsTypes/{c.Codice.ToString()}");
+                    break;
+                }
+                break;
+
+        }
+    }
+
+    /// <summary>
+    /// Close the dialog without deletion
+    /// </summary>
+    public async void OnCloseDialog()
+    {
+        ShowConfirm = false;
+    }
+
+    /// <summary>
+    /// On Deletion confirmed, remove the data
+    /// </summary>
+    public async void OnDeleteConfirmed()
+    {
+        ShowConfirm = false;
+        IsSpinnerVisible = true;
+        Stopwatch SW = new Stopwatch(); SW.Start();
+        try
+        {
+            List<TipiElementi> SelectedItems = await Grid.GetSelectedRecords();
+            if (SelectedItems.Count == 0) return;
+            foreach (TipiElementi C in SelectedItems)
+            {
+
+                nItems.Remove(nItems.ToList().FirstOrDefault(x => x.Codice == C.Codice));
+                ItemsMan.CancellaTipoElemento(C);
+                _Logger.LogInformation($"ItemsTypes.OnDeleteConfirmed: Removed Items type {C.Codice} in {SW.ElapsedMilliseconds} ms");
+                SW.Reset();
+            }
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"ItemsTypes.OnDeleteConfirmed: Unable to delete Items type! Unexpected error => {ex} ");
+        }
+        finally
+        {
+            IsSpinnerVisible = false;
+        }
+    }
+
+
+}
+

@@ -17,16 +17,18 @@ namespace dblu.Portale.Plugin.Docs.DataLayer.Migrations
         public override void Up()
         {
             Alter.Table("TipiAllegati")
-                .AddColumn("CronPulizia")
-                .AsString(50).Nullable()
+                .AddColumn("ListaCancellazioni")
+                .AsString(int.MaxValue).Nullable()
                 .WithDefaultValue("")
                 .Nullable();
 
-            Alter.Table("TipiAllegati")
-                 .AddColumn("GiorniDaMantenere")
-                 .AsInt32()
-                 .WithDefaultValue(90)
-                 .Nullable();
+
+            Alter.Table("TipiElementi")
+                .AddColumn("ListaCancellazioni")
+                .AsString(int.MaxValue).Nullable()
+                .WithDefaultValue("")
+                .Nullable();
+
         }
 
         /// <summary>
