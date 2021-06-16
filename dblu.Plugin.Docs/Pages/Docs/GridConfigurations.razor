@@ -61,7 +61,7 @@
     /// <summary>
     /// Selected view
     /// </summary>
-    private string Vista { get => _Vista; set { _Vista = value; nGridConfigurations = new ObservableCollection<Colonna>(_AttachmentService.GetColonne(nVista)); } }
+    private string Vista { get => _Vista; set { _Vista = value; nGridConfigurations = new ObservableCollection<Colonna>(_AttachmentService.GetColonne(_Vista)); } }
 
     /// <summary>
     /// Class for traslating view in a human readeable caption
@@ -103,7 +103,7 @@
     protected override void OnInitialized()
     {
 
-        nGridConfigurations = new ObservableCollection<Colonna>(_AttachmentService.GetColonne(nVista));
+        nGridConfigurations = new ObservableCollection<Colonna>(_AttachmentService.GetColonne(_Vista));
 
     }
 
