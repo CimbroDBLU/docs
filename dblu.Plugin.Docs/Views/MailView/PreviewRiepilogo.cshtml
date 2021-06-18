@@ -16,10 +16,10 @@
 
     string IsPrintedLocally = "true";
     string Printer = "";
-    if (!string.IsNullOrEmpty(_Man.GetCurrentUser(Context).Properties["Printer"]))
+    if (!string.IsNullOrEmpty(_Man.GetCurrentUser(Context).Properties["Printer",""]))
     {
         IsPrintedLocally = "false";
-        Printer = _Man.GetCurrentUser().Properties["Printer"];
+        Printer = _Man.GetCurrentUser().Properties["Printer",""];
     }
 
 }

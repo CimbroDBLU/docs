@@ -681,7 +681,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             if (user != null)
             {
 
-                string Emails = user.Properties["Emails"];
+                string Emails = user.Properties["Emails",""];
                 List<string> jEmails = new List<string>();
                 if (!string.IsNullOrEmpty(Emails)) jEmails = System.Text.Json.JsonSerializer.Deserialize<string[]>(Emails).ToList();
                 List<Core.Infrastructure.Identity.Classes.ApplicationUser> MailList;
@@ -716,7 +716,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             {
                 return BadRequest();
             }
-            string Emails = user.Properties["Emails"];
+            string Emails = user.Properties["Emails",""];
             if (!string.IsNullOrEmpty(Emails))
             {
 
