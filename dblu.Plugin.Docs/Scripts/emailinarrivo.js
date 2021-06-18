@@ -325,7 +325,15 @@ function rispondiOnClick(e) {
                 var dialog = $("#wRispondi").data("kendoWindow");
                 dialog.close();
                 var grid = $("#gridEmail").data("kendoGrid");
-                gridRefresLastOp(grid, docsTipiOperazioni.RISPOSTO);
+                if ($("#chkemailRispondiChiudi").is(':checked'))
+                    {
+                    PulisciDettaglio();
+                    grid.dataSource.read();
+                    }
+                else
+                    {
+                    gridRefresLastOp(grid, docsTipiOperazioni.RISPOSTO);
+                    }
                 }
         },
         error: function (data) {
