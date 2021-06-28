@@ -114,7 +114,23 @@ namespace dblu.Docs.Classi
             return l;
         }
 
-      
+        public bool Associa(string Utente, string CodiceSoggetto)
+        {
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    EmailSoggetti em = new EmailSoggetti() { CodiceSoggetto = CodiceSoggetto, Email = Utente };
+                    cn.Insert<EmailSoggetti>(em);
+                    return true;
+                }
+            }catch(Exception ex)
+            {
+                _logger.LogError($"Salva Soggetto: {ex.Message}");
+                return false;
+            }
+        }
+
         public bool Salva(Soggetti soggetto, bool isNew)
         {
             var bres = false;

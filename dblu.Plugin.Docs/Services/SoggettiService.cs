@@ -73,7 +73,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             return await Task.FromResult(lista);
         }
         public async Task<bool> NotificaAssociazione(string Utente, string CodiceSoggetto, string IdAllegato) {
-            return await Task.FromResult(true);
+            return _sggMan.Associa(Utente, CodiceSoggetto);
         }
 
      }
