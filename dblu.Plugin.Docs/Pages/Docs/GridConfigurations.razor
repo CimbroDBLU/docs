@@ -30,7 +30,7 @@
     </CardContent>
 
     <CardContent EnableSeperator="true">
-        <SfGrid DataSource="@nGridConfigurations" SelectedRowIndex="0" AllowPaging="true" Toolbar="@Tool" AllowSorting="true">
+        <SfGrid ID="ConfigurationGrid" EnablePersistence="true" DataSource="@nGridConfigurations" SelectedRowIndex="0" AllowPaging="true" Toolbar="@Tool" AllowSorting="true">
             <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Normal"></GridEditSettings>
             <GridEvents TValue="Colonna" OnActionComplete="OnActionCompleted"></GridEvents>
             <GridColumns>
@@ -117,7 +117,7 @@
     /// </summary>
     private List<Object> Tool = new List<Object>()
     {
-        "Add", "Edit" , "Delete", "Cancel", "Update"
+        "Add", "Edit" , "Delete", "Cancel", "Update", "Search"
 
     };
 

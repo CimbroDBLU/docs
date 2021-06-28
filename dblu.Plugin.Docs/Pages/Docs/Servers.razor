@@ -23,7 +23,7 @@
             <CardHeader Title="Lista Servers" />
             <CardContent EnableSeperator="true">
 
-                <SfGrid @ref="@Grid" AllowGrouping="true" DataSource="@nServers" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar=@Tool>
+                <SfGrid @ref="@Grid" ID="ServersGrid" EnablePersistence="true"  AllowGrouping="true" DataSource="@nServers" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar=@Tool>
                     <GridGroupSettings ShowDropArea="false" Columns="@(new string[]{ "TipoRecord"})"></GridGroupSettings>
                     <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick" OnToolbarClick="OnToolbarClick" TValue="EmailServer"></GridEvents>
                     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>

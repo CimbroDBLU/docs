@@ -24,7 +24,7 @@
     <SfCard>
         <CardHeader Title="Lista Categorie" />
         <CardContent EnableSeperator="true">
-            <SfGrid @ref="@Grid" DataSource="@nCategories" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar=@Tool>
+            <SfGrid @ref="@Grid"  ID="CategoryGrid" EnablePersistence="true" DataSource="@nCategories" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar=@Tool>
                 <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
                 <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick" OnToolbarClick="OnToolbarClick" TValue="Categorie"></GridEvents>
                 <GridPageSettings PageSize="20"></GridPageSettings>
@@ -121,8 +121,6 @@
     {
         IsSpinnerVisible = false;
     }
-
-
 
     /// <summary>
     /// Manage the actions that has to be done on toolbar click

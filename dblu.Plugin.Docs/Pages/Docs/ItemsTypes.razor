@@ -26,7 +26,7 @@
     <SfCard>
         <CardHeader Title="Lista Tipi Elementi" />
         <CardContent EnableSeperator="true">
-            <SfGrid @ref="@Grid" DataSource="@nItems" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+            <SfGrid @ref="@Grid" ID="ItemsTypesGrid" EnablePersistence="true" DataSource="@nItems" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
                 <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Normal"></GridEditSettings>
                 <GridPageSettings PageSize="20"></GridPageSettings>
                 <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick" OnToolbarClick="OnToolbarClick" TValue="TipiElementi"></GridEvents>
