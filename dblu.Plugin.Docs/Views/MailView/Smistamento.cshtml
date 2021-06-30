@@ -215,9 +215,10 @@
         <section class="content">
             <div class="row" hidden="@(ListaServer.Count <= 1)">
                 <div class="col-5">
-                    <label class="control-label col-4" style="font-size:12px">Casella di posta:</label>
-                    <div class="col-6">
-                        @(Html.Kendo().ComboBox()
+                    <div class="row">
+                        <label class="control-label col-4 mt-1" style="font-size:12px">Casella di posta:</label>
+                        <div class="col-6">
+                            @(Html.Kendo().ComboBox()
                     .Name("emailServer")
                     .Placeholder("Seleziona Server...")
                     .DataTextField("Nome")
@@ -230,9 +231,12 @@
                     {
                         e.Select("onSelectServer");
                     })
+
                 )
+                        </div>
                     </div>
                 </div>
+                <div class="col-7"></div>
             </div>
             <div>
                 @(Html.Kendo().Dialog()
@@ -272,7 +276,7 @@
         })
     )
             </div>
-            <div class="row">
+            <div class="row mt-2">
                 <div class="col-5" style="align-self: auto;">
                     <div class="card card-outline card-secondary card-solid card-default">
                         @Html.Hidden("IdAllegato")
@@ -358,17 +362,17 @@
                                         <div class="container">
                                             <div class="row">
                                                 @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
-                                                    {
-                                                <div class="col-4">
-                                                    @(Html.Kendo().Button()
+                                                {
+                                                    <div class="col-4">
+                                                        @(Html.Kendo().Button()
                                                     .Name(item.Codice)
                                                             .HtmlAttributes(new { type = "button", @class = "k-button", @style = "width:100%;", categoria = item.Categoria, codice = item.Codice, aggrega= item.AggregaAElemento , viewattributi = item.ViewAttributi })
                                                         .Content(item.Descrizione)
                                                     .Events(e => e.Click("NuovoElemento"))
                                                 )
-                                                </div>
+                                                    </div>
 
-                                                    }
+                                                }
                                             </div>
                                         </div>
                                     </div>
@@ -535,81 +539,81 @@
                             var fName = "div" + item.Codice;
                             var fNameForm = "form" + item.Codice;
                             var sPartialview = $"Smistamento/{item.ViewAttributi}";
-                    <div id=@{@fName} class="card card-outline card-secondary card-default" style="display:none">
-                        <div class="card-header p-1 ">
-                            <i class="mt-2 far fa-file-alt float-left"></i>
-                            <div class="card-title mt-1 ml-2">
-                                @item.Descrizione
-                            </div>
-                            <div class="card-tools pull-right">
-                                <button type="button" class="btn btn-card-tool" data-card-widget="collapse" id="Collapse@{@fName}">
-                                    <i class="fa fa-minus"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            @if (string.IsNullOrEmpty(item.ViewAttributi))
+                            <div id=@{@fName} class="card card-outline card-secondary card-default" style="display:none">
+                                <div class="card-header p-1 ">
+                                    <i class="mt-2 far fa-file-alt float-left"></i>
+                                    <div class="card-title mt-1 ml-2">
+                                        @item.Descrizione
+                                    </div>
+                                    <div class="card-tools pull-right">
+                                        <button type="button" class="btn btn-card-tool" data-card-widget="collapse" id="Collapse@{@fName}">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    @if (string.IsNullOrEmpty(item.ViewAttributi))
                                     {
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="pad">
-                                        <form class="form-horizontal" role="form" method="post" id="@{@fNameForm}" autocomplete="off">
-                                            <div class="card-body">
-                                                @foreach (var attributo in item.Attributi.ToList().OrderBy(a => a.Sequenza).ToList())
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="pad">
+                                                    <form class="form-horizontal" role="form" method="post" id="@{@fNameForm}" autocomplete="off">
+                                                        <div class="card-body">
+                                                            @foreach (var attributo in item.Attributi.ToList().OrderBy(a => a.Sequenza).ToList())
                                                             {
-                                                <div class="form-group">
-                                                    @Html.Label($"lbl_{item.Codice}{attributo.Nome}", attributo.Descrizione)
+                                                                <div class="form-group">
+                                                                    @Html.Label($"lbl_{item.Codice}{attributo.Nome}", attributo.Descrizione)
 
-                                                    @switch (attributo.Tipo)
+                                                                    @switch (attributo.Tipo)
                                                                     {
                                                                         case "System.DateTime":
-                                                    @(Html.Kendo().DatePicker()
+                                                                            @(Html.Kendo().DatePicker()
                                                             .Name($"ctl_{item.Codice}{attributo.Nome}")
                                                             .Value(attributo.ValorePredefinito)
                                                             )
                                                                             break;
                                                                         case "System.Boolean":
-                                                    @(Html.Kendo().CheckBox()
+                                                                            @(Html.Kendo().CheckBox()
                                                                .Name($"ctl_{item.Codice}{attributo.Nome}")
                                                                .Checked(System.Convert.ToBoolean(attributo.ValorePredefinito))
                                                             )
                                                                             break;
                                                                         default:
-                                                    @(Html.Kendo().TextBox()
+                                                                            @(Html.Kendo().TextBox()
                                                                 .Name($"ctl_{item.Codice}{attributo.Nome}")
                                                                 .Value(attributo.ValorePredefinito == null ? "" : attributo.ValorePredefinito.ToString())
                                                                 .HtmlAttributes(new { style = "width: 100%" })
                                                             )
                                                                             break;
                                                                     }
-                                                </div>
+                                                                </div>
                                                             }
+                                                        </div>
+                                                    </form>
+                                                </div>
                                             </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group col-4">
-                            </div>
-                            <div class="form-group col-2">
-                                @(Html.Kendo().Button()
+                                        </div>
+                                        <div class="form-group col-4">
+                                        </div>
+                                        <div class="form-group col-2">
+                                            @(Html.Kendo().Button()
                             .Name($"btn_{item.Codice}")
                             .HtmlAttributes(new { type = "button", @class = "k-primary k-button", categoria = item.Categoria, codice = item.Codice, aggrega = item.AggregaAElemento })
                             .Content("Conferma")
                             .Events(e => e.Click("SalvaAttributi"))
                         )
-                            </div>
+                                        </div>
                                     }
                                     else
                                     {
-                            <div class="row">
-                                <div class="col-12">
-                                    @Html.Partial(sPartialview, item)
+                                        <div class="row">
+                                            <div class="col-12">
+                                                @Html.Partial(sPartialview, item)
+                                            </div>
+                                        </div>
+                                    }
                                 </div>
                             </div>
-                                    }
-                        </div>
-                    </div>
                         }
                     }
 
@@ -658,9 +662,9 @@
                                                    toolbarSettings="@(new Syncfusion.EJ2.PdfViewer.PdfViewerToolbarSettings { ShowTooltip = true, ToolbarItems = "PageNavigationTool,PanTool,MagnificationTool,SelectionTool,SearchOption,PrintOption,DownloadOption,UndoRedoTool,AnnotationEditTool"  })">
                                     </ejs-pdfviewer>
                                     @*
-                        <div class="col-12" style="width:80%" id="anteprimajpg" hidden>
-                            <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
-                        </div>
+                                <div class="col-12" style="width:80%" id="anteprimajpg" hidden>
+                                    <input type="image" id="imageviewer" src="" style="height:700px;width:auto">
+                                </div>
                                     *@
                                 </div>
                             </div>
