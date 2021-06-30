@@ -251,14 +251,16 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
 
-        public int CountEmailInArrivo(string Tipo, IEnumerable<Claim> Roles, StatoAllegato stato = StatoAllegato.Elaborato)
+        public int CountEmailInArrivo(string Tipo, IEnumerable<Claim> Roles, 
+            StatoAllegato stato = StatoAllegato.Elaborato,
+            TipiRecordServer TipoCartella= TipiRecordServer.CartellaMail)
         {
 
             int l = 0;
             try
             {
                 
-                List<EmailServer> ListaServer = _serMan.GetServersEmailinRoles(Roles,TipiRecordServer.CartellaMail);
+                List<EmailServer> ListaServer = _serMan.GetServersEmailinRoles(Roles, TipoCartella);
 
                 if (ListaServer != null && ListaServer.Count > 0)
                 {
@@ -2713,12 +2715,18 @@ namespace dblu.Portale.Plugin.Docs.Services
             RisultatoAzione res = new RisultatoAzione();
             try
             {
-
                 using (SqlConnection cn = new SqlConnection(_context.Connessione))
                 {
-                    var n = cn.Execute("UPDATE allegati SET Origine=@Origine WHERE Id=@Id ",
-                        new { Origine = NomeServer, Id = IdAllegato });
-                    if (n > 0)
+                    //2021 06 30  aggiunto cambio stato da smistamento a attivo
+                    //var n = cn.Execute("UPDATE allegati SET Origine=@Origine WHERE Id=@Id ",
+                    //    new { Origine = NomeServer, Id = IdAllegato });
+                    Allegati all = _allMan.Get(IdAllegato);
+                    all.Origine = NomeServer;
+                    if (all.Stato == StatoAllegato.DaSmistare) {
+                        all.Stato = StatoAllegato.Attivo;
+                    }
+                    if( _allMan.Salva(all, false, false))
+                    //if (n > 0)
                     {
                         res.Successo = true;
                         res.Messaggio = $"Email spostata in {NomeServer}.";
