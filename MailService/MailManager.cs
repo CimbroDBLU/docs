@@ -94,13 +94,16 @@ namespace dbluMailService
                                     //inbox = client.GetFolder(s.Cartella, cancel);
                                     try
                                     {
-                                        IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0], true, cancel);
+                                        IList<IMailFolder> mf = client.GetFolders( client.PersonalNamespaces[0], true, cancel);
                                         //
-                                        inbox = mf.Where(c => c.Name == s.Cartella).FirstOrDefault();
+                                        inbox = mf.Where(c => c.Name.ToLower() == s.Cartella.ToLower()).FirstOrDefault();
                                         if (inbox == null)
                                         {
                                             mf = inbox.GetSubfolders(true, cancel);
-                                            inbox = mf.Where(c => c.Name == s.Cartella).FirstOrDefault();
+                                            inbox = mf.Where(c => c.Name.ToLower() == s.Cartella.ToLower()).FirstOrDefault();
+                                        }
+                                        else {
+                                            s.Cartella = inbox.FullName;
                                         }
                                         if (inbox == null)
                                         {
@@ -130,13 +133,13 @@ namespace dbluMailService
                                 {
                                     try
                                     {
-                                        IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0], true, cancel);
+                                        IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0], false, cancel);
                                         //
-                                        archivio = mf.Where(c => c.Name == s.CartellaArchivio).FirstOrDefault();
+                                        archivio = mf.Where(c => c.Name.ToLower() == s.CartellaArchivio.ToLower()).FirstOrDefault();
                                         if (archivio == null)
                                         {
                                             mf = inbox.GetSubfolders(true, cancel);
-                                            archivio = mf.Where(c => c.Name == s.CartellaArchivio).FirstOrDefault();
+                                            archivio = mf.Where(c => c.Name.ToLower() == s.CartellaArchivio.ToLower()).FirstOrDefault();
                                         }
                                         if (archivio == null)
                                         {
