@@ -11,6 +11,7 @@ var mailChiave1 = null;
 var mailDescrizione = null;
 var mailItem = null;
 var elementoItem = null;
+var TipoElemento = null;
 
 var PdfCorrente = {
     TipoAllegato : "EMAIL",
@@ -936,7 +937,7 @@ function AssociaElementoOnClick(e) {
     myWindow.refresh({
         url: UrlActions.sggservice_UrlServizioRicercaElementi,
         type: "Post",
-        data: { soggetto: codSoggetto, associa: true}
+        data: { soggetto: codSoggetto, associa: true, tipoelemento: TipoElemento }
     });
     //myWindow.height = window.innerHeight * 0.9 ;
     //myWindow.width = window.innerWidth * 0.9;

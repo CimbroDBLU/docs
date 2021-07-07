@@ -1,7 +1,7 @@
 ﻿@*@model dblu.Portale.Plugin.Docs.ViewModels.EditorAllegatoViewModel*@
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _zipSer
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _doc
-@inject dblu.Portale.Services.Camunda.CamundaService  _service
+@inject dblu.Portale.Plugin.TaskListBase.Services.Camunda.CamundaService  _service
 
 @using Kendo.Mvc.UI
 @using dblu.Docs.Classi
@@ -17,7 +17,7 @@
     var fromTask = false;
     var taskId = "";
     Allegati Allegato = null;
-    string idAllegato= null;
+    string idAllegato = null;
     bool flAnnulla = false;
     var flRuoliCandidati = false;
     string[] vRuoliCandidati = null;
@@ -58,7 +58,7 @@
     }
 
     ViewBag.Title = "Allegato";
-   
+
     var AttributiMod = "";
     //IList<EmailAttachments> ListaFile = await _zipSer.GetZipFilesAsync(idAllegato);
     bool isEdit = false;
@@ -85,7 +85,7 @@
 
 <script>
 
-   
+
     $(document).ready(function () {
 
         //$("#pdfviewer_comment").remove();
@@ -328,7 +328,7 @@
                     cache: false,
                     data: obj,
                 success: function (data) {
-                    //alert(data); 
+                    //alert(data);
                         window.location = "/Action/ListaAttivita";
                 }
             });
@@ -336,7 +336,7 @@
             catch {
 
             }
-           
+
         } else {
             validationSummary.html("<div class='k-messagebox k-messagebox-error'>Inserire i campi obbligatori.</div>");
         }
@@ -414,7 +414,7 @@
                                     </div>
                                 </div>
                             </div>
-                            </form>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -537,21 +537,21 @@
                         @if (isEdit)
                         {
                             //Possibilità di aggiungere un file allo zip ---- solo se allegato di tipo Zip?
-                        <div class="form-group" style="margin-top:10px">
+                            <div class="form-group" style="margin-top:10px">
 
-                            <div class="col-12" style="width:100%">
-                                @*action da verificare*@
-                                <form class="col-12" method="post" action="/Allegato/AddFile" enctype="multipart/form-data">
-                                    <div class="form-group">
-                                        <input class="form-control-file col-8" name="files" id="files" type="file" aria-label="files" />
-                                        <p style="text-align: right">
-                                            <button type="submit" class="k-button k-primary  col-2" onclick="SubmitForm(this.parentElement, event)">Aggiungi</button>
-                                        </p>
-                                    </div>
-                                </form>
-                                <br /><br />
+                                <div class="col-12" style="width:100%">
+                                    @*action da verificare*@
+                                    <form class="col-12" method="post" action="/Allegato/AddFile" enctype="multipart/form-data">
+                                        <div class="form-group">
+                                            <input class="form-control-file col-8" name="files" id="files" type="file" aria-label="files" />
+                                            <p style="text-align: right">
+                                                <button type="submit" class="k-button k-primary  col-2" onclick="SubmitForm(this.parentElement, event)">Aggiungi</button>
+                                            </p>
+                                        </div>
+                                    </form>
+                                    <br /><br />
+                                </div>
                             </div>
-                        </div>
                         }
 
                         <div class="row form-group">
@@ -574,13 +574,13 @@
 
 
         @if (fromTask)
-                {
-                <form class="form-horizontal" role="form" method="post" id="formcompleta" autocomplete="off" kendo-validator="true">
-                    <div class="row form-group">
+        {
+            <form class="form-horizontal" role="form" method="post" id="formcompleta" autocomplete="off" kendo-validator="true">
+                <div class="row form-group">
 
 
-                        @if (@flRuoliCandidati)
-                                {
+                    @if (@flRuoliCandidati)
+                    {
                         <div class="col-2"><label class="control-label">Ruoli candidati</label>@Html.Hidden("_RuoliCandidati", "")</div>
                         <div class="col-10">
                             @(Html.Kendo().MultiSelect()
@@ -594,23 +594,23 @@
                                                     .HtmlAttributes(new { Style="width:100%", required = "required", validationmessage = "Selezionare almeno un ruolo" })
                                                 )
                         </div>
-                                }
-                    </div>
+                    }
+                </div>
 
-                    <div class="row form-group">
-                        @if (flAnnulla)
-                                        {
+                <div class="row form-group">
+                    @if (flAnnulla)
+                    {
                         <button type="button" id="bAnnulla" class="btn ml-2 btn-default pull-right" onclick="AnnullaOnClick()">Annulla</button>
-                                        }
-                        <input name="_Annulla" type="hidden" value="false">
-                        <button type="button" id="bCompleta" class="btn ml-2 btn-default pull-right" onclick="CompletaOnClick()">Completa</button>
+                    }
+                    <input name="_Annulla" type="hidden" value="false">
+                    <button type="button" id="bCompleta" class="btn ml-2 btn-default pull-right" onclick="CompletaOnClick()">Completa</button>
 
 
-                        <div id="validation-summary">
-                        </div>
+                    <div id="validation-summary">
                     </div>
-                 </form>
-                }
+                </div>
+            </form>
+        }
     </div>
 </section>
 

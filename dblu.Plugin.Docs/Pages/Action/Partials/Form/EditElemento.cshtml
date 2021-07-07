@@ -1,4 +1,5 @@
-﻿@inject dblu.Portale.Services.Camunda.CamundaService  _service
+﻿@inject dblu.Portale.Plugin.TaskListBase.Services.Camunda.CamundaService  _service
+using dblu.Portale.Plugin.TaskListBase.Services.Camunda;
 @using dblu.Portale.Extensions
 @using dblu.Docs.Models
 @using Kendo.Mvc.UI
@@ -21,7 +22,7 @@
     var fromTask = false;
     var taskId = "";
     Elementi Elemento = null;
-    var flRuoliCandidati = false; 
+    var flRuoliCandidati = false;
     string[] vRuoliCandidati = null;
     try
     {
@@ -31,13 +32,13 @@
         }
         else
         {
-    BPMClient.BPMTaskDto task = TempData.Get<BPMClient.BPMTaskDto>("task");
-    // BPMClient.BPMTask tskDto = new BPMClient.BPMTask();
+            BPMClient.BPMTaskDto task = TempData.Get<BPMClient.BPMTaskDto>("task");
+            // BPMClient.BPMTask tskDto = new BPMClient.BPMTask();
 
 
 
-    BPMClient.BPMVariable var = new BPMClient.BPMVariable();
-    Dictionary<string, BPMClient.VariableValue> variables = var.GetAll(_service._eng, task.id).Result;
+            BPMClient.BPMVariable var = new BPMClient.BPMVariable();
+            Dictionary<string, BPMClient.VariableValue> variables = var.GetAll(_service._eng, task.id).Result;
             var idElemento = variables["IdElemento"].value.ToString();
             Elemento = _doc._elmMan.Get(idElemento, 0);
             taskId = task.id;
@@ -163,7 +164,7 @@
             var pdfHandlerUrl = "/Elementi/GetPdf/data?" + url;
             pdfViewer.fromFile(pdfHandlerUrl);
 *@
-            
+
         }
 
     }
@@ -299,39 +300,39 @@
                                 {
                                     <!--<div class="row">-->
 
-                                        <div class='form-group row'>
-                                            <div class='col-sm-4'>  @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione) </div>
-                                            <div class='col-sm-8'>
-                                                @switch (attributo.Tipo)
-                                                {
-                                                    case "System.DateTime":
-                                                        @(Html.Kendo().DatePicker()
+                                    <div class='form-group row'>
+                                        <div class='col-sm-4'>  @Html.Label($"lbl_{attributo.Nome}", attributo.Descrizione) </div>
+                                        <div class='col-sm-8'>
+                                            @switch (attributo.Tipo)
+                                            {
+                                                case "System.DateTime":
+                                                    @(Html.Kendo().DatePicker()
                                                                         .Name($"ctl_{attributo.Nome}")
                                                                     .Value(Elemento.elencoAttributi.GetDateTime(attributo.Nome))
 
                                                         )
-                                                        break;
-                                                    case "System.Boolean":
+                                                    break;
+                                                case "System.Boolean":
                                                     bool xx = attributo.Valore == null ? false : (bool)Elemento.elencoAttributi.GetBoolean(attributo.Nome);
-                                                        @(Html.Kendo().Switch()
+                                                    @(Html.Kendo().Switch()
                                                               .Name($"ctl_{attributo.Nome}")
                                                               .Messages(c => c.Checked("Si").Unchecked("No"))
                                                               .Checked(xx)
                                                         )
-                                                        break;
-                                                    default:
-                                                            @(Html.Kendo().TextBox()
+                                                    break;
+                                                default:
+                                                    @(Html.Kendo().TextBox()
                                                               .Name($"ctl_{attributo.Nome}")
                                                         .Value(attributo.Valore==null ? "" : attributo.Valore.ToString())
                                                               .HtmlAttributes(new { style = "width: 100%" })
                                                             )
-                                                        break;
-                                                }
-                                            </div>
-
+                                                    break;
+                                            }
                                         </div>
 
-                                                                        <!--</div>-->
+                                    </div>
+
+                                    <!--</div>-->
 
                                 }
 
@@ -364,7 +365,7 @@
                     <div class="box-body">
                         <div class="form-group" style="margin-top:10px">
                             @Html.Hidden("IdAllegato")
-                            <div class="col-md-12" >
+                            <div class="col-md-12">
                                 @(Html.Kendo().Grid<dblu.Docs.Models.Allegati>(Allegati)
                                 .Name("GridAllegati")
                                 .PersistSelection()
@@ -381,7 +382,7 @@
                                 .Events(events => events.Change("Allegati_OnRowSelect"))
                                 )
                                 @*.Events(ev => ev.Change("xxonChange"))*@
-                        </div>
+                            </div>
                         </div>
                         <div class="form-group" style="margin-top:10px">
                             <div class="col-md-12" style="width:100%">
@@ -392,20 +393,20 @@
                             <div class="col-md-12" style="width:100%" id="anteprimapdf">
 
                                 @*
-                                @(Html.Kendo().PDFViewer().Name("pdfviewer")
-                                    .Toolbar(toolbar =>
-                                    toolbar.Items(items =>
-                                        {
-                                            items.Add().Name("pager");
-                                            items.Add().Name("spacer");
-                                            items.Add().Name("zoom");
-                                                items.Add().Name("print");
-                                                items.Add().Name("search");
-                                                items.Add().Name("download");
-                                        })
-                                    )
-                                        
-                )*@
+                                                    @(Html.Kendo().PDFViewer().Name("pdfviewer")
+                                                        .Toolbar(toolbar =>
+                                                        toolbar.Items(items =>
+                                                            {
+                                                                items.Add().Name("pager");
+                                                                items.Add().Name("spacer");
+                                                                items.Add().Name("zoom");
+                                                                    items.Add().Name("print");
+                                                                    items.Add().Name("search");
+                                                                    items.Add().Name("download");
+                                                            })
+                                                        )
+
+                                    )*@
                                 <ejs-pdfviewer id="pdfviewer" serviceUrl="/api/PdfViewer" documentPath=""
                                                enablePrint="true"
                                                documentLoad="documentLoaded"
@@ -426,7 +427,7 @@
                                 {
                                     <button formaction="/Action/TaskView/Complete/@taskId" method="post" type="submit" class="btn margin btn-info pull-right">Completa</button>
                                 }
-                                <button class="btn btn-info margin pull-left" id="salvanote"   onclick="saveAnnotations() ">Salva Annotazioni</button>
+                                <button class="btn btn-info margin pull-left" id="salvanote" onclick="saveAnnotations() ">Salva Annotazioni</button>
                             </form>
                         </div>
 
@@ -437,7 +438,7 @@
         </div>
 
 
-        
+
 
 
     </div>
