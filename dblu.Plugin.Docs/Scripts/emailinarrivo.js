@@ -1650,7 +1650,7 @@ function wPdfEditorClose(e) {
 
 function templateAvvisi(dataItem) {
     if (dataItem.Avvisi != undefined && dataItem.Avvisi != '') {
-        return "<span style=\"background-color:yellow; \">" + dataItem.Avvisi + "</span>"
+        return "<span style=\"background-color:yellow; color:darkblue\">" + dataItem.Avvisi + "</span>"
     }
     return "<span/>"
 
@@ -1693,11 +1693,15 @@ function onDataBoundAttachments(e) {
     for (var i = 0; i < gridData.length; i++) {
         var currentUid = gridData[i].uid;
         if (gridData[i].NomeFile != undefined) {
-            if (!(gridData[i].NomeFile.toLowerCase().includes(".jpg") || gridData[i].NomeFile.toLowerCase().includes(".png"))) { 
-
-            var currenRow = grid.table.find("tr[data-uid='" + currentUid + "']");
-            var editButton = $(currenRow).find(".k-grid-anteprimaImg");
-            editButton.hide();
+            var nomefile = gridData[i].NomeFile.toLowerCase();
+            if (!(nomefile.includes(".jpg") || nomefile.includes(".png"))) {
+                var currenRow = grid.table.find("tr[data-uid='" + currentUid + "']");
+                var editButton = $(currenRow).find(".k-grid-anteprimaImg");
+                editButton.hide();
+            }
+            if (nomefile.includes(".xls") || nomefile.includes(".doc") || nomefile.includes(".zip")) {
+                var currenRow = grid.table.find("tr[data-uid='" + currentUid + "']");
+                grid.select(currenRow);
             }
         }
     }
