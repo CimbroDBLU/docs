@@ -10,7 +10,7 @@ using dblu.Docs.Models;
 using dblu.Portale.Core.Infrastructure;
 using dblu.Portale.Plugin.Docs.Services;
 using dblu.Portale.Plugin.Docs.ViewModels;
-using dblu.Portale.Services.Camunda;
+using dblu.Portale.Plugin.TaskListBase.Services.Camunda;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;

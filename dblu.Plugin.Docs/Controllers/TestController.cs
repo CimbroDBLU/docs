@@ -4,7 +4,7 @@ using dblu.Docs.Models;
 using dblu.Portale.Core.Infrastructure.ViewModels;
 using dblu.Portale.Plugin.Docs.Class;
 using dblu.Portale.Plugin.Docs.Services;
-using dblu.Portale.Services.Camunda;
+using dblu.Portale.Plugin.TaskListBase.Services.Camunda;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
