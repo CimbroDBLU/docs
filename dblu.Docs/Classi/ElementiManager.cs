@@ -484,7 +484,7 @@ namespace dblu.Docs.Classi
                             sb.Append(" AND UtenteUM = @UtenteUM ");
                             pp.Add("@UtenteUM", queryObj.UtenteUM);
                         }
-                        if (queryObj.IdFascicolo != null)
+                        if (queryObj.IdFascicolo != null && queryObj.IdFascicolo != Guid.Empty)
                         {
                             sb.Append(" AND IdFascicolo = @IdFascicolo ");
                             pp.Add("@IdFascicolo", queryObj.IdFascicolo);

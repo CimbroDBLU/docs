@@ -1,5 +1,7 @@
-﻿using dblu.Docs.Classi;
+﻿using BPMClient;
+using dblu.Docs.Classi;
 using dblu.Docs.Models;
+using dblu.Portale.Core.Infrastructure.ViewModels;
 using dblu.Portale.Plugin.Docs.Class;
 using dblu.Portale.Plugin.Docs.Services;
 using dblu.Portale.Plugin.TaskListBase.Services.Camunda;
@@ -40,8 +42,11 @@ namespace dblu.Portale.Plugin.Docs.Controllers
             {
 
                 BPMDocsProcessInfo Info = _mailService.GetProcessInfo(TipiOggetto.ELEMENTO, AzioneOggetto.MODIFICA);
-                Elementi el = _mailService._elmMan.Get("12e980cf-1831-4459-82d0-806385a3bc4f", 0);
-                _mailService.AvviaProcesso(Info, el);
+                Elementi el = _mailService._elmMan.Get("2270450D-F775-4CC4-AECE-707B580256CF", 0);
+                var variabili = new Dictionary<string, VariableValue>();
+                variabili.Add("IdAllegato", VariableValue.FromObject("B71F90C3-6BBB-4570-B2AC-33BB7FF180AE"));
+
+                _mailService.AvviaProcesso(Info, el, variabili);
 
                 //string json = System.IO.File.ReadAllText("d:\\temp\\pdf\\new3.json");
                 //List<SFPdfPageAnnotation> note = JsonConvert.DeserializeObject<SFPdfPageAnnotation>(json);
@@ -75,6 +80,15 @@ namespace dblu.Portale.Plugin.Docs.Controllers
             return await Task.FromResult(Ok());
         }
 
+
+        public IActionResult Report()
+        {
+           // var rd = new ReportDetails();
+         //  rd.ReportName = "AutReso.trdp";
+            return View();
+        }
 #endif
-    }
+        }
+
+
 }
