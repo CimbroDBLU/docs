@@ -1,0 +1,93 @@
+﻿@*
+    Component for showing a list of Dossiers
+*@
+
+@page  "/Docs/Dossiers"
+
+@using Syncfusion.Blazor
+@using Syncfusion.Blazor.Data
+@using Syncfusion.Blazor.Grids
+@using dblu.Docs.Models
+
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
+@inject IJSRuntime JSRuntime
+
+<style>
+
+    .smallb {
+        width: 50px;
+    }
+</style>
+
+<PageTitle nTitle="Lista Fascicoli" />
+
+<SfCard>
+    <CardHeader Title="Lista Fascicoli" />
+    <CardContent EnableSeperator="true">
+        <SfGrid Height="610" SelectedRowIndex="0" ID="ODATA_Dossiers" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewFascicoli" Toolbar=@Tool>
+            <SfDataManager Url="/odata/ODATA_Dossiers" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
+            <GridPageSettings PageSize="13"></GridPageSettings>
+            <GridSearchSettings Fields=@(new string[] { "DscFascicolo", "DscCategoria" })></GridSearchSettings>
+            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu">
+            </GridFilterSettings>
+            <GridColumns>
+                <GridColumn Field=@nameof(viewFascicoli.IdFascicolo) Visible="false" HeaderText="ID" IsPrimaryKey="true"></GridColumn>
+                <GridColumn Field=@nameof(viewFascicoli.DscFascicolo) Width="400" AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="Descrizione"></GridColumn>
+                <GridColumn Field=@nameof(viewFascicoli.DscCategoria) AllowSearching="true" AllowSorting="true" FilterSettings="@(new FilterSettings{Type = Syncfusion.Blazor.Grids.FilterType.CheckBox })" AllowFiltering="true" HeaderText="Categoria"></GridColumn>
+
+                <GridColumn Field=@nameof(viewFascicoli.Campo1) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewFascicoli.Campo2) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewFascicoli.Campo3) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewFascicoli.Campo4) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[3].Des" Visible="@Cols[3].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewFascicoli.Campo5) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[4].Des" Visible="@Cols[4].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewFascicoli.Campo6) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[5].Des" Visible="@Cols[5].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewFascicoli.Campo7) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[6].Des" Visible="@Cols[6].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewFascicoli.Campo8) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[7].Des" Visible="@Cols[7].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewFascicoli.Campo9) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[8].Des" Visible="@Cols[8].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewFascicoli.Campo10) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[9].Des" Visible="@Cols[9].Visible"></GridColumn>
+                <GridColumn HeaderTextAlign=TextAlign.Left HeaderText="" Width="60">
+                    <Template>
+                        @{
+                            var ID = (context as viewFascicoli).IdFascicolo.ToString();
+                            <SfButton CssClass="smallb" OnClick="() => OpenDossier(ID)" HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Apri" } })" IconCss="e_fa fa-folder-open"></SfButton>
+                        }
+                    </Template>
+                </GridColumn>
+            </GridColumns>
+        </SfGrid>
+    </CardContent>
+</SfCard>
+@code{
+
+    /// <summary>
+    /// List of custom columns of the dossiers
+    /// </summary>
+    List<Colonna> Cols { get; set; } = new List<Colonna>();
+
+    /// <summary>
+    /// List of the buttons on toolbar of the grid
+    /// </summary>
+    private List<Object> Tool = new List<Object>()
+{
+            "Search"
+    };
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        Cols = _ele.GetColonne("vFASCICOLO");
+
+    }
+
+    /// <summary>
+    /// On open dossier, lad the old fashion interface
+    /// </summary>
+    /// <param name="Id"></param>
+    public async void OpenDossier(string Id)
+    {
+        await JSRuntime.InvokeVoidAsync("BlazorSetHREF", $@"/Docs/Fascicolo/{Id}");
+    }
+
+}

@@ -1,0 +1,36 @@
+﻿@page "/Inbox"
+@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Services
+
+<PageTitle nTitle="Inbox" />
+
+<section class="content">
+    <SfCard>
+        <CardHeader Title="Inbox" />
+        <CardContent EnableSeperator="true">
+            <div class="row form-group">
+                <div class="col-5">
+                    <ServerCombo @bind-nMailBox="@MailBox"></ServerCombo>
+                    <MailBrowser nMailBox="@MailBox"></MailBrowser>
+                </div>
+            </div>
+        </CardContent>
+    </SfCard>
+</section>
+
+
+
+@code {
+
+
+    private EmailServer m_EmailServer;
+    private EmailServer MailBox
+    {
+        get => m_EmailServer;
+        set { m_EmailServer = value; 
+            StateHasChanged();
+        }
+    }
+
+}

@@ -18,10 +18,21 @@ using System.Reflection;
 
 namespace dblu.Portale.Plugin.Docs.Actions
 {
+    /// <summary>
+    /// Class for register services of this plug in
+    /// </summary>
     public class ServicesAction : IConfigureServicesAction
     {
+        /// <summary>
+        /// Registration priority
+        /// </summary>
         public int Priority => 1000;
 
+        /// <summary>
+        /// Registration function
+        /// </summary>
+        /// <param name="services">Service collection of the server</param>
+        /// <param name="serviceProvider">Service provider of the service</param>
         public void Execute(IServiceCollection services, IServiceProvider serviceProvider)
         {
             services.AddScoped<dbluDocsContext>();

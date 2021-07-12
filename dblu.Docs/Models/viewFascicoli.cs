@@ -2,12 +2,16 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
-//using System.ComponentModel.DataAnnotations.Schema;
+
+
 
 namespace dblu.Docs.Models
 {
-    [Table("vListaFascicoli")]
+    [Dapper.Contrib.Extensions.Table("vListaFascicoli")]
+    [System.ComponentModel.DataAnnotations.Schema.Table("vListaFascicoli")]
     public partial class viewFascicoli
     {
 
@@ -45,6 +49,7 @@ namespace dblu.Docs.Models
             Elementi = new HashSet<viewElementi>();
         }
 
+        [System.ComponentModel.DataAnnotations.Key]
         [ExplicitKey] 
         public Guid IdFascicolo { get; set; }
         public string DscFascicolo { get; set; }
