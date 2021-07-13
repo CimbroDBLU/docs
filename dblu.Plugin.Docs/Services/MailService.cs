@@ -2818,14 +2818,6 @@ namespace dblu.Portale.Plugin.Docs.Services
 
             try
             {
-                PdfUnitConverter convertor = new PdfUnitConverter();
-                float mm = 10;
-                try { 
-                    mm = float.Parse(_config["Docs:Margini"]);
-                } catch {
-                    mm = 10;
-                }
-                float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
 
                 if (!File.Exists(NomePdf))
             {
@@ -2857,7 +2849,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                         //Create a new PDF document
                         Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
-                        document.PageSettings.SetMargins(MarginPoints);
+                        document.PageSettings.SetMargins(0);
                         //Add a page to the document
                         Syncfusion.Pdf.PdfPage page = document.Pages.Add();
 
@@ -2879,7 +2871,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         Syncfusion.Pdf.Parsing.PdfLoadedDocument pdftmp = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(mpdftmp);
 
 
-                        float curpos = MarginPoints;
+                        float curpos = 0;
                         float etiHeight = page.Size.Height * (float) .05;
                         int i = 0;
                         //foreach (Elementi e in el)
@@ -2889,7 +2881,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                             if (p > 0) {
                                 page = document.Pages.Add();
                                 graphics = page.Graphics;
-                                curpos = MarginPoints;
+                                curpos = 0;
                             }
                             for (i=0; i< 12;i++)
                         {
@@ -2920,12 +2912,6 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             //Load the page
 
-                            //using (FileStream fileRiepilogo = new FileStream($"{NomePdf}_{curpos}.pdf", FileMode.CreateNew, FileAccess.ReadWrite))
-                            //{
-                            //    //salvataggio e chiusura
-                            //    pdfEti.Save(fileRiepilogo);
-                            //}
-
                             Syncfusion.Pdf.PdfLoadedPage loadedPage = pdfEti.Pages[0] as Syncfusion.Pdf.PdfLoadedPage;
 
                             //Create the template from the page.
@@ -2936,7 +2922,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 
                             graphics.DrawPdfTemplate(template, posizione,
                                 new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height));
-                            curpos += etiHeight + MarginPoints;
+                            curpos += (etiHeight + etiHeight*0.5F);
                             pdfEti.Close();
 
                     }

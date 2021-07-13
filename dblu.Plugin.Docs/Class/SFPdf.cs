@@ -104,9 +104,6 @@ namespace dblu.Portale.Plugin.Docs.Class
             try
             {
                 PdfUnitConverter convertor = new PdfUnitConverter();
-                float mm = 10;
-                float.TryParse(_config["Docs:Margini"], out mm);
-                float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
 
                 var testfile = NomePdf + ".tmp";
                 if (File.Exists(NomePdf))
@@ -164,10 +161,10 @@ namespace dblu.Portale.Plugin.Docs.Class
                         settings.EnableOfflineMode = true;
                         settings.SplitTextLines = true;
                         settings.SplitImages = true;
-                        settings.Margin.Right = MarginPoints;
-                        settings.Margin.Left = MarginPoints;
-                        settings.Margin.Top = MarginPoints;
-                        settings.Margin.Bottom = MarginPoints;
+                        settings.Margin.Right = 0;
+                        settings.Margin.Left = 0;
+                        settings.Margin.Top = 0;
+                        settings.Margin.Bottom = 0;
                         htmlConverter.ConverterSettings = settings;
                         document = htmlConverter.Convert(htxt, baseUrl);
                         document.Save(pdfstream);
@@ -569,17 +566,7 @@ namespace dblu.Portale.Plugin.Docs.Class
             bool res = true;
             try
             {
-                PdfUnitConverter convertor = new PdfUnitConverter();
-                float mm = 10;
-                try
-                {
-                    mm = float.Parse(_config["Docs:Margini"]);
-                }
-                catch
-                {
-                    mm = 10;
-                }
-                float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
+
 
                 string rpt = _config["Docs:EtichettaProtocollo"];
                 if (string.IsNullOrEmpty(rpt))
@@ -631,7 +618,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                     Syncfusion.Pdf.Parsing.PdfLoadedDocument pdftmp = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(pdfstream);
 
                     Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
-                    document.PageSettings.SetMargins(MarginPoints);
+                    document.PageSettings.SetMargins(0);
 
                     int i = 0;
                     foreach (Syncfusion.Pdf.PdfLoadedPage lptmp in pdftmp.Pages)
@@ -811,17 +798,7 @@ namespace dblu.Portale.Plugin.Docs.Class
              avvisi = "";
             try
             {
-                PdfUnitConverter convertor = new PdfUnitConverter();
-                float mm = 10;
-                try
-                {
-                    mm = float.Parse(_config["Docs:Margini"]??"0");
-                }
-                catch
-                {
-                    mm = 10;
-                }
-                float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
+
 
                 var flAnn = false;  //contiene annotazioni
                 var flResize = false;  // richiede resize
@@ -1075,7 +1052,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                         PdfPage page = doc1.Pages.Add();
                         
 
-                        page.Section.PageSettings.Margins.All = MarginPoints;
+                        page.Section.PageSettings.Margins.All = 0;
                         
                         PdfGraphics g = page.Graphics;
                         PdfTemplate template = p.CreateTemplate();

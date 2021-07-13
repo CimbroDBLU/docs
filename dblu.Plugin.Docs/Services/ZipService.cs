@@ -1270,17 +1270,6 @@ namespace dblu.Portale.Plugin.Docs.Services
 
             try
             {
-                PdfUnitConverter convertor = new PdfUnitConverter();
-                float mm = 10;
-                try
-                {
-                    mm = float.Parse(_config["Docs:Margini"]);
-                }
-                catch
-                {
-                    mm = 10;
-                }
-                float MarginPoints = convertor.ConvertUnits(mm, PdfGraphicsUnit.Millimeter, PdfGraphicsUnit.Point);
 
                 if (!File.Exists(NomePdf))
                 {
@@ -1313,7 +1302,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                         //Create a new PDF document
                         Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
-                        document.PageSettings.SetMargins(MarginPoints);
+                        document.PageSettings.SetMargins(0);
                         //Add a page to the document
                         Syncfusion.Pdf.PdfPage page = document.Pages.Add();
 
