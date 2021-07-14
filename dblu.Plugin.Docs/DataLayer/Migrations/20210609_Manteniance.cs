@@ -18,14 +18,14 @@ namespace dblu.Portale.Plugin.Docs.DataLayer.Migrations
         {
             Alter.Table("TipiAllegati")
                 .AddColumn("ListaCancellazioni")
-                .AsString(int.MaxValue).Nullable()
+                .AsCustom("nvarchar(max)")
                 .WithDefaultValue("")
                 .Nullable();
 
 
             Alter.Table("TipiElementi")
                 .AddColumn("ListaCancellazioni")
-                .AsString(int.MaxValue).Nullable()
+                .AsCustom("nvarchar(max)")
                 .WithDefaultValue("")
                 .Nullable();
 
