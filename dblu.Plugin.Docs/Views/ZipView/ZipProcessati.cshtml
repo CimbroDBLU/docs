@@ -135,14 +135,14 @@
                     <div class="row">
                         <label class="control-label col-4 mt-1" style="font-size:12px">Cartella:</label>
                         <div class="col-6">
-                            @(Html.Kendo().ComboBox()
+                            @(Html.Kendo().DropDownList()
                     .Name("cmbCartelleZip")
-                    .Placeholder("Seleziona cartella...")
+                    //.Placeholder("Seleziona cartella...")
                     .DataTextField("Nome")
                     .DataValueField("Cartella")
                     .BindTo(ListaServer)
                     .SelectedIndex(0)
-                    .Suggest(true)
+                    //.Suggest(true)
                     .HtmlAttributes(new { style = "width:100%;" })
                     .Events(e =>
                     {

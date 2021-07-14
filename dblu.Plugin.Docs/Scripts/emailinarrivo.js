@@ -301,7 +301,7 @@ function rispondiOnClick(e) {
         server = NomeServer;
     }
     else {
-        server = $("#emailServer").data("kendoComboBox").value();
+        server = $("#emailServer").data("kendoDropDownList").value();
     };
 
 
@@ -347,7 +347,7 @@ function spostaOnClick(e) {
     e.preventDefault();
     var obj = {
         IdAllegato: $("#IdAllegato").val(),
-        server: $("#emailServer_sposta").data("kendoComboBox").value()
+        server: $("#emailServer_sposta").data("kendoDropDownList").value()
     };
     $.ajax({
         url: UrlActions.MailView_InArrivo_Sposta,
@@ -608,7 +608,7 @@ function getEmails() {
         server = NomeServer;
     }
     else
-        server = $("#emailServer").data("kendoComboBox").value();
+        server = $("#emailServer").data("kendoDropDownList").value();
     return {
         Tipo: TipoAll.Codice,
         NomeServer: server

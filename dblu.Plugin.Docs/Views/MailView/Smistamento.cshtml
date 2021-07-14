@@ -919,14 +919,14 @@
                 <div class="form-group">
                     @*              <label class="control-label col-1" style="font-size:14px">indirizzo</label>*@
                     <div class="form-group col-8">
-                         @(Html.Kendo().ComboBox()
+                         @(Html.Kendo().DropDownList()
                             .Name("emailServer_sposta")
-                            .Placeholder("Seleziona Server...")
+                            //.Placeholder("Seleziona Server...")
                             .DataTextField("Nome")
                             .DataValueField("Nome")
                             .BindTo(ListaServerIngresso)
                             .SelectedIndex(0)
-                            .Suggest(true)
+                            //.Suggest(true)
                             .HtmlAttributes(new { style = "width:100%;" })
 
                         )

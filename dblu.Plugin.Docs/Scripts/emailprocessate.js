@@ -280,7 +280,7 @@ function getEmails() {
         server = NomeServer;
     }
     else
-        server = $("#emailServer").data("kendoComboBox").value();
+        server = $("#emailServer").data("kendoDropDownList").value();
     ;
     return {
         Tipo: TipoAll.Codice,
@@ -379,7 +379,7 @@ function rispondiOnClick(e) {
         server = NomeServer;
     }
     else {
-        server = $("#emailServer").data("kendoComboBox").value();
+        server = $("#emailServer").data("kendoDropDownList").value();
     };
 
 

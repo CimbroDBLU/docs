@@ -223,14 +223,14 @@
                         <div class="row">
                             <label class="control-label col-4 mt-1" style="font-size:12px">Cartella:</label>
                             <div class="col-6">
-                                @(Html.Kendo().ComboBox()
+                                @(Html.Kendo().DropDownList()
                     .Name("cmbCartelleZip")
-                    .Placeholder("Seleziona cartella...")
+                    //.Placeholder("Seleziona cartella...")
                     .DataTextField("Nome")
                     .DataValueField("Cartella")
                     .BindTo(ListaServer)
                     .SelectedIndex(0)
-                    .Suggest(true)
+                    //.Suggest(true)
                     .HtmlAttributes(new { style = "width:100%;" })
                     .Events(e =>
                     {
@@ -721,13 +721,13 @@
                 <div class="form-group">
                     @*              <label class="control-label col-1" style="font-size:14px">indirizzo</label>*@
                     <div class="form-group col-8">
-                         @(Html.Kendo().ComboBox()
+                         @(Html.Kendo().DropDownList()
                             .Name("zipServer_sposta")
-                            .Placeholder("Seleziona cartella...")
+                            //.Placeholder("Seleziona cartella...")
                             .DataTextField("Nome")
                             .DataValueField("Cartella")
                             .BindTo(ListaServer)
-                            .Suggest(true)
+                            //.Suggest(true)
                             .HtmlAttributes(new { style = "width:100%;" })
                         )
                     </div>

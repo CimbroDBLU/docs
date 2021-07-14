@@ -64,7 +64,7 @@ function getOrigine() {
         cartella = NomeCartella;
     }
     else
-        cartella = $("#cmbCartelleZip").data("kendoComboBox").value();
+        cartella = $("#cmbCartelleZip").data("kendoDropDownList").value();
     ;
     //alert(cartella);
     return {
@@ -182,7 +182,7 @@ function spostaOnClick(e) {
     e.preventDefault();
     var obj = {
         IdAllegato: $("#IdAllegato").val(),
-        Cartella: $("#zipServer_sposta").data("kendoComboBox").value()
+        Cartella: $("#zipServer_sposta").data("kendoDropDownList").value()
     };
     $.ajax({
         url: UrlActions.ZipView_InArrivo_Sposta,
