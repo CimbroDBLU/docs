@@ -26,7 +26,7 @@ function getOrigine() {
         cartella = NomeCartella;
     }
     else
-        cartella = $("#cmbCartelleZip").data("kendoComboBox").value();
+        cartella = $("#cmbCartelleZip").data("kendoDropDownList").value();
     ;
     return {
         Tipo: TipoAll.Codice,

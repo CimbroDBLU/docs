@@ -118,24 +118,24 @@
 </script>
 
 
-
-<div class="e-card">
-    <div class="e-card-header">
-        <div class="e-card-header-caption">
-            <div class="e-card-header-title">
-                @Title
+<section>
+    <div class="e-card">
+        <div class="e-card-header">
+            <div class="e-card-header-caption">
+                <div class="e-card-header-title">
+                    @Title
+                </div>
             </div>
         </div>
-    </div>
-    <div class="e-card-separator"></div>
-    <div class="e-card-content">
-        <div class="container-fluid mb-2">
-            <div class="row" hidden="@(ListaServer.Count <= 1)">
-                <div class="col-5">
-                    <div class="row">
-                        <label class="control-label col-4 mt-1" style="font-size:12px">Cartella:</label>
-                        <div class="col-6">
-                            @(Html.Kendo().DropDownList()
+        <div class="e-card-separator"></div>
+        <div class="e-card-content">
+            <div class="container-fluid mb-2">
+                <div class="row" hidden="@(ListaServer.Count <= 1)">
+                    <div class="col-5">
+                        <div class="row">
+                            <label class="control-label col-4 mt-1" style="font-size:12px">Cartella:</label>
+                            <div class="col-6">
+                                @(Html.Kendo().DropDownList()
                     .Name("cmbCartelleZip")
                     //.Placeholder("Seleziona cartella...")
                     .DataTextField("Nome")
@@ -149,20 +149,20 @@
                         e.Select("onSelectCartella");
                     })
                 )
+                            </div>
                         </div>
+                        <div class="col-7"></div>
                     </div>
-                    <div class="col-7"></div>
                 </div>
-            </div>
 
 
-            <div class="row mt-2">
-                <div class="col-5 " style="align-self: auto;">
-                    <div class="card card-outline card-secondary card-solid card-default">
-                        @Html.Hidden("IdAllegato")
-                        <div class="card-body">
-                            <div class="k-grid m-0 p-0">
-                                @(Html.Kendo().Grid<dblu.Docs.Models.Allegati>()
+                <div class="row mt-2">
+                    <div class="col-5 " style="align-self: auto;">
+                        <div class="card card-outline card-secondary card-solid card-default">
+                            @Html.Hidden("IdAllegato")
+                            <div class="card-body">
+                                <div class="k-grid m-0 p-0">
+                                    @(Html.Kendo().Grid<dblu.Docs.Models.Allegati>()
                         .Name("gridZip")
                         .Columns(columns =>
                         {
@@ -210,57 +210,57 @@
                          .HtmlAttributes(new { Height = "100%", style = "font-size:10" })
                          .Search(s => { s.Field(c => c.Descrizione); s.Field(c => c.Chiave1); s.Field(c => c.Chiave3); s.Field(c => c.Chiave4); })
                         )
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-7" style="align-self: auto;">
-                    <div class="card card-outline card-secondary card-solid card-default">
-                        <div class="card-header p-1">
-                            <i class="mt-2 fas fa-user float-left"></i>
-                            <div class="card-title mt-1 ml-2">
-                                Cliente
+                    <div class="col-7" style="align-self: auto;">
+                        <div class="card card-outline card-secondary card-solid card-default">
+                            <div class="card-header p-1">
+                                <i class="mt-2 fas fa-user float-left"></i>
+                                <div class="card-title mt-1 ml-2">
+                                    Cliente
+                                </div>
+                                <div class="card-tools pull-right">
+                                    <button type="button" class="btn btn-card-tool" data-card-widget="collapse">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="card-tools pull-right">
-                                <button type="button" class="btn btn-card-tool" data-card-widget="collapse">
-                                    <i class="fa fa-minus"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <form>
-                                <div class="form-group">
-                                    <label class="control-label col-4" style="font-size:12px ">Cliente</label>
-                                    <div class="col-10">
-                                        <div class="form-row">
-                                            <div class="form-group col-2" style="display:flex">
-                                                <input type="text" style="width:100%" id="CodiceSoggetto" placeholder="" disabled value="" />
-                                            </div>
-                                            <div class="form-group col-6" style="display:flex">
-                                                <input type="text" style="width:100%" id="NomeSoggetto" placeholder="" disabled value="" />
+                            <div class="card-body">
+                                <form>
+                                    <div class="form-group">
+                                        <label class="control-label col-4" style="font-size:12px ">Cliente</label>
+                                        <div class="col-10">
+                                            <div class="form-row">
+                                                <div class="form-group col-2" style="display:flex">
+                                                    <input type="text" style="width:100%" id="CodiceSoggetto" placeholder="" disabled value="" />
+                                                </div>
+                                                <div class="form-group col-6" style="display:flex">
+                                                    <input type="text" style="width:100%" id="NomeSoggetto" placeholder="" disabled value="" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </form>
+                                </form>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="card card-outline card-secondary card-solid card-default">
-                        <div class="card-body">
-                            <div class="form-group">
-                                <div class="form-row">
-                                    <label class="control-label col-2 pl-0" style="font-size:12px">Descrizione</label>
-                                    <div style="width:100%">
-                                        <textarea class="form-control" id="TestoZip" name="TestoZip" rows="10" style="width:100%" readonly="readonly"></textarea>
+                        <div class="card card-outline card-secondary card-solid card-default">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <div class="form-row">
+                                        <label class="control-label col-2 pl-0" style="font-size:12px">Descrizione</label>
+                                        <div style="width:100%">
+                                            <textarea class="form-control" id="TestoZip" name="TestoZip" rows="10" style="width:100%" readonly="readonly"></textarea>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="form-group">
-                                <label class="control-label col-2 pl-0" style="font-size:12px">Allegati </label>
-                                <div class="col-12 pl-0 pr-0" style="width:100%">
-                                    @(Html.Kendo().Grid<EmailAttachments>()
+                                <div class="form-group">
+                                    <label class="control-label col-2 pl-0" style="font-size:12px">Allegati </label>
+                                    <div class="col-12 pl-0 pr-0" style="width:100%">
+                                        @(Html.Kendo().Grid<EmailAttachments>()
                             .Name("zipAttachments")
                             .PersistSelection()
                             .Columns(columns =>{
@@ -279,16 +279,17 @@
                             .HtmlAttributes(new { style = "font-size:12" })
                             )
 
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
-            </section>
         </div>
     </div>
-
+</section>
 
 <!-- Main content -->
 
@@ -320,7 +321,7 @@
                     .HtmlAttributes(new { style = "font-size:12" })
                 )
             </div>
-        </div >
+        </div>
     </text>)
     .Width(600)
     .Height(180)
