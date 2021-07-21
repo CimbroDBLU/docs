@@ -1,0 +1,134 @@
+﻿@*
+    Component for editing an attachment
+*@
+@page "/Docs/Attachment/{Id}"
+@using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using dblu.Portale.Plugin.Docs.Classes
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
+@inject ProtectedSessionStorage _SessionStore
+@inject NavigationManager  _NavigationManager
+
+<PageTitle nTitle="@CardTitle" />
+
+
+<section class="content">
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
+
+
+    <SfCard>
+        <CardHeader Title="@CardTitle" />
+        <div class="container-fluid" style="margin:5px">
+            <CardContent EnableSeperator="true">
+                <div class="form-group row">
+                    <div class="col-2">
+                        <label>ID Allegato</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(Attachment.Id.ToString())"></SfTextBox>
+                    </div>
+                    <div class="col-2">
+                        <label>Descrizione</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(Attachment.Descrizione)"></SfTextBox>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-2">
+                        <label>Creato il</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(Attachment.DataC.ToString())"></SfTextBox>
+                    </div>
+                    <div class="col-2">
+                        <label>Utente creazione</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(Attachment.UtenteC.ToString())"></SfTextBox>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <label>Modificato il</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(Attachment.DataUM.ToString())"></SfTextBox>
+                    </div>
+                    <div class="col-2">
+                        <label>Utente ultima modifica</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(Attachment.UtenteUM.ToString())"></SfTextBox>
+                    </div>
+                </div>
+            </CardContent>
+            <CardContent EnableSeperator="true">
+                <DocViewer nAllowNote="true" nAllowEdit="false" nDocType="e_SourceType.Attachment" nContent="@Id" nHeight=550></DocViewer>
+            </CardContent>
+            <CardContent EnableSeperator="true">
+                <div class="row">
+                    <div class="col-12">
+                        <SfButton CssClass="e-primary" OnClick="GoBack">Indietro</SfButton>
+                    </div>
+                </div>
+            </CardContent>
+        </div>
+    </SfCard>
+
+
+</section>
+@code {
+    /// <summary>
+    /// Attachment ID
+    /// </summary>
+    [Parameter]
+    public string Id { get; set; }
+
+    /// <summary>
+    /// Show/Hide the spinner
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// Title of the Card and Page
+    /// </summary>
+    public string CardTitle { get; set; }
+
+    /// <summary>
+    /// Attachment loaded
+    /// </summary>
+    public Allegati Attachment { get; set; }
+
+    /// <summary>
+    /// On Init component,load attachemnt
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        IsSpinnerVisible = true;
+
+        Attachment = _AttachService._allMan.Get(Guid.Parse(Id));
+        CardTitle = $"Modifica Allegato [{Attachment.Descrizione}]";
+
+
+        IsSpinnerVisible = false;
+    }
+
+    /// <summary>
+    /// Go back to the caller
+    /// </summary>
+    private async void GoBack()
+    {
+        string back = (await _SessionStore.GetAsync<string>("Referrer")).Value;
+        if (string.IsNullOrEmpty(back))
+            _NavigationManager.NavigateTo($"/Docs/Dossiers");
+        else
+        {
+            _NavigationManager.NavigateTo(back);
+            await _SessionStore.DeleteAsync("Referrer");
+        }
+    }
+}

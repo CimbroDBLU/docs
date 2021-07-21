@@ -2,7 +2,6 @@
 using dblu.Docs.Classi;
 using dblu.Docs.Interfacce;
 using dblu.Docs.Models;
-using dblu.Portale.Plugin.Docs.Data;
 using dblu.Portale.Plugin.Docs.ViewModels;
 using dblu.Portale.Plugin.TaskListBase.Services.Camunda;
 using Microsoft.AspNetCore.Builder;

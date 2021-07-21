@@ -1,0 +1,442 @@
+﻿@*
+    Component for showing an attached document
+*@
+
+@using Syncfusion.Blazor.PdfViewerServer
+@using Syncfusion.Blazor.PdfViewer
+@using dblu.Portale.Plugin.Docs.Classes
+@using System.IO
+
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachmentsService
+@inject ILogger<DocViewer> _Logger
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<style>
+
+    .e-rotatesx:before {
+            content: '\ebed';
+        }
+
+    .e-rotatedx:before {
+            content: '\ebfa';
+        }
+
+    .e-reload:before {
+            content: '\e218';
+        }
+
+    .e-delete:before {
+            content: '\e204';
+        }
+
+    .e-save:before {
+            content: '\e954';
+        }
+
+    .e-expand:before {
+            content: '\e342';
+        }
+
+    .e-reduce:before {
+        content: '\e337';
+    }
+
+    .fullscreen {
+        z-index: 3333;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+
+    .fill {
+        justify-content: center;
+        align-items: center;
+        width: auto;
+        height: auto;
+    }
+
+    .imgsized {
+        max-width: 100%;
+        max-height: @($"{nHeight-70}px");
+        object-fit: cover;
+        margin: auto;
+        display: block;
+    }
+
+    .imgunsized {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+        margin: auto;display: block;
+    }
+
+    .sized {
+        width: auto;
+        height: @($"{nHeight}")px;
+
+    }
+
+    .unsized {
+        height: 100vh;
+        width: 100vw;
+    }
+
+</style>
+
+<div @onkeydown="@OnKeyDown" class="@Full @Size">
+    @if (Doc is null)
+    {
+        <div class="mt-2 mb-2" style=" text-align: center; "><h3>Loading ... </h3></div>
+
+    }
+    else if (Doc.DocType == e_DocType.PDF)
+    {
+
+        <SfToolbar>
+            <ToolbarItems>
+                <ToolbarItem PrefixIcon=@((fullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                @if (nAllowEdit)
+                {
+                    <ToolbarItem PrefixIcon="e-rotatesx e-icons" TooltipText="Ruota a sx" OnClick="() => OnRotate(true)"></ToolbarItem>
+                    <ToolbarItem PrefixIcon="e-rotatedx e-icons" TooltipText="Ruota a dx" OnClick="() => OnRotate(false)"></ToolbarItem>
+                    <ToolbarItem PrefixIcon="e-delete e-icons" TooltipText="Cancella" OnClick="OnRemovePage"></ToolbarItem>
+                }
+                @if (nAllowNote || nAllowEdit)
+                {
+                    <ToolbarItem PrefixIcon="e-reload e-icons" TooltipText="Ricarica" OnClick="LoadDocument"></ToolbarItem>
+                    <ToolbarItem PrefixIcon="e-save" TooltipText="Salva" OnClick="OnSave"></ToolbarItem>
+                }
+            </ToolbarItems>
+        </SfToolbar>
+
+        @if (!fullscreen)
+        {
+            <SfPdfViewerServer Height="@($"{nHeight - 42}px")" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
+                <PdfViewerEvents Created="OnPDFViewerCreated" DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
+            </SfPdfViewerServer>
+        }
+        else
+        {
+            <SfPdfViewerServer Height="96vh" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
+                <PdfViewerEvents Created="OnPDFViewerCreated" DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
+            </SfPdfViewerServer>
+        }
+    }
+    else if (Doc.DocType == e_DocType.IMAGE)
+    {
+        <SfCard HtmlAttributes="@(new Dictionary<string, object>() { { "style", "height:100%;display:flex;justify-content:flex-start;" } })">
+            <CardContent>
+                <SfToolbar>
+                    <ToolbarItems>
+                        <ToolbarItem PrefixIcon=@((fullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                    </ToolbarItems>
+                </SfToolbar>
+                <div class="mt-2 mb-2 fill">
+                    <img class="@ImgClass" src="data:image;base64,@(Convert.ToBase64String(Doc.Payload.ToArray()))">
+                </div>
+            </CardContent>
+        </SfCard>
+    }
+    else if (Doc.DocType == e_DocType.UNDEFINED)
+    {
+        <SfCard HtmlAttributes="@(new Dictionary<string, object>() { { "style", "height:100%;display:flex;justify-content:flex-start;" } })">
+            <CardContent>
+                <SfToolbar>
+                    <ToolbarItems>
+                        <ToolbarItem PrefixIcon=@((fullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                    </ToolbarItems>
+                </SfToolbar>
+                <div class="mt-2 mb-2" style=" text-align: center; "><h3>Preview non supportata per il documento @Doc.FileName</h3></div>
+                <img class="@ImgClass" style="margin: auto;display: block;" src="./img/unknown.png">
+
+            </CardContent>
+        </SfCard>
+
+    }
+</div>
+
+@code {
+
+    /// <summary>
+    /// Type of Attachment to work with
+    /// </summary>
+    [Parameter]
+    public e_SourceType nDocType { get; set; } = e_SourceType.Attachment;
+
+    /// <summary>
+    /// Identifier for the content (Ususally Attachment ID)
+    /// </summary>
+    [Parameter]
+    public string nContent { get; set; }
+
+    /// <summary>
+    /// Indicate if the document can be edit(if edit is supported)
+    /// </summary>
+    [Parameter]
+    public bool nAllowEdit { get; set; } = true;
+
+
+    /// <summary>
+    /// Indicate if the document support adding notes
+    /// </summary>
+    [Parameter]
+    public bool nAllowNote { get; set; } = true;
+
+    /// <summary>
+    /// Height of the component
+    /// </summary>
+    [Parameter]
+    public int nHeight { get; set; } = 550;
+
+    /// <summary>
+    /// PDF viewer object
+    /// </summary>
+    public SfPdfViewerServer Viewer;
+
+    /// <summary>
+    /// Object that work with documents
+    /// </summary>
+    private DocumentManager DocManager { get; set; }
+
+    /// <summary>
+    /// Current Loaded document
+    /// </summary>
+    private Document Doc { get; set; }
+
+    /// <summary>
+    /// Name of the file that need to be downloaded
+    /// </summary>
+    private string DownloadFileName { get; set; }
+
+    /// <summary>
+    /// Default configuration of the
+    /// </summary>
+    public PdfViewerToolbarSettings ToolbarSettings
+    {
+        get
+        {
+            if (nAllowNote)
+                return new PdfViewerToolbarSettings()
+                {
+                    ShowTooltip = true,
+                    ToolbarItems = new List<Syncfusion.Blazor.PdfViewer.ToolbarItem>()
+                        {
+                            Syncfusion.Blazor.PdfViewer.ToolbarItem.PageNavigationTool,
+                            Syncfusion.Blazor.PdfViewer.ToolbarItem.MagnificationTool,
+                            Syncfusion.Blazor.PdfViewer.ToolbarItem.SelectionTool,
+                            Syncfusion.Blazor.PdfViewer.ToolbarItem.PanTool,
+                            Syncfusion.Blazor.PdfViewer.ToolbarItem.UndoRedoTool,
+                            Syncfusion.Blazor.PdfViewer.ToolbarItem.AnnotationEditTool,
+                            Syncfusion.Blazor.PdfViewer.ToolbarItem.SearchOption,
+                            Syncfusion.Blazor.PdfViewer.ToolbarItem.PrintOption,
+                            Syncfusion.Blazor.PdfViewer.ToolbarItem.DownloadOption
+                            }
+                };
+
+            return new PdfViewerToolbarSettings()
+            {
+                ShowTooltip = true,
+                ToolbarItems = new List<Syncfusion.Blazor.PdfViewer.ToolbarItem>()
+                         {
+                              Syncfusion.Blazor.PdfViewer.ToolbarItem.PageNavigationTool,
+                              Syncfusion.Blazor.PdfViewer.ToolbarItem.MagnificationTool,
+                              Syncfusion.Blazor.PdfViewer.ToolbarItem.SelectionTool,
+                              Syncfusion.Blazor.PdfViewer.ToolbarItem.PanTool,
+                              Syncfusion.Blazor.PdfViewer.ToolbarItem.SearchOption,
+                              Syncfusion.Blazor.PdfViewer.ToolbarItem.PrintOption,
+                              Syncfusion.Blazor.PdfViewer.ToolbarItem.DownloadOption
+                            }
+            };
+        }
+    }
+
+    /// <summary>
+    /// On Set parameter, reload the control 
+    /// </summary>
+    protected override async void OnParametersSet()
+    {
+        DocManager = new DocumentManager(_AttachmentsService, _Logger);
+        LoadDocument();
+        OnPDFViewerCreated();
+    }
+
+    /// <summary>
+    /// Open the Docuemtn Manager
+    /// </summary>
+    private async void LoadDocument()
+    {
+        Doc = await DocManager.Load(nDocType, nContent);
+    }
+
+    /// <summary>
+    /// On document loaded , set the Download file name according
+    /// </summary>
+    private async void OnDocumentLoaded()
+    {
+        DownloadFileName = Doc.FileName;
+    }
+
+    /// <summary>
+    /// Once the pdf viewer control is created, it can be load the document
+    /// </summary>
+    private async void OnPDFViewerCreated()
+    {
+        if (Viewer != null && Doc.Payload != null && Doc.Payload.Length != 0)
+        {
+            DownloadFileName = "";
+            string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
+            await Viewer.Load("data:application/DocManager;base64," + base64String, null);
+
+        }
+    }
+
+
+    /// <summary>
+    /// Save the changes into the document
+    /// </summary>
+    private async void OnSave()
+    {
+
+        if (Viewer.IsDocumentEdited)
+            Doc = await DocManager.Save(new MemoryStream(await Viewer.GetDocument()));
+        else
+            Doc = await DocManager.Save();
+        if (Doc.Payload != null && Doc.Payload.Length != 0)
+        {
+            string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
+            await Viewer.Load("data:application/DocManager;base64," + base64String, null);
+            Viewer.Refresh();
+        }
+    }
+
+    /// <summary>
+    /// Remove selected page (Only PDF)
+    /// </summary>
+    private async void OnRemovePage()
+    {
+        MemoryStream IN = null;
+        if (Viewer.IsDocumentEdited)
+            IN = new MemoryStream(await Viewer.GetDocument());
+
+        if (Viewer.IsDocumentEdited)
+            Doc = await DocManager.RemovePage(Viewer.CurrentPageNumber, IN);
+        else
+            Doc = await DocManager.RemovePage(Viewer.CurrentPageNumber);
+
+        if (Doc.Payload != null && Doc.Payload.Length != 0)
+        {
+            string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
+            await Viewer.Load("data:application/DocManager;base64," + base64String, null);
+            Viewer.Refresh();
+        }
+
+    }
+
+    /// <summary>
+    /// Class that has to be applyed to the main control, for going fullscreen 
+    /// </summary>
+    public string Full { get; set; } = "";
+
+    /// <summary>
+    /// Class that has to be applyed to the PDFViewer control, for going fullscreen  
+    /// </summary>
+    public string PdfClass { get; set; } = "sized";
+
+    /// <summary>
+    /// Class that has to be applyed to the image, for going fullscreen  
+    /// </summary>
+    public string ImgClass { get; set; } = "imgsized";
+
+    /// <summary>
+    /// Indicate if we are in full screen
+    /// </summary>
+    private bool IsFullscreen { get; set; } = false;
+
+    /// <summary>
+    /// Set the control in full screen
+    /// </summary>
+    private async void Fullscreen()
+    {
+        IsFullscreen = !IsFullscreen;
+        if (IsFullscreen)
+        {
+            PdfClass = "unsized";
+            Full = "fullscreen";
+            ImgClass = "imgunsized";
+            var module = await Module;
+            await module.InvokeVoidAsync("disable_scroll");
+        }
+        else
+        {
+            PdfClass = "sized";
+            Full = "";
+            ImgClass = "imgsized";
+            var module = await Module;
+            await module.InvokeVoidAsync("enable_scroll");
+        }
+
+    }
+
+    /// <summary>
+    /// We toggle fullscreen on key press
+    /// </summary>
+    /// <param name="e"></param>
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && fullscreen)
+            Fullscreen();
+
+        if (e.Key == "F" && e.ShiftKey && !fullscreen)
+            Fullscreen();
+    }
+
+    /// <summary>
+    /// Javascript Runtime Module
+    /// </summary>
+    private Task<IJSObjectReference> _module;
+
+    /// <summary>
+    /// Javascript Runtime Module
+    /// </summary>
+    private Task<IJSObjectReference> Module => _module ??= JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Scripts/docviewer.js").AsTask();
+
+    /// <summary>
+    /// Dispose the javascript module
+    /// </summary>
+    /// <returns></returns>
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null)
+        {
+            var module = await _module;
+            await module.DisposeAsync();
+        }
+    }
+
+    /// <summary>
+    /// Rotate the page 
+    /// </summary>
+    /// <param name="Left">True if rotation is in left, otherwise right</param>
+    private async void OnRotate(bool Left)
+    {
+        MemoryStream IN = null;
+        if (Viewer.IsDocumentEdited)
+            IN = new MemoryStream(await Viewer.GetDocument());
+
+        if (Left)
+            Doc = await DocManager.RotateLeft(Viewer.CurrentPageNumber, IN);
+        else
+            Doc = await DocManager.RotateRight(Viewer.CurrentPageNumber, IN);
+
+        if (Doc.Payload != null && Doc.Payload.Length != 0)
+        {
+            string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
+            await Viewer.Load("data:application/DocManager;base64," + base64String, null);
+            Viewer.Refresh();
+        }
+    }
+
+}

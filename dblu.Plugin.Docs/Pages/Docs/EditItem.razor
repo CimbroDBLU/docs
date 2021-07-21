@@ -1,0 +1,278 @@
+﻿@*
+    Component for editing an Item
+*@
+@page "/Docs/Item/{Id}"
+@using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using dblu.Portale.Plugin.Docs.Classes
+@using System.IO
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject NavigationManager  _NavigationManager
+@inject ProtectedSessionStorage _SessionStore
+@inject ILogger<EditItem> _Logger
+
+<PageTitle nTitle="@CardTitle" />
+
+
+<section class="content">
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
+    <SfCard>
+        <CardHeader Title="@CardTitle" />
+        <div class="container-fluid" style="margin:5px">
+            <CardContent EnableSeperator="true">
+                <SfAccordion>
+                    <AccordionItems>
+                        <AccordionItem Expanded="false">
+                            <HeaderTemplate>
+                                <div>Elemento [@Item.Descrizione - @(Item.Id)]</div>
+                            </HeaderTemplate>
+                            <ContentTemplate>
+                                <div class="form-group row">
+                                    <div class="col-2">
+                                        <label>ID Element</label>
+                                    </div>
+                                    <div class="col-4">
+                                        <SfTextBox Readonly="true" Value="@(Item.Id.ToString())"></SfTextBox>
+                                    </div>
+                                    <div class="col-2">
+                                        <label>Descrizione</label>
+                                    </div>
+                                    <div class="col-4">
+                                        <SfTextBox Readonly="true" Value="@(Item.Descrizione)"></SfTextBox>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-2">
+                                        <label>Creato il</label>
+                                    </div>
+                                    <div class="col-4">
+                                        <SfTextBox Readonly="true" Value="@(Item.DataC.ToString())"></SfTextBox>
+                                    </div>
+                                    <div class="col-2">
+                                        <label>Utente creazione</label>
+                                    </div>
+                                    <div class="col-4">
+                                        <SfTextBox Readonly="true" Value="@(Item.UtenteC.ToString())"></SfTextBox>
+                                    </div>
+
+                                </div>
+                                <div class="row">
+                                    <div class="col-2">
+                                        <label>Modificato il</label>
+                                    </div>
+                                    <div class="col-4">
+                                        <SfTextBox Readonly="true" Value="@(Item.DataUM.ToString())"></SfTextBox>
+                                    </div>
+                                    <div class="col-2">
+                                        <label>Utente ultima modifica</label>
+                                    </div>
+                                    <div class="col-4">
+                                        <SfTextBox Readonly="true" Value="@(Item.UtenteUM.ToString())"></SfTextBox>
+                                    </div>
+                                </div>
+                            </ContentTemplate>
+                        </AccordionItem>
+                    </AccordionItems>
+                </SfAccordion>
+            </CardContent>
+            <CardContent EnableSeperator="true">
+                <div class="row">
+                    <div class="col-5" style="align-self: auto;">
+                        <SfAccordion>
+                            <AccordionItems>
+                                <AccordionItem Expanded="true">
+                                    <HeaderTemplate>
+                                        <div>Attributi</div>
+                                    </HeaderTemplate>
+                                    <ContentTemplate>
+                                        <AttributesForm nAttributeList="@Item.elencoAttributi"></AttributesForm>
+                                    </ContentTemplate>
+                                </AccordionItem>
+                            </AccordionItems>
+                        </SfAccordion>
+                    </div>
+                    <div class="col-7" style="align-self: auto;">
+                        <SfAccordion>
+                            <AccordionItems>
+                                <AccordionItem Expanded="true">
+                                    <HeaderTemplate>
+                                        <div>Allegati</div>
+                                    </HeaderTemplate>
+                                    <ContentTemplate>
+                                        <AttachmentsTable nEnableRemove="@IsAdmin" nAttachments="@Attachments" OnSelectAttachment="OnSelectAttach" OnAddRequested="OnAddAttach" OnOpenAttachment="OnOpenAttach" OnDownloadAttachment="OnDownloadAttach" OnRemoveAttachment="OnRemoveAttach"></AttachmentsTable>
+                                    </ContentTemplate>
+                                </AccordionItem>
+                            </AccordionItems>
+                        </SfAccordion>
+                        <div class="mt-2">
+                            <DocViewer nHeight=1000 nDocType="e_SourceType.Attachment" nContent="@SelAttach"></DocViewer>
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+            <CardContent EnableSeperator="true">
+                <div class="row">
+                    <div class="col-12">
+                        <SfButton CssClass="e-primary" OnClick="GoBack">Indietro</SfButton>
+                    </div>
+                </div>
+            </CardContent>
+        </div>
+    </SfCard>
+
+
+</section>
+@code {
+    /// <summary>
+    /// Item ID
+    /// </summary>
+    [Parameter]
+    public string Id { get; set; }
+
+
+    /// <summary>
+    /// Show/Hide the spinner
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+
+    /// <summary>
+    /// Title of the Card and Page
+    /// </summary>
+    public string CardTitle { get; set; }
+
+    /// <summary>
+    /// Current Item
+    /// </summary>
+    public Elementi Item { get; set; }
+
+    /// <summary>
+    /// Selected attachment of the item's one
+    /// </summary>
+    private string SelAttach { get; set; } = "";
+
+    /// <summary>
+    /// List of the attachments own by this item
+    /// </summary>
+    public ObservableCollection<viewAllegati> Attachments { get; set; } = new();
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        IsSpinnerVisible = true;
+        Stopwatch Sw = Stopwatch.StartNew();
+        Item = _AttachService.GetElemento(Guid.Parse(Id), 0);
+        Attachments = new ObservableCollection<viewAllegati>(_AttachService.GetvAllegatiElemento(Item.Id));
+        CardTitle = $"Modifica Elemento [{Item.Descrizione}]";
+        SelAttach = Attachments.FirstOrDefault(x => x.Tipo == "FILE").IdAllegato.ToString();
+
+        _Logger.LogInformation($"EditItem.OnInitialized: Loaded Item {Id} in {Sw.ElapsedMilliseconds} ms");
+        IsSpinnerVisible = false;
+    }
+
+    /// <summary>
+    /// Save the current Attach id in memory
+    /// </summary>
+    /// <param name="Attach"></param>
+    public async void OnSelectAttach(Guid Attach)
+    {
+        SelAttach = Attach.ToString();
+    }
+
+    /// <summary>
+    /// Open the attachmnent
+    /// </summary>
+    /// <param name="Attach"></param>
+    public async void OnOpenAttach(Guid Attach)
+    {
+        await _SessionStore.SetAsync("Referrer", $"/Docs/Item/{this.Id}");
+        _NavigationManager.NavigateTo($"/Docs/Attachment/{Attach.ToString()}");
+    }
+
+    /// <summary>
+    /// Go back to the caller
+    /// </summary>
+    private async void GoBack()
+    {
+        string back = (await _SessionStore.GetAsync<string>("Referrer")).Value;
+        if (string.IsNullOrEmpty(back))
+            _NavigationManager.NavigateTo($"/Docs/Dossiers");
+        else
+        {
+            _NavigationManager.NavigateTo(back);
+            await _SessionStore.DeleteAsync("Referrer");
+        }
+    }
+
+    /// <summary>
+    /// Indicates if current user is a superadmin
+    /// </summary>
+    private bool IsAdmin => (_AuthenticationStateProvider.GetAuthenticationStateAsync().Result).User.IsAdmin();
+
+    /// <summary>
+    /// Download the attachment using Mailview controller
+    /// </summary>
+    /// <param name="Attach"></param>
+    public async void OnDownloadAttach(Guid Attach)
+    {
+        viewAllegati A = Attachments.ToList().FirstOrDefault(z => z.IdAllegato == Attach);
+        _NavigationManager.NavigateTo($"/MailView/DownloadFile?IdAllegato={A.IdAllegato}&NomeFile={A.NomeFile}", true);
+    }
+
+    /// <summary>
+    /// Add a new attachment to the item
+    /// </summary>
+    /// <param name="files"></param>
+    public async void OnAddAttach(List<dblu.Portale.Core.UI.UploadFilesDialog.UploadedFile> files)
+    {
+        Stopwatch Sw = Stopwatch.StartNew();
+        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User.Identity.Name;
+        foreach (var f in files)
+        {
+            Allegati A = new Allegati()
+            {
+                NomeFile = f.FileName,
+                elencoAttributi = new(),
+                UtenteC = user,
+                UtenteUM = user,
+                Stato = 0,
+                Descrizione = Item.Descrizione,
+                Tipo = "FILE",
+                IdElemento = Item.Id,
+                IdFascicolo = Item.IdFascicolo
+            };
+
+            await _AttachService._allMan.SalvaAsync(A, f.Data, true);
+            _Logger.LogInformation($"EditItem.OnAddAttach: {A.NomeFile} has been added");
+        }
+
+        _Logger.LogInformation($"EditItem.OnAddAttach: Uploaded {files.Count} files in {Sw.ElapsedMilliseconds} ms");
+
+        Attachments.Clear();
+        foreach (var A in _AttachService.GetvAllegatiElemento(Item.Id))
+            Attachments.Add(A);
+    }
+
+    /// <summary>
+    /// Remove an attachment on the current selected item
+    /// </summary>
+    /// <param name="Attach"></param>
+    public async void OnRemoveAttach(Guid Attach)
+    {
+        Stopwatch Sw = Stopwatch.StartNew();
+
+        var A = Attachments.ToList().FirstOrDefault(z => z.IdAllegato == Attach);
+        _AttachService._allMan.Cancella(A.IdAllegato);
+        Attachments.Remove(A);
+
+        _Logger.LogInformation($"EditItem.OnRemoveAttach: Removed attached in {Sw.ElapsedMilliseconds} ms");
+    }
+
+}

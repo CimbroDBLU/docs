@@ -1,0 +1,322 @@
+﻿@*
+    Component for showing details of a single dossier
+*@
+
+@page "/Docs/Dossier/{Id}"
+@using dblu.Docs.Models
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
+@inject NavigationManager  _NavigationManager
+@inject ProtectedSessionStorage _SessionStore
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject ILogger<EditDossier> _Logger
+
+
+<PageTitle nTitle="@CardTitle" />
+
+<style>
+    .smallb {
+        width: 60px;
+    }
+</style>
+
+<section class="content">
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
+
+
+    <SfCard>
+        <CardHeader Title="@CardTitle" />
+        <div class="container-fluid" style="margin:5px">
+            <CardContent EnableSeperator="true">
+                <div class="form-group row">
+                    <div class="col-2">
+                        <label>ID Fascicolo</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(Dossier.IdFascicolo.ToString())"></SfTextBox>
+                    </div>
+                    <div class="col-2">
+                        <label>Categoria</label>
+                    </div>
+                    <div class="col-4">
+                        <div style="display:flex">
+                            <SfTextBox Readonly="true" Value="@(iDossier.CategoriaNavigation.Descrizione)"></SfTextBox>
+                            <SfButton CssClass="ml-2 smallb e-primary" OnClick="OnOpenCategory" HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Apri categoria" } })" IconCss="e_fa fas fa-table"></SfButton>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-2">
+                        <label>Creato il</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(Dossier.DataC.ToString())"></SfTextBox>
+                    </div>
+                    <div class="col-2">
+                        <label>Utente creazione</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(Dossier.UtenteC.ToString())"></SfTextBox>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <label>Modificato il</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(Dossier.DataUM.ToString())"></SfTextBox>
+                    </div>
+                    <div class="col-2">
+                        <label>Utente ultima modifica</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(Dossier.UtenteUM.ToString())"></SfTextBox>
+                    </div>
+                </div>
+            </CardContent>
+            <CardContent EnableSeperator="true">
+                <div class="form-group row">
+                    <div class="col-2">
+                        <label>@iDossier.CategoriaNavigation._listaAttributi.ElementAt(0).Descrizione</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(iDossier.Chiave1)"></SfTextBox>
+                    </div>
+                    <div class="col-2">
+                        <label>@iDossier.CategoriaNavigation._listaAttributi.ElementAt(1).Descrizione</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(iDossier.Chiave2)"></SfTextBox>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-2">
+                        <label>@iDossier.CategoriaNavigation._listaAttributi.ElementAt(2).Descrizione</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(iDossier.Chiave3)"></SfTextBox>
+                    </div>
+                    <div class="col-2">
+                        <label>@iDossier.CategoriaNavigation._listaAttributi.ElementAt(3).Descrizione</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(iDossier.Chiave4)"></SfTextBox>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <label>@iDossier.CategoriaNavigation._listaAttributi.ElementAt(4).Descrizione</label>
+                    </div>
+                    <div class="col-4">
+                        <SfTextBox Readonly="true" Value="@(iDossier.Chiave5)"></SfTextBox>
+                    </div>
+                </div>
+            </CardContent>
+            <CardContent EnableSeperator="true">
+                <div class="form-group row">
+
+                </div>
+                <div class="form-group row">
+                    <div class="col-6">
+                        <label>Elementi</label>
+                    </div>
+                    <div class="col-6">
+                        <label>Allegati</label>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div style="align-self: auto;" class="col-6">
+                        <ItemsTable nItems="@Items" OnOpenItem="OnEditItem" OnSelectItem="OnSelItem"></ItemsTable>
+                    </div>
+                    <div style="align-self: auto;" class="col-6">
+                        <AttachmentsTable nEnableRemove="@IsAdmin" nAttachments="@Attachments" OnOpenAttachment="OnEditAttach" OnSelectAttachment="OnSelAttach" nEnableDownload="false"></AttachmentsTable>
+                    </div>
+                </div>
+            </CardContent>
+            <CardContent EnableSeperator="true">
+                <div class="row">
+                    <div class="col-12">                     
+                        <SfButton CssClass="e-primary" OnClick="GoBack">Indietro</SfButton>
+                    </div>
+                </div>
+            </CardContent>
+        </div>
+    </SfCard>
+
+
+</section>
+@code {
+
+    /// <summary>
+    /// Show/Hide the spinner
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// Dossier ID
+    /// </summary>
+    [Parameter]
+    public string Id { get; set; }
+
+    /// <summary>
+    /// Title of the Card and Page
+    /// </summary>
+    public string CardTitle { get; set; }
+
+    /// <summary>
+    /// Current Dossier as view
+    /// </summary>
+    public viewFascicoli Dossier { get; set; }
+
+    /// <summary>
+    /// Current Dossier
+    /// </summary>
+    public Fascicoli iDossier { get; set; }
+
+    /// <summary>
+    /// List of Items of this dossier
+    /// </summary>
+    private ObservableCollection<viewElementi> Items { get; set; } = new();
+
+    /// <summary>
+    /// List of Attachment of this dossier
+    /// </summary>
+    private ObservableCollection<viewAllegati> Attachments { get; set; } = new();
+
+    /// <summary>
+    /// Current selected Item ID
+    /// </summary>
+    private string ItemID { get; set; }
+
+    /// <summary>
+    /// Current selected Attach ID
+    /// </summary>
+    private string AttachID { get; set; }
+
+    /// <summary>
+    /// On Init component, Retreive data of the current Dossier
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        Stopwatch Sw = Stopwatch.StartNew();
+        IsSpinnerVisible = true;
+
+        Dossier = _AttachService.GetFascicoloV(Guid.Parse(Id));
+        iDossier = _AttachService.GetFascicolo(Guid.Parse(Id));
+        Items = new ObservableCollection<viewElementi>(Dossier.Elementi);
+        CardTitle = $"Modifica fascicolo [{Dossier.DscFascicolo}]";
+
+        IsSpinnerVisible = false;
+        _Logger.LogInformation($"EditDossier.OnInitialized: Loaded Item {Id} in {Sw.ElapsedMilliseconds} ms");
+    }
+
+    /// <summary>
+    /// Oper the editing component of the item
+    /// </summary>
+    /// <param name="Id"></param>
+    private async void OnEditItem(Guid Id)
+    {
+        await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
+        _NavigationManager.NavigateTo($"/Docs/Item/{Id.ToString()}");
+    }
+
+    /// <summary>
+    /// On selected item open linked Attachments
+    /// </summary>
+    /// <param name="Id"></param>
+    private async void OnSelItem(Guid Id)
+    {
+        ItemID = Id.ToString();
+        Attachments = new ObservableCollection<viewAllegati>(_AttachService.GetvAllegatiElemento(Id));
+    }
+
+    private async void OnEditAttach(Guid Id)
+    {
+        await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
+        _NavigationManager.NavigateTo($"/Docs/Attachment/{Id.ToString()}");
+    }
+
+    /// <summary>
+    /// Save selected attachments
+    /// </summary>
+    /// <param name="Id"></param>
+    private async void OnSelAttach(Guid Id)
+    {
+        AttachID = Id.ToString();
+    }
+
+    /// <summary>
+    /// Go back to the main Dossier view
+    /// </summary>
+    private async void GoBack()
+    {
+        _NavigationManager.NavigateTo($"/Docs/Dossiers");
+    }
+
+    /// <summary>
+    /// Open the category related to this Dossier
+    /// </summary>
+    private async void OnOpenCategory()
+    {
+        await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{Id}");
+        _NavigationManager.NavigateTo($"/Docs/EditCategories/{iDossier.CategoriaNavigation.Codice}");
+    }
+
+    /// <summary>
+    /// True if the current user is super admin
+    /// </summary>
+    private bool IsAdmin => (_AuthenticationStateProvider.GetAuthenticationStateAsync().Result).User.IsAdmin();
+
+    /// <summary>
+    /// Add a new attachment to the current selected item
+    /// </summary>
+    /// <param name="files"></param>
+    public async void OnAddAttach(List<dblu.Portale.Core.UI.UploadFilesDialog.UploadedFile> files)
+    {
+        Stopwatch Sw = Stopwatch.StartNew();
+        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User.Identity.Name;
+        foreach (var f in files)
+        {
+            Allegati A = new Allegati()
+            {
+                NomeFile = f.FileName,
+                elencoAttributi = new(),
+                UtenteC = user,
+                UtenteUM = user,
+                Stato = 0,
+                Descrizione = Items.SingleOrDefault(x => x.IdElemento == Guid.Parse(ItemID))?.DscElemento ?? f.FileName,
+                Tipo = "FILE",
+                IdElemento = Guid.Parse(ItemID),
+                IdFascicolo = Guid.Parse(this.Id)
+            };
+
+            await _AttachService._allMan.SalvaAsync(A, f.Data, true);
+            _Logger.LogInformation($"EditDossier.OnAddAttach: {A.NomeFile} has been added");
+        }
+
+        _Logger.LogInformation($"EditDossier.OnAddAttach: Uploaded {files.Count} files in {Sw.ElapsedMilliseconds} ms");
+
+        Attachments.Clear();
+        foreach (var A in _AttachService.GetvAllegatiElemento(Guid.Parse(ItemID)))
+            Attachments.Add(A);
+    }
+
+    /// <summary>
+    /// Remove an attachment on the current selected item
+    /// </summary>
+    /// <param name="Attach"></param>
+    public async void OnRemoveAttach(Guid Attach)
+    {
+        Stopwatch Sw = Stopwatch.StartNew();
+
+        var A = Attachments.ToList().FirstOrDefault(z => z.IdAllegato == Attach);
+        _AttachService._allMan.Cancella(A.IdAllegato);
+        Attachments.Remove(A);
+
+        _Logger.LogInformation($"EditDossier.OnRemoveAttach: Removed attached in {Sw.ElapsedMilliseconds} ms");
+    }
+}

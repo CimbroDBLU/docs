@@ -26,12 +26,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Components\PdfEditor.razor" />
     <Content Remove="Views\Docs\EditorPdf.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Remove="Views\Docs\EditorPdf.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Pages\Docs\Shared\docviewer.js" />
   </ItemGroup>
 
 
@@ -53,7 +56,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Components\" />
     <Folder Include="Views\Fascicolo\Components\" />
   </ItemGroup>
 

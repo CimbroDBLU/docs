@@ -6,174 +6,192 @@
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
-
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage _SessionStore
 @inject NavigationManager  _NavigationManager
 @inject dbluDocsContext    _DbContext
-@inject ILogger<EditServer> _Logger
+@inject ILogger<EditCategories> _Logger
 
-    <PageTitle nTitle="@CardTitle" />
+<PageTitle nTitle="@CardTitle" />
 
-    <section class="content">
-        <SfCard>
-            <CardHeader Title="@CardTitle" />
-            <div class="container-fluid" style="margin:5px">
-                <CardContent EnableSeperator="true">
-                    <div class="form-group row">
-                        <div class="col-2">
-                            <label>Codice:</label>
-                        </div>
-                        <div class="col-5">
-                            <SfTextBox Placeholder="Codice" @bind-Value="@nEditCategory.Codice"></SfTextBox>
-                        </div>
+<section class="content">
+    <SfCard>
+        <CardHeader Title="@CardTitle" />
+        <div class="container-fluid" style="margin:5px">
+            <CardContent EnableSeperator="true">
+                <div class="form-group row">
+                    <div class="col-2">
+                        <label>Codice:</label>
                     </div>
-                    <div class="form-group row">
-                        <div class="col-2">
-                            <label>Descrizione:</label>
-                        </div>
-                        <div class="col-5">
-                            <SfTextBox Placeholder="Descrizione" @bind-Value="@nEditCategory.Descrizione"></SfTextBox>
-                        </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="Codice" @bind-Value="@nEditCategory.Codice"></SfTextBox>
                     </div>
-                    <div class="form-group row">
-                        <div class="col-2">
-                            <label>Attributi:</label>
-                        </div>
-                        <div class="col-5">
-                            <SfTextBox Placeholder="Attributi" @bind-Value="@nEditCategory.ViewAttributi"></SfTextBox>
-                        </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-2">
+                        <label>Descrizione:</label>
                     </div>
-                </CardContent>
-                <CardContent EnableSeperator="true">
-                    <AttributesTable nAttributes="@nAttributes"></AttributesTable>
-                </CardContent>
-                <CardContent EnableSeperator="true">
-                    <div class="row">
-                        <div class="col-12">
-                            <SfButton CssClass="e-primary" OnClick="OnClickSave">Salva</SfButton>
-                            <SfButton OnClick="OnClickExit">Annulla</SfButton>
-                        </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="Descrizione" @bind-Value="@nEditCategory.Descrizione"></SfTextBox>
                     </div>
-                </CardContent>
-            </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-2">
+                        <label>Attributi:</label>
+                    </div>
+                    <div class="col-5">
+                        <SfTextBox Placeholder="Attributi" @bind-Value="@nEditCategory.ViewAttributi"></SfTextBox>
+                    </div>
+                </div>
+            </CardContent>
+            <CardContent EnableSeperator="true">
+                <AttributesTable nAttributes="@nAttributes"></AttributesTable>
+            </CardContent>
+            <CardContent EnableSeperator="true">
+                <div class="row">
+                    <div class="col-12">
+                        <SfButton CssClass="e-primary" OnClick="OnClickSave">Salva</SfButton>
+                        <SfButton OnClick="OnClickExit">Annulla</SfButton>
+                    </div>
+                </div>
+            </CardContent>
+        </div>
 
-        </SfCard>
-    </section>
-    @code { /// <summary>
-        /// Name of the Category
-        /// </summary>
-        [Parameter]
-        public string Code { get; set; }
+    </SfCard>
+</section>
+@code {
+    
+    /// <summary>
+    /// Name of the Category
+    /// </summary>
+    [Parameter]
+    public string Code { get; set; }
 
-        /// <summary>
-        /// Injected Dossier Managewr for editing categories
-        /// </summary>
-        private FascicoliManager _DossierManager { get; set; }
+    /// <summary>
+    /// Injected Dossier Managewr for editing categories
+    /// </summary>
+    private FascicoliManager _DossierManager { get; set; }
 
-        /// <summary>
-        /// Open the Category component
-        /// </summary>
-        public async void OnClickExit()
-        {
+    /// <summary>
+    /// Open the Category component
+    /// </summary>
+    public async void OnClickExit()
+    {
+        GoBack();
+    }
+
+    /// <summary>
+    /// Go back to the caller
+    /// </summary>
+    private async void GoBack()
+    {
+        string back = (await _SessionStore.GetAsync<string>("Referrer")).Value;
+        if (string.IsNullOrEmpty(back))
             _NavigationManager.NavigateTo($"/Docs/Categories");
-        }
-
-        /// <summary>
-        /// Title of the Card and Page
-        /// </summary>
-        public string CardTitle { get; set; }
-
-        /// <summary>
-        /// Description of the Category
-        /// </summary>
-        [Parameter]
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Attributes of the Category
-        /// </summary>
-        [Parameter]
-        public string Attributes { get; set; }
-
-        /// <summary>
-        /// Indicate if the category is a new one
-        /// </summary>
-        private bool IsNew { get; set; } = false;
-
-        /// <summary>
-        /// Show/Hide the spinner
-        /// </summary>
-        private bool IsSpinnerVisible { get; set; } = false;
-
-        /// <summary>
-        /// User that is in create or in edit
-        /// </summary>
-        public Categorie nEditCategory { get; set; } = new();
-
-        /// <summary>
-        /// List of attributes of this Attach Type
-        /// </summary>
-        public List<Attributo> nAttributes { get; set; } = new();
-
-        /// <summary>
-        /// List of the buttons on toolbar of the grid
-        /// </summary>
-        private List<Object> Tool = new List<Object>()
+        else
         {
+            _NavigationManager.NavigateTo(back);
+            await _SessionStore.DeleteAsync("Referrer");
+        }
+    }
+
+    /// <summary>
+    /// Title of the Card and Page
+    /// </summary>
+    public string CardTitle { get; set; }
+
+    /// <summary>
+    /// Description of the Category
+    /// </summary>
+    [Parameter]
+    public string Description { get; set; }
+
+    /// <summary>
+    /// Attributes of the Category
+    /// </summary>
+    [Parameter]
+    public string Attributes { get; set; }
+
+    /// <summary>
+    /// Indicate if the category is a new one
+    /// </summary>
+    private bool IsNew { get; set; } = false;
+
+    /// <summary>
+    /// Show/Hide the spinner
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// User that is in create or in edit
+    /// </summary>
+    public Categorie nEditCategory { get; set; } = new();
+
+    /// <summary>
+    /// List of attributes of this Attach Type
+    /// </summary>
+    public List<Attributo> nAttributes { get; set; } = new();
+
+    /// <summary>
+    /// List of the buttons on toolbar of the grid
+    /// </summary>
+    private List<Object> Tool = new List<Object>()
+{
         "Add", "Edit"  , "Delete", "Cancel", "Update"
     };
 
-        /// <summary>
-        /// On Init component
-        /// </summary>
-        protected override void OnInitialized()
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        IsSpinnerVisible = true;
+
+        _DossierManager = new FascicoliManager(_DbContext.Connessione, _Logger);
+        nEditCategory = _DossierManager.GetAllCategorie().FirstOrDefault(x => x.Codice == Code);
+
+        if (nEditCategory == null)
         {
-            IsSpinnerVisible = true;
+            CardTitle = "Nuova categoria";
+            nEditCategory = new() { Codice = "", Descrizione = "", ViewAttributi = "" }; IsNew = true;
 
-            _DossierManager = new FascicoliManager(_DbContext.Connessione, _Logger);
-            nEditCategory = _DossierManager.GetAllCategorie().FirstOrDefault(x => x.Codice == Code);
+        }
+        else
+            CardTitle = $"Modifica Categoria [{nEditCategory.Codice}]";
 
-            if (nEditCategory == null)
-            {
-                CardTitle = "Nuova categoria";
-                nEditCategory = new() { Codice = "", Descrizione = "", ViewAttributi = "" }; IsNew = true;
+        nAttributes = nEditCategory._listaAttributi.ToList();
+        IsSpinnerVisible = false;
+    }
 
-            }
-            else
-                CardTitle = $"Modifica Categoria [{nEditCategory.Codice}]";
+    /// <summary>
+    /// Save the category
+    /// </summary>
+    public async void OnClickSave()
+    {
+        IsSpinnerVisible = true;
+        Stopwatch SW = new Stopwatch(); SW.Start();
 
-            nAttributes = nEditCategory._listaAttributi.ToList();
-            IsSpinnerVisible = false;
+        if (IsNew)
+        {
+
+            ElencoAttributi EA = new ElencoAttributi();
+            foreach (Attributo A in nAttributes)
+                EA.Add(A);
+            nEditCategory.Attributi = EA;
+            _DossierManager.SalvaCategoria(nEditCategory);
+
+            _Logger.LogInformation($"EditCategory.OnClickSave: Added Category {nEditCategory.Codice} in {SW.ElapsedMilliseconds} ms");
+        }
+        else
+        {
+            ElencoAttributi EA = new ElencoAttributi();
+            foreach (Attributo A in nAttributes)
+                EA.Add(A);
+            nEditCategory.Attributi = EA;
+            _DossierManager.SalvaCategoria(nEditCategory);
+            _Logger.LogInformation($"EditCategory.OnClickSave: Update Category {nEditCategory.Codice} in {SW.ElapsedMilliseconds} ms");
         }
 
-        /// <summary>
-        /// Save the category
-        /// </summary>
-        public async void OnClickSave()
-        {
-            IsSpinnerVisible = true;
-            Stopwatch SW = new Stopwatch(); SW.Start();
-
-            if (IsNew)
-            {
-
-                ElencoAttributi EA = new ElencoAttributi();
-                foreach (Attributo A in nAttributes)
-                    EA.Add(A);
-                nEditCategory.Attributi = EA;
-                _DossierManager.SalvaCategoria(nEditCategory);
-
-                _Logger.LogInformation($"EditCategory.OnClickSave: Added Category {nEditCategory.Codice} in {SW.ElapsedMilliseconds} ms");
-            }
-            else
-            {
-                ElencoAttributi EA = new ElencoAttributi();
-                foreach (Attributo A in nAttributes)
-                    EA.Add(A);
-                nEditCategory.Attributi = EA;
-                _DossierManager.SalvaCategoria(nEditCategory);
-                _Logger.LogInformation($"EditCategory.OnClickSave: Update Category {nEditCategory.Codice} in {SW.ElapsedMilliseconds} ms");
-            }
-
-            IsSpinnerVisible = false;
-            _NavigationManager.NavigateTo($"/Docs/Categories");
-        } }
+        IsSpinnerVisible = false;
+        GoBack();
+    } }

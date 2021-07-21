@@ -1,0 +1,45 @@
+﻿@*
+    Component for creating a form for the edit of an item
+*@
+
+@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using dblu.Portale.Plugin.Docs.Classes
+
+<div class="container-fluid">
+    @foreach (var Attributo in nAttributeList.ToList().OrderBy(f => (f.Sequenza)))
+    {
+        <div class="row form-group">
+            <div class="col-4">
+                <label>@Attributo.Descrizione</label>
+            </div>
+            <div class="col-8">
+                @switch (Attributo.Tipo)
+                {
+                    case "System.DateTime":
+                        <SfDatePicker TValue="DateTime?" AllowEdit="false" Value="@(nAttributeList.GetDateTime(Attributo.Nome))"></SfDatePicker>
+                        break;
+                    case "System.Boolean":
+                        <SfCheckBox Disabled="true" Checked="@(nAttributeList.GetBoolean(Attributo.Nome)??false)"></SfCheckBox>
+                        break;
+                    default:
+                        <SfTextBox Readonly="true" Value="@(Attributo.Valore?.ToString()??"")"></SfTextBox>
+                        break;
+                }
+
+            </div>
+        </div>
+    }
+</div>
+
+
+
+@code {
+
+    /// <summary>
+    /// List of the attributes wrapped in ElencoAttributi
+    /// </summary>
+    [Parameter]
+    public ElencoAttributi nAttributeList { get; set; }
+}
