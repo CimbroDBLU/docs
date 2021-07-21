@@ -9,7 +9,6 @@ using dblu.Docs.Interfacce;
 using dblu.Docs.Models;
 using dblu.Portale.Core.Infrastructure;
 using dblu.Portale.Core.Infrastructure.Classes;
-using dblu.Portale.Plugin.Docs.Data;
 using dblu.Portale.Plugin.Docs.Extensions;
 using dblu.Portale.Plugin.Docs.Models;
 using dblu.Portale.Plugin.Docs.Services;

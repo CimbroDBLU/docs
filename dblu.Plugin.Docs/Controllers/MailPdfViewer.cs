@@ -11,7 +11,6 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
-using dblu.Portale.Plugin.Docs.Data;
 using dblu.Portale.Plugin.Docs.Services;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json.Linq;

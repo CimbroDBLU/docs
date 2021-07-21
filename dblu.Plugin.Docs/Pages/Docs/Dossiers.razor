@@ -10,12 +10,11 @@
 @using dblu.Docs.Models
 
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
-@inject IJSRuntime JSRuntime
-
+@inject NavigationManager  _NavigationManager
 <style>
 
     .smallb {
-        width: 50px;
+        width: 60px;
     }
 </style>
 
@@ -24,9 +23,10 @@
 <SfCard>
     <CardHeader Title="Lista Fascicoli" />
     <CardContent EnableSeperator="true">
-        <SfGrid Height="610" SelectedRowIndex="0" ID="ODATA_Dossiers" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewFascicoli" Toolbar=@Tool>
+        <SfGrid Height="615" SelectedRowIndex="0" ID="ODATA_Dossiers" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewFascicoli" Toolbar=@Tool>
             <SfDataManager Url="/odata/ODATA_Dossiers" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
-            <GridPageSettings PageSize="13"></GridPageSettings>
+            <GridEvents TValue="viewFascicoli" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
+            <GridPageSettings   PageSize="13"></GridPageSettings>
             <GridSearchSettings Fields=@(new string[] { "DscFascicolo", "DscCategoria" })></GridSearchSettings>
             <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu">
             </GridFilterSettings>
@@ -34,7 +34,6 @@
                 <GridColumn Field=@nameof(viewFascicoli.IdFascicolo) Visible="false" HeaderText="ID" IsPrimaryKey="true"></GridColumn>
                 <GridColumn Field=@nameof(viewFascicoli.DscFascicolo) Width="400" AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="Descrizione"></GridColumn>
                 <GridColumn Field=@nameof(viewFascicoli.DscCategoria) AllowSearching="true" AllowSorting="true" FilterSettings="@(new FilterSettings{Type = Syncfusion.Blazor.Grids.FilterType.CheckBox })" AllowFiltering="true" HeaderText="Categoria"></GridColumn>
-
                 <GridColumn Field=@nameof(viewFascicoli.Campo1) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible"></GridColumn>
                 <GridColumn Field=@nameof(viewFascicoli.Campo2) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible"></GridColumn>
                 <GridColumn Field=@nameof(viewFascicoli.Campo3) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible"></GridColumn>
@@ -45,7 +44,7 @@
                 <GridColumn Field=@nameof(viewFascicoli.Campo8) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[7].Des" Visible="@Cols[7].Visible"></GridColumn>
                 <GridColumn Field=@nameof(viewFascicoli.Campo9) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[8].Des" Visible="@Cols[8].Visible"></GridColumn>
                 <GridColumn Field=@nameof(viewFascicoli.Campo10) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[9].Des" Visible="@Cols[9].Visible"></GridColumn>
-                <GridColumn HeaderTextAlign=TextAlign.Left HeaderText="" Width="60">
+                <GridColumn HeaderText="" Width="80">
                     <Template>
                         @{
                             var ID = (context as viewFascicoli).IdFascicolo.ToString();
@@ -73,21 +72,28 @@
     };
 
     /// <summary>
-    /// On Init component
+    /// On Init component get the custom columns
     /// </summary>
     protected override async void OnInitialized()
     {
         Cols = _ele.GetColonne("vFASCICOLO");
-
     }
 
     /// <summary>
-    /// On open dossier, lad the old fashion interface
+    /// Open selected dossier
     /// </summary>
     /// <param name="Id"></param>
     public async void OpenDossier(string Id)
     {
-        await JSRuntime.InvokeVoidAsync("BlazorSetHREF", $@"/Docs/Fascicolo/{Id}");
+        _NavigationManager.NavigateTo($"/Docs/Dossier/{Id}");
     }
 
+    /// <summary>
+    /// On double click edit the selected dossier
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnDoubleClick(RecordDoubleClickEventArgs<viewFascicoli> args)
+    {
+        _NavigationManager.NavigateTo($"/Docs/Dossier/{args.RowData.IdFascicolo.ToString()}");
+    }
 }

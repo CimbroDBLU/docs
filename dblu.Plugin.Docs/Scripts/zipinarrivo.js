@@ -278,18 +278,22 @@ function MostraDettaglio(dettaglio) {
     $('#gridZipElementi').data('kendoGrid').dataSource.read();
 }
 
+var loadingTimes = 0;
+
 function MostraPdfCompleto(idElemento) {
 
     PdfCorrente.IdAllegato = $("#IdAllegato").val();
     PdfCorrente.IdElemento = idElemento; // $("#IdElemento").val();
     PdfCorrente.iAzione = docsAzioniPdf.Carica;
-    var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
-    //alert(JSON.stringify(PdfCorrente));
+    var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
+    //emailpdfviewer.downloadFileName = nome;
     PdfCorrente.Pagina = 1;
-    zippdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
-    zippdfviewer.fileName = JSON.stringify(PdfCorrente);
-    zippdfviewer.load(JSON.stringify(PdfCorrente));
+    emailpdfviewer.fileName = JSON.stringify(PdfCorrente);
+    if (loadingTimes++ != 0)
+        emailpdfviewer.magnification.zoomTo(110);
+    emailpdfviewer.load(JSON.stringify(PdfCorrente));
     $("#tbdescrizione").html(PdfCorrente.Descrizione);
+    emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 
 }
 

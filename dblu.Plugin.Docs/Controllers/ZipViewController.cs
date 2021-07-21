@@ -5,7 +5,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using dblu.Docs.Models;
-using dblu.Portale.Plugin.Docs.Data;
 using dblu.Portale.Plugin.Docs.Extensions;
 using dblu.Portale.Plugin.Docs.ViewModels;
 using dblu.Portale.Plugin.Docs.Services;

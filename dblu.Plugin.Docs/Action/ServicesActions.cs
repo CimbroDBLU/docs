@@ -1,7 +1,6 @@
 ﻿using dblu.Docs.Interfacce;
 using dblu.Docs.Models;
 using dblu.Portale.Core.Infrastructure.Classes;
-using dblu.Portale.Plugin.Docs.Data;
 using dblu.Portale.Plugin.Docs.Services;
 using dblu.Portale.Plugin.Docs.Workers;
 using ExtCore.Infrastructure.Actions;

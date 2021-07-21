@@ -1,0 +1,115 @@
+﻿@*
+    Component for showing a list of items
+*@
+
+@using dblu.Docs.Classi
+@using dblu.Docs.Models
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
+<style>
+
+    .smallb {
+        width: 60px;
+    }
+</style>
+
+<SfGrid ID="Items" SelectedRowIndex="0" DataSource="@nItems" AllowPaging="true">
+    <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Normal"></GridEditSettings>
+    <GridPageSettings PageSize="nPageSize"></GridPageSettings>
+    <GridSelectionSettings Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row" ></GridSelectionSettings>
+    <GridEvents TValue="viewElementi" RowSelected="OnRecordSelect" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
+    <GridColumns>
+        <GridColumn Field=@nameof(viewElementi.IdElemento) IsPrimaryKey="true" Visible="false"></GridColumn>
+        <GridColumn Field=@nameof(viewElementi.DscTipoElemento) HeaderText="Tipo" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewElementi.DscElemento) HeaderText="Descrizione" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+
+        <GridColumn Field=@nameof(viewElementi.Campo1) HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewElementi.Campo2) HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewElementi.Campo3) HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewElementi.Campo4) HeaderText="@Cols[3].Des" Visible="@Cols[3].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewElementi.Campo5) HeaderText="@Cols[4].Des" Visible="@Cols[4].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewElementi.Campo6) HeaderText="@Cols[5].Des" Visible="@Cols[5].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewElementi.Campo7) HeaderText="@Cols[6].Des" Visible="@Cols[6].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewElementi.Campo8) HeaderText="@Cols[7].Des" Visible="@Cols[7].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewElementi.Campo9) HeaderText="@Cols[8].Des" Visible="@Cols[8].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewElementi.Campo10) HeaderText="@Cols[9].Des" Visible="@Cols[8].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+
+        <GridColumn HeaderTextAlign=TextAlign.Left HeaderText="" Width="80">
+            <Template>
+                @{
+                    var ID = (context as viewElementi).IdElemento;
+                    <SfButton CssClass="smallb" OnClick="() => OnOpen(ID)" HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Apri" } })" IconCss="e_fa fa-folder-open"></SfButton>
+                }
+            </Template>
+        </GridColumn>
+    </GridColumns>
+</SfGrid>
+
+@code {
+
+    /// <summary>
+    /// Items list
+    /// </summary>
+    [Parameter]
+    public ObservableCollection<viewElementi> nItems { get; set; } = new();
+
+    /// <summary>
+    /// Page size 
+    /// </summary>
+    [Parameter]
+    public int nPageSize { get; set; } = 4;
+
+    /// <summary>
+    /// Fires when user press open
+    /// </summary>
+    [Parameter]
+    public EventCallback<Guid> OnOpenItem { get; set; }
+
+    /// <summary>
+    /// Fires when an item will be selected
+    /// </summary>
+    [Parameter]
+    public EventCallback<Guid> OnSelectItem { get; set; }
+
+    /// <summary>
+    /// List of custom columns of the items
+    /// </summary>
+    private List<Colonna> Cols { get; set; } = new List<Colonna>();
+
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        Cols = _ele.GetColonne("vELEMENTO");
+    }
+
+    /// <summary>
+    /// Forward the event Open
+    /// </summary>
+    /// <param name="ID"></param>
+    private async void OnOpen(Guid ID)
+    {
+        await OnOpenItem.InvokeAsync(ID);
+    }
+
+    /// <summary>
+    /// On double click fire the event Open
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnDoubleClick(RecordDoubleClickEventArgs<viewElementi> args)
+    {
+        await OnOpenItem.InvokeAsync(args.RowData.IdElemento);
+    }
+
+    /// <summary>
+    /// On selected record , forward the item selection
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnRecordSelect(RowSelectEventArgs<viewElementi> args)
+    {
+        await OnSelectItem.InvokeAsync(args.Data.IdElemento);
+
+    }
+}
+
