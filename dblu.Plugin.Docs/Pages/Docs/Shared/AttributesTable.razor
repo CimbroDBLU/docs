@@ -5,7 +5,7 @@
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
 
-<SfGrid DataSource="@nAttributes" AllowPaging="true" Toolbar="@ToolAttributes">
+<SfGrid DataSource="@nAttributes" AllowPaging="false" Toolbar="@ToolAttributes" AllowSorting="true">
     <GridEditSettings AllowAdding="true" AllowEditing="true" AllowDeleting="true" Mode="EditMode.Normal"></GridEditSettings>
     <GridPageSettings PageSize="10"></GridPageSettings>
     <GridColumns>
