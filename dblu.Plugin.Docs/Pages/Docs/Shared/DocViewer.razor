@@ -49,6 +49,8 @@
         right: 0;
         bottom: 0;
         left: 0;
+        height: 100vh;
+        width: 100vw;
     }
 
     .fill {
@@ -76,17 +78,12 @@
     .sized {
         width: auto;
         height: @($"{nHeight}")px;
-
     }
 
-    .unsized {
-        height: 100vh;
-        width: 100vw;
-    }
 
 </style>
 
-<div @onkeydown="@OnKeyDown" class="@Full @Size">
+<div @onkeydown="@OnKeyDown" class="@Full ">
     @if (Doc is null)
     {
         <div class="mt-2 mb-2" style=" text-align: center; "><h3>Loading ... </h3></div>
@@ -97,7 +94,7 @@
 
         <SfToolbar>
             <ToolbarItems>
-                <ToolbarItem PrefixIcon=@((fullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
                 @if (nAllowEdit)
                 {
                     <ToolbarItem PrefixIcon="e-rotatesx e-icons" TooltipText="Ruota a sx" OnClick="() => OnRotate(true)"></ToolbarItem>
@@ -112,7 +109,7 @@
             </ToolbarItems>
         </SfToolbar>
 
-        @if (!fullscreen)
+        @if (!IsFullscreen)
         {
             <SfPdfViewerServer Height="@($"{nHeight - 42}px")" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
                 <PdfViewerEvents Created="OnPDFViewerCreated" DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
@@ -131,7 +128,7 @@
             <CardContent>
                 <SfToolbar>
                     <ToolbarItems>
-                        <ToolbarItem PrefixIcon=@((fullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                        <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
                     </ToolbarItems>
                 </SfToolbar>
                 <div class="mt-2 mb-2 fill">
@@ -146,7 +143,7 @@
             <CardContent>
                 <SfToolbar>
                     <ToolbarItems>
-                        <ToolbarItem PrefixIcon=@((fullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                        <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
                     </ToolbarItems>
                 </SfToolbar>
                 <div class="mt-2 mb-2" style=" text-align: center; "><h3>Preview non supportata per il documento @Doc.FileName</h3></div>
@@ -338,12 +335,8 @@
     /// <summary>
     /// Class that has to be applyed to the main control, for going fullscreen 
     /// </summary>
-    public string Full { get; set; } = "";
+    public string Full { get; set; } = "sized";
 
-    /// <summary>
-    /// Class that has to be applyed to the PDFViewer control, for going fullscreen  
-    /// </summary>
-    public string PdfClass { get; set; } = "sized";
 
     /// <summary>
     /// Class that has to be applyed to the image, for going fullscreen  
@@ -363,7 +356,7 @@
         IsFullscreen = !IsFullscreen;
         if (IsFullscreen)
         {
-            PdfClass = "unsized";
+           
             Full = "fullscreen";
             ImgClass = "imgunsized";
             var module = await Module;
@@ -371,8 +364,8 @@
         }
         else
         {
-            PdfClass = "sized";
-            Full = "";
+            
+            Full = "sized";
             ImgClass = "imgsized";
             var module = await Module;
             await module.InvokeVoidAsync("enable_scroll");
@@ -386,10 +379,10 @@
     /// <param name="e"></param>
     private void OnKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key == "Escape" && fullscreen)
+        if (e.Key == "Escape" && IsFullscreen)
             Fullscreen();
 
-        if (e.Key == "F" && e.ShiftKey && !fullscreen)
+        if (e.Key == "F" && e.ShiftKey && !IsFullscreen)
             Fullscreen();
     }
 
