@@ -60,6 +60,16 @@
         height: auto;
     }
 
+    .mailsized {
+           width:100%;
+           height: @($"{nHeight-70}px");
+    }
+
+    .mailunsized {
+        width: 100%;
+        height: 90vh;
+    }
+
     .imgsized {
         max-width: 100%;
         max-height: @($"{nHeight-70}px");
@@ -80,10 +90,9 @@
         height: @($"{nHeight}")px;
     }
 
-
 </style>
 
-<div @onkeydown="@OnKeyDown" class="@Full ">
+<div @onkeydown="@OnKeyDown" class="@((IsFullscreen)?"fullscreen":"sized") ">
     @if (Doc is null)
     {
         <div class="mt-2 mb-2" style=" text-align: center; "><h3>Loading ... </h3></div>
@@ -131,9 +140,22 @@
                         <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
                     </ToolbarItems>
                 </SfToolbar>
-                <div class="mt-2 mb-2 fill">
-                    <img class="@ImgClass" src="data:image;base64,@(Convert.ToBase64String(Doc.Payload.ToArray()))">
+                <div class="mt-2 mb-2">
+                    <img class="@((IsFullscreen)?"imgunsized":"imgsized")" src="data:image;base64,@(Convert.ToBase64String(Doc.Payload.ToArray()))">
                 </div>
+            </CardContent>
+        </SfCard>
+    }
+    else if (Doc.DocType == e_DocType.EMAIL)
+    {
+        <SfCard HtmlAttributes="@(new Dictionary<string, object>() { { "style", "height:100%;display:flex;justify-content:flex-start;" } })">
+            <CardContent>
+                <SfToolbar>
+                    <ToolbarItems>
+                        <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                    </ToolbarItems>
+                </SfToolbar>                
+                    <iframe class="mt-2 mb-2 @((IsFullscreen)?"mailunsized":"mailsized")" srcdoc="@Doc.ToHtml()"></iframe>
             </CardContent>
         </SfCard>
     }
@@ -147,11 +169,10 @@
                     </ToolbarItems>
                 </SfToolbar>
                 <div class="mt-2 mb-2" style=" text-align: center; "><h3>Preview non supportata per il documento @Doc.FileName</h3></div>
-                <img class="@ImgClass" style="margin: auto;display: block;" src="./img/unknown.png">
+                <img class="@((IsFullscreen)?"imgunsized":"imgsized")" style="margin: auto;display: block;" src="./img/unknown.png">
 
             </CardContent>
         </SfCard>
-
     }
 </div>
 
@@ -290,7 +311,6 @@
         }
     }
 
-
     /// <summary>
     /// Save the changes into the document
     /// </summary>
@@ -332,16 +352,6 @@
 
     }
 
-    /// <summary>
-    /// Class that has to be applyed to the main control, for going fullscreen 
-    /// </summary>
-    public string Full { get; set; } = "sized";
-
-
-    /// <summary>
-    /// Class that has to be applyed to the image, for going fullscreen  
-    /// </summary>
-    public string ImgClass { get; set; } = "imgsized";
 
     /// <summary>
     /// Indicate if we are in full screen
@@ -356,17 +366,12 @@
         IsFullscreen = !IsFullscreen;
         if (IsFullscreen)
         {
-           
-            Full = "fullscreen";
-            ImgClass = "imgunsized";
+
             var module = await Module;
             await module.InvokeVoidAsync("disable_scroll");
         }
         else
         {
-            
-            Full = "sized";
-            ImgClass = "imgsized";
             var module = await Module;
             await module.InvokeVoidAsync("enable_scroll");
         }

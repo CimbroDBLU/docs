@@ -132,7 +132,7 @@
                         <ItemsTable nItems="@Items" OnOpenItem="OnEditItem" OnSelectItem="OnSelItem"></ItemsTable>
                     </div>
                     <div style="align-self: auto;" class="col-6">
-                        <AttachmentsTable nEnableRemove="@IsAdmin" nAttachments="@Attachments" OnOpenAttachment="OnEditAttach" OnSelectAttachment="OnSelAttach" nEnableDownload="false"></AttachmentsTable>
+                        <AttachmentsTable nEnableRemove="@IsAdmin" OnAddRequested="OnAddAttach" OnRemoveAttachment="OnRemoveAttach" nAttachments="@Attachments" OnOpenAttachment="OnEditAttach" OnSelectAttachment="OnSelAttach" nEnableDownload="false"></AttachmentsTable>
                     </div>
                 </div>
             </CardContent>

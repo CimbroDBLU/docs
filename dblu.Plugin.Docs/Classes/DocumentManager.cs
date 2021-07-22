@@ -16,6 +16,8 @@ using Syncfusion.Pdf.Interactive;
 using PdfAnnotation = Syncfusion.Pdf.Interactive.PdfAnnotation;
 using Syncfusion.Pdf.Graphics;
 using Syncfusion.Drawing;
+using MimeKit;
+using dblu.Docs.Extensions;
 
 namespace dblu.Portale.Plugin.Docs.Classes
 {
@@ -55,6 +57,10 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// WORD_PROCESSOR (DOC, RTF)
         /// </summary>
         WORD_PROCESSOR,
+        /// <summary>
+        /// EML documents
+        /// </summary>
+        EMAIL
     };
 
     /// <summary>
@@ -101,8 +107,33 @@ namespace dblu.Portale.Plugin.Docs.Classes
             string s = nFileName?.ToLowerInvariant()??"";
             if (s.EndsWith(".pdf")) return e_DocType.PDF;
             if (s.EndsWith(".png") || s.EndsWith(".gif") || s.EndsWith(".jpg")) return e_DocType.IMAGE;
-            if (s.EndsWith(".doc") || s.EndsWith(".rtf")) return e_DocType.WORD_PROCESSOR;
+            //if (s.EndsWith(".doc") || s.EndsWith(".rtf")) return e_DocType.WORD_PROCESSOR;
+            if(s.EndsWith(".eml")) return e_DocType.EMAIL;
             return e_DocType.UNDEFINED;
+        }
+
+        /// <summary>
+        /// Get the memory stream as an HTML string (in case of an email)
+        /// </summary>
+        /// <returns>
+        /// HTML string 
+        /// </returns>
+        public string ToHtml()
+        {
+            if (this.DocType == e_DocType.EMAIL)
+            {
+                if (this.Payload != null)
+                    this.Payload.Position = 0;
+
+                var message = MimeMessage.Load(this.Payload);
+                var html = message.ToHtml();
+                if (string.IsNullOrEmpty(html))
+                {
+                    html = message.TextBody;
+                }
+                return html;
+            }
+            return "";
         }
     };
 
