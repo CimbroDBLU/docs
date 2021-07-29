@@ -285,16 +285,16 @@ function MostraPdfCompleto(idElemento) {
     PdfCorrente.IdAllegato = $("#IdAllegato").val();
     PdfCorrente.IdElemento = idElemento; // $("#IdElemento").val();
     PdfCorrente.iAzione = docsAzioniPdf.Carica;
-    var emailpdfviewer = document.getElementById('emailpdfviewer').ej2_instances[0];
-    //emailpdfviewer.downloadFileName = nome;
-    PdfCorrente.Pagina = 1;
-    emailpdfviewer.fileName = JSON.stringify(PdfCorrente);
+    var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
+   
+    PdfCorrente.Pagina = 1;   
+    zippdfviewer.fileName = JSON.stringify(PdfCorrente);
     if (loadingTimes++ != 0)
-        emailpdfviewer.magnification.zoomTo(110);
-    emailpdfviewer.load(JSON.stringify(PdfCorrente));
-    $("#tbdescrizione").html(PdfCorrente.Descrizione);
-    emailpdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
+        zippdfviewer.magnification.zoomTo(110);
 
+    zippdfviewer.load(JSON.stringify(PdfCorrente));
+    $("#tbdescrizione").html(PdfCorrente.Descrizione);
+    zippdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 }
 
 
@@ -825,7 +825,7 @@ function documentLoaded(args) {
     }
 
     zippdfviewer.importAnnotation(JSON.stringify(PdfCorrente));
-
+    zippdfviewer.magnification.zoomTo(100);
 }
 
 

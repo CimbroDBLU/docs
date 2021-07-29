@@ -2313,7 +2313,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         srv = cn.QueryFirstOrDefault<EmailServer>("select Top 1 * from EmailServer where Attivo=1 and InUscita=1");
                     }
 #if (DEBUG)
-
+                    srv = new();
     srv.Email = "jobaid@dblu.it";
     srv.Server = "mail.dblu.it";
     srv.Porta = 465;
@@ -2499,7 +2499,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         if (srv == null) srv  = cn.QueryFirstOrDefault<EmailServer>("select Top 1 * from EmailServer where Attivo=1 and InUscita=1");
                     }
                     #if (DEBUG)
-
+                        srv = new();
                         srv.Email = "jobaid@dblu.it";
                         srv.Server = "mail.dblu.it";
                         srv.Porta = 465;

@@ -140,7 +140,7 @@ namespace dblu.Docs.Models
 
         public dynamic GetAttributo(string Nome)
         {
-            if (Attributi != null)
+            if (elencoAttributi != null)
             {
                  return elencoAttributi.Get(Nome);
             }

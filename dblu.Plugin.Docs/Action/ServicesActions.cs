@@ -38,6 +38,7 @@ namespace dblu.Portale.Plugin.Docs.Actions
             services.AddTransient<ISoggettiService, SoggettiService>();
             services.AddScoped<AllegatiService>();
             services.AddScoped<MailService>();
+            services.AddScoped<DocumentTransformationService>();
             services.AddScoped<ServerMailService>();
             services.AddScoped<PrintService>();
             services.AddScoped<ZipService>();

@@ -18,6 +18,7 @@ using Syncfusion.Pdf.Graphics;
 using Syncfusion.Drawing;
 using MimeKit;
 using dblu.Docs.Extensions;
+using System.IO.Compression;
 
 namespace dblu.Portale.Plugin.Docs.Classes
 {
@@ -33,7 +34,7 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// <summary>
         /// Item
         /// </summary>
-        Item
+        Item,
     };
 
     /// <summary>
@@ -84,17 +85,25 @@ namespace dblu.Portale.Plugin.Docs.Classes
         public MemoryStream Payload { get; set; }
 
         /// <summary>
+        /// List of origina attachments present in document (if document supports them)
+        /// </summary>
+        public List<OriginalAttachments> SourceAttachments { get; set; } = new();
+
+        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="nFileName">Name of the file</param>
         /// <param name="nPayload">Document payload as MemoryStream</param>
-        public Document(string nFileName,MemoryStream nPayload )
+        /// <param name="nType">Specify how the document has to be managed</param>
+        public Document(string nFileName,MemoryStream nPayload, e_DocType nType=e_DocType.UNDEFINED)
         {
             FileName = nFileName;
             Payload = nPayload;
             if (nPayload is not null)
                 nPayload.Position = 0;
-            DocType = GetDocType(FileName);
+            DocType = nType;
+            if (DocType == e_DocType.UNDEFINED)
+                DocType = GetDocType(FileName);
         }
 
         /// <summary>
@@ -120,7 +129,7 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// </returns>
         public string ToHtml()
         {
-            if (this.DocType == e_DocType.EMAIL)
+          if (this.DocType == e_DocType.EMAIL)
             {
                 if (this.Payload != null)
                     this.Payload.Position = 0;
@@ -153,6 +162,11 @@ namespace dblu.Portale.Plugin.Docs.Classes
         private AllegatiService AttachmentService { get; set; }
 
         /// <summary>
+        /// Mail service for IO operations
+        /// </summary>
+        private DocumentTransformationService DocumentService { get; set; }
+
+        /// <summary>
         /// Source of current document 
         /// </summary>
         public e_SourceType SourceType { get; set; }
@@ -181,10 +195,12 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// Constructor
         /// </summary>
         /// <param name="nAttachmentService">Attachment service for IO operations</param>
+        /// <param name="nDocumentService">Service for change document type (ex: from email to pdf)</param>
         /// <param name="nLog">Logger interface</param>
-        public DocumentManager(AllegatiService nAttachmentService, ILogger nLog)
+        public DocumentManager(AllegatiService nAttachmentService,DocumentTransformationService nDocumentService, ILogger nLog)
         {
             AttachmentService = nAttachmentService;
+            DocumentService = nDocumentService;
             Logger = nLog;
         }
 
@@ -196,7 +212,7 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// <returns>
         /// A document loaded
         /// </returns>
-        public async Task<Document> Load(e_SourceType nType, string nContent)
+        public async Task<Document> Load(e_SourceType nType, string nContent, bool IsTransformationEnable = true)
         {
 
             if (string.IsNullOrEmpty(nContent)) return null;
@@ -205,10 +221,12 @@ namespace dblu.Portale.Plugin.Docs.Classes
                 Stopwatch SW = Stopwatch.StartNew();
                 SourceType = nType;
                 DocIdentifier = nContent;
+             
 
                 string FileName = "";
 
                 MemoryStream stream = new();
+                
                 switch (SourceType)
                 {
                     case e_SourceType.Item:
@@ -216,19 +234,21 @@ namespace dblu.Portale.Plugin.Docs.Classes
                         if (A is not null)
                         {
                             AttachId = A.Id.ToString();
-                            LogMarkup = $"ELEMENT:{DocIdentifier} ATTACH:{AttachId}"; FileName = A?.NomeFile;
-                            stream = await AttachmentService._allMan.GetFileAsync(A.Id.ToString());
-                            
+                            LogMarkup = $"ELEMENT:{DocIdentifier} ATTACH:{AttachId}"; FileName = A?.NomeFile;                          
+                            Doc = await OpenDocument(A, IsTransformationEnable);
                         }
                         break;
                     case e_SourceType.Attachment:
                         Allegati A1 = AttachmentService._allMan.Get(Guid.Parse(DocIdentifier));
-                        LogMarkup = $"ATTACH:{nContent}"; FileName = A1?.NomeFile;
-                        stream = await AttachmentService._allMan.GetFileAsync(nContent);
+                        if (A1 is not null)
+                        {
+                            LogMarkup = $"ATTACH:{nContent}"; FileName = A1?.NomeFile;
+                            Doc = await OpenDocument(A1, IsTransformationEnable);
+                        }
                         break;
+
                 }
-                Logger.LogInformation($"DocumentManager.Load[{LogMarkup}]: Loaded in {SW.ElapsedMilliseconds} ms");
-                Doc= new Document(FileName, stream);
+                Logger.LogInformation($"DocumentManager.Load[{LogMarkup}]: Loaded in {SW.ElapsedMilliseconds} ms");               
                 return Doc;
             }
             catch (Exception ex)
@@ -237,6 +257,37 @@ namespace dblu.Portale.Plugin.Docs.Classes
                 return null;
             }
 
+        }
+        /// <summary>
+        /// Open an attachment doing eventually transformation
+        /// </summary>
+        /// <param name="A1">Attachment to open</param>
+        /// <param name="IsTransformationEnable">Idnicate if transformation is required or not</param>
+        /// <returns></returns>
+        public async Task<Document> OpenDocument(Allegati A1, bool IsTransformationEnable = true)
+        {
+            e_DocType DetectedType = e_DocType.UNDEFINED;
+            if(IsTransformationEnable)
+            switch (A1.Tipo)
+            {
+                case "FILE":
+                    var stream = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
+                    return new Document(A1?.NomeFile, stream, DetectedType);
+                case "ZIP":
+                    MemoryStream PayloadZip = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
+                    var zip = DocumentService.PDF_From_ZIP(A1?.NomeFile, new ZipArchive(PayloadZip));
+                    return new Document(A1?.NomeFile, zip.Payload, e_DocType.PDF) { SourceAttachments = zip.Attachments };
+                default:
+                    MemoryStream Payload = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
+                    var email = DocumentService.PDF_From_EMail(MimeMessage.Load(Payload));                    
+                    return new Document(A1?.NomeFile, email.Payload, e_DocType.PDF) { SourceAttachments = email.Attachments };
+            }
+            else
+            {
+                var stream = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
+                return new Document(A1?.NomeFile, stream, DetectedType);
+            }
+            return null;
         }
 
         /// <summary>

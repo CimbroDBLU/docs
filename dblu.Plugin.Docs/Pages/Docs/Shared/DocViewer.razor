@@ -5,11 +5,14 @@
 @using Syncfusion.Blazor.PdfViewerServer
 @using Syncfusion.Blazor.PdfViewer
 @using dblu.Portale.Plugin.Docs.Classes
+@using dblu.Portale.Plugin.Docs.Services
 @using System.IO
 
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachmentsService
+@inject dblu.Portale.Plugin.Docs.Services.DocumentTransformationService _DocumentService
 @inject ILogger<DocViewer> _Logger
 @inject IJSRuntime JSRuntime
+
 @implements IAsyncDisposable
 
 <style>
@@ -120,7 +123,7 @@
 
         @if (!IsFullscreen)
         {
-            <SfPdfViewerServer Height="@($"{nHeight - 42}px")" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
+            <SfPdfViewerServer  Height="@($"{nHeight - 42}px")" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
                 <PdfViewerEvents Created="OnPDFViewerCreated" DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
             </SfPdfViewerServer>
         }
@@ -154,8 +157,8 @@
                     <ToolbarItems>
                         <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
                     </ToolbarItems>
-                </SfToolbar>                
-                    <iframe class="mt-2 mb-2 @((IsFullscreen)?"mailunsized":"mailsized")" srcdoc="@Doc.ToHtml()"></iframe>
+                </SfToolbar>
+                <iframe class="mt-2 mb-2 @((IsFullscreen)?"mailunsized":"mailsized")" srcdoc="@Doc.ToHtml()"></iframe>
             </CardContent>
         </SfCard>
     }
@@ -176,19 +179,22 @@
     }
 </div>
 
+<SfSpinner @bind-Visible="IsSpinnerVisible">
+</SfSpinner>
+
 @code {
 
     /// <summary>
     /// Type of Attachment to work with
     /// </summary>
     [Parameter]
-    public e_SourceType nDocType { get; set; } = e_SourceType.Attachment;
+    public e_SourceType nSourceType { get; set; } = e_SourceType.Attachment;
 
     /// <summary>
     /// Identifier for the content (Ususally Attachment ID)
     /// </summary>
     [Parameter]
-    public string nContent { get; set; }
+    public string nDocIdentifier { get; set; }
 
     /// <summary>
     /// Indicate if the document can be edit(if edit is supported)
@@ -208,6 +214,9 @@
     /// </summary>
     [Parameter]
     public int nHeight { get; set; } = 550;
+
+    [Parameter]
+    public EventCallback<List<OriginalAttachments>> OnDocumentTransformed { get; set; }
 
     /// <summary>
     /// PDF viewer object
@@ -229,6 +238,8 @@
     /// </summary>
     private string DownloadFileName { get; set; }
 
+    private bool IsSpinnerVisible { get; set; }
+
     /// <summary>
     /// Default configuration of the
     /// </summary>
@@ -241,7 +252,7 @@
                 {
                     ShowTooltip = true,
                     ToolbarItems = new List<Syncfusion.Blazor.PdfViewer.ToolbarItem>()
-                        {
+                {
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.PageNavigationTool,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.MagnificationTool,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.SelectionTool,
@@ -258,7 +269,7 @@
             {
                 ShowTooltip = true,
                 ToolbarItems = new List<Syncfusion.Blazor.PdfViewer.ToolbarItem>()
-                         {
+                 {
                               Syncfusion.Blazor.PdfViewer.ToolbarItem.PageNavigationTool,
                               Syncfusion.Blazor.PdfViewer.ToolbarItem.MagnificationTool,
                               Syncfusion.Blazor.PdfViewer.ToolbarItem.SelectionTool,
@@ -272,13 +283,19 @@
     }
 
     /// <summary>
-    /// On Set parameter, reload the control 
+    /// On Set parameter, reload the control
     /// </summary>
     protected override async void OnParametersSet()
     {
-        DocManager = new DocumentManager(_AttachmentsService, _Logger);
+        //Non e' il caso di aggiornare.
+        if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
+            return;
+
+        IsSpinnerVisible = true;
+        DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
         LoadDocument();
         OnPDFViewerCreated();
+        IsSpinnerVisible = false;
     }
 
     /// <summary>
@@ -286,7 +303,7 @@
     /// </summary>
     private async void LoadDocument()
     {
-        Doc = await DocManager.Load(nDocType, nContent);
+        Doc = await DocManager.Load(nSourceType, nDocIdentifier);
     }
 
     /// <summary>
@@ -295,6 +312,7 @@
     private async void OnDocumentLoaded()
     {
         DownloadFileName = Doc.FileName;
+        OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
     }
 
     /// <summary>
@@ -415,7 +433,7 @@
     }
 
     /// <summary>
-    /// Rotate the page 
+    /// Rotate the page
     /// </summary>
     /// <param name="Left">True if rotation is in left, otherwise right</param>
     private async void OnRotate(bool Left)
