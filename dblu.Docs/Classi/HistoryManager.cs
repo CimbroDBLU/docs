@@ -100,9 +100,12 @@ namespace dblu.Docs.Classi
             
             using (SqlConnection cn = new SqlConnection(ConnectionString))           
                 all = cn.Get<Processi>(id);
-            
-            all.Stars = nWeightProcess + nWeightTask * all.Attivita.Count;
-            _logger.LogInformation($"HistoryManager.Get: Retreived process {id} in {sw.ElapsedMilliseconds} ms");
+
+                if (all != null)
+                {
+                    all.Stars = nWeightProcess + nWeightTask * all.Attivita.Count;
+                    _logger.LogInformation($"HistoryManager.Get: Retreived process {id} in {sw.ElapsedMilliseconds} ms");
+                }
             return all;
             }
             catch (Exception ex)
@@ -177,10 +180,10 @@ namespace dblu.Docs.Classi
         {
             try
             {
-                DateTime dt = DateTime.MinValue;
+                DateTime? dt = DateTime.MinValue;
                 Stopwatch sw = Stopwatch.StartNew();
                 using (SqlConnection cn = new SqlConnection(ConnectionString))
-                    dt = cn.Query<DateTime>("SELECT MAX(DataUM) from Processi").FirstOrDefault();
+                    dt = cn.Query<DateTime?>("SELECT MAX(DataUM) from Processi").FirstOrDefault();
                 _logger.LogInformation($"HistoryManager.GetLastProcessTime: Retreived {dt} in {sw.ElapsedMilliseconds} ms");
                 return dt;
             }
