@@ -86,4 +86,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Pages\Files\" />
+  </ItemGroup>
+
 </Project>

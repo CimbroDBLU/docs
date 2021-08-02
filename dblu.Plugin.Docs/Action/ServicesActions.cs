@@ -50,6 +50,10 @@ namespace dblu.Portale.Plugin.Docs.Actions
             services.AddSingleton<MantenianceWorker>();
             services.AddSingleton<IHostedService>(p => p.GetService<MantenianceWorker>());
 
+            ///Add a background workor fpor importing camunda data
+            services.AddSingleton<HistoryWorker>();
+            services.AddSingleton<IHostedService>(p => p.GetService<HistoryWorker>());
+
             var conf = (IConfiguration)serviceProvider.GetService(typeof(IConfiguration));
             services.AddFluentMigrator(serviceProvider, conf[$"ConnectionStrings:dblu.Docs"], typeof(dblu.Docs.DataLayer.Migrations.Init), "DOCS");
         }

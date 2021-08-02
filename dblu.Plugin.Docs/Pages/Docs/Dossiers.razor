@@ -24,7 +24,7 @@
     <CardHeader Title="Lista Fascicoli" />
     <CardContent EnableSeperator="true">
         <SfGrid Height="615" SelectedRowIndex="0" ID="ODATA_Dossiers" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewFascicoli" Toolbar=@Tool>
-            <SfDataManager Url="/odata/ODATA_Dossiers" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
+            <SfDataManager Url="/Dossiers/ODATA_Dossiers" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
             <GridEvents TValue="viewFascicoli" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
             <GridPageSettings   PageSize="13"></GridPageSettings>
             <GridSearchSettings Fields=@(new string[] { "DscFascicolo", "DscCategoria" })></GridSearchSettings>

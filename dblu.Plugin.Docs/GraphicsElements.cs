@@ -33,6 +33,7 @@ namespace dblu.Portale.Plugin.Documenti
                 new ModuleItem( "50.1.3", "Email in arrivo" ),
                 new ModuleItem( "50.1.4", "File in arrivo" ),
                 new ModuleItem( "50.1.5", "Smistamento" ),
+                new ModuleItem( "50.1.6", "Statistiche" ),
                 new ModuleItem( "50.2", "Amministrazione Docs" )
             };
 
@@ -52,24 +53,39 @@ namespace dblu.Portale.Plugin.Documenti
                     new MenuItem("50.1.1", 4, "Docs/GridConfigurations", "Configurazione griglie", "fas fa-sliders-h", null),
                     new MenuItem("50.1.3", 5, "Docs/Servers", "Servers", "fas fa-server", null),
                 };
- 			var subItemF = new MenuItem[]
-                {
-                    new MenuItem("50.1.2", 2, "Docs/Dossiers", "Fascicoli", "fas fa-archive", null)
-                 };
+ 			    var subItemF = new MenuItem[]
+                    {
+                        new MenuItem("50.1.2", 2, "Docs/Dossiers", "Fascicoli", "fas fa-archive", null)
+                     };
+               
+                var subItemS = new MenuItem[]
+                     {
+                        new MenuItem("50.1.6", 2, "Stats/History", "Storico", "fas fa-shoe-prints", null)
+                     };
+
+                var subItemM= new MenuItem[]
+                     {                                        
+                    new MenuItem("50.1.3", 1, "MailView/InArrivo", "Email in arrivo", "fas fa-envelope-open-text", null),
+                    new MenuItem("50.1.3", 2, "MailView/emailProcessate", "Email processate", "fas fa-envelope", null),
+                    new MenuItem("50.1.3", 3, "MailView/emailInviate", "Email inviate", "fas fa-paper-plane", null),
+                     };
+
+                var subItemZ = new MenuItem[]
+                    {
+                    new MenuItem("50.1.4", 4, "ZipView/ZipInArrivo", "File in arrivo", "fas fa-file-archive", null),
+                    new MenuItem("50.1.4", 5, "ZipView/ZipProcessati", "File processati", "fas fa-file-archive", null),
+                    new MenuItem("50.1.4", 6, "ZipView/ZipInArrivo?Tipo=REQ", "Deals in arrivo", "fas fa-ruler", null),
+                    new MenuItem("50.1.4", 6, "ZipView/ZipProcessati?Tipo=REQ", "Deals processati", "fas fa-pencil-ruler", null),
+                    };
 
                 return new MenuItem[]
                 {
                     new MenuItem("50.1.1", 1, "Docs/Tabelle", "Tabelle", "fas fa-table", subItemT),
-                    new MenuItem("50.1.2", 1, "Docs/Fascicoli", "Fascicoli", "fas fa-archive", subItemF),
+                    new MenuItem("50.1.2", 1, "Docs/Fascicoli", "Fascicoli", "fas fa-archive", subItemF),                    
                     new MenuItem("50.1.5", 1, "MailView/Smistamento", "Smistamento", "fas fa-map-signs", null),
-                    new MenuItem("50.1.3", 1, "MailView/InArrivo", "Email in arrivo", "fas fa-envelope-open-text", null),
-                    new MenuItem("50.1.3", 2, "MailView/emailProcessate", "Email processate", "fas fa-envelope", null),
-                    new MenuItem("50.1.3", 3, "MailView/emailInviate", "Email inviate", "fas fa-paper-plane", null),
-                    new MenuItem("50.1.4", 4, "ZipView/ZipInArrivo", "File in arrivo", "fas fa-file-archive", null),
-                    new MenuItem("50.1.4", 5, "ZipView/ZipProcessati", "File processati", "fas fa-file-archive", null),
-                    new MenuItem("50.1.4", 6, "ZipView/ZipInArrivo?Tipo=REQ", "Ordini Dealers in arrivo", "fas fa-ruler", null),
-                    new MenuItem("50.1.4", 6, "ZipView/ZipProcessati?Tipo=REQ", "Ordini Dealers processati", "fas fa-pencil-ruler", null),
-                  //  new MenuItem("50.2", 1, "Docs/Logs", "Gestione Log", "fas fa-history", null),
+                    new MenuItem("50.1.3", 1, "MailView/InArrivo", "Email", "fas fa-envelope-open-text", subItemM),
+                    new MenuItem("50.1.4", 4, "ZipView/ZipInArrivo", "Altri documenti", "fas fa-file", subItemZ),       
+                    new MenuItem("50.1.6", 7, "Stats/History", "Statistiche", "fas fas fa-chart-area", subItemS),
                 };
             }
         }

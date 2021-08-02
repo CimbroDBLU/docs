@@ -33,7 +33,8 @@ namespace dblu.Portale.Plugin.Docs.Action
         {
             applicationBuilder.UseEndpoints(endpoints =>
             {
-                endpoints.MapODataRoute("odata", "odata", GetDossiersEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
+              endpoints.MapODataRoute("Dossiers", "Dossiers", GetDossiersEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
+              endpoints.MapODataRoute("History", "History", GetHistoryEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
             });
         }
 
@@ -45,6 +46,17 @@ namespace dblu.Portale.Plugin.Docs.Action
         {
             var odataBuilder = new ODataConventionModelBuilder();
             odataBuilder.EntitySet<viewFascicoli>("ODATA_Dossiers");
+            return odataBuilder.GetEdmModel();
+        }
+
+        /// <summary>
+        /// Make a model for the History entities
+        /// </summary>
+        /// <returns>Return the EDM model for the service</returns>
+        IEdmModel GetHistoryEDMModel()
+        {
+            var odataBuilder = new ODataConventionModelBuilder();
+            odataBuilder.EntitySet<Processi>("ODATA_History");
             return odataBuilder.GetEdmModel();
         }
 

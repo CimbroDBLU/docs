@@ -1,0 +1,75 @@
+﻿@*
+    Component for showing the history of the processes, according to the last sync to the db.
+*@
+@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Pages.Stats.Shared
+@using Syncfusion.Blazor
+@using Syncfusion.Blazor.Data
+@using Syncfusion.Blazor.Grids
+
+@inject IConfiguration _config
+@inject ILogger<History> _Logger
+@page "/Stats/History"
+
+
+<section class="content">
+
+    <SfCard>
+        <CardHeader Title="Storico dei Processi" />
+        <CardContent EnableSeperator="true">
+
+            <SfGrid EnablePersistence="false" ID="ODATA_Historys" TValue="Processi" AllowFiltering="true" AllowGrouping="false" AllowTextWrap="true" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@(new List<Object>() { "Search" })">
+                <SfDataManager Url="/History/ODATA_History" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+                <GridEvents TValue="Processi"></GridEvents>
+                <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
+                <GridPageSettings PageSize="18"></GridPageSettings>
+                <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+                <GridTemplates>
+                    <DetailTemplate>
+                        @{
+                            var MyProcess = (context as Processi);
+                            HistoryManager History = new HistoryManager(_config["ConnectionStrings:dblu.Docs"], _Logger);
+                            List<Attivita> AL = History.GetProcessActivities(MyProcess.Id);
+
+                            if (AL.Count == 0)
+                            {
+                                <span>Nessuna attività manuale</span>
+                            }
+                            else
+                            {
+
+                                <HistoryTaskTable nHistoryTasks="@(new ObservableCollection<Attivita>(AL.OrderByDescending(f => f.Avvio)))"></HistoryTaskTable>
+                            }
+                        }
+
+                    </DetailTemplate>
+                </GridTemplates>
+                <GridColumns>
+                    <GridColumn HeaderText="Nome Processo" AllowFiltering="true" AllowEditing="false" AllowSorting="true">
+                        <Template>
+                            @{
+                                var c = (context as Processi);
+                                var Def = $"{c.Nome} {c.Versione}";
+                                @Def
+                            }
+                        </Template>
+                    </GridColumn>
+                    <GridColumn Field=@nameof(Processi.Diagramma) HeaderText="Inizio" AllowFiltering="true" AllowEditing="false" AllowSorting="true">
+                    </GridColumn>
+                    <GridColumn Field=@nameof(Processi.Avvio) HeaderText="Inizio" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
+                    <GridColumn Field=@nameof(Processi.Fine) HeaderText="Fine" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
+                    <GridColumn Field=@nameof(Processi.Stato) HeaderText="Stato" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
+                    <GridColumn Field=@nameof(Processi.UtenteAvvio) HeaderText="Utente di avvio" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
+                    <GridColumn Field=@nameof(Processi.Stars) HeaderText="Stars" AllowFiltering="true" AllowEditing="false" AllowSorting="true"></GridColumn>
+                </GridColumns>
+            </SfGrid>
+
+        </CardContent>
+    </SfCard>
+
+
+</section>
+
+@code {}

@@ -1,0 +1,25 @@
+﻿@*
+    Component for showing the task of an history process
+*@
+@using dblu.Docs.Models
+
+<SfGrid DataSource="@nHistoryTasks" AllowFiltering="true" AllowGrouping="false" AllowTextWrap="true" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true">
+    <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+    <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
+
+    <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+    <GridPageSettings PageSize="10"></GridPageSettings>
+    <GridColumns>
+        <GridColumn Field=@nameof(Attivita.Nome) HeaderText="Nome" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
+        <GridColumn Field=@nameof(Attivita.Descrizione) HeaderText="Descrizione" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
+        <GridColumn Field=@nameof(Attivita.Avvio) HeaderText="Avvio" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
+        <GridColumn Field=@nameof(Attivita.Fine) HeaderText="Termine" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
+        <GridColumn Field=@nameof(Attivita.Assegnatario) HeaderText="Assegnatario" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
+        <GridColumn Field=@nameof(Attivita.Stato) HeaderText="Stato" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
+    </GridColumns>
+</SfGrid>
+
+@code {
+    [Parameter]
+    public ObservableCollection<Attivita> nHistoryTasks { get; set; }
+}
