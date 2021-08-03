@@ -259,6 +259,7 @@
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.PanTool,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.UndoRedoTool,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.AnnotationEditTool,
+                            Syncfusion.Blazor.PdfViewer.ToolbarItem.CommentTool,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.SearchOption,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.PrintOption,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.DownloadOption
@@ -312,6 +313,7 @@
     private async void OnDocumentLoaded()
     {
         DownloadFileName = Doc.FileName;
+      
         OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
     }
 

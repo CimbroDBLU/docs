@@ -60,7 +60,9 @@ namespace dblu.Portale.Plugin.Documenti
                
                 var subItemS = new MenuItem[]
                      {
-                        new MenuItem("50.1.6", 2, "Stats/History", "Storico", "fas fa-shoe-prints", null)
+                        new MenuItem("50.1.6", 2, "Stats/History", "Storico", "fas fa-shoe-prints", null),
+                       // new MenuItem("50.1.6", 7, "Stats/HistoryPivot", "Dettaglio", "fas fas fa-chart-area", null),
+
                      };
 
                 var subItemM= new MenuItem[]
@@ -86,6 +88,7 @@ namespace dblu.Portale.Plugin.Documenti
                     new MenuItem("50.1.3", 1, "MailView/InArrivo", "Email", "fas fa-envelope-open-text", subItemM),
                     new MenuItem("50.1.4", 4, "ZipView/ZipInArrivo", "Altri documenti", "fas fa-file", subItemZ),       
                     new MenuItem("50.1.6", 7, "Stats/History", "Statistiche", "fas fas fa-chart-area", subItemS),
+                    
                 };
             }
         }
