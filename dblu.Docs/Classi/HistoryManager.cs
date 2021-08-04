@@ -69,7 +69,8 @@ namespace dblu.Docs.Classi
                             Processes.Add(z);
                             Z = Processes[Processes.Count - 1];
                         }
-                        Z.Attivita.Add(m);
+                        if(m!=null)
+                            Z.Attivita.Add(m);
                         return Z;
                     });
                 }
@@ -132,7 +133,8 @@ namespace dblu.Docs.Classi
                
                 using (SqlConnection cn = new SqlConnection(ConnectionString))
                     Act = cn.Get<Attivita>(id);
-                _logger.LogInformation($"HistoryManager.GetActivity: Retreived activity {Act.Id} in {sw.ElapsedMilliseconds} ms");
+                if(Act!=null)
+                    _logger.LogInformation($"HistoryManager.GetActivity: Retreived activity {Act.Id} in {sw.ElapsedMilliseconds} ms");
             }              
             catch (Exception ex)
             {

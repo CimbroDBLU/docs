@@ -89,6 +89,18 @@ namespace dblu.Docs.Models
         /// </summary>
         [Computed]
         public int Stars { get; set; }
+
+        /// <summary>
+        /// String with Month and yeat of starting time
+        /// </summary>
+        [Computed]
+        public string MonthYear => $"{Avvio:yyyy} {Avvio:MM}";
+
+        /// <summary>
+        /// Processes label
+        /// </summary>
+        [Computed]
+        public string Processes => $"Processi";
     }
     
 }

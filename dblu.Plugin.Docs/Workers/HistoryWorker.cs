@@ -113,7 +113,7 @@ namespace dblu.Portale.Plugin.Docs.Workers
                     if (P == null) P = new();
 
                     P.Id = CP.ID_;
-                    P.Nome = CP.Definition?.NAME_ ?? "";
+                    P.Nome = CP.Definition?.NAME_ ?? CP.PROC_DEF_KEY_;
                     P.Stato = CP.STATE_;
                     P.UtenteAvvio = CP.START_USER_ID_;
                     P.Versione = CP.Definition?.VERSION_TAG_ ?? "";

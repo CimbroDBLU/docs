@@ -39,6 +39,17 @@ namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
             History= new HistoryManager(nConfiguration["ConnectionStrings:dblu.Docs"], _logger);
         }
 
+
+        //// OPTIMIZED VERSION, SEE COMMENT IN ACTUAL GET
+        //[EnableQuery]
+        //private IQueryable Get()
+        //{
+        //    Stopwatch sw = Stopwatch.StartNew();
+        //    var results = (History.GetAll().Result).AsQueryable();
+        //    _logger.LogInformation($"ODATA_HistoryController.Get: ODATA Read in {sw.ElapsedMilliseconds} ms");
+        //    return results;
+        //}
+
         /// <summary>
         /// Function that return the data (filtered already)
         /// NB. Return a simply IQueryable with [EnableQuery] decorator is better for performance BUT
@@ -68,7 +79,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
                 string key = search.Split(" OR ")[search.Split(" OR ").Length - 1].ToLowerInvariant();
                 results = results.Where(
                                         fil => fil.Id.ToString().ToLowerInvariant().Contains(key)
-                                            || ( fil.Nome != null && fil.Nome.ToLowerInvariant().Contains(key))
+                                            || (fil.Nome != null && fil.Nome.ToLowerInvariant().Contains(key))
                                             || (fil.Descrizione != null && fil.Descrizione.ToLowerInvariant().Contains(key))
                                             || (fil.Diagramma != null && fil.Diagramma.ToLowerInvariant().Contains(key))
                                             || (fil.UtenteAvvio != null && fil.UtenteAvvio.ToLowerInvariant().Contains(key))

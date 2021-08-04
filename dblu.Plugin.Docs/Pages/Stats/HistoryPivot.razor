@@ -1,0 +1,85 @@
+﻿@page "/Stats/HistoryPivot"
+@inject IJSRuntime JSRuntime
+@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using Syncfusion.Blazor.PivotView
+@using Syncfusion.Blazor
+@using Syncfusion.Blazor.Data
+@using Syncfusion.Blazor.Grids
+
+
+<section class="content">
+
+    <SfCard>
+        <CardHeader Title="Dettaglio consumi " />
+        <CardContent EnableSeperator="true">
+
+            <SfPivotView AllowPdfExport="true" AllowExcelExport="true" Height="600" TValue="Processi"  @ref="@pivot"  >
+                <PivotViewDataSourceSettings TValue="Processi"  ExpandAll=false EnableSorting=true>
+                    <SfDataManager HttpClientInstance="@Client" CrossDomain="true" Url="/History/ODATA_History" Adaptor="Syncfusion.Blazor.Adaptors.ODataV4Adaptor" ></SfDataManager>
+                    <PivotViewRows>
+                        <PivotViewRow Name="Processes"  Caption="Processi"></PivotViewRow>
+                        <PivotViewRow Name="Nome" Caption="Processo"></PivotViewRow>
+                        <PivotViewRow Name="Stato" Caption="Stato"></PivotViewRow>
+                    </PivotViewRows>
+                    <PivotViewColumns>
+                        <PivotViewColumn Name="MonthYear" Caption="Periodo" ></PivotViewColumn>
+                    </PivotViewColumns>
+                    <PivotViewValues>
+                        <PivotViewValue Name="Stars" Caption="Stelle" Type="SummaryTypes.Sum"  ></PivotViewValue>
+                        <PivotViewValue Name="Id" Caption="Processi" Type="SummaryTypes.Count"></PivotViewValue>
+                    </PivotViewValues>
+                    <PivotViewFormatSettings>
+                        <PivotViewFormatSetting Format="N0" Name="Stars"></PivotViewFormatSetting>
+                    </PivotViewFormatSettings>
+                </PivotViewDataSourceSettings>
+                <PivotViewDisplayOption View=View.Both></PivotViewDisplayOption>
+                <PivotChartSettings Value="Stars" Title="Distribuzione stelle">
+                    <PivotChartSeries Type=ChartSeriesType.Bar></PivotChartSeries>
+                    <PivotChartPrimaryYAxis Title="Stelle" LabelFormat="N0" LabelPosition="PivotChartAxisPosition.Outside">
+                    </PivotChartPrimaryYAxis>
+                    <PivotChartPrimaryXAxis Title="Processi - Tipo Processo - Stato" IsInversed="true" LabelPosition="PivotChartAxisPosition.Outside">
+                    </PivotChartPrimaryXAxis>                    
+                </PivotChartSettings>
+            </SfPivotView>
+
+            </CardContent>
+        <CardContent EnableSeperator="true">
+            <SfButton OnClick="OnExcelExport" Content="Esporta in Excel"></SfButton>
+            <SfButton OnClick="OnPDFExport" Content="Esporta in PDF"></SfButton>
+            <SfButton OnClick="OnExit" Content="Indietro"></SfButton>
+        </CardContent>
+    </SfCard>
+
+
+</section>
+
+@code {
+    private SfPivotView<Processi> pivot;
+
+    private static HttpClient Client { get; set; } = new();
+
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        Client.Timeout = new TimeSpan(0, 5, 0);
+    }
+
+    public void OnExcelExport(Microsoft.AspNetCore.Components.Web.MouseEventArgs args)
+    {
+        this.pivot.ExportToExcelAsync();
+    }
+
+    public void OnPDFExport(Microsoft.AspNetCore.Components.Web.MouseEventArgs args)
+    {
+        this.pivot.ExportToPdfAsync();
+    }
+
+    public async void OnExit(Microsoft.AspNetCore.Components.Web.MouseEventArgs args)
+    {
+        await JSRuntime.InvokeVoidAsync("BlazorSetHREF", $@"/");
+    }
+}

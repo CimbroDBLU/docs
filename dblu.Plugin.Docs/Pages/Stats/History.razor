@@ -20,7 +20,7 @@
         <CardContent EnableSeperator="true">
 
             <SfGrid EnablePersistence="false" ID="ODATA_Historys" TValue="Processi" AllowFiltering="true" AllowGrouping="false" AllowTextWrap="true" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@(new List<Object>() { "Search" })">
-                <SfDataManager Url="/History/ODATA_History" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
+                <SfDataManager HttpClientInstance="@Client" Url="/History/ODATA_History" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
                 <GridEvents TValue="Processi"></GridEvents>
                 <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
@@ -62,7 +62,15 @@
                     <GridColumn Field=@nameof(Processi.Fine) HeaderText="Fine" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
                     <GridColumn Field=@nameof(Processi.Stato) HeaderText="Stato" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
                     <GridColumn Field=@nameof(Processi.UtenteAvvio) HeaderText="Utente di avvio" AllowFiltering="true" AllowEditing="false" AllowSorting="true"> </GridColumn>
-                    <GridColumn Field=@nameof(Processi.Stars) HeaderText="Stars" AllowFiltering="true" AllowEditing="false" AllowSorting="true"></GridColumn>
+                    <GridColumn Field=@nameof(Processi.Stars) HeaderText="Stelle" AllowFiltering="true" AllowEditing="false" AllowSorting="true">
+                        <Template>
+                            @{
+                                var c = (context as Processi);
+                                var Def = $"{c.Stars}";
+                                @Def  <i class="far fa-star"></i>
+                            }
+                        </Template>
+                    </GridColumn>
                 </GridColumns>
             </SfGrid>
 
@@ -72,4 +80,17 @@
 
 </section>
 
-@code {}
+@code {
+
+    private static HttpClient Client { get; set; } = new();
+
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        Client.Timeout = new TimeSpan(0, 5, 0);
+    }
+
+}
