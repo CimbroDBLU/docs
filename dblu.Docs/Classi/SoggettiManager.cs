@@ -126,7 +126,7 @@ namespace dblu.Docs.Classi
                 }
             }catch(Exception ex)
             {
-                _logger.LogError($"Salva Soggetto: {ex.Message}");
+                _logger.LogError($"SoggettiManager.Associa: Unexpected Error {ex.Message}");
                 return false;
             }
         }

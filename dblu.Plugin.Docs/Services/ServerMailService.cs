@@ -39,14 +39,14 @@ namespace dblu.Portale.Plugin.Docs.Services
             {
                 using (IDbConnection cn = new SqlConnection(_connDocs))
                 {
-                    string sql = "SELECT RoleId FROM ServersInRole where idServer='" + ServerName + "'";
+                    string sql = "SELECT RoleId FROM ServersInRole where idServer Like '" + ServerName + "'";
 
-                    xx = cn.Query<string>(sql);  //, new { idutente = idUtente });
+                    xx = cn.Query<string>(sql).Distinct();  //, new { idutente = idUtente });
                     cn.Close();
                 }
 
                 if (xx.Count() != 0)
-                    return _usr.GetRoles().Where(d => xx.Contains(d.Code));
+                    return _usr.GetRoles().Where(d => xx.Contains(d.RoleId));
 
             }
             return tmpRuoli;
@@ -118,7 +118,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
 
             if (xx.Count() != 0)
-                return _usr.GetRoles().Where(d => xx.Contains(d.Code)).ToList();
+                return _usr.GetRoles().Where(d => xx.Contains(d.RoleId)).ToList();
 
             return new List<Role>();
         }

@@ -203,11 +203,11 @@
 
 @code
 {
-    /// <summary>
-    /// Name of the Server
-    /// </summary>
-    [Parameter]
-    public string Name { get; set; }
+        /// <summary>
+        /// Name of the Server
+        /// </summary>
+        [Parameter]
+        public string Name { get; set; }
 
     /// <summary>
     /// Title of the Card and Page
@@ -412,9 +412,13 @@
                     _ServiceMailServer.RemoveFromRole(R.RoleId, nEditServer.Nome);
 
             ///Aggiungo nuovi ruoli
-            foreach (Role R in AssignedRoles.ToList())
-                if (AlreadyAssignedRoles.FirstOrDefault(y => y.RoleId == R.RoleId) == null)
-                    _ServiceMailServer.AddRoleToServer(R.RoleId, nEditServer.Nome);
+            foreach (Role R1 in AssignedRoles.ToList())
+            {
+                if (AlreadyAssignedRoles.FirstOrDefault(y => y.RoleId == R1.RoleId) == null)
+                {
+                    _ServiceMailServer.AddRoleToServer(R1.RoleId, nEditServer.Nome);
+                }
+            }
 
             _Logger.LogInformation($"EditUser.OnClickSave: Update Server {nEditServer.Nome} in {SW.ElapsedMilliseconds} ms");
         }

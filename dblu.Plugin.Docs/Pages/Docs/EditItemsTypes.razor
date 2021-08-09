@@ -204,6 +204,12 @@
     public string[] CandidateRoles { get; set; }
 
     /// <summary>
+    /// List that contains the roles that the server has at beginning of edit
+    /// (for understanding what i have to add and remove)
+    /// </summary>
+    private List<Role> AlreadyAssignedRoles { get; set; }
+
+    /// <summary>
     /// On Init component
     /// </summary>
     protected override void OnInitialized()
@@ -229,7 +235,9 @@
         nAttributes = nEditItemsTypes._listaAttributi.ToList();
         CandidateUsers = nEditItemsTypes.UtentiCandidati?.Split(',') ?? new string[] { };
         CandidateRoles = nEditItemsTypes.UtentiCandidati?.Split(',') ?? new string[] { };
-        nAssignedRoles = new ObservableCollection<Role>(_ServerMail.GetAllRolesForElemento(nEditItemsTypes.Codice));
+
+        AlreadyAssignedRoles = _ServerMail.GetAllRolesForElemento(nEditItemsTypes.Codice).ToList();
+        nAssignedRoles = new ObservableCollection<Role>(AlreadyAssignedRoles);
 
         IsSpinnerVisible = false;
     }
@@ -251,6 +259,18 @@
             nEditItemsTypes._listaCancellazioni = nCleanList;
             ItemsMan.SalvaTipoElemento(nEditItemsTypes);
 
+
+            ///Rimuovo ruoli non piu presenti
+            foreach (Role R in AlreadyAssignedRoles)
+                if (nAssignedRoles.FirstOrDefault(y => y.RoleId == R.RoleId) == null)
+                    _ServerMail.RemoveElementoFromRole(R.RoleId, nEditItemsTypes.Codice);
+
+            ///Aggiungo nuovi ruoli
+            foreach (Role R in nAssignedRoles.ToList())
+                if (AlreadyAssignedRoles.FirstOrDefault(y => y.RoleId == R.RoleId) == null)
+                    _ServerMail.AddRoleToElemento(R.RoleId, nEditItemsTypes.Codice);
+
+
             _Logger.LogInformation($"EditItemsTypes.OnClickSave: Added ItemTypes {nEditItemsTypes.Codice} in {SW.ElapsedMilliseconds} ms");
         }
         else
@@ -263,6 +283,16 @@
             nEditItemsTypes.RuoliCandidati = string.Join(',', CandidateRoles);
             nEditItemsTypes._listaCancellazioni = nCleanList;
             ItemsMan.SalvaTipoElemento(nEditItemsTypes);
+
+            ///Rimuovo ruoli non piu presenti
+            foreach (Role R in AlreadyAssignedRoles)
+                if (nAssignedRoles.FirstOrDefault(y => y.RoleId == R.RoleId) == null)
+                    _ServerMail.RemoveElementoFromRole(R.RoleId, nEditItemsTypes.Codice);
+
+            ///Aggiungo nuovi ruoli
+            foreach (Role R in nAssignedRoles.ToList())
+                if (AlreadyAssignedRoles.FirstOrDefault(y => y.RoleId == R.RoleId) == null)
+                    _ServerMail.AddRoleToElemento(R.RoleId, nEditItemsTypes.Codice);
 
             _Logger.LogInformation($"EditItemsTypes.OnClickSave: Update ItemTypes {nEditItemsTypes.Codice} in {SW.ElapsedMilliseconds} ms");
         }

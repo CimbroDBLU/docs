@@ -301,7 +301,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     {
                         _logger.LogError($"DocumentTransformationService.PDF_From_EMail: Unexptected error {ex.Message}");
                     }                    
-                    ret.Attachments.Add(new OriginalAttachments() {Id=fileName,Name=fileName,IsValid=false,IsIncluded=incluso, Warning=avvisi });
+                    ret.Attachments.Add(new OriginalAttachments() {Id=fileName,Name=fileName,IsValid=false,IsIncluded=incluso, Warning=avvisi});
                 }
 
                 if (ListaPdf.Count() == 0)
