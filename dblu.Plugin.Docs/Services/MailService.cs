@@ -1903,6 +1903,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                 Elementi e = _elmMan.Get(IdElemento, 0);
                 if (tipoAll != null && f != null & e != null)
                 {
+                    Allegato.SetAttributo("CodiceSoggetto", e.GetAttributo("CodiceSoggetto"));
+
                     //if (Allegato.IdFascicolo == null)
                     Allegato.IdFascicolo = f.Id;
                     //if (Allegato.IdElemento == null)
@@ -1930,15 +1932,17 @@ namespace dblu.Portale.Plugin.Docs.Services
                     var estrai = all != null;
                     estrai = estrai && await sfdpf.MarcaAllegatoSF(all, e.elencoAttributi);
 
-                    Info.StatoPrec = (int)e.Stato;  
-                    Info.Stato = (int)e.Stato;
-                    if (variabili == null)
-                        variabili = new Dictionary<string, VariableValue>();
-                    if (!variabili.ContainsKey("IdAllegato"))
-                        variabili.Add("IdAllegato", VariableValue.FromObject(IdAllegato));
-                    
-                    estrai = estrai && AvviaProcesso(Info, e , variabili);
+                    if (Info != null)
+                    {
+                        Info.StatoPrec = (int)e.Stato;
+                        Info.Stato = (int)e.Stato;
+                        if (variabili == null)
+                            variabili = new Dictionary<string, VariableValue>();
+                        if (!variabili.ContainsKey("IdAllegato"))
+                            variabili.Add("IdAllegato", VariableValue.FromObject(IdAllegato));
 
+                        estrai = estrai && AvviaProcesso(Info, e, variabili);
+                    }
                     return estrai;
                 }
             }

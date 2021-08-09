@@ -22,12 +22,14 @@ namespace dblu.Portale.Plugin.Docs.Services
         public IConfiguration _config { get; }
 
         public string UrlServizio() {
-             return "/Docs/CercaSoggetti";
+            //return "/Docs/CercaSoggetti";
+            return "dblu.Portale.Plugin.Docs.Pages.Custom.CustomCustomerPopUp";
         }
 
         public string UrlServizioRicercaElementi()
         {
-            return "/Fascicolo/CercaElementiSoggetto";
+            //return "/Fascicolo/CercaElementiSoggetto";
+           return "dblu.Portale.Plugin.Docs.Pages.Custom.CustomDossierItemsTablePopUp";
         }
 
         private readonly SoggettiManager _sggMan;
