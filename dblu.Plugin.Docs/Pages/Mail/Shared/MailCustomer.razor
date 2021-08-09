@@ -1,0 +1,27 @@
+﻿<div class="row">
+    <div class="col">
+       <MailCustomerSearch nCostumerCode="@nCostumerCode" OnLinkedToItem="OnLink" nAttachID="@nAttachID"></MailCustomerSearch>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col">
+       <MailOpenItemsTable nCustomerCode="@nCostumerCode"></MailOpenItemsTable> 
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public string nCostumerCode { get; set; }
+
+    [Parameter]
+    public string nAttachID { get; set; }
+
+    [Parameter]
+    public EventCallback<(string,string)> OnLinkedToItem { get; set; }
+
+    public async void OnLink((string Dossier,string Item)data)
+    {
+       await OnLinkedToItem.InvokeAsync(data);
+    }
+}

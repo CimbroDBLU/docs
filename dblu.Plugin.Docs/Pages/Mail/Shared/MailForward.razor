@@ -1,0 +1,62 @@
+﻿@using dblu.Docs.Models
+@using Microsoft.AspNetCore.Http;
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject IHttpContextAccessor _HttpContextAccessor
+
+<div class="row form-group">
+    <div class="col-2">
+        <label>A:</label>
+    </div>
+    <div class="col-10">
+        <MultiSelectUserMails @bind-nEmails="@To"></MultiSelectUserMails>
+    </div>
+</div>
+<div class="row form-group">
+    <div class="col-2">
+        <label>Chiudi email</label>
+    </div>
+    <div class="col-4">
+        <SfSwitch @bind-Checked="@CloseEmail"></SfSwitch>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <SfButton OnClick="OnSend" CssClass="e-primary">Invia</SfButton>
+        <SfButton OnClick="OnGoBack">Indietro</SfButton>
+    </div>
+</div>
+@code
+{
+    [Parameter]
+    public AllegatoEmail nAttach { get; set; }
+
+    [Parameter]
+    public EmailServer nSourceServer { get; set; }
+
+    public string[] To { get; set; }
+
+    public bool CloseEmail { get; set; } = false;
+
+    [Parameter]
+    public EventCallback OnOperationDone { get; set; }
+
+    [Parameter]
+    public EventCallback OnAbort { get; set; }
+
+    protected override void OnInitialized()
+    {
+        To = new string[] { };
+    }
+
+    private async void OnSend()
+    {
+        var User = _HttpContextAccessor.HttpContext.User;
+        await _MailService.InoltraEmail(nAttach.Id.ToString(), string.Join(";", To), CloseEmail,User);
+        await OnOperationDone.InvokeAsync();
+    }
+
+    private void OnGoBack()
+    {
+        OnAbort.InvokeAsync();
+    }
+}

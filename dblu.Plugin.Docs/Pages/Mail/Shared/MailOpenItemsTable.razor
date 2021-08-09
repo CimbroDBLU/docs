@@ -1,0 +1,35 @@
+﻿@using dblu.Docs.Interfacce
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+
+@if (nItems.Count != 0)
+{
+    <SfGrid SelectedRowIndex="0" DataSource="@nItems" AllowTextWrap="false" AllowPaging="true">
+        <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
+        <GridPageSettings PageSize="3"></GridPageSettings>
+        <GridColumns>
+            <GridColumn Field=@nameof(ISoggettoElementiAperti.Numero) IsPrimaryKey="true" HeaderText="Numero"></GridColumn>
+            <GridColumn Field=@nameof(ISoggettoElementiAperti.Riferimento) HeaderText="Riferimento"></GridColumn>
+            <GridColumn Field=@nameof(ISoggettoElementiAperti.DataConsegna) Format="d" HeaderText="Consegna"></GridColumn>
+            <GridColumn Field=@nameof(ISoggettoElementiAperti.Stato) HeaderText="Stato"></GridColumn>
+        </GridColumns>
+    </SfGrid>
+}
+
+@code {
+    [Parameter]
+    public string nCustomerCode { get; set; }
+
+    public ObservableCollection<ISoggettoElementiAperti> nItems { get; set; } = new();
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnParametersSet()
+    {
+        if (string.IsNullOrEmpty(nCustomerCode)) {nItems=new(); return;}
+
+        nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)).OrderByDescending(x => x.DataConsegna));
+
+    }
+
+}

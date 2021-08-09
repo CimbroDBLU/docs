@@ -1,0 +1,40 @@
+﻿@using dblu.Portale.Plugin.Docs.ViewModels
+<div class="row">
+    <div class="col">
+        <MailItemsSearch OnAttachCompleted="OnAttachCompleted" nDisplayComplete="@DisplayComplete" nDossierID="@nDossierID" nAttachID="@nAttachID" nCostumerCode="@nCostumerCode"></MailItemsSearch>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col">
+        <MailItemsTable @ref="@Table" nAttachID="@nAttachID" nDossierID="@nDossierID" OnSelectedItem="OnSelectItem"></MailItemsTable>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public string nAttachID { get; set; }
+
+    [Parameter]
+    public string nCostumerCode { get; set; }
+
+    [Parameter]
+    public string nDossierID { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnAttachCompleted { get; set; }
+
+    public bool DisplayComplete { get; set; } = false;
+
+    private MailItemsTable Table { get; set; }
+
+    public void Refresh()
+    {
+        Table.Refresh();
+    }
+
+    public async void OnSelectItem(EmailElementi e)
+    {
+        DisplayComplete = (int)(e.Stato) > 1;
+    }
+}

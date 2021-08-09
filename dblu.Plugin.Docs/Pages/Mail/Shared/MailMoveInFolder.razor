@@ -1,0 +1,44 @@
+﻿@using dblu.Docs.Models
+@using Microsoft.AspNetCore.Http;
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject IHttpContextAccessor _HttpContextAccessor
+
+<div class="row form-group">
+    <div class="col-12">
+        <ServerCombo @bind-nServer="@Destination" nExcludedServers="@(new List<string>() { nSourceServer.Nome })" nLabel="Sposta in"></ServerCombo>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <SfButton OnClick="OnMove" CssClass="e-primary">Sposta</SfButton>
+        <SfButton OnClick="OnGoBack">Indietro</SfButton>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnAbort { get; set; }
+
+    [Parameter]
+    public AllegatoEmail nAttach { get; set; }
+
+    [Parameter]
+    public EmailServer nSourceServer { get; set; }
+
+    [Parameter]
+    public EventCallback OnOperationDone { get; set; }
+
+    private EmailServer Destination { get; set; }
+
+    private async void OnMove()
+    {
+        var User = _HttpContextAccessor.HttpContext.User;
+        _MailService.SpostaEmail(nAttach.Id.ToString(), Destination?.Nome??"", User);
+        await OnOperationDone.InvokeAsync();
+    }
+
+    private void OnGoBack()
+    {
+        OnAbort.InvokeAsync();
+    }
+}

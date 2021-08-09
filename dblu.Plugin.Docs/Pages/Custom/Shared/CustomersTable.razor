@@ -1,0 +1,44 @@
+﻿@using dblu.Docs.Interfacce
+@inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
+
+
+<SfGrid SelectedRowIndex="0" DataSource="@nCostumers" AllowSorting="true" AllowFiltering="true" AllowTextWrap="true" AllowPaging="true" Toolbar="@(new List<object>(){"Search"})">
+    <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
+    <GridPageSettings PageSize="10"></GridPageSettings>
+    <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu">
+        <GridEvents TValue="ISoggetti" RowSelected="OnRecordSelect"></GridEvents>
+    </GridFilterSettings>
+    <GridColumns>
+        <GridColumn AllowSorting="true" AllowFiltering="true" Width="120" HeaderText="Codice" Field=@nameof(ISoggetti.Codice) IsPrimaryKey="true" Visible="true"></GridColumn>
+        <GridColumn AllowSorting="true" AllowFiltering="true" Width="400" HeaderText="Cliente" Field=@nameof(ISoggetti.Nome)></GridColumn>
+        <GridColumn AllowSorting="true" AllowFiltering="true" HeaderText="Indirizzo" Field=@nameof(ISoggetti.Indirizzo)></GridColumn>
+        <GridColumn AllowSorting="true" AllowFiltering="true" HeaderText="Localita" Field=@nameof(ISoggetti.Localita)></GridColumn>
+        <GridColumn AllowSorting="true" AllowFiltering="true" Width="120" HeaderText="Area" Field=@nameof(ISoggetti.Provincia)></GridColumn>
+    </GridColumns>
+</SfGrid>
+
+@code {
+
+
+    private ObservableCollection<ISoggetti> nCostumers { get; set; }
+
+    [Parameter]
+    public EventCallback<ISoggetti> OnSelectCostumer { get; set; }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        nCostumers = new ObservableCollection<ISoggetti>(_SubjectService.GetSoggetti());
+    }
+
+    /// <summary>
+    /// On record select forward the selection
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnRecordSelect(RowSelectEventArgs<ISoggetti> args)
+    {
+        OnSelectCostumer.InvokeAsync(args.Data);
+    }
+}

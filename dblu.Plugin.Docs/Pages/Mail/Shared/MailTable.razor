@@ -1,0 +1,182 @@
+﻿@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Services
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+@using Microsoft.AspNetCore.Http;
+@using System.Security.Claims;
+
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject IHttpContextAccessor _HttpContextAccessor
+
+    <style>
+        .e-answer:before {
+            content: "\ebed"
+        }
+        .e-move:before {
+            content: "\e60b"
+        }
+        .e-forward:before {
+            content: "\ebfa"
+        }
+        .e-show:before {
+            content: "\eb64"
+        }
+        .e-logs:before {
+            content: "\eb67"
+        }
+        
+
+
+    </style>
+
+
+
+    <SfGrid @ref="@Grid" ID="MailTable" EnablePersistence="true" AllowGrouping="false" AllowTextWrap="true" DataSource="@nEmails" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+        <GridSelectionSettings Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+        <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+        <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
+        <GridPageSettings PageSize="10"></GridPageSettings>
+        <GridEvents TValue="AllegatoEmail" OnToolbarClick="OnToolbarClick" RowSelected="OnRecordSelect"></GridEvents>
+
+        <GridColumns>
+            <GridColumn IsPrimaryKey="true" Visible="false" Field=@nameof(AllegatoEmail.Id)></GridColumn>
+            <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(AllegatoEmail.Mittente) HeaderText="Email">
+                <Template>
+                    @{
+                        var Attach = (context as AllegatoEmail);
+                        bool IsClient = !string.IsNullOrEmpty(Attach.Chiave3);
+                        <div>
+                            @if (IsClient)
+                            {
+                                <span>Cliente: @Attach.Chiave3</span>
+                                <br />
+                            }
+                            <b>@Attach.Chiave4</b><br />
+                            @Attach.Mittente
+                        </div>
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(AllegatoEmail.Oggetto) HeaderText="Oggetto"></GridColumn>
+            <GridColumn AllowEditing="false" Width="120px" AllowSorting="true" Field=@nameof(AllegatoEmail.Data) HeaderText="Data" Format="d" Type="ColumnType.Date"></GridColumn>
+            <GridColumn AllowEditing="false" Width="40px" AllowSorting="true" Field=@nameof(AllegatoEmail.LastOp) HeaderText="LastOp">
+                <Template>
+                    <LastOperation nOperation="@((context as AllegatoEmail).LastOp)"></LastOperation>
+                </Template>
+            </GridColumn>
+        </GridColumns>
+    </SfGrid>
+
+
+@code {
+
+    private SfGrid<AllegatoEmail> Grid { get; set; }
+
+
+
+    [Parameter]
+    public EmailServer nMailBox { get; set; }
+
+    public EmailServer nMailBoxOld { get; set; }
+
+    /// <summary>
+    /// Fires when an attach is selected
+    /// </summary>
+    [Parameter]
+    public EventCallback<AllegatoEmail> OnSelectAttachment { get; set; }
+
+
+    [Parameter]
+    public EventCallback<AllegatoEmail> OnReplyAttachment { get; set; }
+
+    [Parameter]
+    public EventCallback<AllegatoEmail> OnForwardAttachment { get; set; }
+
+    [Parameter]
+    public EventCallback<AllegatoEmail> OnMoveAttachment { get; set; }
+
+    [Parameter]
+    public EventCallback<AllegatoEmail> OnShowAttachment { get; set; }
+
+    [Parameter]
+    public EventCallback<AllegatoEmail> OnShowLogsAttachment { get; set; }
+
+    [Parameter]
+    public EventCallback<AllegatoEmail> OnDeleteAttachment { get; set; }
+
+    private ObservableCollection<AllegatoEmail> nEmails { get; set; } = new();
+
+    public double SelectedRow { get => Grid.SelectedRowIndex; set { Grid.SelectRowAsync(value); } }
+
+    private List<Object> Tool
+    {
+        get
+        {
+            return new List<Object>()
+                {
+                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-answer" },
+                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
+                new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-move" } ,
+                new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
+                new ItemModel() { Id = "ShowHTML",Text = "", TooltipText = "Mostra", PrefixIcon = "e-show" },
+                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
+                new string ("Search")
+                };
+        }
+    }
+
+
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnParametersSet()
+    {
+        if (nMailBox is not null )
+        {
+            if (nMailBoxOld != nMailBox)
+            {
+                nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderByDescending(x => x.DataC));
+                nMailBoxOld = nMailBox;
+            }
+        }
+        else nEmails = new();
+    }
+
+
+    /// <summary>
+    /// On record select forward the selection
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnRecordSelect(RowSelectEventArgs<AllegatoEmail> args)
+    {
+        OnSelectAttachment.InvokeAsync(args.Data);
+    }
+
+    public async void OnToolbarClick(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        AllegatoEmail Attach = (await Grid.GetSelectedRecords()).FirstOrDefault();
+
+        if (Attach == null) return;
+
+        if (args.Item.Id == "Answer")
+            await  OnReplyAttachment.InvokeAsync(Attach);
+        else if (args.Item.Id == "Forward")
+            await  OnForwardAttachment.InvokeAsync(Attach);
+        else if (args.Item.Id == "Move")
+            await OnMoveAttachment.InvokeAsync(Attach);
+        else if (args.Item.Id == "ShowHTML")
+            await OnShowAttachment.InvokeAsync(Attach);
+        else if (args.Item.Id == "Log")
+            await OnShowLogsAttachment.InvokeAsync(Attach);
+        else if (args.Item.Id == "Delete")
+            await OnDeleteAttachment.InvokeAsync(Attach);
+    }
+
+    public void Refresh()
+    {
+        nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderByDescending(x => x.DataC));
+        nMailBoxOld = nMailBox;
+    }
+}

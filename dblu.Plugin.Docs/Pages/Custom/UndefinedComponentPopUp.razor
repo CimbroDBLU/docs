@@ -1,0 +1,40 @@
+﻿<h4> Componente non trovato </h4>
+<img  style="margin: auto;display: block;" src="./img/unknown.png">
+
+<SfDialog  Width="50%" ShowCloseIcon="true" IsModal="true" @bind-Visible="@IsShowDialog">
+    <DialogTemplates>
+        <Header>
+            <i style="font-weight:900" class="far fa-question-circle"></i> Componente non trovato
+        </Header>
+        <Content>
+            <h4> Componente [@nComponentName] non trovato!</h4>
+            <img style="margin: auto;display: block;" src="./img/unknown.png">
+        </Content>
+    </DialogTemplates>
+    <DialogButtons>
+        <DialogButton Content="Ok" IsPrimary="true" OnClick="()=> { IsShowDialog = false; }" />
+    </DialogButtons>
+</SfDialog>
+
+
+@code {
+    public bool _IsShowDialog = false;
+
+    [Parameter]
+    public string nComponentName { get; set; }
+
+    [Parameter]
+    public bool IsShowDialog
+    {
+        get => _IsShowDialog;
+        set
+        {
+            if (_IsShowDialog == value) return;
+            _IsShowDialog = value;
+            IsShowDialogChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter]
+    public EventCallback<bool> IsShowDialogChanged { get; set; }
+}

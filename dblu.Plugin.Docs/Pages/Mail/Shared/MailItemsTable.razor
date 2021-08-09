@@ -1,0 +1,168 @@
+﻿@using dblu.Portale.Plugin.Docs.ViewModels
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Class
+@using dblu.Docs.Models
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject ProtectedSessionStorage _SessionStore
+@inject NavigationManager  _NavigationManager
+
+<style>
+    .e-duplicate:before {
+        content: '\e70a';
+    }
+
+    .e-open:before {
+        content: '\ebdd';
+    }
+</style>
+
+
+<SfGrid @ref="@Grid" SelectedRowIndex="0" DataSource="@nItems" AllowTextWrap="false" AllowPaging="true" Toolbar="@Tool">
+    <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
+    <GridEvents TValue="EmailElementi" OnToolbarClick="OnToolbarClick" DataBound="DataBoundMe" RowSelected="OnRecordSelect"></GridEvents>
+    <GridPageSettings PageSize="4"></GridPageSettings>
+    <GridColumns>
+        <GridColumn Field=@nameof(EmailElementi.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
+        <GridColumn Width="40px" Field=@nameof(EmailElementi.IsUltimo) HeaderText="Ult"></GridColumn>
+        <GridColumn Field=@nameof(EmailElementi.DscTipoElemento) HeaderText="Tipo"></GridColumn>
+        <GridColumn Field=@nameof(EmailElementi.DscElemento) HeaderText="Descrizione"></GridColumn>
+        <GridColumn Field=@nameof(EmailElementi.Campo1) HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible"></GridColumn>
+        <GridColumn Field=@nameof(EmailElementi.Campo2) HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible"></GridColumn>
+        <GridColumn Field=@nameof(EmailElementi.Campo3) HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible"></GridColumn>
+        <GridColumn Field=@nameof(EmailElementi.Campo4) HeaderText="@Cols[3].Des" Visible="@Cols[3].Visible"></GridColumn>
+        <GridColumn Field=@nameof(EmailElementi.Campo5) HeaderText="@Cols[4].Des" Visible="@Cols[4].Visible"></GridColumn>
+        <GridColumn Field=@nameof(EmailElementi.Stato) HeaderText="Stato"></GridColumn>
+
+        <GridColumn Width="40px" AllowSorting="true" Field=@nameof(EmailElementi.LastOp) HeaderText="Last">
+            <Template>
+                <LastOperation nOperation="@((context as EmailElementi).LastOp)"></LastOperation>
+            </Template>
+        </GridColumn>
+    </GridColumns>
+</SfGrid>
+
+<QuestionDialog nShowDialog="ShowAddConfirm" nText="Aggiungo all'elemento selezionato?" nTitle="Conferma"  OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="AddToItem"></QuestionDialog>
+
+
+@code {
+
+    private bool ShowAddConfirm { get; set; } = false;
+    public void DataBoundMe()
+    {
+        if (Grid is not null)
+            Grid.SelectRowAsync(0);
+    }
+
+    [Parameter]
+    public string nAttachID { get; set; }
+
+    [Parameter]
+    public string nDossierID { get; set; }
+
+    public EmailElementi nItem { get; set; }
+
+    public string LastAttachId { get; set; }
+
+    public string LastDossierId { get; set; }
+
+    [Parameter]
+    public string nCostumerCode { get; set; }
+
+    [Parameter]
+    public EventCallback<EmailElementi> OnSelectedItem { get; set; }
+
+    private ObservableCollection<EmailElementi> nItems { get; set; } = new();
+
+    private SfGrid<EmailElementi> Grid { get; set; }
+
+    /// <summary>
+    /// List of custom columns of the items
+    /// </summary>
+    private List<Colonna> Cols { get; set; } = new List<Colonna>();
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnParametersSet()
+    {
+        if (string.IsNullOrEmpty(nAttachID) || string.IsNullOrEmpty(nDossierID)) return;
+
+        if (LastAttachId == nAttachID && LastDossierId == nDossierID) return;
+
+        nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
+        LastDossierId = nDossierID;
+        LastAttachId = nAttachID;
+
+    }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        Cols = _ele.GetColonne("vELEMENTO");
+    }
+
+    /// <summary>
+    /// List of the buttons on toolbar of the grid
+    /// </summary>
+    private List<Object> Tool = new List<Object>()
+{
+            new ItemModel(){ Id="Open", TooltipText="Apri", PrefixIcon="e-open" } ,
+            new ItemModel(){ Id="Add", TooltipText="Aggiungi", PrefixIcon="e-add" } ,
+            new ItemModel(){ Id="Duplicate", TooltipText="Duplica", PrefixIcon="e-duplicate" } ,
+            new ItemModel(){ Id="Delete", TooltipText="Elimina", PrefixIcon="e-delete" },"Search"
+        };
+
+    public void Refresh()
+    {
+        Grid.Refresh();
+    }
+
+    /// <summary>
+    /// On record select forward the selection
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnRecordSelect(RowSelectEventArgs<EmailElementi> args)
+    {
+        await OnSelectedItem.InvokeAsync(args.Data);
+    }
+
+    public async void OnToolbarClick(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        EmailElementi Elem = (await Grid.GetSelectedRecords()).FirstOrDefault();
+
+        if (Elem == null) return;
+        nItem = Elem;
+
+        if (args.Item.Id == "Open")
+        {
+            nItem = Elem;
+            await _SessionStore.SetAsync("Referrer", $"/Mail/Inbox");
+            _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
+        }
+
+        if (args.Item.Id == "Add")
+        {
+            ShowAddConfirm = true;
+        }
+    }
+
+    public async void AddToItem()
+    {
+        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var User = authState.User;
+        BPMDocsProcessInfo Info = _MailService.GetProcessInfo(TipiOggetto.ELEMENTO, AzioneOggetto.MODIFICA);
+        bool fl = await _MailService.AllegaAElementoFascicolo(nAttachID, nDossierID, nItem.IdElemento.ToString(), null, true, nItem.DscElemento, User, Info, null);
+        ShowAddConfirm = false;
+        Refresh();
+    }
+
+    public async void CloseDialog()
+    {
+        ShowAddConfirm = false;
+    }
+}

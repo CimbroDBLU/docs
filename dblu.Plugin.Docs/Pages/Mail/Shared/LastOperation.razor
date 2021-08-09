@@ -1,0 +1,51 @@
+﻿@using dblu.Docs.Models
+
+@if (nOperation == TipoOperazione.Elaborato)
+{
+    <i title="Elaborato" class="fas fa-check"></i>
+}
+@if (nOperation == TipoOperazione.Cancellato)
+{
+    <i title="Cancellato" class="far fa-trash-alt"></i>
+}
+@if (nOperation == TipoOperazione.Annullato)
+{
+    <i title="Annullato" class="fas fa-times"></i>
+}
+@if (nOperation == TipoOperazione.Chiuso)
+{
+    <i title="Chiuso" class="fas fa-lock"></i>
+}
+@if (nOperation == TipoOperazione.Creato)
+{
+    <i title="Creato" class="far fa-file"></i>
+}
+@if (nOperation == TipoOperazione.Inoltrato)
+{
+    <i title="Inoltrato" class="fas fa-share"></i>
+}
+@if (nOperation == TipoOperazione.Modificato)
+{
+    <i title="Modificato" class="fas fa-edit"></i>
+}
+@if (nOperation == TipoOperazione.Riaperto)
+{
+    <i title="Riaperto" class="fas fa-book-reader"></i>
+}
+@if (nOperation == TipoOperazione.Risposto)
+{
+    <i title="Risposto" class="fas fa-reply"></i>
+}
+@if (nOperation == TipoOperazione.Spostato)
+{
+    <i title="Spostato" class="far fa-folder"></i>
+}
+@if (nOperation == TipoOperazione.Stampato)
+{
+    <i title="Stampato" class="fas fa-print"></i>
+}
+
+@code {
+    [Parameter]
+    public TipoOperazione nOperation { get; set; }
+}

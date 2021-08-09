@@ -1,0 +1,44 @@
+﻿@using dblu.Docs.Models
+@using Microsoft.AspNetCore.Http;
+@using dblu.Portale.Plugin.Docs.Classes
+@using dblu.Portale.Plugin.Docs.Services
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachmentsService
+@inject dblu.Portale.Plugin.Docs.Services.DocumentTransformationService _DocumentService
+@inject IHttpContextAccessor _HttpContextAccessor
+@inject ILogger<MailHTMLView> _Logger
+
+<div class="row form-group">
+    <div class="col-12">
+        <iframe style="width:100%; height:@(nHeight.ToString())px" srcdoc="@Source"></iframe>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <SfButton CssClass="e-primary" OnClick="OnGoBack">Indietro</SfButton>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public AllegatoEmail nAttach { get; set; }
+
+    [Parameter]
+    public int nHeight { get; set; } = 500;
+
+    public string Source { get; set; } = "";
+
+    [Parameter]
+    public EventCallback OnAbort { get; set; }
+
+    protected override async void OnInitialized()
+    {
+        DocumentManager DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
+        Source = (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(),false)).ToHtml();
+    }
+
+    private void OnGoBack()
+    {
+        OnAbort.InvokeAsync();
+    }
+}

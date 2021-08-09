@@ -1,0 +1,103 @@
+﻿@using dblu.Docs.Models
+@using Microsoft.AspNetCore.Http;
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject IHttpContextAccessor _HttpContextAccessor
+
+
+<div class="row form-group">
+    <div class="col-2">
+        <label>A:</label>
+    </div>
+    <div class="col-10">
+        <SfTextBox @bind-Value="@To" Placeholder="Destinatario"></SfTextBox>
+    </div>
+</div>
+<div class="row form-group">
+    <div class="col-2">
+        <label>CC:</label>
+    </div>
+    <div class="col-10">
+        <MultiSelectUserMails @bind-nEmails="@CC"></MultiSelectUserMails>
+    </div>
+</div>
+<div class="row form-group">
+    <div class="col-2">
+        <label>Oggetto:</label>
+    </div>
+    <div class="col-10">
+        <SfTextBox @bind-Value="Subject" Placeholder="Oggetto"></SfTextBox>
+    </div>
+</div>
+<div class="row form-group">
+    <div class="col-2">
+        <label>Testo:</label>
+    </div>
+    <div class="col-10">
+        <SfTextBox Multiline="true" @bind-Value="@Body" Placeholder="Testo"></SfTextBox>
+    </div>
+</div>
+<div class="row form-group">
+    <div class="col-2">
+        <label>Allega Originale</label>
+    </div>
+    <div class="col-4">
+        <SfSwitch @bind-Checked="@IncludeSource"></SfSwitch>
+    </div>
+    <div class="col-2">
+        <label>Chiudi email</label>
+    </div>
+    <div class="col-3">
+        <SfSwitch @bind-Checked="@CloseEmail"></SfSwitch>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <SfButton OnClick="OnSend" CssClass="e-primary">Invia</SfButton>
+        <SfButton OnClick="OnGoBack">Indietro</SfButton>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public AllegatoEmail nAttach { get; set; }
+
+    [Parameter]
+    public EmailServer nSourceServer { get; set; }
+
+    [Parameter]
+    public EventCallback OnOperationDone { get; set; }
+
+    [Parameter]
+    public EventCallback OnAbort { get; set; }
+
+    public string To { get; set; }
+    public string[] CC { get; set; }
+    public string Subject { get; set; }
+
+    public string Body { get; set; }
+
+    public bool IncludeSource { get; set; } = true;
+
+    public bool CloseEmail { get; set; } = false;
+
+
+
+    protected override void OnInitialized()
+    {
+        CC = new string[] { };
+        To = nAttach.Mittente;
+        Subject = "R:" + nAttach.Oggetto;
+
+    }
+    private async void OnSend()
+    {
+        var User = _HttpContextAccessor.HttpContext.User;
+        await _MailService.RispondiEmail(nAttach.Id.ToString(), nSourceServer.Nome, To, string.Join(";", CC), Subject, Body, IncludeSource, CloseEmail,User);
+        OnOperationDone.InvokeAsync();
+    }
+
+    private void OnGoBack()
+    {
+        OnAbort.InvokeAsync();
+    }
+}
