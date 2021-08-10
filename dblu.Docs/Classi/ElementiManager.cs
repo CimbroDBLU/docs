@@ -365,6 +365,28 @@ namespace dblu.Docs.Classi
             return Res;
         }
 
+        public List<Allegati> GetAllAllegatiElemento(Guid elemento)
+        {
+
+            //var doc = _context.Allegati.Where(x => x.IdElemento == elemento && x.Tipo == "FILE");
+            List<Allegati> doc = null;
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    doc = cn.Query<Allegati>("Select * from Allegati where IdElemento=@IdElemento ",
+                        new { IdElemento = elemento.ToString() }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetAllAllegatiElemento: {ex.Message}");
+
+            }
+            return doc;
+
+        }
+
         public List<Allegati> GetAllegatiElemento(Guid elemento)
         {
 
@@ -386,6 +408,7 @@ namespace dblu.Docs.Classi
             return doc;
         
         }
+
         public bool Cancella(string Id, short Revisione)
         {
             if (string.IsNullOrEmpty(Id))
