@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="dWorker.Plugin.Docs\**" />
+    <EmbeddedResource Remove="dWorker.Plugin.Docs\**" />
+    <None Remove="dWorker.Plugin.Docs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Syncfusion.Blazor.PdfViewerServer.Windows" Version="19.2.0.48" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\d.worker\dWorkerInterface\dWorkerInterface.csproj" />
+    <ProjectReference Include="..\dblu.Docs\dblu.Docs.csproj" />
+  </ItemGroup>
+
+</Project>
