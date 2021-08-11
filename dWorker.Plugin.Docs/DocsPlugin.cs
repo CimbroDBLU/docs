@@ -62,18 +62,16 @@ namespace dWorker.Plugin.Docs
         /// <summary>
         /// Init the plugin
         /// </summary>
-        /// <param name="logger">Configuration interface</param>
-        /// <param name="conf">Configuration interface</param>
+        /// <param name="worker">Worker that is using this plugin</param>
         /// <returns>
         /// True if plugin has beeninitialized properly
         /// </returns>
-        public bool Init(ILogger logger, IConfiguration conf)
+        public bool Init(IPluginOwner worker)
         {
-            _logger = logger;
-            _conf = conf;
+            _logger = worker.logger;
+            _conf = worker.conf;
             return true;
         }
-
         /// <summary>
         /// Supported operations for this plug-in
         /// </summary>
@@ -118,6 +116,7 @@ namespace dWorker.Plugin.Docs
                 return false;
             }
         }
+
 
     }
 }
