@@ -35,6 +35,12 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// Item
         /// </summary>
         Item,
+        /// <summary>
+        /// A stream in Memory,
+        /// Please not that in this case DocIdentifier must be : name of document(with extension) and the base 64 of the memory
+        /// stream separated by a ;
+        /// </summary>
+        Memory
     };
 
     /// <summary>
@@ -88,6 +94,11 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// List of origina attachments present in document (if document supports them)
         /// </summary>
         public List<OriginalAttachments> SourceAttachments { get; set; } = new();
+
+        /// <summary>
+        /// Indicates if doc is a transofrmation (a PDF generated from an EML or another type of content)
+        /// </summary>
+        public bool IsTransformation { get; set; } = false;
 
         /// <summary>
         /// Constructor
@@ -246,7 +257,12 @@ namespace dblu.Portale.Plugin.Docs.Classes
                             Doc = await OpenDocument(A1, IsTransformationEnable);
                         }
                         break;
-
+                    case e_SourceType.Memory:
+                        string[]tok= DocIdentifier.Split(";");
+                        if (tok.Length == 2)           
+                            return new Document($"{tok[0]}",new MemoryStream(Convert.FromBase64String(tok[1])));
+                        throw new Exception("DocIdentier not recognized");
+                        
                 }
                 Logger.LogInformation($"DocumentManager.Load[{LogMarkup}]: Loaded in {SW.ElapsedMilliseconds} ms");               
                 return Doc;
@@ -266,28 +282,35 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// <returns></returns>
         public async Task<Document> OpenDocument(Allegati A1, bool IsTransformationEnable = true)
         {
-            e_DocType DetectedType = e_DocType.UNDEFINED;
-            if(IsTransformationEnable)
-            switch (A1.Tipo)
+            try
             {
-                case "FILE":
+                e_DocType DetectedType = e_DocType.UNDEFINED;
+                if (IsTransformationEnable)
+                    switch (A1.Tipo)
+                    {
+                        case "FILE":
+                            var stream = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
+                            return new Document(A1?.NomeFile, stream, DetectedType);
+                        case "ZIP":
+                            MemoryStream PayloadZip = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
+                            var zip = DocumentService.PDF_From_ZIP(A1?.NomeFile, new ZipArchive(PayloadZip));
+                            return new Document(A1?.NomeFile, zip.Payload, e_DocType.PDF) { SourceAttachments = zip.Attachments, IsTransformation = true };
+                        default:
+                            MemoryStream Payload = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
+                            var email = DocumentService.PDF_From_EMail(MimeMessage.Load(Payload));
+                            return new Document(A1?.NomeFile, email.Payload, e_DocType.PDF) { SourceAttachments = email.Attachments, IsTransformation = true };
+                    }
+                else
+                {
                     var stream = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
                     return new Document(A1?.NomeFile, stream, DetectedType);
-                case "ZIP":
-                    MemoryStream PayloadZip = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
-                    var zip = DocumentService.PDF_From_ZIP(A1?.NomeFile, new ZipArchive(PayloadZip));
-                    return new Document(A1?.NomeFile, zip.Payload, e_DocType.PDF) { SourceAttachments = zip.Attachments };
-                default:
-                    MemoryStream Payload = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
-                    var email = DocumentService.PDF_From_EMail(MimeMessage.Load(Payload));                    
-                    return new Document(A1?.NomeFile, email.Payload, e_DocType.PDF) { SourceAttachments = email.Attachments };
-            }
-            else
-            {
-                var stream = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
-                return new Document(A1?.NomeFile, stream, DetectedType);
-            }
-            return null;
+                }
+               
+            }catch(Exception ex)
+                {
+                Logger.LogError($"DocumentManager.OpenDocument[{LogMarkup}]: Unecpected error in {ex}");
+                return null; 
+                }
         }
 
         /// <summary>
@@ -316,16 +339,18 @@ namespace dblu.Portale.Plugin.Docs.Classes
                             A.Flatten = true;
 
                     loadedDocument.Save(Optimized);
-
-                    switch (SourceType)
+                    if (!Doc.IsTransformation)
                     {
-                        case e_SourceType.Item:
-                            await AttachmentService._allMan.SalvaFileAsync(AttachId, Optimized);
-                            break;
+                        switch (SourceType)
+                        {
+                            case e_SourceType.Item:
+                                await AttachmentService._allMan.SalvaFileAsync(AttachId, Optimized);
+                                break;
 
-                        case e_SourceType.Attachment:
-                            await AttachmentService._allMan.SalvaFileAsync(DocIdentifier, Optimized);
-                            break;
+                            case e_SourceType.Attachment:
+                                await AttachmentService._allMan.SalvaFileAsync(DocIdentifier, Optimized);
+                                break;
+                        }
                     }
                     Doc.Payload = Optimized;
                     Logger.LogInformation($"DocumentManager.Save[{LogMarkup}]: Saved in {SW.ElapsedMilliseconds} ms");

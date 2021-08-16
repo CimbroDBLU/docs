@@ -22,14 +22,12 @@ namespace dblu.Portale.Plugin.Docs.Services
         public IConfiguration _config { get; }
 
         public string UrlServizio() {
-            //return "/Docs/CercaSoggetti";
-            return "dblu.Portale.Plugin.Docs.Pages.Custom.CustomCustomerPopUp";
+            return string.IsNullOrEmpty(_config["Beta"]) ? "/Docs/CercaSoggetti" : "dblu.Portale.Plugin.Docs.Pages.Custom.CustomCustomerPopUp";
         }
 
         public string UrlServizioRicercaElementi()
         {
-            //return "/Fascicolo/CercaElementiSoggetto";
-           return "dblu.Portale.Plugin.Docs.Pages.Custom.CustomDossierItemsTablePopUp";
+            return string.IsNullOrEmpty(_config["Beta"]) ? "/Fascicolo/CercaElementiSoggetto" : "dblu.Portale.Plugin.Docs.Pages.Custom.CustomDossierItemsTablePopUp";
         }
 
         private readonly SoggettiManager _sggMan;
