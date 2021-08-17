@@ -1,13 +1,14 @@
-﻿<h4> Componente non trovato </h4>
-<img  style="margin: auto;display: block;" src="./img/unknown.png">
+﻿@*
+    Component for showing a dialog that indicates that a page/component cannot be found
+*@
 
-<SfDialog  Width="50%" ShowCloseIcon="true" IsModal="true" @bind-Visible="@IsShowDialog">
+<SfDialog Width="50%" ShowCloseIcon="true" IsModal="true" @bind-Visible="@IsShowDialog">
     <DialogTemplates>
         <Header>
-            <i style="font-weight:900" class="far fa-question-circle"></i> Componente non trovato
+            <i style="font-weight:900" class="far fa-question-circle"></i> Customizzazione non trovata
         </Header>
         <Content>
-            <h4> Componente [@nComponentName] non trovato!</h4>
+            <h4> Componente o pagina custom [@nComponentName] non trovata!</h4>
             <img style="margin: auto;display: block;" src="./img/unknown.png">
         </Content>
     </DialogTemplates>
@@ -18,11 +19,16 @@
 
 
 @code {
-    public bool _IsShowDialog = false;
 
+    /// <summary>
+    /// Name of the component or page to load
+    /// </summary>
     [Parameter]
     public string nComponentName { get; set; }
 
+    /// <summary>
+    /// Open/Close the dialog
+    /// </summary>
     [Parameter]
     public bool IsShowDialog
     {
@@ -35,6 +41,15 @@
         }
     }
 
+    /// <summary>
+    /// Event for the 3 way binging
+    /// </summary>
     [Parameter]
     public EventCallback<bool> IsShowDialogChanged { get; set; }
+
+    /// <summary>
+    /// Open/CLose the dialog
+    /// </summary>
+    public bool _IsShowDialog = false;
+
 }

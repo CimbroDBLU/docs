@@ -1,4 +1,8 @@
-﻿@using dblu.Docs.Interfacce
+﻿@*
+    Component for showing a list of costumers
+*@
+
+@using dblu.Docs.Interfacce
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 
 
@@ -6,7 +10,7 @@
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
     <GridPageSettings PageSize="10"></GridPageSettings>
     <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu">
-        <GridEvents TValue="ISoggetti" RowSelected="OnRecordSelect"></GridEvents>
+        <GridEvents TValue="ISoggetti" RowSelected="OnRecordSelect" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
     </GridFilterSettings>
     <GridColumns>
         <GridColumn AllowSorting="true" AllowFiltering="true" Width="120" HeaderText="Codice" Field=@nameof(ISoggetti.Codice) IsPrimaryKey="true" Visible="true"></GridColumn>
@@ -19,11 +23,22 @@
 
 @code {
 
-
-    private ObservableCollection<ISoggetti> nCostumers { get; set; }
-
+    /// <summary>
+    /// Fires when a user select the costumer
+    /// </summary>
     [Parameter]
     public EventCallback<ISoggetti> OnSelectCostumer { get; set; }
+
+    /// <summary>
+    /// Firtes when a user make a double click on a costumewr
+    /// </summary>
+    [Parameter]
+    public EventCallback<ISoggetti> OnSelectCostumerDoubleClick { get; set; }
+
+    /// <summary>
+    /// List of costumer that needs to be rendered
+    /// </summary>
+    private ObservableCollection<ISoggetti> nCostumers { get; set; }
 
     /// <summary>
     /// On Init component
@@ -40,5 +55,14 @@
     public async void OnRecordSelect(RowSelectEventArgs<ISoggetti> args)
     {
         OnSelectCostumer.InvokeAsync(args.Data);
+    }
+
+    /// <summary>
+    /// On double click forward the selection
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnDoubleClick(RecordDoubleClickEventArgs<ISoggetti> args)
+    {
+        OnSelectCostumerDoubleClick.InvokeAsync(args.RowData);
     }
 }

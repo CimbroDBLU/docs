@@ -1,13 +1,15 @@
-﻿
+﻿@*
+    Component for showing a list of Items
+*@
 @using dblu.Portale.Plugin.Docs.ViewModels
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
 
 
-<SfGrid SelectedRowIndex="0" DataSource="@nItems" AllowSorting="true" AllowFiltering="true" AllowTextWrap="true" AllowPaging="true"  Toolbar="@(new List<object>(){"Search"})">
+<SfGrid SelectedRowIndex="0" DataSource="@nItems" AllowSorting="true" AllowFiltering="true" AllowTextWrap="true" AllowPaging="true" Toolbar="@(new List<object>(){"Search"})">
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
     <GridPageSettings PageSize="10"></GridPageSettings>
     <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu">
-        <GridEvents TValue="ElementiViewModel" RowSelected="OnRecordSelect"></GridEvents>
+        <GridEvents TValue="ElementiViewModel" RowSelected="OnRecordSelect" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
     </GridFilterSettings>
     <GridColumns>
         <GridColumn AllowSorting="true" AllowFiltering="true" Field=@nameof(ElementiViewModel.IdFascicolo) IsPrimaryKey="true" Visible="false"></GridColumn>
@@ -21,14 +23,28 @@
 
 @code {
 
-
-    private ObservableCollection<ElementiViewModel> nItems { get; set; }
-
+    /// <summary>
+    /// Costumer Code
+    /// </summary>
     [Parameter]
     public string nCustomerCode { get; set; } = "";
 
+    /// <summary>
+    /// Fires when user select an item
+    /// </summary>
     [Parameter]
     public EventCallback<ElementiViewModel> OnSelectItem { get; set; }
+
+    /// <summary>
+    /// Fires when a user double clicked and item
+    /// </summary>
+    [Parameter]
+    public EventCallback<ElementiViewModel> OnSelectItemDoubleClick { get; set; }
+
+    /// <summary>
+    /// List of the item we have to render
+    /// </summary>
+    private ObservableCollection<ElementiViewModel> nItems { get; set; }
 
     /// <summary>
     /// On Init component
@@ -42,8 +58,17 @@
     /// On record select forward the selection
     /// </summary>
     /// <param name="args"></param>
-    public async void OnRecordSelect(RowSelectEventArgs<ElementiViewModel> args)
+    public void OnRecordSelect(RowSelectEventArgs<ElementiViewModel> args)
     {
         OnSelectItem.InvokeAsync(args.Data);
+    }
+
+    /// <summary>
+    /// On double click forward the selection
+    /// </summary>
+    /// <param name="args"></param>
+    public void OnDoubleClick(RecordDoubleClickEventArgs<ElementiViewModel> args)
+    {
+        OnSelectItemDoubleClick.InvokeAsync(args.RowData);
     }
 }
