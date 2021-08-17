@@ -308,15 +308,8 @@ namespace dblu.Docs.Classi
             {
                 var values = JsonConvert.DeserializeObject<Dictionary<string, dynamic>>(jValori);
                 foreach (KeyValuePair<string, dynamic> d in values)
-                {
-                    try
-                    {
+                    if(this.Valori.ContainsKey(d.Key))
                         this.Valori[d.Key].Valore = d.Value;
-                    }
-                    catch (Exception ex){
-                        var Message = ex.Message;
-                    }
-                }
             }
             catch
             {
