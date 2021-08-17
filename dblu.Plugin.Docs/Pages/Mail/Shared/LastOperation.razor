@@ -1,4 +1,7 @@
-﻿@using dblu.Docs.Models
+﻿@*
+    Component for showing an icon depending to the operation into "TipoOperazione"
+*@
+@using dblu.Docs.Models
 
 @if (nOperation == TipoOperazione.Elaborato)
 {
@@ -46,6 +49,9 @@
 }
 
 @code {
+    /// <summary>
+    /// Type of operation to show
+    /// </summary>
     [Parameter]
     public TipoOperazione nOperation { get; set; }
 }

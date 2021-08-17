@@ -1,6 +1,11 @@
-﻿@using dblu.Docs.Interfacce
+﻿@*
+    Component for seaching costumer/element  and associate it to the attachment
+*@
+@using dblu.Docs.Interfacce
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using Microsoft.AspNetCore.Components.CompilerServices
+@using dblu.Portale.Plugin.Docs.Services
+@using System.IO
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject NavigationManager _NavigatorManager
@@ -28,33 +33,75 @@
 
 @code {
 
+    /// <summary>
+    /// Costumer code
+    /// </summary>
     [Parameter]
     public string nCostumerCode { get; set; }
 
+    /// <summary>
+    /// Attachment ID
+    /// </summary>
     [Parameter]
     public string nAttachID { get; set; }
 
+    /// <summary>
+    /// List of the original attachment coming from the email
+    /// </summary>
+    [Parameter]
+    public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
+
+    /// <summary>
+    /// Currend PDF document in edit
+    /// </summary>
+    [Parameter]
+    public MemoryStream nCurrentDocument { get; set; }
+
+    /// <summary>
+    /// Fires when attach has been linked to item
+    /// </summary>
     [Parameter]
     public EventCallback<(string, string)> OnLinkedToItem { get; set; }
 
+    /// <summary>
+    /// Last selected costumer
+    /// </summary>
     public string LastCostumerCode { get; set; }
 
+    /// <summary>
+    /// Description of the costumer
+    /// </summary>
     public string Description { get; set; }
 
+    /// <summary>
+    /// Indicates id the dialog has to be showed
+    /// </summary>
     private bool IsShowDialog { get; set; } = false;
 
+    /// <summary>
+    /// Dinamic component to load
+    /// </summary>
     private Type DynamicContent { get; set; } = null;
 
+    /// <summary>
+    /// Attributes of the dynamic compponent
+    /// </summary>
     private ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> DynamicAttributes = new();
 
+    /// <summary>
+    /// On  changing user, refresh the component
+    /// </summary>
+    /// <param name="args"></param>
     public void OnSelectedCustomer(ISoggetti args)
     {
         nCostumerCode = args.Codice; OnParametersSet();
     }
 
+    /// <summary>
+    /// Refresh the component , if necessary
+    /// </summary>
     protected override async void OnParametersSet()
     {
-
         if (LastCostumerCode != nCostumerCode && !string.IsNullOrEmpty(nCostumerCode))
             Description = _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "";
         else if (string.IsNullOrEmpty(nCostumerCode))
@@ -62,147 +109,188 @@
         LastCostumerCode = nCostumerCode;
     }
 
-
+    /// <summary>
+    /// Display the Undefined component, using dynmic loading
+    /// </summary>
+    /// <param name="nComponent">Name of the component</param>
     public void UndefinedComponent(string nComponent)
     {
-        IsShowDialog = true;
-        DynamicAttributes.Clear();
-        string component = "dblu.Portale.Plugin.Docs.Pages.Custom.UndefinedComponentPopUp";
-        DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
-
-
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        try
         {
-            Name = "nComponentName",
-            Position = 1,
-            Value = nComponent
-        });
+            IsShowDialog = true;
+            DynamicAttributes.Clear();
+            string component = "dblu.Portale.Plugin.Docs.Pages.Custom.UndefinedComponentPopUp";
+            DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
 
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-        {
-            Name = "IsShowDialog",
-            Position = 1,
-            Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
-        });
 
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nComponentName",
+                Position = 1,
+                Value = nComponent
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialog",
+                Position = 1,
+                Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialogChanged",
+                Position = 2,
+                Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
+                EventCallback.Factory.Create<bool>(this,
+                    RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
+            });
+        }
+        catch (Exception ex)
         {
-            Name = "IsShowDialogChanged",
-            Position = 2,
-            Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
-            EventCallback.Factory.Create<bool>(this,
-                RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
-        });
+            _Logger.LogError($"MailCostumerSearch.UndefinedComponent: Unexpected error {ex}");
+        }
     }
 
-
+    /// <summary>
+    /// Display the custome component for customer link
+    /// </summary>
     public async void OnSearch()
     {
-        string component = _SubjectService.UrlServizio();
-        DynamicAttributes.Clear();
-
-        IsShowDialog = true;
-
-        DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
-
-        if (!component.StartsWith("dblu.Portale") || DynamicContent == null)
+        try
         {
-            UndefinedComponent(component);
-            return;
+            string component = _SubjectService.UrlServizio();
+            DynamicAttributes.Clear();
+
+            IsShowDialog = true;
+
+            DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+
+            if (!component.StartsWith("dblu.Portale") || DynamicContent == null)
+            {
+                UndefinedComponent(component);
+                return;
+            }
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nAttachID",
+                Position = 1,
+                Value = nAttachID
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nCostumerCode",
+                Position = 2,
+                Value = nCostumerCode
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialog",
+                Position = 3,
+                Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialogChanged",
+                Position = 4,
+                Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
+                EventCallback.Factory.Create<bool>(this,
+                    RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "OnSelectedCustomer",
+                Position = 5,
+                Value = EventCallback.Factory.Create<ISoggetti>(this, OnSelectedCustomer)
+            });
         }
-
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        catch (Exception ex)
         {
-            Name = "nAttachID",
-            Position = 1,
-            Value = nAttachID
-        });
-
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-        {
-            Name = "nCostumerCode",
-            Position = 2,
-            Value = nCostumerCode
-        });
-
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-        {
-            Name = "IsShowDialog",
-            Position = 3,
-            Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
-        });
-
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-        {
-            Name = "IsShowDialogChanged",
-            Position = 4,
-            Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
-            EventCallback.Factory.Create<bool>(this,
-                RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
-        });
-
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-        {
-            Name = "OnSelectedCustomer",
-            Position = 5,
-            Value = EventCallback.Factory.Create<ISoggetti>(this, OnSelectedCustomer)
-        });
-
+            _Logger.LogError($"MailCostumerSearch.OnSearch: Unexpected error {ex}");
+        }
     }
 
+    /// <summary>
+    /// Display the custom component for  item link
+    /// </summary>
     public async void OnLink()
     {
-        string component = _SubjectService.UrlServizioRicercaElementi();
-        DynamicAttributes.Clear();
-
-        IsShowDialog = true;
-
-        DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
-
-        if (!component.StartsWith("dblu.Portale") || DynamicContent == null)
+        try
         {
-            UndefinedComponent(component);
-            return;
+            string component = _SubjectService.UrlServizioRicercaElementi();
+            DynamicAttributes.Clear();
+
+            IsShowDialog = true;
+
+            DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+
+            if (!component.StartsWith("dblu.Portale") || DynamicContent == null)
+            {
+                UndefinedComponent(component);
+                return;
+            }
+
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nAttachID",
+                Position = 1,
+                Value = nAttachID
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nCostumerCode",
+                Position = 2,
+                Value = nCostumerCode
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialog",
+                Position = 3,
+                Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialogChanged",
+                Position = 4,
+                Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
+                EventCallback.Factory.Create<bool>(this,
+                    RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "OnLinkedToItem",
+                Position = 5,
+                Value = EventCallback.Factory.Create<(string, string)>(this, OnLinkedToItem)
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nAttachments",
+                Position = 6,
+                Value = nAttachments ?? new()
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nCurrentDocument",
+                Position = 7,
+                Value = nCurrentDocument
+            });
         }
-
-
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        catch (Exception ex)
         {
-            Name = "nAttachID",
-            Position = 1,
-            Value = nAttachID
-        });
-
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-        {
-            Name = "nCostumerCode",
-            Position = 2,
-            Value = nCostumerCode
-        });
-
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-        {
-            Name = "IsShowDialog",
-            Position = 3,
-            Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
-        });
-
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-        {
-            Name = "IsShowDialogChanged",
-            Position = 4,
-            Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
-            EventCallback.Factory.Create<bool>(this,
-                RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
-        });
-
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-        {
-            Name = "OnLinkedToItem",
-            Position = 5,
-            Value = EventCallback.Factory.Create<(string, string)>(this, OnLinkedToItem)
-        });
-
+            _Logger.LogError($"MailCostumerSearch.OnLink: Unexpected error {ex}");
+        }
 
     }
 }

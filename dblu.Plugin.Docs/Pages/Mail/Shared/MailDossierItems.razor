@@ -1,38 +1,82 @@
-﻿@using dblu.Portale.Plugin.Docs.ViewModels
+﻿@*
+    Component for managing Dossier of this mail attachment
+*@
+
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using dblu.Portale.Plugin.Docs.Services
+@using System.IO
+
 <div class="row">
     <div class="col">
-        <MailItemsSearch OnAttachCompleted="OnAttachCompleted" nDisplayComplete="@DisplayComplete" nDossierID="@nDossierID" nAttachID="@nAttachID" nCostumerCode="@nCostumerCode"></MailItemsSearch>
+        <MailItemsSearch OnAttachCompleted="OnAttachCompleted" nDisplayComplete="@DisplayComplete" nDossierID="@nDossierID" nAttachID="@nAttachID" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode"></MailItemsSearch>
     </div>
 </div>
 <div class="row mt-2">
     <div class="col">
-        <MailItemsTable @ref="@Table" nAttachID="@nAttachID" nDossierID="@nDossierID" OnSelectedItem="OnSelectItem"></MailItemsTable>
+        <MailItemsTable @ref="@Table" nAttachID="@nAttachID" nDossierID="@nDossierID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument" OnSelectedItem="OnSelectItem"></MailItemsTable>
     </div>
 </div>
 
 
 @code {
+    /// <summary>
+    /// Attach ID
+    /// </summary>
     [Parameter]
     public string nAttachID { get; set; }
 
+    /// <summary>
+    /// Costumer Code
+    /// </summary>
     [Parameter]
     public string nCostumerCode { get; set; }
 
+    /// <summary>
+    /// Dossier ID
+    /// </summary>
     [Parameter]
     public string nDossierID { get; set; }
 
+    /// <summary>
+    /// List of original attachments
+    /// </summary>
+    [Parameter]
+    public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
+
+    /// <summary>
+    /// Current PDF document in edit
+    /// </summary>
+    [Parameter]
+    public MemoryStream nCurrentDocument { get; set; }
+
+    /// <summary>
+    /// Fire when the email attach has been completed
+    /// </summary>
     [Parameter]
     public EventCallback<string> OnAttachCompleted { get; set; }
 
+    /// <summary>
+    /// Indicates to display or not the complete button
+    /// </summary>
     public bool DisplayComplete { get; set; } = false;
 
+    /// <summary>
+    /// Reference to the items table
+    /// </summary>
     private MailItemsTable Table { get; set; }
 
+    /// <summary>
+    /// Refresh the items table
+    /// </summary>
     public void Refresh()
     {
         Table.Refresh();
     }
 
+    /// <summary>
+    /// On selection of Item, decide if complete butto has to be displayed
+    /// </summary>
+    /// <param name="e"></param>
     public async void OnSelectItem(EmailElementi e)
     {
         DisplayComplete = (int)(e.Stato) > 1;

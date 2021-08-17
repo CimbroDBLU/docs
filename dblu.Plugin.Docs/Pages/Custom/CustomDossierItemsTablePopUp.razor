@@ -139,7 +139,7 @@
     /// <param name="args"></param>
     public async void OnSelectedItem(ElementiViewModel args)
     {
-        LinkAttachOnItem = args;
+        LastSelectedItem = args;
     }
 
     /// <summary>
@@ -148,9 +148,7 @@
     /// <param name="args"></param>
     public async void OnSelectedItemDoubleClick(ElementiViewModel args)
     {
-
-
         LastSelectedItem = args;
-        OnOkPressed();
+        LinkAttachOnItem();
     }
 }

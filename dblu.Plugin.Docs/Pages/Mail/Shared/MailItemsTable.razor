@@ -1,15 +1,29 @@
-﻿@using dblu.Portale.Plugin.Docs.ViewModels
+﻿@*
+    Component for showing a table with all items inside this Dossier
+*@
+@using dblu.Portale.Plugin.Docs.ViewModels
 @using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.Class
 @using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Models
+@using dblu.Portale.Plugin.Docs.Services
+@using System.Security.Claims
+@using System.IO
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using dblu.Portale.Plugin.Docs.Pages.Custom
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject ProtectedSessionStorage _SessionStore
 @inject NavigationManager  _NavigationManager
+@inject IJSRuntime JSRuntime
 
 <style>
+
+    .smallb {
+        width: 50px;
+    }
+
     .e-duplicate:before {
         content: '\e70a';
     }
@@ -17,12 +31,35 @@
     .e-open:before {
         content: '\ebdd';
     }
+
+    .e-print:before {
+        content: '\e7df';
+    }
 </style>
 
 
-<SfGrid @ref="@Grid" SelectedRowIndex="0" DataSource="@nItems" AllowTextWrap="false" AllowPaging="true" Toolbar="@Tool">
+<SfGrid @ref="@Grid" SelectedRowIndex="0" DataSource="@nItems" AllowTextWrap="false" AllowPaging="true">
+    <SfToolbar>
+        <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
+        <ToolbarItems>
+            <ToolbarItem Id="Open" PrefixIcon="e-open" TooltipText="Apri"></ToolbarItem>
+            <ToolbarItem Id="Add" PrefixIcon="e-add" TooltipText="Aggiungi"></ToolbarItem>
+            <ToolbarItem Id="Duplicate" PrefixIcon="e-duplicate" TooltipText="Duplica"></ToolbarItem>
+            <ToolbarItem Id="Print" PrefixIcon="e-print" TooltipText="Riepilogo" Disabled="@IsSummaryActive"></ToolbarItem>
+            <ToolbarItem Id="Run" Type="ItemType.Input">
+                <Template>
+                    <div style="display:flex">
+                        <ComboActions @ref="ActionsCombo" nItemTypes="@Actions" @bind-nItemType="@ActionSelected"></ComboActions>
+                        <SfButton OnClick="Run" CssClass="e-primary ml-2 smallb"><i class="fas fa-play"></i></SfButton>
+                    </div>
+                </Template>
+            </ToolbarItem>
+
+            <ToolbarItem Id="Delete" PrefixIcon="e-delete" TooltipText="Elimina"></ToolbarItem>
+        </ToolbarItems>
+    </SfToolbar>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-    <GridEvents TValue="EmailElementi" OnToolbarClick="OnToolbarClick" DataBound="DataBoundMe" RowSelected="OnRecordSelect"></GridEvents>
+    <GridEvents TValue="EmailElementi" DataBound="DataBoundMe" RowSelected="OnRecordSelect"></GridEvents>
     <GridPageSettings PageSize="4"></GridPageSettings>
     <GridColumns>
         <GridColumn Field=@nameof(EmailElementi.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
@@ -44,39 +81,166 @@
     </GridColumns>
 </SfGrid>
 
-<QuestionDialog nShowDialog="ShowAddConfirm" nText="Aggiungo all'elemento selezionato?" nTitle="Conferma"  OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="AddToItem"></QuestionDialog>
+<QuestionDialog nShowDialog="ShowAddConfirm" nText="Aggiungo all'elemento selezionato?" nTitle="Conferma" OnNoPressed="CloseDialog" OnClose="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="AddToItem"></QuestionDialog>
+<QuestionDialog nShowDialog="ShowDuplicateConfirm" nText="Confermi la creazione di un nuovo elemento nel fascicolo corrente?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Duplicate"></QuestionDialog>
+<QuestionDialog nShowDialog="ShowDeleteConfirm" nText="Sei sicuro di eliminare completamente l'elemento?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Delete"></QuestionDialog>
+<AlertDialog nShowDialog="ShowAlertNoDelete" nText="Non è possibile eliminare un elemento già processato." OnOKPressed="()=> { ShowAlertNoDelete = false; }" OnClose="()=> { ShowAlertNoDelete = false; }"></AlertDialog>
 
+<Toast @ref="ToastAddOK" nToastType="Toast.e_ToastType.OK" nTitle="Aggiungi a elemento" nContent="Allegato aggiunto"></Toast>
+<Toast @ref="ToastAddKO" nToastType="Toast.e_ToastType.Fail" nTitle="Aggiungi a elemento" nContent="Allegato NON aggiunto"></Toast>
+<Toast @ref="ToastDelOK" nToastType="Toast.e_ToastType.OK" nTitle="Rimuovi elemento" nContent="Elemento rimosso"></Toast>
+<Toast @ref="ToastDelKO" nToastType="Toast.e_ToastType.Fail" nTitle="Rimuovi elemento" nContent="Rimozione non riuscita"></Toast>
+<Toast @ref="ToastDupOK" nToastType="Toast.e_ToastType.OK" nTitle="Duplica elemento" nContent="Elemento duplicato"></Toast>
+<Toast @ref="ToastDupKO" nToastType="Toast.e_ToastType.Fail" nTitle="Duplica elemento" nContent="Duplicazione non riuscita"></Toast>
+
+<UndefinedComponentPopUp @bind-IsShowDialog="@IsShowUndefined" nComponentName="@ComponentName"></UndefinedComponentPopUp>
 
 @code {
 
+    /// <summary>
+    /// Id of the current attachment
+    /// </summary>
+    [Parameter]
+    public string nAttachID { get; set; }
+
+    /// <summary>
+    /// Id of the current Dossier
+    /// </summary>
+    [Parameter]
+    public string nDossierID { get; set; }
+
+    /// <summary>
+    /// The current documetn in memory
+    /// </summary>
+    [Parameter]
+    public MemoryStream nCurrentDocument { get; set; }
+
+    /// <summary>
+    /// The list of the attachments related to this email attach
+    /// </summary>
+    [Parameter]
+    public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
+
+    /// <summary>
+    /// The costumer code of this dossier
+    /// </summary>
+    [Parameter]
+    public string nCostumerCode { get; set; }
+
+    /// <summary>
+    /// Fires when user select one of the items showed
+    /// </summary>
+    [Parameter]
+    public EventCallback<EmailElementi> OnSelectedItem { get; set; }
+
+    /// <summary>
+    /// reference to the combo with all the available actions
+    /// </summary>
+    private ComboActions ActionsCombo { get; set; }
+
+    /// <summary>
+    /// Current User
+    /// </summary>
+    private ClaimsPrincipal User { get; set; }
+
+    /// <summary>
+    /// Show the alert fon notify that an item cannot be deleted
+    /// </summary>
+    private bool ShowAlertNoDelete { get; set; } = false;
+
+    /// <summary>
+    /// Show the add confirmation
+    /// </summary>
     private bool ShowAddConfirm { get; set; } = false;
+
+    /// <summary>
+    /// Show the delete confirmation
+    /// </summary>
+    private bool ShowDeleteConfirm { get; set; } = false;
+
+    /// <summary>
+    /// Inidicate id the toolbar button for printing the summary is enable or not
+    /// </summary>
+    private bool IsSummaryActive { get; set; } = true;
+
+    /// <summary>
+    /// Show /hide the duplicate confirmation
+    /// </summary>
+    private bool ShowDuplicateConfirm { get; set; } = false;
+
+    /// <summary>
+    /// Toast for a positive ADD
+    /// </summary>
+    private Toast ToastAddOK { get; set; }
+
+    /// <summary>
+    /// Toast for a negative ADD
+    /// </summary>
+    private Toast ToastAddKO { get; set; }
+
+    /// <summary>
+    /// Toast for a positive deletion
+    /// </summary>
+    private Toast ToastDelOK { get; set; }
+
+    /// <summary>
+    /// Toast for a negative deletion
+    /// </summary>
+    private Toast ToastDelKO { get; set; }
+
+    /// <summary>
+    /// Toast for a positive duplication
+    /// </summary>
+    private Toast ToastDupOK { get; set; }
+
+    /// <summary>
+    /// Toast for a negative duplication
+    /// </summary>
+    private Toast ToastDupKO { get; set; }
+
+    /// <summary>
+    /// On data bound of the grid, select the first line
+    /// </summary>
     public void DataBoundMe()
     {
         if (Grid is not null)
             Grid.SelectRowAsync(0);
     }
 
-    [Parameter]
-    public string nAttachID { get; set; }
-
-    [Parameter]
-    public string nDossierID { get; set; }
-
+    /// <summary>
+    /// Current Item
+    /// </summary>
     public EmailElementi nItem { get; set; }
 
+    /// <summary>
+    /// Last attach ID showed
+    /// </summary>
     public string LastAttachId { get; set; }
 
+    /// <summary>
+    /// Last dossier Id
+    /// </summary>
     public string LastDossierId { get; set; }
 
-    [Parameter]
-    public string nCostumerCode { get; set; }
-
-    [Parameter]
-    public EventCallback<EmailElementi> OnSelectedItem { get; set; }
-
+    /// <summary>
+    /// List of items
+    /// </summary>
     private ObservableCollection<EmailElementi> nItems { get; set; } = new();
 
+    /// <summary>
+    /// Reference to the grid
+    /// </summary>
     private SfGrid<EmailElementi> Grid { get; set; }
+
+    /// <summary>
+    /// Idnicates is undefined component has to be showed or not
+    /// </summary>
+    private bool IsShowUndefined { get; set; } = false;
+
+    /// <summary>
+    /// Name of the component to show
+    /// </summary>
+    private string ComponentName { get; set; } = "";
 
     /// <summary>
     /// List of custom columns of the items
@@ -84,7 +248,30 @@
     private List<Colonna> Cols { get; set; } = new List<Colonna>();
 
     /// <summary>
-    /// On Init component
+    /// List of all available actions
+    /// </summary>
+    private List<TipiElementi> Actions = new();
+
+    /// <summary>
+    /// Current selected action
+    /// </summary>
+    private string ActionSelected { get; set; }
+
+    /// <summary>
+    /// On initialize load all data
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+        User = authState.User;
+
+        Cols = _ele.GetColonne("vELEMENTO");
+        Actions = GetActions();
+        ActionSelected = Actions.Where(x => x.AggregaAElemento == false).FirstOrDefault()?.Codice;
+    }
+
+    /// <summary>
+    /// On parameter setted relof the grid if necessary
     /// </summary>
     protected override async void OnParametersSet()
     {
@@ -99,26 +286,22 @@
     }
 
     /// <summary>
-    /// On Init component
+    /// On after render, select first custom action 
     /// </summary>
-    protected override async void OnInitialized()
+    /// <param name="firstRender"></param>
+    protected override void OnAfterRender(bool firstRender)
     {
-        Cols = _ele.GetColonne("vELEMENTO");
+        if (string.IsNullOrEmpty(ActionSelected))
+            ActionSelected = ActionsCombo.ActionsList.FirstOrDefault()?.Item ?? "";
+        base.OnAfterRender(firstRender);
     }
 
     /// <summary>
-    /// List of the buttons on toolbar of the grid
+    /// Refresh the grid
     /// </summary>
-    private List<Object> Tool = new List<Object>()
-{
-            new ItemModel(){ Id="Open", TooltipText="Apri", PrefixIcon="e-open" } ,
-            new ItemModel(){ Id="Add", TooltipText="Aggiungi", PrefixIcon="e-add" } ,
-            new ItemModel(){ Id="Duplicate", TooltipText="Duplica", PrefixIcon="e-duplicate" } ,
-            new ItemModel(){ Id="Delete", TooltipText="Elimina", PrefixIcon="e-delete" },"Search"
-        };
-
     public void Refresh()
     {
+        LastAttachId = "";
         Grid.Refresh();
     }
 
@@ -128,9 +311,15 @@
     /// <param name="args"></param>
     public async void OnRecordSelect(RowSelectEventArgs<EmailElementi> args)
     {
-        await OnSelectedItem.InvokeAsync(args.Data);
+        if (((int)args.Data.Stato) > 1)
+            IsSummaryActive = false;
+        else IsSummaryActive = true;
     }
 
+    /// <summary>
+    /// On toolbar click, do the requested operation
+    /// </summary>
+    /// <param name="args"></param>
     public async void OnToolbarClick(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
         EmailElementi Elem = (await Grid.GetSelectedRecords()).FirstOrDefault();
@@ -138,31 +327,127 @@
         if (Elem == null) return;
         nItem = Elem;
 
-        if (args.Item.Id == "Open")
+        switch (args.Item.Id)
         {
-            nItem = Elem;
-            await _SessionStore.SetAsync("Referrer", $"/Mail/Inbox");
-            _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
-        }
-
-        if (args.Item.Id == "Add")
-        {
-            ShowAddConfirm = true;
+            case "Open":
+                nItem = Elem;
+                await _SessionStore.SetAsync("Referrer", $"/Mail/Inbox/{nAttachID}");
+                _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
+                break;
+            case "Add":
+                ShowAddConfirm = true;
+                break;
+            case "Duplicate":
+                ShowDuplicateConfirm = true;
+                break;
+            case "Delete":
+                if (((int)nItem.Stato) > 1)
+                    ShowAlertNoDelete = true;
+                else
+                    ShowDeleteConfirm = true;
+                break;
+            case "Print":
+                if (((int)nItem.Stato) > 1)
+                {
+                    await _SessionStore.SetAsync("Referrer", $"/Mail/Inbox/{nAttachID}");
+                    string url = $"/Docs/Attachment/{nAttachID}/{"false"}/{"true"}";
+                    await JSRuntime.InvokeAsync<object>("open", url, "_blank");
+                }
+                break;
         }
     }
 
+    /// <summary>
+    /// On Run, acivate the custom action, if any
+    /// </summary>
+    public async void Run()
+    {
+        TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
+        if (T != null)
+        {
+            ComponentName = T.ViewAttributi;
+            IsShowUndefined = true;
+        }
+    }
+
+    /// <summary>
+    /// Add current Attach to item
+    /// </summary>
     public async void AddToItem()
     {
-        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var User = authState.User;
         BPMDocsProcessInfo Info = _MailService.GetProcessInfo(TipiOggetto.ELEMENTO, AzioneOggetto.MODIFICA);
-        bool fl = await _MailService.AllegaAElementoFascicolo(nAttachID, nDossierID, nItem.IdElemento.ToString(), null, true, nItem.DscElemento, User, Info, null);
+        bool fl = await _MailService.AttachToItem(nAttachID, nDossierID, nItem.IdElemento.ToString(), null, nCurrentDocument, nAttachments.ToList(), User, Info, null);
         ShowAddConfirm = false;
+
+        if (fl)
+            ToastAddOK.Show();
+        else ToastAddKO.Show();
+
         Refresh();
     }
 
+    /// <summary>
+    /// Duplicate current Item
+    /// </summary>
+    public async void Duplicate()
+    {
+        var f = await _MailService.DuplicaElementoAsync(nAttachID, nDossierID, nItem.IdElemento.ToString(), nItem.TipoElemento, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "", null, true, nItem.DscElemento, User);
+        if (f != null)
+            ToastDupOK.Show();
+        else ToastDupKO.Show();
+
+        ShowDuplicateConfirm = false;
+        Refresh();
+
+    }
+
+    /// <summary>
+    /// Delete selected item
+    /// </summary>
+    public async void Delete()
+    {
+        RisultatoAzione RA = _MailService.CancellaElemento(nItem.IdElemento.ToString(), (short)0, User);
+
+        if (RA.Successo)
+            ToastDelOK.Show();
+        else ToastDelKO.Show();
+
+        ShowDeleteConfirm = false;
+        Refresh();
+    }
+
+    /// <summary>
+    /// Close dialogs
+    /// </summary>
     public async void CloseDialog()
     {
         ShowAddConfirm = false;
+        ShowDuplicateConfirm = false;
+        ShowDeleteConfirm = false;
+    }
+
+    /// <summary>
+    /// Load the List of alla available actions
+    /// </summary>
+    /// <returns></returns>
+    public List<TipiElementi> GetActions()
+    {
+        List<TipiElementi> ListaTipiElementi = new();
+
+        List<string> ListaRuoli = _MailService.getRuoli(User.Claims, "");
+
+        ListaTipiElementi = _MailService._elmMan.GetAllTipiElementi(ListaRuoli);
+        List<EmailServer> ListaServer = _MailService._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaMail);
+        List<EmailServer> ListaServerIngresso = _MailService._serMan.GetServerEmailInIngresso();
+
+        if (ListaServer != null && ListaServer.Count > 0)
+        {
+            var ListaRuoliServ = _MailService.getRuoli(ListaRuoli, ListaServer);
+            return _MailService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.AggregaAElemento == false).ToList();
+        }
+        else
+        {
+            return ListaTipiElementi.Where(z => z.AggregaAElemento == false).ToList();
+        }
     }
 }

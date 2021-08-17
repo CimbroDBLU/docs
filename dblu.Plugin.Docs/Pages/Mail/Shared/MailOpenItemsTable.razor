@@ -1,4 +1,8 @@
-﻿@using dblu.Docs.Interfacce
+﻿@*
+    Component for showing a table of Item currently open for this customer
+*@
+
+@using dblu.Docs.Interfacce
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 
 @if (nItems.Count != 0)
@@ -16,17 +20,23 @@
 }
 
 @code {
+    /// <summary>
+    /// Costumer code
+    /// </summary>
     [Parameter]
     public string nCustomerCode { get; set; }
 
+    /// <summary>
+    /// List of Open items
+    /// </summary>
     public ObservableCollection<ISoggettoElementiAperti> nItems { get; set; } = new();
 
     /// <summary>
-    /// On Init component
+    /// On Init component, load the list of open items
     /// </summary>
     protected override async void OnParametersSet()
     {
-        if (string.IsNullOrEmpty(nCustomerCode)) {nItems=new(); return;}
+        if (string.IsNullOrEmpty(nCustomerCode)) { nItems = new(); return; }
 
         nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)).OrderByDescending(x => x.DataConsegna));
 

@@ -1,8 +1,12 @@
-﻿@using dblu.Docs.Models
+﻿@*
+    Component for answer to current attachment
+*@
+
+@using dblu.Docs.Models
 @using Microsoft.AspNetCore.Http;
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject IHttpContextAccessor _HttpContextAccessor
-
+@inject ILogger<MailForward> _Logger
 
 <div class="row form-group">
     <div class="col-2">
@@ -58,30 +62,63 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Email witch we are replying
+    /// </summary>
     [Parameter]
     public AllegatoEmail nAttach { get; set; }
 
+    /// <summary>
+    /// Email inbox
+    /// </summary>
     [Parameter]
     public EmailServer nSourceServer { get; set; }
 
+    /// <summary>
+    /// Fires when replay has been sent
+    /// </summary>
     [Parameter]
-    public EventCallback OnOperationDone { get; set; }
+    public EventCallback<Models.RisultatoAzione> OnOperationDone { get; set; }
 
+    /// <summary>
+    /// Fires when user left the reply area
+    /// </summary>
     [Parameter]
     public EventCallback OnAbort { get; set; }
 
+    /// <summary>
+    /// Receiver
+    /// </summary>
     public string To { get; set; }
+
+    /// <summary>
+    /// Additional receivers
+    /// </summary>
     public string[] CC { get; set; }
+
+    /// <summary>
+    /// Subject of the email
+    /// </summary>
     public string Subject { get; set; }
 
+    /// <summary>
+    /// Body of the email
+    /// </summary>
     public string Body { get; set; }
 
+    /// <summary>
+    /// Indicates if Sources has to be included
+    /// </summary>
     public bool IncludeSource { get; set; } = true;
 
+    /// <summary>
+    /// Close the mail
+    /// </summary>
     public bool CloseEmail { get; set; } = false;
 
-
-
+    /// <summary>
+    /// On initialize, init some objects
+    /// </summary>
     protected override void OnInitialized()
     {
         CC = new string[] { };
@@ -89,13 +126,21 @@
         Subject = "R:" + nAttach.Oggetto;
 
     }
+
+    /// <summary>
+    /// Send the reply
+    /// </summary>
     private async void OnSend()
     {
         var User = _HttpContextAccessor.HttpContext.User;
-        await _MailService.RispondiEmail(nAttach.Id.ToString(), nSourceServer.Nome, To, string.Join(";", CC), Subject, Body, IncludeSource, CloseEmail,User);
-        OnOperationDone.InvokeAsync();
+        Models.RisultatoAzione RA = await _MailService.RispondiEmail(nAttach.Id.ToString(), nSourceServer.Nome, To, string.Join(";", CC), Subject, Body, IncludeSource, CloseEmail, User);
+        OnOperationDone.InvokeAsync(RA);
+        _Logger.LogInformation($"MailAnswer.OnSend: Mail {nAttach.Id} sent to {To},{string.Join(";", CC)} ");
     }
 
+    /// <summary>
+    /// Forward the email
+    /// </summary>
     private void OnGoBack()
     {
         OnAbort.InvokeAsync();

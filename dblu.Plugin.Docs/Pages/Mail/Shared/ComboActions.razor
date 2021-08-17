@@ -1,0 +1,88 @@
+﻿@*
+    Component for showing a combo with all action s that can be done on an Item (looking into ElementType)
+*@
+@using dblu.Docs.Models
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+
+<SfDropDownList TValue="string" Placeholder="Azione" TItem="ActionTranslation" @bind-Value="@nItemType" DataSource="@ActionsList">
+    <DropDownListFieldSettings Text="Desc" Value="Item"></DropDownListFieldSettings>
+</SfDropDownList>
+
+@code {
+
+    /// <summary>
+    /// List of supported Item Types
+    /// </summary>
+    [Parameter]
+    public List<TipiElementi> nItemTypes { get; set; } = new List<TipiElementi>();
+
+    /// <summary>
+    /// Selected item type
+    /// </summary>
+    [Parameter]
+    public string nItemType
+    {
+        get => _nItemType;
+        set
+        {
+            if (_nItemType == value) return;
+            _nItemType = value;
+            nItemTypeChanged.InvokeAsync(value);
+        }
+    }
+
+    /// <summary>
+    /// Event for having two way binding
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> nItemTypeChanged { get; set; }
+
+
+    /// <summary>
+    /// Selected item type
+    /// </summary>
+    private string _nItemType;
+
+    /// <summary>
+    /// List of available actions
+    /// </summary>
+    public List<ActionTranslation> ActionsList { get; set; } = new();
+
+
+    /// <summary>
+    /// Class for relate an ItemType code with the action it is proposing
+    /// </summary>
+    public class ActionTranslation
+    {
+        /// <summary>
+        /// Code of the Item
+        /// </summary>
+        public string Item { get; set; }
+
+        /// <summary>
+        /// Description of the Item
+        /// </summary>
+        public string Desc { get; set; }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="nCode">Code of the Item</param>
+        /// <param name="nDesc">Description of the Item</param>
+        public ActionTranslation(string nItem, string nDesc)
+        {
+            Item = nItem;
+            Desc = nDesc;
+        }
+    }
+
+    /// <summary>
+    /// On Init, popolate the combo
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        ActionsList.AddRange(nItemTypes.Where(x => x.AggregaAElemento == false).Select(t => new ActionTranslation(t.Codice, t.Descrizione)).ToList());
+    }
+
+}

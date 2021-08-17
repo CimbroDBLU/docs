@@ -1,4 +1,7 @@
-﻿@using dblu.Docs.Models
+﻿@*
+    Component for showing a list of operation logs
+*@
+@using dblu.Docs.Models
 @using dblu.Docs.Classi
 @using dblu.Portale.Core.Infrastructure.Identity.Classes
 @using dblu.Portale.Core.Infrastructure.Identity.Services;
@@ -17,14 +20,14 @@
                 <GridColumn Field=@nameof(LogDoc.Operazione) HeaderText="Attività" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
                 <GridColumn Field=@nameof(LogDoc.Utente) HeaderText="Utente" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false">
                     <Template>
-                        @{ 
+                        @{
                             var UserID = (context as LogDoc).Utente;
                             var User = Users.FirstOrDefault(x => x.UserId == UserID);
-                            if(User is not null)
-                                {
+                            if (User is not null)
+                            {
                                 var desc = $"{@User.Name} {@User.LastName} [{@User.UserId}]";
-                                @desc 
-                                }
+                                @desc
+                            }
                         }
                     </Template>
                 </GridColumn>
@@ -39,18 +42,31 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Attachment that we are inspecting
+    /// </summary>
     [Parameter]
     public AllegatoEmail nAttach { get; set; }
 
-    [Parameter]
-    public int nHeight { get; set; } = 500;
-
+    /// <summary>
+    /// Fires when log inspection has finished
+    /// </summary>
     [Parameter]
     public EventCallback OnAbort { get; set; }
 
+    /// <summary>
+    /// List of logs 
+    /// </summary>
     private ObservableCollection<LogDoc> nLogs { get; set; }
+
+    /// <summary>
+    /// List of users
+    /// </summary>
     private List<ApplicationUser> Users { get; set; }
 
+    /// <summary>
+    /// On init, load logs and users
+    /// </summary>
     protected override async void OnInitialized()
     {
         LogDocManager LM = new LogDocManager(_DbContext.Connessione, _Logger);
@@ -58,6 +74,9 @@
         Users = _ApplicationUsersManager.GetUsers().ToList();
     }
 
+    /// <summary>
+    /// Forward the end of operations
+    /// </summary>
     private void OnGoBack()
     {
         OnAbort.InvokeAsync();
