@@ -1,0 +1,132 @@
+﻿@*
+    Component for showing a dialog that allow to select a costumer for the item 
+*@
+
+@using dblu.Docs.Interfacce
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using dblu.Portale.Plugin.Docs.Pages.Custom.Shared
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
+@inject NavigationManager _NavigatorManager
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject ILogger<CustomCustomerPopUp> _Logger
+
+<SfDialog @ref="@Dialog" Width="65%" ShowCloseIcon="true" IsModal="true" @bind-Visible="@IsShowDialog">
+    <DialogTemplates>
+        <Header>
+            <i style="font-weight:900" class="fas fa-user-check"></i> Ricerca Clienti
+        </Header>
+        <Content>
+            <CustomersTable OnSelectCostumer="OnSelectedCustomerZ" OnSelectCostumerDoubleClick="OnSelectedCustomerDoubleClickZ"></CustomersTable>
+        </Content>
+    </DialogTemplates>
+    <DialogButtons>
+        <DialogButton Content="Ok" IsPrimary="true" OnClick="LinkCostumerOnAttach" />
+        <DialogButton Content="Annulla" IsPrimary="false" OnClick="()=> { IsShowDialog = false; }" />
+    </DialogButtons>
+</SfDialog>
+
+
+@code 
+{
+
+    /// <summary>
+    /// Customer code selected
+    /// </summary>
+    [Parameter]
+    public string nCostumerCode { get; set; }
+
+    /// <summary>
+    /// Attachment ID (use to save link email - Costumer)
+    /// </summary>
+    [Parameter]
+    public string nAttachID { get; set; }
+
+    /// <summary>
+    /// Indicates if the dialog has to be opened or not
+    /// </summary>
+    [Parameter]
+    public bool IsShowDialog
+    {
+        get => _IsShowDialog;
+        set
+        {
+            if (_IsShowDialog == value) return;
+            _IsShowDialog = value;
+            IsShowDialogChanged.InvokeAsync(value);
+        }
+    }
+
+    /// <summary>
+    /// Event for the 2 way binding of IsShowDialog
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> IsShowDialogChanged { get; set; }
+
+    /// <summary>
+    /// Event fired on selecting costumer
+    /// </summary>
+    [Parameter]
+    public EventCallback<ISoggetti> OnSelectedCustomer { get; set; }
+
+    /// <summary>
+    /// Reference to the dialog
+    /// </summary>
+    private SfDialog Dialog { get; set; }
+
+    /// <summary>
+    /// Last selected costumer entity
+    /// </summary>
+    private ISoggetti LastSelectedCustomer { get; set; }
+
+    /// <summary>
+    /// Indicates if dialog is open or noe
+    /// </summary>
+    public bool _IsShowDialog = false;
+
+    /// <summary>
+    /// Associate the costumer to the attach
+    /// </summary>
+    public async void LinkCostumerOnAttach()
+    {
+        try
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var User = authState.User;
+            nCostumerCode = LastSelectedCustomer?.Codice;
+            OnParametersSet();
+            await _SubjectService.NotificaAssociazione(User.Identity.Name, nCostumerCode, nAttachID);
+
+            IsShowDialog = false;
+            await OnSelectedCustomer.InvokeAsync(LastSelectedCustomer);
+            _Logger.LogInformation($"CustomCustomerPopUp.LinkCostumerOnAttach: Link Costumer {nCostumerCode} to {nAttachID} in {sw.ElapsedMilliseconds} ms");
+
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"CustomCustomerPopUp.LinkCostumerOnAttach: Unxpected error {ex}");
+        }
+
+    }
+
+    /// <summary>
+    /// Save the current selected costumer
+    /// </summary>
+    /// <param name="args"></param>
+    public void OnSelectedCustomerZ(ISoggetti args)
+    {
+        LastSelectedCustomer = args;
+
+    }
+
+    /// <summary>
+    /// Save the current select costumer, apply it  and close the dialog
+    /// </summary>
+    /// <param name="args"></param>
+    public void OnSelectedCustomerDoubleClickZ(ISoggetti args)
+    {
+        LastSelectedCustomer = args;
+        LinkCostumerOnAttach();
+    }
+}

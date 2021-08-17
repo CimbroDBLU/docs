@@ -4,6 +4,8 @@ using dblu.Portale.Core.PluginBase.Classes;
 using ExtCore.Infrastructure;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace dblu.Portale.Plugin.Documenti
 {
@@ -44,6 +46,14 @@ namespace dblu.Portale.Plugin.Documenti
         {
             get
             {
+                ///Since i cannot inject IConfiguration, i'll use these lines below to read the conf once again and understand 
+                ///if i have to show beta funcionalities
+                var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddEnvironmentVariables();
+
+                IConfigurationRoot _conf = builder.Build();
 
                 var subItemT = new MenuItem[]
                 {
@@ -61,13 +71,11 @@ namespace dblu.Portale.Plugin.Documenti
                 var subItemS = new MenuItem[]
                      {
                         new MenuItem("50.1.6", 2, "Stats/History", "Storico", "fas fa-shoe-prints", null),
-                       // new MenuItem("50.1.6", 7, "Stats/HistoryPivot", "Dettaglio", "fas fas fa-chart-area", null),
-
                      };
-
-                var subItemM= new MenuItem[]
+                    
+        var subItemM= new MenuItem[]
                      {                                        
-                    new MenuItem("50.1.3", 1, "MailView/InArrivo", "Email in arrivo", "fas fa-envelope-open-text", null),
+                    new MenuItem("50.1.3", 1,  string.IsNullOrEmpty(_conf["Beta"]) ? "MailView/InArrivo" : "Mail/Inbox", "Email in arrivo", "fas fa-envelope-open-text", null),
                     new MenuItem("50.1.3", 2, "MailView/emailProcessate", "Email processate", "fas fa-envelope", null),
                     new MenuItem("50.1.3", 3, "MailView/emailInviate", "Email inviate", "fas fa-paper-plane", null),
                      };

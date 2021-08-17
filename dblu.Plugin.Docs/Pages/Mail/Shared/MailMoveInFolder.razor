@@ -1,0 +1,79 @@
+﻿@*
+    Component for move an attachment in an another mailbox/folder
+*@
+
+@using dblu.Docs.Models
+@using Microsoft.AspNetCore.Http;
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject IHttpContextAccessor _HttpContextAccessor
+@inject ILogger<MailMoveInFolder> _Logger
+
+<div class="row form-group">
+    <div class="col-12">
+        <ServerCombo @bind-nServer="@Destination" nExcludedServers="@(new List<string>() { nSourceServer.Nome })" nLabel="Sposta in"></ServerCombo>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <SfButton OnClick="OnMove" CssClass="e-primary">Sposta</SfButton>
+        <SfButton OnClick="OnGoBack">Indietro</SfButton>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Attachment to move
+    /// </summary>
+    [Parameter]
+    public AllegatoEmail nAttach { get; set; }
+
+    /// <summary>
+    /// Soruce server for the attachment
+    /// </summary>
+    [Parameter]
+    public EmailServer nSourceServer { get; set; }
+
+    /// <summary>
+    /// Fires when operation has been done
+    /// </summary>
+    [Parameter]
+    public EventCallback<Models.RisultatoAzione> OnOperationDone { get; set; }
+
+    /// <summary>
+    /// Fires when operation has been aborted
+    /// </summary>
+    [Parameter]
+    public EventCallback OnAbort { get; set; }
+
+    /// <summary>
+    /// Selected destination server
+    /// </summary>
+    private EmailServer Destination { get; set; }
+
+    /// <summary>
+    ///  Move the email to another box
+    /// </summary>
+    private async void OnMove()
+    {
+        try
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            var User = _HttpContextAccessor.HttpContext.User;
+            Models.RisultatoAzione RA = _MailService.SpostaEmail(nAttach.Id.ToString(), Destination?.Nome ?? "", User);
+            await OnOperationDone.InvokeAsync(RA);
+            _Logger.LogInformation($"MailMoveInFolder.OnMove: Moved {nAttach.Id} in {Destination?.Nome ?? ""} in {sw.ElapsedMilliseconds}");
+        }
+        catch(Exception ex)
+        {
+            _Logger.LogError($"MailMoveInFolder.OnMove: Fail to move {nAttach.Id} in {Destination?.Nome ?? ""}, {ex}");
+        }
+    }
+
+    /// <summary>
+    /// Forward the abort event
+    /// </summary>
+    private void OnGoBack()
+    {
+        OnAbort.InvokeAsync();
+    }
+}

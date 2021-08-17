@@ -202,7 +202,6 @@
     [Parameter]
     public bool nAllowEdit { get; set; } = true;
 
-
     /// <summary>
     /// Indicate if the document support adding notes
     /// </summary>
@@ -215,6 +214,9 @@
     [Parameter]
     public int nHeight { get; set; } = 550;
 
+    /// <summary>
+    /// Event that will be fired once the document has been loaded
+    /// </summary>
     [Parameter]
     public EventCallback<List<OriginalAttachments>> OnDocumentTransformed { get; set; }
 
@@ -231,19 +233,22 @@
     /// <summary>
     /// Current Loaded document
     /// </summary>
-    private Document Doc { get; set; }
+    public Document Doc { get; set; }
 
     /// <summary>
     /// Name of the file that need to be downloaded
     /// </summary>
     private string DownloadFileName { get; set; }
 
+    /// <summary>
+    /// Spinner that will be shown wile document loading
+    /// </summary>
     private bool IsSpinnerVisible { get; set; }
 
     /// <summary>
     /// Default configuration of the
     /// </summary>
-    public PdfViewerToolbarSettings ToolbarSettings
+    private PdfViewerToolbarSettings ToolbarSettings
     {
         get
         {
@@ -313,7 +318,7 @@
     private async void OnDocumentLoaded()
     {
         DownloadFileName = Doc.FileName;
-      
+
         OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
     }
 
@@ -322,12 +327,15 @@
     /// </summary>
     private async void OnPDFViewerCreated()
     {
-        if (Viewer != null && Doc.Payload != null && Doc.Payload.Length != 0)
+        lock (this)
         {
-            DownloadFileName = "";
-            string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
-            await Viewer.Load("data:application/DocManager;base64," + base64String, null);
+            if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length != 0)
+            {
+                DownloadFileName = "";
+                string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
+                Viewer.Load("data:application/DocManager;base64," + base64String, null);
 
+            }
         }
     }
 
@@ -336,7 +344,6 @@
     /// </summary>
     private async void OnSave()
     {
-
         if (Viewer.IsDocumentEdited)
             Doc = await DocManager.Save(new MemoryStream(await Viewer.GetDocument()));
         else
@@ -371,7 +378,6 @@
         }
 
     }
-
 
     /// <summary>
     /// Indicate if we are in full screen

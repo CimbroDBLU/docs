@@ -1,0 +1,154 @@
+﻿@*
+    Component for showing a dialog that allow to add an attachment to an already exsisting element
+*@
+
+@using dblu.Docs.Interfacce
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using dblu.Portale.Plugin.Docs.Pages.Custom.Shared
+@using System.IO
+@using dblu.Portale.Plugin.Docs.Services
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
+@inject NavigationManager _NavigatorManager
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject ILogger<CustomDossierItemsTablePopUp> _Logger
+
+<SfDialog Width="65%" ShowCloseIcon="true" IsModal="true" @bind-Visible="@IsShowDialog">
+    <DialogTemplates>
+        <Header>
+            <i style="font-weight:900" class="fas fa-receipt"></i> Associa elemento
+        </Header>
+        <Content>
+            <DossierItemsTable nCustomerCode="@nCostumerCode" OnSelectItem="OnSelectedItem" OnSelectItemDoubleClick="OnSelectedItemDoubleClick"></DossierItemsTable>
+        </Content>
+    </DialogTemplates>
+    <DialogButtons>
+        <DialogButton Content="Ok" IsPrimary="true" OnClick="LinkAttachOnItem" />
+        <DialogButton Content="Annulla" IsPrimary="false" OnClick="()=> { IsShowDialog = false; }" />
+    </DialogButtons>
+</SfDialog>
+
+<Toast @ref="ToastOK" nToastType="Toast.e_ToastType.OK" nTitle="Associa ad elemento esistente" nContent="Associazione riuscita"></Toast>
+<Toast @ref="ToastKO" nToastType="Toast.e_ToastType.Fail" nTitle="Associa ad elemento esistente" nContent="Associazione NON riuscita"></Toast>
+
+
+@code {
+
+    /// <summary>
+    /// Costumer Code
+    /// </summary>
+    [Parameter]
+    public string nCostumerCode { get; set; }
+
+    /// <summary>
+    /// Attachment ID
+    /// </summary>
+    [Parameter]
+    public string nAttachID { get; set; }
+
+    /// <summary>
+    /// List of attachment extracted from the email (if any)(for saving them)
+    /// </summary>
+    [Parameter]
+    public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
+
+    /// <summary>
+    /// The current document PDF generated (for saving it)
+    /// </summary>
+    [Parameter]
+    public MemoryStream nCurrentDocument { get; set; }
+
+    /// <summary>
+    /// Indicated if the dialog has to be shown
+    /// </summary>
+    [Parameter]
+    public bool IsShowDialog
+    {
+        get => _IsShowDialog;
+        set
+        {
+            if (_IsShowDialog == value) return;
+            _IsShowDialog = value;
+            IsShowDialogChanged.InvokeAsync(value);
+        }
+    }
+
+    /// <summary>
+    /// Event for  two way binding
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> IsShowDialogChanged { get; set; }
+
+    /// <summary>
+    /// Fire when item and Attach has been associated 
+    /// </summary>
+    [Parameter]
+    public EventCallback<(string, string)> OnLinkedToItem { get; set; }
+
+    /// <summary>
+    /// Indicated if the dialog has to be shown
+    /// </summary>
+    public bool _IsShowDialog = false;
+
+    /// <summary>
+    /// Reference to a toaster to show a positive feedback
+    /// </summary>
+    private Toast ToastOK { get; set; }
+
+    /// <summary>
+    ///  Reference to a toaster to show a negative feedback
+    /// </summary>
+    private Toast ToastKO { get; set; }
+
+    /// <summary>
+    /// Indicates the last selected item
+    /// </summary>
+    private ElementiViewModel LastSelectedItem { get; set; }
+
+    /// <summary>
+    /// Link the attach to the specified item
+    /// </summary>
+    public async void LinkAttachOnItem()
+    {
+        try
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            IsShowDialog = false;
+
+            var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var User = authState.User;
+            ///Associa allegato a fascicolo -> non avvio alcun BPM...
+            bool res = await _MailService.AttachToItem(nAttachID, LastSelectedItem.IdFascicolo.ToString(), LastSelectedItem.IdElemento.ToString(), null, nCurrentDocument, nAttachments?.ToList() ?? new(), User, null, null);
+            if (res)
+                ToastOK.Show();
+            else ToastKO.Show();
+
+            await OnLinkedToItem.InvokeAsync((LastSelectedItem.IdFascicolo.ToString(), LastSelectedItem.IdElemento.ToString()));
+            _Logger.LogInformation($"CustomDossierItemsTablePopUp.LinkAttachOnItem: Link Attach {nAttachID} to {LastSelectedItem}/{LastSelectedItem.IdFascicolo} in {sw.ElapsedMilliseconds} ms");
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"CustomDossierItemsTablePopUp.LinkAttachOnItem: Unxpected error {ex}");
+        }
+
+    }
+
+    /// <summary>
+    /// Save last selected item
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnSelectedItem(ElementiViewModel args)
+    {
+        LastSelectedItem = args;
+    }
+
+    /// <summary>
+    /// Save last selected item, apply attach to it, and close the dialog
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnSelectedItemDoubleClick(ElementiViewModel args)
+    {
+        LastSelectedItem = args;
+        LinkAttachOnItem();
+    }
+}

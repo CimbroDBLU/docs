@@ -77,6 +77,10 @@ namespace dblu.Portale.Plugin.Docs.Services
         public readonly ServerEmailManager _serMan;
         public readonly LogDocManager _logMan;
         public readonly IApplicationUsersManager _usrManager;
+        /// <summary>
+        /// Inject the transformation service to work with documents
+        /// </summary>
+        public readonly DocumentTransformationService _TranformationService;
 
         //        private readonly SoggettiManager _sggMan;
         public IConfiguration _config { get; }
@@ -91,7 +95,8 @@ namespace dblu.Portale.Plugin.Docs.Services
             IToastNotification toastNotification,
             IConfiguration config,
             ISoggettiService sogg,
-            IApplicationUsersManager usrManager
+            IApplicationUsersManager usrManager,
+            DocumentTransformationService documentTransformation
             )
         {
             _toastNotification = toastNotification;
@@ -104,7 +109,8 @@ namespace dblu.Portale.Plugin.Docs.Services
             _elmMan = new ElementiManager(_context.Connessione, _logger);
             _serMan = new ServerEmailManager(_context.Connessione, _logger);
             _logMan = new LogDocManager(_context.Connessione, _logger);
-//            _sggMan = new SoggettiManager(_context, _logger);
+            _TranformationService = documentTransformation;
+            //            _sggMan = new SoggettiManager(_context, _logger);
             _config = config;
             _usrManager = usrManager;
 
@@ -1857,27 +1863,120 @@ namespace dblu.Portale.Plugin.Docs.Services
             return null;
         }
 
-        //public async Task<List<ISoggetti>> GetSoggetti()
-        //{
-        //    if (! (ServizioSoggetti == null)) {
-        //        return ServizioSoggetti.GetSoggetti();
-        //    }
 
-        //    return await _context.Soggetti.ToListAsync<ISoggetti>();
-        //}
+        /// <summary>
+        /// Attach an email attachment to an Elmennt
+        /// </summary>
+        /// <param name="AttachID">Id of the attachment</param>
+        /// <param name="DossierID">Id of the Dossier</param>
+        /// <param name="ItemID">Id of the Item</param>
+        /// <param name="Description">Description</param>
+        /// <param name="Doc">Memory stream od the referred document</param>
+        /// <param name="Attachs">Attachments of the email</param>
+        /// <param name="User">User that do the operation</param>
+        /// <param name="Info">Info regarding the BPM</param>
+        /// <param name="Vars">Variables for the workflow</param>
+        /// <returns></returns>
+        public async Task<bool> AttachToItem(string AttachID,
+              string DossierID,
+              string ItemID,
+              string Description,
+              MemoryStream Doc,
+              List<OriginalAttachments> Attachs,
+              ClaimsPrincipal User,
+              BPMDocsProcessInfo Info,
+              Dictionary<string, VariableValue> Vars)
+        {
 
-        //public ISoggetti GetSoggetto(string Codice)
-        //{
-        //    if (!(ServizioSoggetti == null))
-        //    {
-        //        return ServizioSoggetti.GetSoggetto(Codice);
-        //    }
-        //    else
-        //    {
-        //        return _sggMan.Get(Codice);
-        //    }
+            bool RET = true;
 
-        //}
+            Allegati  MailAttach = _allMan.Get(AttachID);
+            if (string.IsNullOrEmpty(Description)) Description = MailAttach.Descrizione;
+            TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
+            Fascicoli f = _fasMan.Get(DossierID);
+            Elementi e = _elmMan.Get(ItemID, 0);
+
+            if (tipoAll != null && f != null & e != null)
+            {
+                /// 1) MARCO LA MAIL COM PROCESSATA
+                MailAttach.SetAttributo("CodiceSoggetto", f.GetAttributo("CodiceSoggetto"));
+                MailAttach.IdFascicolo = f.Id;
+                MailAttach.IdElemento = e.Id;
+                MailAttach.Stato = StatoAllegato.Elaborato;
+                MailAttach.SetAttributo("jAllegati", JToken.FromObject(Attachs));             
+                var i = _allMan.Salva(MailAttach, false);
+
+                /// 2) LOGGO
+                LogDoc log = new LogDoc()
+                {
+                    Data = DateTime.Now,
+                    IdOggetto = MailAttach.Id,
+                    TipoOggetto = TipiOggetto.ALLEGATO,
+                    Operazione = TipoOperazione.Elaborato,
+                    Utente = User.Identity.Name
+                };
+                _logMan.Salva(log, true);
+
+                /// 3) MARCO PDF IN MEMORIA
+                (bool, MemoryStream) T = _TranformationService.SignPDF(Doc, MailAttach.elencoAttributi);
+                if (T.Item1)
+                    Doc = T.Item2;
+
+
+                /// 4) CREO UNA ALLEGATO DI TIPO FILE 
+                var fileName = $"{MailAttach.Id.ToString()}.pdf";
+                Allegati FILE = null;
+                using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                    { FILE = cn.QueryFirstOrDefault<Allegati>("Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile", new { IdElemento = MailAttach.IdElemento.ToString(), NomeFile = fileName }); }
+
+                bool isNewFILE = false;
+                if (FILE == null)
+                {
+                    FILE = new Allegati()
+                    {
+                    Descrizione = Description,
+                    NomeFile = fileName,
+                    Tipo = "FILE",
+                    TipoNavigation = tipoAll,
+                    Stato = StatoAllegato.Attivo,
+                    IdFascicolo = MailAttach.IdFascicolo,
+                    IdElemento = MailAttach.IdElemento,
+                    jNote = MailAttach.jNote,
+                    UtenteC = User.Identity.Name,
+                    UtenteUM = User.Identity.Name,
+                    };
+                    isNewFILE = true;
+                }
+                else { FILE.Descrizione = Description; };
+
+                if (FILE.elencoAttributi == null) { FILE.elencoAttributi = tipoAll.Attributi; }
+
+                FILE.SetAttributo("Mittente", MailAttach.GetAttributo("Mittente"));
+                FILE.SetAttributo("Data", MailAttach.GetAttributo("Data"));
+                FILE.SetAttributo("CodiceSoggetto", MailAttach.GetAttributo("CodiceSoggetto"));
+                FILE.SetAttributo("Oggetto", MailAttach.GetAttributo("Oggetto"));
+                FILE.SetAttributo("MessageId", MailAttach.GetAttributo("MessageId"));
+
+                /// 5) SALVO SUL TIPO FILE IL PDF
+                FILE = await _allMan.SalvaAsync(FILE, Doc, isNewFILE);
+
+
+                /// 6 ATTIVO PROCESSI
+
+                if (Info != null)
+                {
+                    Info.StatoPrec = (int)e.Stato;
+                    Info.Stato = (int)e.Stato;
+                    if (Vars == null)
+                        Vars = new Dictionary<string, VariableValue>();
+                    if (!Vars.ContainsKey("IdAllegato"))
+                        Vars.Add("IdAllegato", VariableValue.FromObject(AttachID));
+
+                    RET =  AvviaProcesso(Info, e, Vars);
+                }
+            }
+            return RET;
+        }
 
         public async Task<bool> AllegaAElementoFascicolo(string IdAllegato,
                 string IdFascicolo,
@@ -1903,6 +2002,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                 Elementi e = _elmMan.Get(IdElemento, 0);
                 if (tipoAll != null && f != null & e != null)
                 {
+                    Allegato.SetAttributo("CodiceSoggetto", e.GetAttributo("CodiceSoggetto"));
+
                     //if (Allegato.IdFascicolo == null)
                     Allegato.IdFascicolo = f.Id;
                     //if (Allegato.IdElemento == null)
@@ -1930,15 +2031,17 @@ namespace dblu.Portale.Plugin.Docs.Services
                     var estrai = all != null;
                     estrai = estrai && await sfdpf.MarcaAllegatoSF(all, e.elencoAttributi);
 
-                    Info.StatoPrec = (int)e.Stato;  
-                    Info.Stato = (int)e.Stato;
-                    if (variabili == null)
-                        variabili = new Dictionary<string, VariableValue>();
-                    if (!variabili.ContainsKey("IdAllegato"))
-                        variabili.Add("IdAllegato", VariableValue.FromObject(IdAllegato));
-                    
-                    estrai = estrai && AvviaProcesso(Info, e , variabili);
+                    if (Info != null)
+                    {
+                        Info.StatoPrec = (int)e.Stato;
+                        Info.Stato = (int)e.Stato;
+                        if (variabili == null)
+                            variabili = new Dictionary<string, VariableValue>();
+                        if (!variabili.ContainsKey("IdAllegato"))
+                            variabili.Add("IdAllegato", VariableValue.FromObject(IdAllegato));
 
+                        estrai = estrai && AvviaProcesso(Info, e, variabili);
+                    }
                     return estrai;
                 }
             }

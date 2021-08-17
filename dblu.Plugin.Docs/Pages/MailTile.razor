@@ -1,12 +1,14 @@
 ﻿@*
     Component for displaying a Tile with the incoming emails
+    MailView/InArrivo
 *@
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject IConfiguration _conf
 
 <Tile nTitle="@Number"
       nDescription="Email in arrivo"
-      nLink="MailView/InArrivo"
+      nLink=@Link
       nIcon="fas fa-envelope-open-text"
       nBackColor="#17a2b8" nForeColor="white"></Tile>
 
@@ -16,6 +18,8 @@
     /// Number of the icoming emails
     /// </summary>
     public string Number { get; set; }
+
+    public string Link => string.IsNullOrEmpty(_conf["Beta"]) ? "MailView/InArrivo" : "Mail/Inbox";
 
     /// <summary>
     /// On Init component

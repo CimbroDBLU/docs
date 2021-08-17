@@ -1,0 +1,55 @@
+﻿@*
+    Component for showing a dialog that indicates that a page/component cannot be found
+*@
+
+<SfDialog Width="50%" ShowCloseIcon="true" IsModal="true" @bind-Visible="@IsShowDialog">
+    <DialogTemplates>
+        <Header>
+            <i style="font-weight:900" class="far fa-question-circle"></i> Customizzazione non trovata
+        </Header>
+        <Content>
+            <h4> Componente o pagina custom [@nComponentName] non trovata!</h4>
+            <img style="margin: auto;display: block;" src="./img/unknown.png">
+        </Content>
+    </DialogTemplates>
+    <DialogButtons>
+        <DialogButton Content="Ok" IsPrimary="true" OnClick="()=> { IsShowDialog = false; }" />
+    </DialogButtons>
+</SfDialog>
+
+
+@code {
+
+    /// <summary>
+    /// Name of the component or page to load
+    /// </summary>
+    [Parameter]
+    public string nComponentName { get; set; }
+
+    /// <summary>
+    /// Open/Close the dialog
+    /// </summary>
+    [Parameter]
+    public bool IsShowDialog
+    {
+        get => _IsShowDialog;
+        set
+        {
+            if (_IsShowDialog == value) return;
+            _IsShowDialog = value;
+            IsShowDialogChanged.InvokeAsync(value);
+        }
+    }
+
+    /// <summary>
+    /// Event for the 3 way binging
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> IsShowDialogChanged { get; set; }
+
+    /// <summary>
+    /// Open/CLose the dialog
+    /// </summary>
+    public bool _IsShowDialog = false;
+
+}

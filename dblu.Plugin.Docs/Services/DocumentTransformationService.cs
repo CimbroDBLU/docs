@@ -1,4 +1,5 @@
-﻿using dblu.Docs.Extensions;
+﻿using dblu.Docs.Classi;
+using dblu.Docs.Extensions;
 using dblu.Portale.Plugin.Docs.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,9 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telerik.Reporting;
+using Telerik.Reporting.Processing;
+using Telerik.Windows.Documents.Model;
 
 namespace dblu.Portale.Plugin.Docs.Services
 {
@@ -564,12 +568,174 @@ namespace dblu.Portale.Plugin.Docs.Services
             _logger.LogInformation($"DocumentTransformationService.PDF_From_ZIP: ZIP {Filename} processed in {Sw1.ElapsedMilliseconds} ms");
             return ret;
         }
+        
+        
+        /// <summary>
+        /// Sign a PDF Memory stream, adding required labels
+        /// </summary>
+        /// <param name="Doc">Document PDF to process (as MemoryStream)</param>
+        /// <param name="att">Attributes od the document</param>
+        /// <returns>
+        /// A tupla with 2 values:
+        /// 1) A bool value to indicate if the operation ends properly
+        /// 2) A memorystream properly signed 
+        /// </returns>
+        public (bool,MemoryStream) SignPDF(MemoryStream Doc, ElencoAttributi att)
+        {
+            try
+            {
+                string rpt = _config["Docs:EtichettaProtocollo"];
+                if (string.IsNullOrEmpty(rpt))
+                    return (true, Doc);
+                string etichetta = Path.Combine(_appEnvironment.ContentRootPath, "Report", rpt);
+
+                if (!File.Exists(etichetta))
+                {
+                    _logger.LogError($"DocumentTransformationService.SignPDF: Label {etichetta} not found!");
+                    return (false, new MemoryStream());
+                }
+
+                Telerik.Reporting.Report eti;
+                var reportPackager = new ReportPackager();
+
+                using (var sourceStream = System.IO.File.OpenRead(etichetta))
+                {
+                    eti = (Telerik.Reporting.Report)reportPackager.UnpackageDocument(sourceStream);
+                }
+                var reportProcessor = new Telerik.Reporting.Processing.ReportProcessor();
+                var reportSource = new Telerik.Reporting.InstanceReportSource();
+                reportSource.ReportDocument = eti;
+
+                foreach (Attributo a in att.ToList())
+                {
+                    if (a.Valore != null)
+                    {
+                        reportSource.Parameters.Add(a.Nome, a.Valore == null ? "" : a.Valore);
+                    }
+                }
+
+                Telerik.Documents.Primitives.Size A4 = PaperTypeConverter.ToSize(PaperTypes.A4);
+
+                if (Doc != null)
+                {
+
+                    Syncfusion.Pdf.Parsing.PdfLoadedDocument pdftmp = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(Doc);
+
+                    Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
+                    document.PageSettings.SetMargins(0);
+
+                    int i = 0;
+                    foreach (Syncfusion.Pdf.PdfLoadedPage lptmp in pdftmp.Pages)
+                    {
+                        try
+                        {
+                            Syncfusion.Pdf.Graphics.PdfTemplate template = lptmp.CreateTemplate();
+                            Syncfusion.Pdf.PdfPage page = document.Pages.Add();
+
+                            Syncfusion.Pdf.Graphics.PdfGraphics graphics = page.Graphics;
+                            float etiHeight = page.Size.Height * .05F + 5;
+
+
+                            Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = etiHeight + 1 };
+
+                            Syncfusion.Drawing.SizeF pDest = AUX_ResizeKeepingRatio(lptmp.Size.Width, lptmp.Size.Height, page.Size.Width * 0.95F, page.Size.Height - etiHeight);
+
+                            switch (lptmp.Rotation)
+                            {
+                                case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle90:
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.TranslateTransform(page.Size.Width, etiHeight);
+                                        graphics.RotateTransform(90);
+                                        posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
+                                    }
+
+                                    graphics.DrawPdfTemplate(template, posizione, pDest);
+
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.RotateTransform(-90);
+                                        graphics.TranslateTransform(-page.Size.Width, -etiHeight);
+                                    }
+
+                                    break;
+                                case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle270:
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.TranslateTransform(0, page.Size.Height);
+                                        graphics.RotateTransform(-90);
+                                        posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
+                                    }
+                                    graphics.DrawPdfTemplate(template, posizione, pDest);
+
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.RotateTransform(90);
+                                        graphics.TranslateTransform(0, -page.Size.Height);
+                                    }
+                                    break;
+                                default:
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.TranslateTransform(0, page.Size.Height);
+                                        graphics.RotateTransform(-90);
+                                        posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
+                                    }
+                                    graphics.DrawPdfTemplate(template, posizione, pDest);
+
+                                    if (pDest.Height < pDest.Width)
+                                    {
+                                        graphics.RotateTransform(90);
+                                        graphics.TranslateTransform(0, -page.Size.Height);
+                                    }
+                                    break;
+                            }
+
+                            i++;
+                            reportSource.Parameters.Add("NPag", i);
+                            reportSource.Parameters.Add("TPag", pdftmp.Pages.Count);
+
+                            RenderingResult curEti = reportProcessor.RenderReport("PDF", reportSource, null);
+                            Syncfusion.Pdf.Parsing.PdfLoadedDocument pdfEti = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(new MemoryStream(curEti.DocumentBytes));
+                            posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 5 };
+                            Syncfusion.Pdf.PdfLoadedPage loadedPage = pdfEti.Pages[0] as Syncfusion.Pdf.PdfLoadedPage;
+                            template = loadedPage.CreateTemplate();
+
+                            graphics.DrawPdfTemplate(template, posizione,
+                                new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height));
+                            pdfEti.Close();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"DocumentTransformationService.SignPDF: Error at page {i + 1}: {ex.Message}");
+                            document.ImportPageRange(pdftmp, i, i);
+                            i++;
+                        }
+
+                    }
+                    pdftmp.Close();
+
+
+                    MemoryStream mpdf = new MemoryStream();
+                    document.Save(mpdf);
+                    document.Close();
+                    mpdf.Position = 0;
+                    return (true, mpdf);
+                }
+                return (false, new MemoryStream());
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"DocumentTransformationService.SignPDF: Unexpected error {ex}");
+                return (false, new MemoryStream());
+            }
+        }
 
         /// <summary>
         /// Clean an HTML string , removing annoyng tags for PDF rendering
         /// </summary>
-        /// <param name="htxt"></param>
-        /// <returns></returns>
+        /// <param name="htxt">HTML text to process</param>
+        /// <returns>A Clean html string</returns>
         private string AUX_CleanHTML(string htxt)
         {
 
@@ -621,15 +787,15 @@ namespace dblu.Portale.Plugin.Docs.Services
         /// Adjust PDF stream (Ex elaborastreamPDF)
         /// Apply optimization to the PDF
         /// </summary>
-        /// <param name="m">Srteam to process</param>
-        /// <param name="fileName">Original file name</param>
-        /// <param name="avvisi">Issues detected</param>
+        /// <param name="Stream">Srteam to process</param>
+        /// <param name="FileName">Original file name</param>
+        /// <param name="Notifications">Issues detected</param>
         /// <returns>
         /// A Elaborated memory stream
         /// </returns>
-        private MemoryStream AUX_AdjustPDFStream(MemoryStream m, string fileName, out string avvisi)
+        private MemoryStream AUX_AdjustPDFStream(MemoryStream Stream, string FileName, out string Notifications)
         {
-            avvisi = "";
+            Notifications = "";
             try
             {
 
@@ -637,17 +803,17 @@ namespace dblu.Portale.Plugin.Docs.Services
                 var flAnn = false;  //contiene annotazioni
                 var flResize = false;  // richiede resize
 
-                m.Position = 0;
+                Stream.Position = 0;
                 var A4Size = PdfPageSize.A4;
                 PdfLoadedDocument ld = null;
                 try
                 {
-                    ld = new PdfLoadedDocument(m);
+                    ld = new PdfLoadedDocument(Stream);
                     if (ld.PageCount == 0) throw new Exception();
                 }
                 catch
                 {
-                    ld = new PdfLoadedDocument(m, true);
+                    ld = new PdfLoadedDocument(Stream, true);
                     flAnn = true;  // forzo la copia dello stream corretto
                 }
                 MemoryStream m2 = null;
@@ -770,30 +936,17 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             else if (nn is PdfLoadedTextMarkupAnnotation)
                             {
-                                //p.Annotations.RemoveAt(i);
                                 nn.Flatten = true;
-
                                 flNoteManuali = true;
-                                //PdfTextMarkupAnnotation xx1 = new PdfTextMarkupAnnotation(new RectangleF(nn.Location, nn.Size));
-                                //xx1.TextMarkupAnnotationType = ((Syncfusion.Pdf.Interactive.PdfLoadedTextMarkupAnnotation)nn).TextMarkupAnnotationType;
-                                //xx1.TextMarkupColor = ((Syncfusion.Pdf.Interactive.PdfLoadedTextMarkupAnnotation)nn).TextMarkupColor;
-
-                                //xx1.Flatten = true;
-
-                                //p.Annotations.Add(xx1);
                             }
                             else if (nn is PdfLoadedInkAnnotation)
                             {
-                                //DrawPolygon(PdfPen pen, PdfBrush brush, PointF[] points);
                                 flNoteManuali = true;
                                 nn.Flatten = true;
-
                             }
                             else if (nn is PdfLoadedRubberStampAnnotation)
                             {
                                 flNoteManuali = true;
-                                //nn.Flatten = true;
-
                             }
                             else if (nn is PdfLoadedLineAnnotation)
                             {
@@ -852,14 +1005,14 @@ namespace dblu.Portale.Plugin.Docs.Services
                     if (flNoteManuali)
                     {
                         ControllaPag.Add((pn).ToString());
-                        _logger.LogWarning($"DocumentTransformationService.AUX_AdjustPDFStream: Notes at page {pn} in [{fileName}]");
+                        _logger.LogWarning($"DocumentTransformationService.AUX_AdjustPDFStream: Notes at page {pn} in [{FileName}]");
                     }
 
                 };
 
                 if (ControllaPag.Count > 0)
                 {
-                    avvisi = $" Controllare le note manuali (pag. {string.Join(",", ControllaPag)})";
+                    Notifications = $" Controllare le note manuali (pag. {string.Join(",", ControllaPag)})";
                 }
 
                 if (flAnn)
@@ -875,8 +1028,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                     catch (Exception ex)
                     {
                         flAnn = false;
-                        avvisi += " Impossibile importare le note. ";
-                        _logger.LogError($"DocumentTransformationService.AUX_AdjustPDFStream:: Unable to import notes {fileName}. {ex.Message}");
+                        Notifications += " Impossibile importare le note. ";
+                        _logger.LogError($"DocumentTransformationService.AUX_AdjustPDFStream:: Unable to import notes {FileName}. {ex.Message}");
                     }
                 }
 
@@ -965,16 +1118,16 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (!flAnn && !flResize)
                 {
                     m2 = new MemoryStream();
-                    m.Position = 0;
-                    m.CopyTo(m2);
+                    Stream.Position = 0;
+                    Stream.CopyTo(m2);
                 }
                 m2.Position = 0;
                 return m2;
             }
             catch (Exception ex)
             {
-                avvisi = "Impossibile includere il file";
-                _logger.LogError($"DocumentTransformationService.AUX_AdjustPDFStream:: Unable to include file {fileName}. {ex.Message}");
+                Notifications = "Impossibile includere il file";
+                _logger.LogError($"DocumentTransformationService.AUX_AdjustPDFStream:: Unable to include file {FileName}. {ex.Message}");
             }
             return null;
         }

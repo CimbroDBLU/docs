@@ -1,0 +1,62 @@
+﻿@*
+    Component for showing a multi selectable list of user (used as email receivers)
+    We allow also to add external mails to list
+*@
+
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services;
+@inject IApplicationUsersManager  _ApplicationUsersManager
+
+<SfMultiSelect AllowCustomValue=true @bind-Value="@nEmails" Placeholder="" DataSource="@Mails">
+    <MultiSelectTemplates TItem="ApplicationUser">
+        <ItemTemplate>
+            @{
+                var User = context as ApplicationUser;
+                @($"{User.Name} {User.LastName} [{User.Email}]")
+            }
+        </ItemTemplate>
+    </MultiSelectTemplates>
+    <MultiSelectFieldSettings Text="Name" Value="Email"></MultiSelectFieldSettings>
+</SfMultiSelect>
+
+@code {
+
+    /// <summary>
+    /// Selected Emails
+    /// </summary>
+    [Parameter]
+    public string[] nEmails
+    {
+        get => _nEmails;
+        set
+        {
+            if (_nEmails == value) return;
+            _nEmails = value;
+            nEmailsChanged.InvokeAsync(value);
+        }
+    }
+
+    /// <summary>
+    /// Event for having two way binding
+    /// </summary>
+    [Parameter]
+    public EventCallback<string[]> nEmailsChanged { get; set; }
+
+    /// <summary>
+    /// List of all available emails
+    /// </summary>
+    private ObservableCollection<ApplicationUser> Mails { get; set; }
+
+    /// <summary>
+    /// Selected email
+    /// </summary>
+    private string[] _nEmails = new string[] { };
+
+    /// <summary>
+    /// Get the list of users
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        Mails = new ObservableCollection<ApplicationUser>(_ApplicationUsersManager.GetUsers().Where(e => !string.IsNullOrEmpty(e.Email)));
+    }
+}

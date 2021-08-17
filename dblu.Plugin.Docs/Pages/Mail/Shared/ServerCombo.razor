@@ -1,0 +1,83 @@
+﻿@*
+    Component for showing a dropdown list of available mailboxes/ server folders
+*@
+
+@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Services
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+@using Microsoft.AspNetCore.Http;
+@using System.Security.Claims;
+
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject IHttpContextAccessor _HttpContextAccessor
+
+
+<div class="row">
+    <div class="col-3" style="align-self: center;">
+        <label>@nLabel</label>
+    </div>
+    <div class="col-9">
+        <SfDropDownList @bind-Value="@(nServer.Nome)" TValue="string" TItem="EmailServer" DataSource="@Servers">
+            <DropDownListFieldSettings Text="Nome" Value="Nome"></DropDownListFieldSettings>
+            <DropDownListEvents TValue="string" TItem="EmailServer" OnValueSelect="OnValueChange"></DropDownListEvents>
+        </SfDropDownList>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Label for namimbng the dropdown
+    /// </summary>
+    [Parameter]
+    public string nLabel { get; set; } = "Casella di posta :";
+
+    /// <summary>
+    /// Selected email server
+    /// </summary>
+    [Parameter]
+    public EmailServer nServer { get; set; }
+
+    /// <summary>
+    /// Event for the 2 way binding of nServer
+    /// </summary>
+    [Parameter]
+    public EventCallback<EmailServer> nServerChanged { get; set; }
+
+    /// <summary>
+    /// List of servers that need to be excluded (used for making the move function)
+    /// </summary>
+    [Parameter]
+    public List<string> nExcludedServers { get; set; }
+
+    /// <summary>
+    /// List of available services
+    /// </summary>
+    private ObservableCollection<EmailServer> Servers { get; set; }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        Servers = new ObservableCollection<EmailServer>(_MailService._serMan.GetServersEmailinRoles(_MailService.getRuoli(_HttpContextAccessor.HttpContext.User.Claims, ""), TipiRecordServer.CartellaMail));
+        if (nExcludedServers != null)
+            Servers = new ObservableCollection<EmailServer>(Servers.Where(x => (nExcludedServers.FirstOrDefault(c => c == x.Nome)) == null));
+        if (Servers.Count > 0 && nServer is null)
+        {
+            nServer = Servers[0];
+            await nServerChanged.InvokeAsync(nServer);
+        }
+    }
+
+    /// <summary>
+    /// Notifies the change of the server
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnValueChange(Syncfusion.Blazor.DropDowns.SelectEventArgs<EmailServer> args)
+    {
+        nServer = args.ItemData as EmailServer;
+        await nServerChanged.InvokeAsync(nServer);
+    }
+}

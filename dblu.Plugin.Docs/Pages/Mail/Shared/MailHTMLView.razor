@@ -1,0 +1,75 @@
+﻿@*
+    Component for showing the html of an email 
+    It has be bound in a i-frame to preserve style from the entire site
+*@
+@using dblu.Docs.Models
+@using Microsoft.AspNetCore.Http;
+@using dblu.Portale.Plugin.Docs.Classes
+@using dblu.Portale.Plugin.Docs.Services
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachmentsService
+@inject dblu.Portale.Plugin.Docs.Services.DocumentTransformationService _DocumentService
+@inject IHttpContextAccessor _HttpContextAccessor
+@inject ILogger<MailHTMLView> _Logger
+
+<div class="row form-group">
+    <div class="col-12">
+        <iframe style="width:100%; height:@(nHeight.ToString())px" srcdoc="@Source"></iframe>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <SfButton CssClass="e-primary" OnClick="OnGoBack">Indietro</SfButton>
+    </div>
+</div>
+
+@code {
+
+    /// <summary>
+    /// Attach to display
+    /// </summary>
+    [Parameter]
+    public AllegatoEmail nAttach { get; set; }
+
+    /// <summary>
+    /// Height of the preview in pixel
+    /// </summary>
+    [Parameter]
+    public int nHeight { get; set; } = 500;
+
+    /// <summary>
+    /// Fires whn user has finished to instect source
+    /// </summary>
+    [Parameter]
+    public EventCallback OnAbort { get; set; }
+
+    /// <summary>
+    /// HTML source to display
+    /// </summary>
+    private string Source { get; set; } = "";
+
+    /// <summary>, load the HTML from email
+    /// On Init
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        try
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            DocumentManager DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
+            Source = (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), false)).ToHtml();
+            _Logger.LogInformation($"MailHTMLView.OnInitialize: HTML in {sw.ElapsedMilliseconds} ms");
+        }catch(Exception ex)
+        {
+            _Logger.LogError($"MailHTMLView.OnInitialize: Unexpected error {ex} ");
+        }
+
+    }
+
+    /// <summary>
+    /// Forward the back event
+    /// </summary>
+    private void OnGoBack()
+    {
+        OnAbort.InvokeAsync();
+    }
+}

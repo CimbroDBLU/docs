@@ -1,0 +1,84 @@
+﻿@*
+    Component for showing a list of operation logs
+*@
+@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services;
+@inject ILogger<MailLogs> _Logger
+@inject dbluDocsContext _DbContext
+@inject IApplicationUsersManager  _ApplicationUsersManager
+
+
+<div class="row form-group">
+    <div class="col-12">
+        <SfGrid SelectedRowIndex="0" Height="500px" DataSource="@nLogs" AllowTextWrap="true" AllowPaging="true">
+            <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
+            <GridPageSettings PageSize="10"></GridPageSettings>
+            <GridColumns>
+                <GridColumn Field=@nameof(LogDoc.Data) HeaderText="Data" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+                <GridColumn Field=@nameof(LogDoc.Operazione) HeaderText="Attività" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+                <GridColumn Field=@nameof(LogDoc.Utente) HeaderText="Utente" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false">
+                    <Template>
+                        @{
+                            var UserID = (context as LogDoc).Utente;
+                            var User = Users.FirstOrDefault(x => x.UserId == UserID);
+                            if (User is not null)
+                            {
+                                var desc = $"{@User.Name} {@User.LastName} [{@User.UserId}]";
+                                @desc
+                            }
+                        }
+                    </Template>
+                </GridColumn>
+            </GridColumns>
+        </SfGrid>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <SfButton CssClass="e-primary" OnClick="OnGoBack">Indietro</SfButton>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Attachment that we are inspecting
+    /// </summary>
+    [Parameter]
+    public AllegatoEmail nAttach { get; set; }
+
+    /// <summary>
+    /// Fires when log inspection has finished
+    /// </summary>
+    [Parameter]
+    public EventCallback OnAbort { get; set; }
+
+    /// <summary>
+    /// List of logs 
+    /// </summary>
+    private ObservableCollection<LogDoc> nLogs { get; set; }
+
+    /// <summary>
+    /// List of users
+    /// </summary>
+    private List<ApplicationUser> Users { get; set; }
+
+    /// <summary>
+    /// On init, load logs and users
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        LogDocManager LM = new LogDocManager(_DbContext.Connessione, _Logger);
+        nLogs = new ObservableCollection<LogDoc>(LM.GetLogOggetto(nAttach.Id, dblu.Docs.Classi.TipiOggetto.ALLEGATO));
+        Users = _ApplicationUsersManager.GetUsers().ToList();
+    }
+
+    /// <summary>
+    /// Forward the end of operations
+    /// </summary>
+    private void OnGoBack()
+    {
+        OnAbort.InvokeAsync();
+    }
+}

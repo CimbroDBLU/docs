@@ -1,0 +1,86 @@
+﻿@*
+    Component for forwarding an email to another user
+*@
+@using dblu.Docs.Models
+@using Microsoft.AspNetCore.Http;
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject IHttpContextAccessor _HttpContextAccessor
+@inject ILogger<MailForward> _Logger
+
+<div class="row form-group">
+    <div class="col-2">
+        <label>A:</label>
+    </div>
+    <div class="col-10">
+        <MultiSelectUserMails @bind-nEmails="@To"></MultiSelectUserMails>
+    </div>
+</div>
+<div class="row form-group">
+    <div class="col-2">
+        <label>Chiudi email</label>
+    </div>
+    <div class="col-4">
+        <SfSwitch @bind-Checked="@CloseEmail"></SfSwitch>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <SfButton OnClick="OnSend" CssClass="e-primary">Invia</SfButton>
+        <SfButton OnClick="OnGoBack">Indietro</SfButton>
+    </div>
+</div>
+@code
+{
+    /// <summary>
+    /// Email to forward
+    /// </summary>
+    [Parameter]
+    public AllegatoEmail nAttach { get; set; }
+
+    /// <summary>
+    /// Source inbox for the email
+    /// </summary>
+    [Parameter]
+    public EmailServer nSourceServer { get; set; }
+
+    /// <summary>
+    /// Fires when operation has done
+    /// </summary>
+    [Parameter]
+    public EventCallback<Models.RisultatoAzione> OnOperationDone { get; set; }
+
+    /// <summary>
+    /// Fires when user decide to abort the operation
+    /// </summary>
+    [Parameter]
+    public EventCallback OnAbort { get; set; }
+
+    /// <summary>
+    /// List of destination users
+    /// </summary>
+    public string[] To { get; set; } = new string[] { };
+
+    /// <summary>
+    /// Indicates if the email has to be closed after the send
+    /// </summary>
+    public bool CloseEmail { get; set; } = false;
+
+    /// <summary>
+    /// Send email
+    /// </summary>
+    private async void OnSend()
+    {
+        var User = _HttpContextAccessor.HttpContext.User;
+        Models.RisultatoAzione RA = await _MailService.InoltraEmail(nAttach.Id.ToString(), string.Join(";", To), CloseEmail, User);
+        await OnOperationDone.InvokeAsync(RA);
+        _Logger.LogInformation($"MailForward.OnSend: Mail {nAttach.Id} sent to { string.Join("; ", To)}");
+    }
+
+    /// <summary>
+    /// Forward the abort event
+    /// </summary>
+    private void OnGoBack()
+    {
+        OnAbort.InvokeAsync();
+    }
+}

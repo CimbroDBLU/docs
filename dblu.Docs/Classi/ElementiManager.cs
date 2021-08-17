@@ -386,6 +386,7 @@ namespace dblu.Docs.Classi
             return doc;
 
         }
+
         public List<Allegati> GetAllegatiElemento(Guid elemento)
         {
 
@@ -407,6 +408,7 @@ namespace dblu.Docs.Classi
             return doc;
         
         }
+
         public bool Cancella(string Id, short Revisione)
         {
             if (string.IsNullOrEmpty(Id))

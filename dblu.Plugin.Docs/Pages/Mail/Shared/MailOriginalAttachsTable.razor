@@ -1,0 +1,91 @@
+﻿@*
+    Component for showing a table with all attachments present in an email
+*@
+
+@using dblu.Portale.Plugin.Docs.Services
+@inject IJSRuntime JSRuntime
+
+<style>
+    .Underline {
+        background-color: #ff8f00;
+        font-weight: bold;
+    }
+
+    .smallb {
+        width: 50px;
+    }
+</style>
+
+<SfGrid EnablePersistence="false" SelectedRowIndex="0" DataSource="@nAttachments" AllowTextWrap="true" AllowPaging="true">
+    <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
+    <GridPageSettings PageSize="4"></GridPageSettings>
+    <GridEvents TValue="OriginalAttachments" QueryCellInfo="CustomizeCell"></GridEvents>
+    <GridColumns>
+        <GridColumn Field=@nameof(OriginalAttachments.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
+        <GridColumn Field=@nameof(OriginalAttachments.Name) HeaderText="Allegato"></GridColumn>
+        <GridColumn Width="80px" Field=@nameof(OriginalAttachments.IsIncluded) DisplayAsCheckBox="true" HeaderText="Incluso"></GridColumn>
+        <GridColumn Field=@nameof(OriginalAttachments.Warning) HeaderText="Warning"></GridColumn>
+        <GridColumn HeaderTextAlign=TextAlign.Left HeaderText="" Width="60">
+            <Template>
+                @{
+                    var Att = (context as OriginalAttachments);
+                    <SfButton CssClass="smallb" OnClick="() => { Download(nAttachID, Att.Name); }" HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Download" } })" IconCss="e_fa fas fa-download"></SfButton>
+                }
+            </Template>
+        </GridColumn>
+        <GridColumn HeaderTextAlign=TextAlign.Left HeaderText="" Width="60">
+            <Template>
+                @{
+                    var Att2 = (context as OriginalAttachments);
+                    <SfButton CssClass="smallb" OnClick="() => { Preview(nAttachID, Att2.Name); }" HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Anteprima" } })" IconCss="e_fa fas fa-image"></SfButton>
+                }
+            </Template>
+        </GridColumn>
+    </GridColumns>
+</SfGrid>
+
+@code {
+    /// <summary>
+    /// List of the attachment to show
+    /// </summary>
+    [Parameter]
+    public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
+
+    /// <summary>
+    /// Mail Attachment source of these Attachments
+    /// </summary>
+    [Parameter]
+    public string nAttachID { get; set; }
+
+    /// <summary>
+    /// Apply a different style if an attach has some feature that cannot coverted in pdf
+    /// </summary>
+    /// <param name="args"></param>
+    public void CustomizeCell(QueryCellInfoEventArgs<OriginalAttachments> args)
+    {
+        if (args.Column.Field == "Warning" && !string.IsNullOrEmpty(args.Data.Warning))
+            args.Cell.AddClass(new string[] { "Underline" });
+    }
+
+    /// <summary>
+    /// Show the preview of the attach in another window
+    /// </summary>
+    /// <param name="AttachID">Attachment ID</param>
+    /// <param name="FileName">Name of the attachment</param>
+    public async void Preview(string AttachID, string FileName)
+    {
+        await JSRuntime.InvokeAsync<string>("open", $"/MailView/OpenFile?IdAllegato={AttachID}&NomeFile={FileName}", "_blank");
+    }
+
+    /// <summary>
+    /// Start the download of the attachment
+    /// </summary>
+    /// <param name="AttachID">Attachment ID</param>
+    /// <param name="FileName">Name of the attachment</param>
+    public async void Download(string AttachID, string FileName)
+    {
+        await JSRuntime.InvokeVoidAsync("BlazorSetHREF", $@"/MailView/ApriFile?IdAllegato={AttachID}&NomeFile={FileName}");
+    }
+
+
+}

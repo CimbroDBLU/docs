@@ -218,23 +218,21 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
 
         [HttpGet]
         [HasPermission("50.1.3")]
-        public async Task<FileResult> ApriFile(string IdAllegato, string NomeFile)
+        public async Task<ActionResult> ApriFile(string IdAllegato, string NomeFile)
         {
-            MemoryStream ff = new MemoryStream();
-            string t = "text/csv";
+            MemoryStream ff = new MemoryStream();            
             try {
                 ff = await _mailService.GetFileAsync(IdAllegato, NomeFile);
-                t = _mailService._allMan.GetContentType(NomeFile);
+                string t = _mailService._allMan.GetContentType(NomeFile);
                 if (string.IsNullOrEmpty(t))
+                    t = "application/octet";
+                return File(ff, t, NomeFile);
+                }
+            catch (Exception e) 
             {
-                t = "text/csv";
-                NomeFile = NomeFile + ".txt";
+               
             }
-            }
-            catch (Exception e) {
-                Console.WriteLine(e);
-            }
-            return File(ff, t, NomeFile);
+            return NotFound();
         }
         [HttpGet]
         [HasPermission("50.1.3")]
@@ -242,8 +240,30 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         {
             
             MemoryStream ff = await _mailService._allMan.GetFileAsync(IdAllegato);
+            System.IO.File.WriteAllBytes(@"C:\temp\appo.png", ff.ToArray());
             string t = "image/png";
             return File(ff, t, NomeFile);
+        }
+
+        [HttpGet]
+        [HasPermission("50.1.3")]
+        public async Task<ActionResult> OpenFile(string IdAllegato, string NomeFile)
+        {
+
+            MemoryStream ff = new MemoryStream();
+            try
+            {
+                ff = await _mailService.GetFileAsync(IdAllegato, NomeFile);
+                string t = _mailService._allMan.GetContentType(NomeFile);
+                if (string.IsNullOrEmpty(t))
+                    t = "application/octet";
+                return File(ff, t);
+            }
+            catch (Exception e)
+            {
+
+            }
+            return NotFound();
         }
 
         [HttpGet]
