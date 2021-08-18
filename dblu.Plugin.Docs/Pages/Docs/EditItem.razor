@@ -2,6 +2,7 @@
     Component for editing an Item
 *@
 @page "/Docs/Item/{Id}"
+@page "/Docs/Item/{Id}/{ShowMetadata}"
 @using dblu.Docs.Models
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
 @using dblu.Portale.Plugin.Docs.Classes
@@ -23,6 +24,8 @@
     <SfCard>
         <CardHeader Title="@CardTitle" />
         <div class="container-fluid" style="margin:5px">
+            @if (ShowMetadata.ToLowerInvariant()=="true")
+            {
             <CardContent EnableSeperator="true">
                 <SfAccordion>
                     <AccordionItems>
@@ -79,40 +82,44 @@
                     </AccordionItems>
                 </SfAccordion>
             </CardContent>
+            }
             <CardContent EnableSeperator="true">
                 <div class="row">
-                    <div class="col-5" style="align-self: auto;">
-                        <SfAccordion>
-                            <AccordionItems>
-                                <AccordionItem Expanded="true">
-                                    <HeaderTemplate>
-                                        <div>Attributi</div>
-                                    </HeaderTemplate>
-                                    <ContentTemplate>
-                                        <AttributesForm nAttributeList="@Item.elencoAttributi"></AttributesForm>
-                                    </ContentTemplate>
-                                </AccordionItem>
-                            </AccordionItems>
-                        </SfAccordion>
-                    </div>
-                    <div class="col-7" style="align-self: auto;">
-                        <SfAccordion>
-                            <AccordionItems>
-                                <AccordionItem Expanded="true">
-                                    <HeaderTemplate>
-                                        <div>Allegati</div>
-                                    </HeaderTemplate>
-                                    <ContentTemplate>
-                                        <AttachmentsTable nEnableRemove="@IsAdmin" nAttachments="@Attachments" OnSelectAttachment="OnSelectAttach" OnAddRequested="OnAddAttach" OnOpenAttachment="OnOpenAttach" OnDownloadAttachment="OnDownloadAttach" OnRemoveAttachment="OnRemoveAttach"></AttachmentsTable>
-                                    </ContentTemplate>
-                                </AccordionItem>
-                            </AccordionItems>
-                        </SfAccordion>
-                        <div class="mt-2">
-                            <DocViewer nHeight=1000 nSourceType="e_SourceType.Attachment" nDocIdentifier="@SelAttach"></DocViewer>
+                    @if (ShowMetadata.ToLowerInvariant() == "true")
+                    {
+                        <div class="col-5" style="align-self: auto;">
+                            <SfAccordion>
+                                <AccordionItems>
+                                    <AccordionItem Expanded="true">
+                                        <HeaderTemplate>
+                                            <div>Attributi</div>
+                                        </HeaderTemplate>
+                                        <ContentTemplate>
+                                            <AttributesForm nAttributeList="@Item.elencoAttributi"></AttributesForm>
+                                        </ContentTemplate>
+                                    </AccordionItem>
+                                </AccordionItems>
+                            </SfAccordion>
+                        </div>
+                    }
+                    <div class="@ColSize" style="align-self: auto;">
+                            <SfAccordion>
+                                <AccordionItems>
+                                    <AccordionItem Expanded="true">
+                                        <HeaderTemplate>
+                                            <div>Allegati</div>
+                                        </HeaderTemplate>
+                                        <ContentTemplate>
+                                            <AttachmentsTable nEnableRemove="@IsAdmin" nAttachments="@Attachments" OnSelectAttachment="OnSelectAttach" OnAddRequested="OnAddAttach" OnOpenAttachment="OnOpenAttach" OnDownloadAttachment="OnDownloadAttach" OnRemoveAttachment="OnRemoveAttach"></AttachmentsTable>
+                                        </ContentTemplate>
+                                    </AccordionItem>
+                                </AccordionItems>
+                            </SfAccordion>
+                            <div class="mt-2">
+                                <DocViewer nHeight=1000 nSourceType="e_SourceType.Attachment" nDocIdentifier="@SelAttach"></DocViewer>
+                            </div>
                         </div>
                     </div>
-                </div>
             </CardContent>
             <CardContent EnableSeperator="true">
                 <div class="row">
@@ -133,12 +140,16 @@
     [Parameter]
     public string Id { get; set; }
 
+    /// <summary>
+    /// Indicates if metadata of attaqchments must be shower
+    /// </summary>
+    [Parameter]
+    public string ShowMetadata { get; set; } = "false";
 
     /// <summary>
     /// Show/Hide the spinner
     /// </summary>
     private bool IsSpinnerVisible { get; set; } = false;
-
 
     /// <summary>
     /// Title of the Card and Page
@@ -175,9 +186,12 @@
         _Logger.LogInformation($"EditItem.OnInitialized: Loaded Item {Id} in {Sw.ElapsedMilliseconds} ms");
         IsSpinnerVisible = false;
 
-
-
     }
+
+    /// <summary>
+    /// Get the correct css class depending if metadata are required
+    /// </summary>
+    private string ColSize => (ShowMetadata.ToLowerInvariant() == "true") ? "col-7" : "col-12";
 
     /// <summary>
     /// Save the current Attach id in memory
