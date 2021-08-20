@@ -39,7 +39,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers
             try
             {
                 bool flNew = true;
-                if (Allegato.Id != null) {
+                if (Allegato.Id != Guid.Empty) {
                     Allegati a = _allService._allMan.Get(Allegato.Id);
                     if (a != null)
                     {

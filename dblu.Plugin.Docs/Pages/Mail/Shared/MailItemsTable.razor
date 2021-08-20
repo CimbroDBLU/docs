@@ -84,6 +84,7 @@
 <QuestionDialog nShowDialog="ShowAddConfirm" nText="Aggiungo all'elemento selezionato?" nTitle="Conferma" OnNoPressed="CloseDialog" OnClose="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="AddToItem"></QuestionDialog>
 <QuestionDialog nShowDialog="ShowDuplicateConfirm" nText="Confermi la creazione di un nuovo elemento nel fascicolo corrente?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Duplicate"></QuestionDialog>
 <QuestionDialog nShowDialog="ShowDeleteConfirm" nText="Sei sicuro di eliminare completamente l'elemento?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Delete"></QuestionDialog>
+<QuestionDialog nShowDialog="ShowDossierConfirm" nText="Confermi la creazione di un nuovo elemento nel fascicolo corrente?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Register"></QuestionDialog>
 <AlertDialog nShowDialog="ShowAlertNoDelete" nText="Non è possibile eliminare un elemento già processato." OnOKPressed="()=> { ShowAlertNoDelete = false; }" OnClose="()=> { ShowAlertNoDelete = false; }"></AlertDialog>
 
 <Toast @ref="ToastAddOK" nToastType="Toast.e_ToastType.OK" nTitle="Aggiungi a elemento" nContent="Allegato aggiunto"></Toast>
@@ -92,6 +93,10 @@
 <Toast @ref="ToastDelKO" nToastType="Toast.e_ToastType.Fail" nTitle="Rimuovi elemento" nContent="Rimozione non riuscita"></Toast>
 <Toast @ref="ToastDupOK" nToastType="Toast.e_ToastType.OK" nTitle="Duplica elemento" nContent="Elemento duplicato"></Toast>
 <Toast @ref="ToastDupKO" nToastType="Toast.e_ToastType.Fail" nTitle="Duplica elemento" nContent="Duplicazione non riuscita"></Toast>
+
+<Toast @ref="ToastActionOK" nToastType="Toast.e_ToastType.OK" nTitle="@ActionSelected" nContent="Elemento creato correttmante"></Toast>
+<Toast @ref="ToastActionKO" nToastType="Toast.e_ToastType.Fail" nTitle="@ActionSelected" nContent="Creazione elemnto non riuscita"></Toast>
+
 
 <UndefinedComponentPopUp @bind-IsShowDialog="@IsShowUndefined" nComponentName="@ComponentName"></UndefinedComponentPopUp>
 
@@ -159,6 +164,11 @@
     private bool ShowDeleteConfirm { get; set; } = false;
 
     /// <summary>
+    /// Show the confirmation for creatinga new item inside dossier
+    /// </summary>
+    private bool ShowDossierConfirm { get; set; } = false;
+
+    /// <summary>
     /// Inidicate id the toolbar button for printing the summary is enable or not
     /// </summary>
     private bool IsSummaryActive { get; set; } = true;
@@ -197,6 +207,16 @@
     /// Toast for a negative duplication
     /// </summary>
     private Toast ToastDupKO { get; set; }
+
+    /// <summary>
+    /// Toast for a positive action 
+    /// </summary>
+    private Toast ToastActionOK { get; set; }
+
+    /// <summary>
+    /// Toast for a negative action
+    /// </summary>
+    private Toast ToastActionKO { get; set; }
 
     /// <summary>
     /// On data bound of the grid, select the first line
@@ -286,7 +306,7 @@
     }
 
     /// <summary>
-    /// On after render, select first custom action 
+    /// On after render, select first custom action
     /// </summary>
     /// <param name="firstRender"></param>
     protected override void OnAfterRender(bool firstRender)
@@ -301,7 +321,8 @@
     /// </summary>
     public void Refresh()
     {
-        LastAttachId = "";
+        LastAttachId = "-";
+        OnParametersSet();
         Grid.Refresh();
     }
 
@@ -366,7 +387,12 @@
         if (T != null)
         {
             ComponentName = T.ViewAttributi;
-            IsShowUndefined = true;
+            if(!ComponentName.StartsWith("blz:/"))
+                IsShowUndefined = true;
+        }
+        if (!IsShowUndefined)
+        {
+            ShowDossierConfirm = true;
         }
     }
 
@@ -424,6 +450,28 @@
         ShowAddConfirm = false;
         ShowDuplicateConfirm = false;
         ShowDeleteConfirm = false;
+        ShowDossierConfirm = false;
+    }
+
+    /// <summary>
+    /// Open the customized page for the specific element type
+    /// </summary>
+    public async void Register()
+    {
+        TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
+
+        //1)aggiungo al fascicolo
+        Elementi e = await _MailService.CreaElementoFascicoloAsync(nAttachID, nDossierID, nItem.IdElemento.ToString(), T.Categoria, nItem.TipoElemento,"162003"/* nCostumerCode */, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "", null, true, nItem.DscElemento, User);
+        if (e == null)
+            ToastActionKO.Show();
+        else
+            ToastActionOK.Show();
+
+        //2)Apro la pagina di protocollazione indicata
+        await _SessionStore.SetAsync("Referrer", $"/Mail/Inbox/{nAttachID}");
+        string Url = $"{ComponentName.Replace("blz:/", "")}/{e.Id}";
+        _NavigationManager.NavigateTo(Url);
+
     }
 
     /// <summary>
