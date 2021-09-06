@@ -7,6 +7,9 @@
 @inject IHttpContextAccessor _HttpContextAccessor
 @inject ILogger<MailForward> _Logger
 
+<SfSpinner @bind-Visible="IsSpinnerVisible">
+</SfSpinner>
+
 <div class="row form-group">
     <div class="col-2">
         <label>A:</label>
@@ -66,14 +69,21 @@
     public bool CloseEmail { get; set; } = false;
 
     /// <summary>
+    /// Show/Hide the spinner
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
     /// Send email
     /// </summary>
     private async void OnSend()
     {
+        IsSpinnerVisible = true;
         var User = _HttpContextAccessor.HttpContext.User;
         Models.RisultatoAzione RA = await _MailService.InoltraEmail(nAttach.Id.ToString(), string.Join(";", To), CloseEmail, User);
         await OnOperationDone.InvokeAsync(RA);
         _Logger.LogInformation($"MailForward.OnSend: Mail {nAttach.Id} sent to { string.Join("; ", To)}");
+        IsSpinnerVisible = false;
     }
 
     /// <summary>

@@ -53,7 +53,7 @@
                                                 <div>Rispondi a <b>@AttachSubject</b></div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <MailAnswer nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" OnOperationDone="OnDone"></MailAnswer>
+                                                <MailAnswer nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" OnOperationDone="OnAnswer"></MailAnswer>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -72,7 +72,7 @@
                                                 <div>Inoltra <b>@AttachSubject</b></div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <MailForward nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" OnOperationDone="OnDone"></MailForward>
+                                                <MailForward nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" OnOperationDone="OnForward"></MailForward>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -234,6 +234,11 @@
     <Toast @ref="ToastMoveOK" nToastType="Toast.e_ToastType.OK" nTitle="Sposta email" nContent="Email spostata correttamente"></Toast>
     <Toast @ref="ToastMoveKO" nToastType="Toast.e_ToastType.Fail" nTitle="Sposta email" nContent="Spostamento NON riuscito"></Toast>
 
+    <Toast @ref="ToastForwardOK" nToastType="Toast.e_ToastType.OK" nTitle="Inoltra email" nContent="Email inoltrata correttamente"></Toast>
+    <Toast @ref="ToastForwardKO" nToastType="Toast.e_ToastType.Fail" nTitle="inoltra email" nContent="Inoltro NON riuscito"></Toast>
+
+    <Toast @ref="ToastAnswerOK" nToastType="Toast.e_ToastType.OK" nTitle="Rispondi a email" nContent="Email inviata correttamente"></Toast>
+    <Toast @ref="ToastAnswerKO" nToastType="Toast.e_ToastType.Fail" nTitle="Rispondi a email" nContent="Invio NON riuscito"></Toast>
 
 </section>
 
@@ -365,6 +370,26 @@
     /// Toaster for a negative move
     /// </summary>
     private Toast ToastMoveKO { get; set; }
+
+    /// <summary>
+    /// Toaster for a positive forward
+    /// </summary>
+    private Toast ToastForwardOK { get; set; }
+
+    /// <summary>
+    /// Toaster for a negative forward
+    /// </summary>
+    private Toast ToastForwardKO { get; set; }
+
+    /// <summary>
+    /// Toaster for a positive forward
+    /// </summary>
+    private Toast ToastAnswerOK { get; set; }
+
+    /// <summary>
+    /// Toaster for a negative forward
+    /// </summary>
+    private Toast ToastAnswerKO { get; set; }
 
     /// <summary>
     /// List of current Attach source Attachments
@@ -561,7 +586,32 @@
         else ToastMoveKO.Show();
         Grid.Refresh();
         OnAbort();
+    }
 
+    /// <summary>
+    /// Once forward has done, show the proper toast
+    /// </summary>
+    /// <param name="RA"></param>
+    private async void OnForward(Models.RisultatoAzione RA)
+    {
+        if (RA.Successo)
+            ToastForwardOK.Show();
+        else ToastForwardKO.Show();
+        Grid.Refresh();
+        OnAbort();
+    }
+
+    /// <summary>
+    /// Once forward has done, show the proper toast
+    /// </summary>
+    /// <param name="RA"></param>
+    private async void OnAnswer(Models.RisultatoAzione RA)
+    {
+        if (RA.Successo)
+            ToastAnswerOK.Show();
+        else ToastAnswerKO.Show();
+        Grid.Refresh();
+        OnAbort();
     }
 
     /// <summary>
