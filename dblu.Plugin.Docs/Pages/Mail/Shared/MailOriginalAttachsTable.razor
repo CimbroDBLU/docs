@@ -74,7 +74,11 @@
     /// <param name="FileName">Name of the attachment</param>
     public async void Preview(string AttachID, string FileName)
     {
-        await JSRuntime.InvokeAsync<string>("open", $"/MailView/OpenFile?IdAllegato={AttachID}&NomeFile={FileName}", "_blank");
+        try
+        {
+            JSRuntime.InvokeAsync<string>("open", $"/MailView/OpenFile?IdAllegato={AttachID}&NomeFile={FileName}", "_blank");
+        }
+        catch (Exception) { }
     }
 
     /// <summary>
@@ -84,7 +88,11 @@
     /// <param name="FileName">Name of the attachment</param>
     public async void Download(string AttachID, string FileName)
     {
-        await JSRuntime.InvokeVoidAsync("BlazorSetHREF", $@"/MailView/ApriFile?IdAllegato={AttachID}&NomeFile={FileName}");
+        try
+        {
+            JSRuntime.InvokeVoidAsync("BlazorSetHREF", $@"/MailView/ApriFile?IdAllegato={AttachID}&NomeFile={FileName}");
+        }
+        catch (Exception) { }
     }
 
 

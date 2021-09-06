@@ -76,8 +76,8 @@ namespace dblu.Portale.Plugin.Documenti
         var subItemM= new MenuItem[]
                      {                                        
                     new MenuItem("50.1.3", 1,  string.IsNullOrEmpty(_conf["Beta"]) ? "MailView/InArrivo" : "Mail/Inbox", "Email in arrivo", "fas fa-envelope-open-text", null),
-                    new MenuItem("50.1.3", 2, "MailView/emailProcessate", "Email processate", "fas fa-envelope", null),
-                    new MenuItem("50.1.3", 3, "MailView/emailInviate", "Email inviate", "fas fa-paper-plane", null),
+                    new MenuItem("50.1.3", 2,  string.IsNullOrEmpty(_conf["Beta"]) ? "MailView/emailProcessate" : "Mail/Processed", "Email processate", "fas fa-envelope", null),
+                    new MenuItem("50.1.3", 3,  string.IsNullOrEmpty(_conf["Beta"]) ? "MailView/emailInviate" : "Mail/Sent", "Email inviate", "fas fa-paper-plane", null),
                      };
 
                 var subItemZ = new MenuItem[]

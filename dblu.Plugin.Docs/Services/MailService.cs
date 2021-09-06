@@ -2390,7 +2390,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             return AvviaProcesso(Info, el, null);
         }
 
-        public async Task<RisultatoAzione> InoltraEmail(string IdAllegato, string Indirizzi, bool chiudi, ClaimsPrincipal User)
+        public async Task<RisultatoAzione> InoltraEmail(string IdAllegato, string Indirizzi, bool chiudi, ClaimsPrincipal User, string NomeServer="")
         {
             RisultatoAzione res = new RisultatoAzione();
             try
@@ -2509,6 +2509,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                             }
                             newmessage.Body = builder.ToMessageBody();
                             await client.SendAsync(newmessage, c);
+
                             //-------- Memorizzo l'operazione----------------------
                             LogDoc log = new LogDoc()
                             {
@@ -2520,6 +2521,33 @@ namespace dblu.Portale.Plugin.Docs.Services
                             };
                             _logMan.Salva(log, true);
                             //-------- Memorizzo l'operazione----------------------
+
+                            Allegati newall = new Allegati()
+                            {
+                                Descrizione = newmessage.Subject,
+                                NomeFile = "email",
+                                Tipo = al.Tipo,
+                                TipoNavigation = al.TipoNavigation,
+                                Stato = StatoAllegato.Spedito,
+                                Origine = NomeServer,
+                                UtenteC = User.Identity.Name,
+                                UtenteUM = User.Identity.Name
+                            };
+                            newall.elencoAttributi = al.TipoNavigation.Attributi;
+                            string emailmitt = newmessage.From.Mailboxes.First().Address;
+                            newall.SetAttributo("Mittente", emailmitt);
+                            newall.SetAttributo("Destinatario", Indirizzi);
+                            newall.SetAttributo("Data", newmessage.Date.UtcDateTime);
+                            newall.SetAttributo("Oggetto", newmessage.Subject);
+                            newall.SetAttributo("MessageId", newmessage.MessageId);
+                            newall.SetAttributo("CodiceSoggetto", al.GetAttributo("CodiceSoggetto"));
+                            newall.SetAttributo("NomeSoggetto", al.GetAttributo("NomeSoggetto"));
+
+
+                            MemoryStream file = new MemoryStream();
+                            await newmessage.WriteToAsync(file);
+                            newall = await _allMan.SalvaAsync(newall, file, true);
+
 
                             if (chiudi) { 
                                 al.Stato = StatoAllegato.Chiuso;

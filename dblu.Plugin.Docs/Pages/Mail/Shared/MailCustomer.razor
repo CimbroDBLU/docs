@@ -1,5 +1,5 @@
 ﻿@*
-    Component for managing the costumer part of the Attachment 
+    Component for managing the costumer part of the Attachment
 *@
 @using System.IO
 @using dblu.Portale.Plugin.Docs.Services
@@ -7,14 +7,17 @@
 
 <div class="row">
     <div class="col">
-        <MailCustomerSearch nCostumerCode="@nCostumerCode" OnLinkedToItem="OnLink" nAttachID="@nAttachID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument"></MailCustomerSearch>
+        <MailCustomerSearch nCostumerCode="@nCostumerCode" nReadOnly="@nReadOnly" OnLinkedToItem="OnLink" nAttachID="@nAttachID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument"></MailCustomerSearch>
     </div>
 </div>
+@if (!nReadOnly)
+{
 <div class="row mt-2">
     <div class="col">
         <MailOpenItemsTable nCustomerCode="@nCostumerCode"></MailOpenItemsTable>
     </div>
 </div>
+}
 
 
 @code {
@@ -48,6 +51,12 @@
     /// </summary>
     [Parameter]
     public EventCallback<(string, string)> OnLinkedToItem { get; set; }
+
+    /// <summary>
+    /// Indicates if is possible to change user/order
+    /// </summary>
+    [Parameter]
+    public bool nReadOnly { get; set; } = false;
 
     /// <summary>
     /// Forward the link event

@@ -30,7 +30,10 @@
     .e-show:before {
         content: "\eb64"
     }
-
+    .e-reopen:before {
+        content: "\e818"
+    }
+    
     .e-logs:before {
         content: "\eb67"
     }
@@ -38,7 +41,7 @@
 
 
 
-<SfGrid @ref="@Grid" ID="MailTable" EnablePersistence="true" AllowGrouping="false" AllowTextWrap="true" DataSource="@nEmails" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" AllowGrouping="false" AllowTextWrap="true" DataSource="@nEmails" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
     <GridSelectionSettings Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
@@ -76,11 +79,42 @@
 
 
 @code {
+
+    /// <summary>
+    ///Type of mail that we need to show
+    /// </summary>
+    public enum TableType
+    {
+        /// <summary>
+        /// Inbox emails
+        /// </summary>
+        Inbox,
+        /// <summary>
+        /// Processed emails
+        /// </summary>
+        Processed,
+        /// <summary>
+        /// Sent emails
+        /// </summary>
+        Sent
+    };
+
+    /// <summary>
+    /// Id of the table
+    /// </summary>
+    public string Id => "MailTable" + nType.ToString();
+
     /// <summary>
     /// Mailbox that we are browsing
     /// </summary>
     [Parameter]
     public EmailServer nMailBox { get; set; }
+
+    /// <summary>
+    /// Type of maitable we are browsing
+    /// </summary>
+    [Parameter]
+    public TableType nType { get; set; } = TableType.Inbox;
 
     /// <summary>
     /// Attachment we have to select if any (useful for go back)
@@ -131,6 +165,12 @@
     public EventCallback<AllegatoEmail> OnDeleteAttachment { get; set; }
 
     /// <summary>
+    /// Fires when user request to re-opem an email
+    /// </summary>
+    [Parameter]
+    public EventCallback<AllegatoEmail> OnReOpenAttachment { get; set; }
+
+    /// <summary>
     /// Reference to the grid
     /// </summary>
     private SfGrid<AllegatoEmail> Grid { get; set; }
@@ -157,8 +197,9 @@
     {
         get
         {
-            return new List<Object>()
-    {
+            if(nType== TableType.Inbox)
+                return new List<Object>()
+                {
                 new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-answer" },
                 new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
                 new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-move" } ,
@@ -167,6 +208,25 @@
                 new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
                 new string ("Search")
                 };
+            if (nType == TableType.Processed)
+                return new List<Object>()
+                {
+                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-answer" },
+                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
+                new ItemModel() { Id = "ReOpen",Text = "", TooltipText = "Riapri", PrefixIcon = "e-reopen" } ,
+                new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
+                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
+                new string ("Search")
+                };
+            if (nType == TableType.Sent)
+                return new List<Object>()
+                {
+                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
+                new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
+                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
+                new string ("Search")
+                };
+            return new List<Object>();
         }
     }
 
@@ -181,11 +241,7 @@
         {
             if (nMailBoxOld != nMailBox)
             {
-                Stopwatch sw = Stopwatch.StartNew();
-                nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderByDescending(x => x.DataC));
-                nMailBoxOld = nMailBox;
-                _Logger.LogInformation($"MailTable.OnParameterSet: Loaded {nEmails.Count} emails in {sw.ElapsedMilliseconds} ms");
-
+                Refresh();
             }
         }
         else nEmails = new();
@@ -223,6 +279,8 @@
             await OnShowLogsAttachment.InvokeAsync(Attach);
         else if (args.Item.Id == "Delete")
             await OnDeleteAttachment.InvokeAsync(Attach);
+        else if (args.Item.Id == "ReOpen")
+            await OnReOpenAttachment.InvokeAsync(Attach);
     }
 
     /// <summary>
@@ -230,8 +288,27 @@
     /// </summary>
     public void Refresh()
     {
-        nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderByDescending(x => x.DataC));
-        nMailBoxOld = nMailBox;
+        if (nType == TableType.Inbox)
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderByDescending(x => x.DataC));
+            nMailBoxOld = nMailBox;
+            _Logger.LogInformation($"MailTable.Refresh: Loaded {nEmails.Count} inbox emails in {sw.ElapsedMilliseconds} ms");
+        }
+        else if (nType == TableType.Processed)
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailProcessate("EMAIL", nMailBox.Nome).OrderByDescending(x => x.DataC));
+            nMailBoxOld = nMailBox;
+            _Logger.LogInformation($"MailTable.Refresh: Loaded {nEmails.Count} processed emails in {sw.ElapsedMilliseconds} ms");
+        }
+        else if (nType == TableType.Sent)
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInviate("EMAIL", nMailBox.Nome).OrderByDescending(x => x.DataC));
+            nMailBoxOld = nMailBox;
+            _Logger.LogInformation($"MailTable.Refresh: Loaded {nEmails.Count} sent emails in {sw.ElapsedMilliseconds} ms");
+        }
     }
 
     /// <summary>

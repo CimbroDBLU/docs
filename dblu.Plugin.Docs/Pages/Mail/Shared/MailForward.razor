@@ -18,6 +18,8 @@
         <MultiSelectUserMails @bind-nEmails="@To"></MultiSelectUserMails>
     </div>
 </div>
+@if (nShowCloseCheck)
+{
 <div class="row form-group">
     <div class="col-2">
         <label>Chiudi email</label>
@@ -26,6 +28,7 @@
         <SfSwitch @bind-Checked="@CloseEmail"></SfSwitch>
     </div>
 </div>
+}
 <div class="row">
     <div class="col">
         <SfButton OnClick="OnSend" CssClass="e-primary">Invia</SfButton>
@@ -59,6 +62,12 @@
     public EventCallback OnAbort { get; set; }
 
     /// <summary>
+    /// Indicates id the close option has to be showed
+    /// </summary>
+    [Parameter]
+    public bool nShowCloseCheck { get; set; } = true;
+
+    /// <summary>
     /// List of destination users
     /// </summary>
     public string[] To { get; set; } = new string[] { };
@@ -80,7 +89,7 @@
     {
         IsSpinnerVisible = true;
         var User = _HttpContextAccessor.HttpContext.User;
-        Models.RisultatoAzione RA = await _MailService.InoltraEmail(nAttach.Id.ToString(), string.Join(";", To), CloseEmail, User);
+        Models.RisultatoAzione RA = await _MailService.InoltraEmail(nAttach.Id.ToString(), string.Join(";", To), CloseEmail, User, nSourceServer.Nome);
         await OnOperationDone.InvokeAsync(RA);
         _Logger.LogInformation($"MailForward.OnSend: Mail {nAttach.Id} sent to { string.Join("; ", To)}");
         IsSpinnerVisible = false;

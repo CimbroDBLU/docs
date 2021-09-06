@@ -133,27 +133,23 @@ namespace dblu.Portale.Plugin.Docs.Classes
         }
 
         /// <summary>
-        /// Get the memory stream as an HTML string (in case of an email)
+        /// Get the current content as email, 
+        /// Returns in particular the html body and the text body, if they are present
         /// </summary>
-        /// <returns>
-        /// HTML string 
-        /// </returns>
-        public string ToHtml()
+        /// <returns>Returns html and text body as a tupla</returns>
+        public (string,string) AsEmail()
         {
-          if (this.DocType == e_DocType.EMAIL)
+            if (this.DocType == e_DocType.EMAIL || this.DocType == e_DocType.UNDEFINED)
             {
                 if (this.Payload != null)
                     this.Payload.Position = 0;
 
                 var message = MimeMessage.Load(this.Payload);
                 var html = message.ToHtml();
-                if (string.IsNullOrEmpty(html))
-                {
-                    html = message.TextBody;
-                }
-                return html;
+                var body = message.TextBody;
+                return (html,body);
             }
-            return "";
+            return ("","");
         }
     };
 

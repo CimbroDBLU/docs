@@ -1,5 +1,5 @@
 ﻿@*
-    Component for showing the html of an email 
+    Component for showing the html of an email, or only the text if html body is empty
     It has be bound in a i-frame to preserve style from the entire site
 *@
 @using dblu.Docs.Models
@@ -13,14 +13,24 @@
 
 <div class="row form-group">
     <div class="col-12">
-        <iframe style="width:100%; height:@(nHeight.ToString())px" srcdoc="@Source"></iframe>
+        @if (IsHtml)
+            {
+            <iframe style="width:100%; height:@(nHeight.ToString())px" srcdoc="@Source.Item1"></iframe>
+            }
+        else
+            {
+              <SfTextBox HtmlAttributes="@(new Dictionary<string, object>(){{ "style", $"width:100%; height:{nHeight}px "}})" Multiline="true" Value="@Source.Item2"></SfTextBox>
+            }
     </div>
 </div>
+@if (nShowBack)
+{
 <div class="row">
     <div class="col">
         <SfButton CssClass="e-primary" OnClick="OnGoBack">Indietro</SfButton>
     </div>
 </div>
+}
 
 @code {
 
@@ -43,26 +53,63 @@
     public EventCallback OnAbort { get; set; }
 
     /// <summary>
-    /// HTML source to display
+    /// Indicates if back button must be showed
     /// </summary>
-    private string Source { get; set; } = "";
+    [Parameter]
+    public bool nShowBack { get; set; } = true;
+
+    /// <summary>
+    /// Indicates if attachments must be extracted
+    /// </summary>
+    [Parameter]
+    public bool nReadAttachments { get; set; } = false;
+
+    /// <summary>
+    /// Event that will be fired once the document has been loaded
+    /// </summary>
+    [Parameter]
+    public EventCallback<List<OriginalAttachments>> OnDocumentLoaded { get; set; }
+
+    /// <summary>
+    /// HTML/Text source to display
+    /// </summary>
+    private (string,string) Source { get; set; } = ("","");
+
+    /// <summary>
+    /// Indicates if we need to show html or text
+    /// </summary>
+    private bool IsHtml => !string.IsNullOrEmpty(Source.Item1);
+
+    /// <summary>
+    /// Last rendered email attach
+    /// </summary>
+    public AllegatoEmail LastAttach { get; set; } = null;
 
     /// <summary>, load the HTML from email
     /// On Init
     /// </summary>
-    protected override async void OnInitialized()
+    protected override async void OnParametersSet()
     {
         try
         {
-            Stopwatch sw = Stopwatch.StartNew();
-            DocumentManager DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
-            Source = (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), false)).ToHtml();
-            _Logger.LogInformation($"MailHTMLView.OnInitialize: HTML in {sw.ElapsedMilliseconds} ms");
-        }catch(Exception ex)
-        {
-            _Logger.LogError($"MailHTMLView.OnInitialize: Unexpected error {ex} ");
+            if (nAttach is not null && LastAttach!=nAttach)
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+                DocumentManager DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
+                Source = (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), false)).AsEmail();
+                if(nReadAttachments)
+                    {
+                        Document Doc = (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), true));
+                        await OnDocumentLoaded.InvokeAsync(Doc.SourceAttachments);
+                    }
+                _Logger.LogInformation($"MailHTMLView.OnParametersSet: HTML in {sw.ElapsedMilliseconds} ms");
+                LastAttach = nAttach;
+            }
         }
-
+        catch (Exception ex)
+        {
+            _Logger.LogError($"MailHTMLView.OnParametersSet: Unexpected error {ex} ");
+        }
     }
 
     /// <summary>

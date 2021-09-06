@@ -24,7 +24,7 @@
     <SfCard>
         <CardHeader Title="@CardTitle" />
         <div class="container-fluid" style="margin:5px">
-            @if (ShowMetadata.ToLowerInvariant()=="true")
+            @if (!string.IsNullOrEmpty(ShowMetadata) && ShowMetadata.ToLowerInvariant()=="true")
             {
             <CardContent EnableSeperator="true">
                 <SfAccordion>
@@ -85,7 +85,7 @@
             }
             <CardContent EnableSeperator="true">
                 <div class="row">
-                    @if (ShowMetadata.ToLowerInvariant() == "true")
+                    @if (!string.IsNullOrEmpty(ShowMetadata) && ShowMetadata.ToLowerInvariant() == "true")
                     {
                         <div class="col-5" style="align-self: auto;">
                             <SfAccordion>
@@ -191,7 +191,7 @@
     /// <summary>
     /// Get the correct css class depending if metadata are required
     /// </summary>
-    private string ColSize => (ShowMetadata.ToLowerInvariant() == "true") ? "col-7" : "col-12";
+    private string ColSize => (!string.IsNullOrEmpty(ShowMetadata) && ShowMetadata.ToLowerInvariant() == "true") ? "col-7" : "col-12";
 
     /// <summary>
     /// Save the current Attach id in memory

@@ -158,7 +158,14 @@
                         <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
                     </ToolbarItems>
                 </SfToolbar>
-                <iframe class="mt-2 mb-2 @((IsFullscreen)?"mailunsized":"mailsized")" srcdoc="@Doc.ToHtml()"></iframe>
+                @if (!string.IsNullOrEmpty(Doc.AsEmail().Item1))
+                {
+                    <SfTextBox CssClass="@((IsFullscreen)?"mt-2 mb-2 mailunsized":"mt-2 mb-2 mailsized")"  Multiline="true" Value="@Doc.AsEmail().Item2"></SfTextBox>
+                }
+                else
+                {
+                    <iframe class="mt-2 mb-2 @((IsFullscreen)?"mailunsized":"mailsized")" srcdoc="@Doc.AsEmail().Item1"></iframe>
+                }
             </CardContent>
         </SfCard>
     }

@@ -25,7 +25,7 @@
     <SfCard>
         <CardHeader Title="@CardTitle" />
         <div class="container-fluid" style="margin:5px">
-            @if (ShowMetadata.ToLowerInvariant()=="true")
+            @if (!string.IsNullOrEmpty(ShowMetadata) && ShowMetadata.ToLowerInvariant()=="true")
             {
                 <CardContent EnableSeperator="true">
                     <div class="form-group row">
@@ -73,16 +73,16 @@
                     </div>
                 </CardContent>
             }
-            <CardContent EnableSeperator="true">
-                @if (Summary.ToLowerInvariant() != "true")
-                {
-                    <DocViewer nAllowNote="true" nAllowEdit="false" nSourceType="e_SourceType.Attachment" nDocIdentifier="@Id" nHeight=550></DocViewer>
+        <CardContent EnableSeperator="true">
+            @if (!string.IsNullOrEmpty(Summary) && Summary.ToLowerInvariant() == "true")
+                {   
+                <DocViewer nAllowNote="true" nAllowEdit="false" nSourceType="e_SourceType.Memory" nDocIdentifier="@SummaryDoc" nHeight=680></DocViewer>
                 }
-                else
+            else
                 {
-                    <DocViewer nAllowNote="true" nAllowEdit="false" nSourceType="e_SourceType.Memory" nDocIdentifier="@SummaryDoc" nHeight=680></DocViewer>
+                <DocViewer nAllowNote="true" nAllowEdit="false" nSourceType="e_SourceType.Attachment" nDocIdentifier="@Id" nHeight=550></DocViewer>
                 }
-            </CardContent>
+        </CardContent>
             <CardContent EnableSeperator="true">
                 <div class="row">
                     <div class="col-12">
@@ -96,23 +96,23 @@
 
 </section>
 @code {
-    /// <summary>
-    /// Attachment ID
-    /// </summary>
-    [Parameter]
-    public string Id { get; set; }
+        /// <summary>
+        /// Attachment ID
+        /// </summary>
+        [Parameter]
+        public string Id { get; set; }
 
-    /// <summary>
-    /// Indicates if metadata of attaqchments must be shower
-    /// </summary>
-    [Parameter]
-    public string ShowMetadata { get; set; } = "false";
+        /// <summary>
+        /// Indicates if metadata of attaqchments must be shower
+        /// </summary>
+        [Parameter]
+        public string ShowMetadata { get; set; } = "false";
 
-    /// <summary>
-    /// Indicates if the attachment has to be showes as a summary o
-    /// </summary>
-    [Parameter]
-    public string Summary { get; set; } = "false";
+        /// <summary>
+        /// Indicates if the attachment has to be showes as a summary o
+        /// </summary>
+        [Parameter]
+        public string Summary { get; set; } = "false";
 
     /// <summary>
     /// Show/Hide the spinner
@@ -143,12 +143,13 @@
 
         Attachment = _AttachService._allMan.Get(Guid.Parse(Id));
         CardTitle = $"Modifica Allegato [{Attachment.Descrizione}]";
-        if (Summary.ToLowerInvariant()=="true")
+        if (!string.IsNullOrEmpty(Summary) && Summary.ToLowerInvariant() == "true")
+        {
             CardTitle = $"Riepilogo [{Attachment.Descrizione}]";
 
-        MemoryStream M=await _MailService.GetPdfRiepilogo(Id);
-        SummaryDoc=$"SUMMARY-{Id}.PDF;{Convert.ToBase64String(M.ToArray())}";
-
+            MemoryStream M = await _MailService.GetPdfRiepilogo(Id);
+            SummaryDoc = $"SUMMARY-{Id}.PDF;{Convert.ToBase64String(M.ToArray())}";
+        }
 
         IsSpinnerVisible = false;
     }

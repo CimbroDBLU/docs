@@ -16,14 +16,25 @@
     <div class="col-2">
         <SfTextBox Placeholder="Codice Cliente" @bind-Value="@nCostumerCode"></SfTextBox>
     </div>
-    <div class="col-4">
-        <SfTextBox Readonly="true" Placeholder="Cliente" Value="@Description"></SfTextBox>
-    </div>
-    <div class="col-6">
-        <SfButton Content="Cerca" OnClick="OnSearch"></SfButton>
-        <SfButton Content="Associa" OnClick="OnLink"></SfButton>
-    </div>
 
+
+    @if (!nReadOnly)
+    {
+        <div class="col-4">
+            <SfTextBox Readonly="true" Placeholder="Cliente" Value="@Description"></SfTextBox>
+        </div>
+
+        <div class="col-6">
+            <SfButton Content="Cerca" OnClick="OnSearch"></SfButton>
+            <SfButton Content="Associa" OnClick="OnLink"></SfButton>
+        </div>
+    }
+    else
+    {
+        <div class="col-10">
+            <SfTextBox Readonly="true" Placeholder="Cliente" Value="@Description"></SfTextBox>
+        </div>
+    }
 </div>
 
 @if (IsShowDialog)
@@ -62,6 +73,12 @@
     /// </summary>
     [Parameter]
     public EventCallback<(string, string)> OnLinkedToItem { get; set; }
+
+    /// <summary>
+    /// Indicates if is possible to change user/order
+    /// </summary>
+    [Parameter]
+    public bool nReadOnly { get; set; } = false;
 
     /// <summary>
     /// Last selected costumer

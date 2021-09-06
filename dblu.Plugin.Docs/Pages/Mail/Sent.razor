@@ -1,22 +1,22 @@
 ﻿@*
-    Page that manage the inbox and its interaction with Dossiers and Items
+    Page that manage the sent emails and its interactions
 *@
 
-@page  "/Mail/Inbox"
-@page "/Mail/Inbox/{nPreselAttach}"
+@page  "/Mail/Sent"
+@page "/Mail/Sent/{nPreselAttach}"
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.Services
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
 @using dblu.Portale.Plugin.Docs.Pages.Mail.Shared
 @using dblu.Portale.Plugin.Docs.Classes
-@using Microsoft.AspNetCore.Http;
+@using Microsoft.AspNetCore.Http
 @using System.IO;
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject IHttpContextAccessor _HttpContextAccessor
-@inject ILogger<Inbox> _Logger
+@inject ILogger<Processed> _Logger
 
-<PageTitle nTitle="Inbox" />
+<PageTitle nTitle="Sent" />
 
 <section class="content">
 
@@ -24,7 +24,7 @@
     </SfSpinner>
 
     <SfCard>
-        <CardHeader Title="Email in arrivo" />
+        <CardHeader Title="Email inviate" />
         <CardContent EnableSeperator="true">
             <div class="row form-group">
                 <div class="col-5" style="align-self: auto;">
@@ -35,33 +35,14 @@
                     </div>
                     <div class="row ">
                         <div class="col">
-                            <MailTable @ref="@Grid" nMailBox="@MailBox" OnSelectAttachment="OnSelectAttach" OnReplyAttachment="OnReply" OnForwardAttachment="OnForward" OnMoveAttachment="OnMove" OnShowAttachment="OnShow" OnShowLogsAttachment="OnShowLogs" OnDeleteAttachment="OnDelete" nPreselAttach="@nPreselAttach"></MailTable>
+                            <MailTable @ref="@Grid" nType="MailTable.TableType.Sent" nMailBox="@MailBox"  OnSelectAttachment="OnSelectAttach" OnDeleteAttachment="OnDelete" OnForwardAttachment="OnForward" OnShowLogsAttachment="OnShowLogs" nPreselAttach="@nPreselAttach"></MailTable>
                         </div>
                     </div>
 
                 </div>
 
                 <div class="col-7" style="align-self: auto;">
-                    @if (IsAnswerDialog)
-                    {
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>Rispondi a <b>@AttachSubject</b></div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <MailAnswer nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" OnOperationDone="OnAnswer"></MailAnswer>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
-                    }
-                    else if (IsForwardDialog)
+                    @if (IsForwardDialog)
                     {
                         <div class="row form-group">
                             <div class="col">
@@ -72,45 +53,7 @@
                                                 <div>Inoltra <b>@AttachSubject</b></div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <MailForward nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" OnOperationDone="OnForward"></MailForward>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
-                    }
-                    else if (IsMoveDialog)
-                    {
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>Sposta <b>@AttachSubject</b></div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <MailMoveInFolder nAttach="@Attach" nSourceServer="@MailBox" OnOperationDone="OnDone" OnAbort="OnAbort"></MailMoveInFolder>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
-                    }
-                    else if (IsShowDialog)
-                    {
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>Struttura di <b>@AttachSubject</b></div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <MailHTMLView nAttach="@Attach" OnAbort="OnAbort"></MailHTMLView>
+                                                <MailForward nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" nShowCloseCheck="false" OnOperationDone="OnForward"></MailForward>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -149,33 +92,31 @@
                                                 <div>@CostumerDesc</div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <MailCustomer OnLinkedToItem="OnLinkToItem" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></MailCustomer>
+                                                <MailCustomer nAttachments="@SourceAttach" nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></MailCustomer>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
                                 </SfAccordion>
                             </div>
                         </div>
-                        @*FASCICOLI*@
-                        @if (IsDossierVisible)
-                        {
-                            <div class="row form-group">
-                                <div class="col">
-                                    <SfAccordion>
-                                        <AccordionItems>
-                                            <AccordionItem Expanded="true">
-                                                <HeaderTemplate>
-                                                    <div>Fascicoli ed elementi</div>
-                                                </HeaderTemplate>
-                                                <ContentTemplate>
-                                                    <MailDossierItems @ref="@DossierItems" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted"></MailDossierItems>
-                                                </ContentTemplate>
-                                            </AccordionItem>
-                                        </AccordionItems>
-                                    </SfAccordion>
-                                </div>
+                        @*EMAIL PREVIEW*@
+                        <div class="row form-group">
+                            <div class="col">
+                                <SfAccordion>
+                                    <AccordionItems>
+                                        <AccordionItem Expanded="true">
+                                            <HeaderTemplate>
+                                                <div>Struttura di <b>@Attach?.Oggetto</b></div>
+                                            </HeaderTemplate>
+                                            <ContentTemplate>
+                                                <MailHTMLView nShowBack="false" nAttach="@Attach" OnDocumentLoaded="OnDocumentLoaded" nReadAttachments="true" nHeight="300"></MailHTMLView>
+                                            </ContentTemplate>
+                                        </AccordionItem>
+                                    </AccordionItems>
+                                </SfAccordion>
                             </div>
-                        }
+                        </div>
+
                         @*ALLEGATI EMAIL*@
                         @if (@IsAttachVisible)
                         {
@@ -197,33 +138,18 @@
                             </div>
                         }
                     }
-                    @*PDF VIEWER*@
-                    <div class="row form-group">
-                        <div class="col">
-                            <SfAccordion>
-                                <AccordionItems>
-                                    <AccordionItem Expanded="true">
-                                        <HeaderTemplate>
-                                            <div>Anteprima</div>
-                                        </HeaderTemplate>
-                                        <ContentTemplate>
-                                            <DocViewer @ref="@Viewer" OnDocumentTransformed="OnDocumentTransformedZ" nHeight=700 nSourceType="e_SourceType.Attachment" nDocIdentifier="@AttachID"></DocViewer>
-                                        </ContentTemplate>
-                                    </AccordionItem>
-                                </AccordionItems>
-                            </SfAccordion>
-                        </div>
-                    </div>
                 </div>
             </div>
         </CardContent>
     </SfCard>
 
     <QuestionDialog nTitle="Conferma"
-                    nText="Rimuovo l'email selezionata?"
+                    nText="Rimuovo l'email anche dalla casella di posta?"
+                    nYes="Da entrambi"
+                    nNo="Solo dall'archivio"
                     OnExitPressed="OnCloseDialog"
-                    OnNoPressed="OnCloseDialog"
-                    OnYesPressed="OnDeleteConfirmed"
+                    OnNoPressed="()=>OnDeleteConfirmed(false)"
+                    OnYesPressed="()=>OnDeleteConfirmed(true)"
                     OnClose="OnCloseDialog"
                     nShowDialog="@ShowConfirm">
     </QuestionDialog>
@@ -231,14 +157,8 @@
     <Toast @ref="ToastOK" nToastType="Toast.e_ToastType.OK" nTitle="Elimina email" nContent="Email eliminata correttamente"></Toast>
     <Toast @ref="ToastKO" nToastType="Toast.e_ToastType.Fail" nTitle="Elimina email" nContent="Eliminazione non riuscita"></Toast>
 
-    <Toast @ref="ToastMoveOK" nToastType="Toast.e_ToastType.OK" nTitle="Sposta email" nContent="Email spostata correttamente"></Toast>
-    <Toast @ref="ToastMoveKO" nToastType="Toast.e_ToastType.Fail" nTitle="Sposta email" nContent="Spostamento NON riuscito"></Toast>
-
     <Toast @ref="ToastForwardOK" nToastType="Toast.e_ToastType.OK" nTitle="Inoltra email" nContent="Email inoltrata correttamente"></Toast>
     <Toast @ref="ToastForwardKO" nToastType="Toast.e_ToastType.Fail" nTitle="inoltra email" nContent="Inoltro NON riuscito"></Toast>
-
-    <Toast @ref="ToastAnswerOK" nToastType="Toast.e_ToastType.OK" nTitle="Rispondi a email" nContent="Email inviata correttamente"></Toast>
-    <Toast @ref="ToastAnswerKO" nToastType="Toast.e_ToastType.Fail" nTitle="Rispondi a email" nContent="Invio NON riuscito"></Toast>
 
 </section>
 
@@ -251,19 +171,9 @@
     public string nPreselAttach { get; set; } = "";
 
     /// <summary>
-    /// Document viewer
-    /// </summary>
-    private DocViewer Viewer { get; set; }
-
-    /// <summary>
     /// Reference to the Mail grid
     /// </summary>
     private MailTable Grid { get; set; }
-
-    /// <summary>
-    /// Reference to the Dossier component
-    /// </summary>
-    private MailDossierItems DossierItems { get; set; }
 
     /// <summary>
     /// Indicates if the spinner has to be showed
@@ -276,14 +186,14 @@
     private string CostumerDesc { get; set; } = "Cliente";
 
     /// <summary>
+    /// Indicates if HTML panel is visible
+    /// </summary>
+    private bool IsShowDialog { get; set; } = false;
+
+    /// <summary>
     /// Indicates if Mail attachments panel is visible
     /// </summary>
     private bool IsAttachVisible { get; set; } = false;
-
-    /// <summary>
-    /// Indicates if Dossier attachments panel is visible
-    /// </summary>
-    private bool IsDossierVisible { get; set; } = false;
 
     /// <summary>
     /// Indicates if Answer panel is visible
@@ -294,16 +204,6 @@
     /// Indicates if Forward panel is visible
     /// </summary>
     private bool IsForwardDialog { get; set; } = false;
-
-    /// <summary>
-    /// Indicates if Move panel is visible
-    /// </summary>
-    private bool IsMoveDialog { get; set; } = false;
-
-    /// <summary>
-    /// Indicates if HTML panel is visible
-    /// </summary>
-    private bool IsShowDialog { get; set; } = false;
 
     /// <summary>
     /// Indicates if LOG panel is visible
@@ -320,16 +220,15 @@
     /// </summary>
     private string AttachSubject { get; set; }
 
-    /// <summary>
-    /// Dossier ID
-    /// </summary>
-    private string DossierID { get; set; }
 
     /// <summary>
     /// Costumer Code
     /// </summary>
-    private string CustomerCode { get;
-        set; }
+    private string CustomerCode
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Show delete confirm
@@ -340,6 +239,11 @@
     /// Item ID
     /// </summary>
     private string ItemID { get; set; }
+
+    /// <summary>
+    /// Dossier ID
+    /// </summary>
+    private string DossierID { get; set; }
 
     /// <summary>
     /// Current Mail box
@@ -362,16 +266,6 @@
     private Toast ToastKO { get; set; }
 
     /// <summary>
-    /// Toaster for a positive move
-    /// </summary>
-    private Toast ToastMoveOK { get; set; }
-
-    /// <summary>
-    /// Toaster for a negative move
-    /// </summary>
-    private Toast ToastMoveKO { get; set; }
-
-    /// <summary>
     /// Toaster for a positive forward
     /// </summary>
     private Toast ToastForwardOK { get; set; }
@@ -382,24 +276,9 @@
     private Toast ToastForwardKO { get; set; }
 
     /// <summary>
-    /// Toaster for a positive forward
-    /// </summary>
-    private Toast ToastAnswerOK { get; set; }
-
-    /// <summary>
-    /// Toaster for a negative forward
-    /// </summary>
-    private Toast ToastAnswerKO { get; set; }
-
-    /// <summary>
     /// List of current Attach source Attachments
     /// </summary>
     private ObservableCollection<OriginalAttachments> SourceAttach { get; set; } = new();
-
-    /// <summary>
-    /// Current Document as memory stream
-    /// </summary>
-    public MemoryStream Document => Viewer?.Doc?.Payload ?? new();
 
     /// <summary>
     /// On selection of the email,shows and hide panels properly
@@ -419,21 +298,8 @@
             CustomerCode = e.Chiave3;
 
         OnAbort();
-        IsDossierVisible = (!string.IsNullOrEmpty(DossierID));
     }
 
-    /// <summary>
-    /// Once a document has been loaded, refresh the source attachment
-    /// </summary>
-    /// <param name="O"></param>
-    public async void OnDocumentTransformedZ(List<OriginalAttachments> O)
-    {
-        SourceAttach.Clear();
-        foreach (OriginalAttachments o in O)
-            SourceAttach.Add(o);
-
-        IsAttachVisible = (SourceAttach.Count != 0);
-    }
 
     /// <summary>
     /// Change the mail box selected
@@ -453,8 +319,6 @@
         AttachSubject = e.Chiave4;
 
         IsForwardDialog = false;
-        IsMoveDialog = false;
-        IsShowDialog = false;
         IsLogsDialog = false;
 
         IsAnswerDialog = !IsAnswerDialog;
@@ -468,27 +332,11 @@
     {
         AttachSubject = e.Chiave4;
         IsAnswerDialog = false;
-        IsMoveDialog = false;
-        IsShowDialog = false;
         IsLogsDialog = false;
 
         IsForwardDialog = !IsForwardDialog;
     }
 
-    /// <summary>
-    /// Activate move panel
-    /// </summary>
-    /// <param name="e"></param>
-    public async void OnMove(AllegatoEmail e)
-    {
-        AttachSubject = e.Chiave4;
-        IsAnswerDialog = false;
-        IsForwardDialog = false;
-        IsShowDialog = false;
-        IsLogsDialog = false;
-
-        IsMoveDialog = !IsMoveDialog;
-    }
 
     /// <summary>
     /// Activate HTML panel
@@ -499,7 +347,6 @@
         AttachSubject = e.Chiave4;
         IsAnswerDialog = false;
         IsForwardDialog = false;
-        IsMoveDialog = false;
         IsLogsDialog = false;
 
         IsShowDialog = !IsShowDialog;
@@ -514,8 +361,6 @@
         AttachSubject = e.Chiave4;
         IsAnswerDialog = false;
         IsForwardDialog = false;
-        IsMoveDialog = false;
-        IsShowDialog = false;
 
         IsLogsDialog = !IsLogsDialog;
     }
@@ -537,56 +382,37 @@
         ShowConfirm = false;
     }
 
+
     /// <summary>
     /// Delete selected attachment
     /// </summary>
-    public async void OnDeleteConfirmed()
+    public async void OnDeleteConfirmed(bool nServer)
     {
         try
         {
-            Stopwatch sw = Stopwatch.StartNew();
             ShowConfirm = false;
-            var User = _HttpContextAccessor.HttpContext.User;
-
-            var all = _MailService._allMan.Get(Attach.Id.ToString());
-            if (all != null)
+            if (Attach != null)
             {
-                all.Stato = StatoAllegato.Annullato;
-                _MailService._allMan.Salva(all, false);
-                LogDoc log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = all.Id,
-                    TipoOggetto = TipiOggetto.ALLEGATO,
-                    Utente = User.Identity.Name,
-                    Operazione = TipoOperazione.Cancellato
-                };
-                _MailService._logMan.Salva(log, true);
+                Stopwatch sw = Stopwatch.StartNew();
+                var User = _HttpContextAccessor.HttpContext.User;
+
+                Models.RisultatoAzione res = await _MailService.CancellaEmail(Attach.Id.ToString(), nServer, User);
+                _Logger.LogInformation($"Sent.OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
+                Grid.Refresh();
                 ToastOK.Show();
             }
-
-            Grid.Refresh();
-            _Logger.LogInformation($"Inbox.OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
+            else
+            {
+                ToastKO.Show();
+            }
         }
         catch (Exception ex)
         {
-            _Logger.LogError($"Inbox.OnDeleteConfirmed: Unexpeted error deleting {Attach.Id}, {ex}");
+            _Logger.LogError($"Sent.OnDeleteConfirmed: Unexpeted error deleting {Attach.Id}, {ex}");
             ToastKO.Show();
         }
     }
 
-    /// <summary>
-    /// Once Move has done, show the proper toast
-    /// </summary>
-    /// <param name="RA"></param>
-    private async void OnDone(Models.RisultatoAzione RA)
-    {
-        if (RA.Successo)
-            ToastMoveOK.Show();
-        else ToastMoveKO.Show();
-        Grid.Refresh();
-        OnAbort();
-    }
 
     /// <summary>
     /// Once forward has done, show the proper toast
@@ -602,37 +428,11 @@
     }
 
     /// <summary>
-    /// Once forward has done, show the proper toast
-    /// </summary>
-    /// <param name="RA"></param>
-    private async void OnAnswer(Models.RisultatoAzione RA)
-    {
-        if (RA.Successo)
-            ToastAnswerOK.Show();
-        else ToastAnswerKO.Show();
-        Grid.Refresh();
-        OnAbort();
-    }
-
-    /// <summary>
     /// Close all dialog panels
     /// </summary>
     private async void OnAbort()
     {
-        IsAnswerDialog = false; IsForwardDialog = false; IsMoveDialog = false; IsShowDialog = false; IsLogsDialog = false;
-    }
-
-    /// <summary>
-    /// On linking item, refresh the grid and components
-    /// </summary>
-    /// <param name="data"></param>
-    private async void OnLinkToItem((string DossierId, string ItemId) data)
-    {
-        DossierID = data.DossierId;
-        ItemID = data.ItemId;
-        Grid.Refresh();
-
-        IsDossierVisible = true;
+        IsForwardDialog = false; IsShowDialog = false; IsLogsDialog = false;
     }
 
     /// <summary>
@@ -643,6 +443,25 @@
     {
         Grid.Refresh();
         Grid.SelectedRow = 0;
+    }
+
+
+    /// <summary>
+    /// Onche a docuemtn has been loaded it displays the list of original attachments
+    /// </summary>
+    /// <param name="Attachs">List of the attachments to diplay</param>
+    public void OnDocumentLoaded(List<OriginalAttachments> Attachs)
+    {
+        if (Attachs != null && Attachs.Count != 0)
+        {
+            IsAttachVisible = true;
+            SourceAttach = new ObservableCollection<OriginalAttachments>(Attachs);
+        }
+        else
+        {
+            IsAttachVisible = false;
+            SourceAttach.Clear();
+        }
     }
 
 }
