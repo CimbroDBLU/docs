@@ -303,7 +303,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"DocumentTransformationService.PDF_From_EMail: Unexptected error {ex.Message}");
+                        _logger.LogError($"DocumentTransformationService.PDF_From_EMail: Unexpected error on attachs {ex.Message}");
                     }                    
                     ret.Attachments.Add(new OriginalAttachments() {Id=fileName,Name=fileName,IsValid=false,IsIncluded=incluso, Warning=avvisi});
                 }
@@ -362,7 +362,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"DocumentTransformationService.PDF_From_EMail: Unexptected error {ex.Message}");
+                            _logger.LogError($"DocumentTransformationService.PDF_From_EMail: Unexpected error on merging {ex.Message}");
                         }
                     foreach (var ms in ListaPdf)
                          ms.Close();
@@ -372,7 +372,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"DocumentTransformationService.PDF_From_EMail: Unexptected error {ex.Message}");
+                _logger.LogError($"DocumentTransformationService.PDF_From_EMail: General Unexptected error {ex.Message}");
 
             }
             _logger.LogInformation($"DocumentTransformationService.PDF_From_EMail: Document [{Message.MessageId}] processed in {Sw1.ElapsedMilliseconds} ms");
