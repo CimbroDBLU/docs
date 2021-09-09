@@ -96,23 +96,23 @@
 
 </section>
 @code {
-        /// <summary>
-        /// Attachment ID
-        /// </summary>
-        [Parameter]
-        public string Id { get; set; }
+    /// <summary>
+    /// Attachment ID
+    /// </summary>
+    [Parameter]
+    public string Id { get; set; }
 
-        /// <summary>
-        /// Indicates if metadata of attaqchments must be shower
-        /// </summary>
-        [Parameter]
-        public string ShowMetadata { get; set; } = "false";
+    /// <summary>
+    /// Indicates if metadata of attaqchments must be shower
+    /// </summary>
+    [Parameter]
+    public string ShowMetadata { get; set; } = "true";
 
-        /// <summary>
-        /// Indicates if the attachment has to be showes as a summary o
-        /// </summary>
-        [Parameter]
-        public string Summary { get; set; } = "false";
+    /// <summary>
+    /// Indicates if the attachment has to be showes as a summary o
+    /// </summary>
+    [Parameter]
+    public string Summary { get; set; } = "false";
 
     /// <summary>
     /// Show/Hide the spinner
@@ -140,7 +140,7 @@
     protected async override void OnInitialized()
     {
         IsSpinnerVisible = true;
-
+        if (string.IsNullOrEmpty(ShowMetadata)) ShowMetadata = "true";
         Attachment = _AttachService._allMan.Get(Guid.Parse(Id));
         CardTitle = $"Modifica Allegato [{Attachment.Descrizione}]";
         if (!string.IsNullOrEmpty(Summary) && Summary.ToLowerInvariant() == "true")
