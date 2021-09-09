@@ -49,7 +49,7 @@ namespace dWorker.Plugin.Docs
             {
                 case "print_attach":
                     string AttachID=Operation.parameters["AttachID"].ToString();
-                    string Printer=Operation.parameters["Printer"].ToString();
+                    string Printer = Operation.printer_name;
                     _logger.LogInformation($"DocsPlugIn.Execute: Request print of attachment {AttachID}");
                     res = PrintAttach(AttachID, Printer);
                     break;
