@@ -144,7 +144,7 @@
     /// Indicates if metadata of attaqchments must be shower
     /// </summary>
     [Parameter]
-    public string ShowMetadata { get; set; } = "false";
+    public string ShowMetadata { get; set; } = "true";
 
     /// <summary>
     /// Show/Hide the spinner
@@ -177,6 +177,7 @@
     protected override void OnInitialized()
     {
         IsSpinnerVisible = true;
+        if (string.IsNullOrEmpty(ShowMetadata)) ShowMetadata = "true";
         Stopwatch Sw = Stopwatch.StartNew();
         Item = _AttachService.GetElemento(Guid.Parse(Id), 0);
         Attachments = new ObservableCollection<viewAllegati>(_AttachService.GetvAllegatiElemento(Item.Id));
