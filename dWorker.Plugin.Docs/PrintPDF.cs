@@ -25,6 +25,7 @@ namespace dWorker.Plugin.Docs
         /// Current selected printer
         /// </summary>
         public string Printer { get; set; } = "";
+      
 
         /// <summary>
         /// Constructor
@@ -60,8 +61,14 @@ namespace dWorker.Plugin.Docs
                 if (string.IsNullOrEmpty(nPrinter))
                     printDocument.PrinterSettings.PrinterName = nPrinter;
 
+                PrinterSettings ps = new PrinterSettings();
+                var  Resolution = ps.PrinterResolutions.OfType<PrinterResolution>()
+                                                         .OrderByDescending(r => r.X)
+                                                         .ThenByDescending(r => r.Y)
+                                                         .First();
+
                 ///Carico il documento su un oggetto per tracciarne l'avanzamento di stampa
-                PrintPDFStatus s = new(loadedDocument);
+                PrintPDFStatus s = new(loadedDocument, Resolution);
                 printDocument.PrintPage += (_, e) => PrintDocumentOnPrintPage(e, s);
                 printDocument.Print();
                 
@@ -82,9 +89,10 @@ namespace dWorker.Plugin.Docs
         private static void PrintDocumentOnPrintPage(PrintPageEventArgs e, PrintPDFStatus state)
         {
             var destinationRect = new RectangleF(x: e.Graphics.VisibleClipBounds.X,y: e.Graphics.VisibleClipBounds.Y,width: e.Graphics.VisibleClipBounds.Width, height: e.Graphics.VisibleClipBounds.Height);
-            e.Graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;            
-            using (Bitmap bitmapimage = state.Document.ExportAsImage(state.CurrentPageIndex))
-                e.Graphics.DrawImage(bitmapimage, destinationRect);
+            e.Graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+            using (Bitmap bitmapimage = state.Document.ExportAsImage(state.CurrentPageIndex ,600, 600))
+                 e.Graphics.DrawImage(bitmapimage, destinationRect);
+                //e.Graphics.DrawImage(bitmapimage, new Point(0, 0));
             e.HasMorePages = state.AdvanceToNextPage();
         }
     }

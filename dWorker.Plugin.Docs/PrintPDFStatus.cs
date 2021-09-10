@@ -1,6 +1,7 @@
 ﻿using Syncfusion.Blazor.PdfViewer;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,11 +23,14 @@ namespace dWorker.Plugin.Docs
         /// </summary>
         private int _cursor;
 
+        public PrinterResolution Resolution { get; set; }
+
+
         /// <summary>
         /// Costructor
         /// </summary>
         /// <param name="document">Document that need to be printed</param>
-        public PrintPDFStatus(PdfRenderer document)
+        public PrintPDFStatus(PdfRenderer document, PrinterResolution r )
         {
 
             int[] pageNumbers = new int[document.PageCount];
@@ -35,6 +39,7 @@ namespace dWorker.Plugin.Docs
             _pageNumbers = pageNumbers;
             Document = document;
             _cursor = 0;
+            Resolution = r;
         }
         /// <summary>
         /// Constructor
