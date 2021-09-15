@@ -2003,6 +2003,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (tipoAll != null && f != null & e != null)
                 {
                     Allegato.SetAttributo("CodiceSoggetto", e.GetAttributo("CodiceSoggetto"));
+                    Allegato.SetAttributo("NomeSoggetto", e.GetAttributo("NomeSoggetto"));
 
                     //if (Allegato.IdFascicolo == null)
                     Allegato.IdFascicolo = f.Id;
@@ -2484,25 +2485,24 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             // now to create our body...
                             var builder = new BodyBuilder();
-                            //  builder.TextBody = message.TextBody;
+                            var htxt = "";
+                            var ttxt = "";
 
+                            if (!htxt.Contains("<body>"))
+                                htxt = $"<body>{htxt}</body>";
+                            
+                            htxt = message.HtmlBody;                            
+                            string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
+                            string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
+                            if (!string.IsNullOrEmpty(htxt) && !htxt.Contains("<body>"))
+                                htxt = $"<body>{htxt}</body>";
 
-                            if(message.HtmlBody == null)
-                            {
-                                builder.TextBody = "Da : " + message.From + "\nA : " + message.To + "\nInviato : " + message.Date.DateTime + "\nOggetto : " + message.Subject + "\n" + message.TextBody;
-                            }
-                            else
-                            {
-                                 //builder.TextBody = $"<body><div><b>Da : </b>{newmessage.From}<br><b>A: </b>{newmessage.ReplyTo}<br><b>Inviato : </b>{newmessage.Date.UtcDateTime}<br><b>Oggetto : </b>{newmessage.Subject}<br><br> {message.TextBody} </div></body>";
-                                 var htxt = message.HtmlBody;
-                                if (! htxt.Contains("<body>") ) {
-                                    htxt = $"<body>{htxt}</body>";
-                                }
-                                string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
-                                string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
-                                builder.HtmlBody = htxt.Replace("<body>", $"<body><div><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></div><br>");
+                            ttxt = $"Da : {message.From}\nA : {message.To}\nInviato : {message.Date.DateTime}\nOggetto: {message.Subject}\n\n{message.TextBody}";
+                            htxt = htxt?.Replace("<body>", $"<body><p><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></p><br>");
 
-                            }
+                            builder.TextBody = ttxt;
+                            builder.HtmlBody = htxt;
+
 
                             foreach (MimeEntity att in message.Allegati()) { 
                                 builder.Attachments.Add(att);
@@ -2533,7 +2533,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 UtenteC = User.Identity.Name,
                                 UtenteUM = User.Identity.Name
                             };
-                            newall.elencoAttributi = al.TipoNavigation.Attributi;
+                            newall.elencoAttributi = _allMan.GetTipoAllegato(al.TipoNavigation.Codice).Attributi;
                             string emailmitt = newmessage.From.Mailboxes.First().Address;
                             newall.SetAttributo("Mittente", emailmitt);
                             newall.SetAttributo("Destinatario", Indirizzi);
@@ -2689,57 +2689,28 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             // now to create our body...
                             var builder = new BodyBuilder();
-                            
+                                         
+                            var htxt = Testo??"";
+                            var ttxt = Testo??"";
+                            if (!htxt.Contains("<body>"))
+                                htxt = $"<body>{htxt}</body>";
 
-                            //testo
-                            if (string.IsNullOrEmpty(Testo))
-                            {
-                                Testo = "Da : " + message.From + "\nA : " + message.To + "\nInviato : " + message.Date.DateTime + "\nOggetto : " + message.Subject + "\n" + message.TextBody;
+                            if (allegaEmail)
+                            {                              
+                                htxt = message.HtmlBody ;
+                                string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
+                                string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
+                                if (!string.IsNullOrEmpty(htxt) && !htxt.Contains("<body>"))
+                                    htxt = $"<body>{htxt}</body>";
+                                
+                                ttxt = $"{Testo}\n\n\n\nDa : {message.From}\nA : {message.To}\nInviato : {message.Date.DateTime}\nOggetto: {message.Subject}\n\n{message.TextBody}";
+                                htxt = htxt?.Replace("<body>", $"<body><p>{Testo}</p><p></p><p><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></p><br>");
+
                             }
 
+                            builder.TextBody = ttxt;
+                            builder.HtmlBody = htxt;
 
-                            if (allegaEmail) {
-                                Testo = $"{Testo} \n\n{message.TextBody}";
-                                }
-
-                                    builder.TextBody = Testo;
-
-                            //if (message.HtmlBody == null || !allegaMail )
-                            //{
-                            //    if (Testo == null) { 
-                            //        builder.TextBody = "Da : " + message.From + "\nA : " + message.To + "\nInviato : " + message.Date.DateTime + "\nOggetto : " + message.Subject + "\n" + message.TextBody;
-                            //    }
-                            //    else
-                            //    {
-                            //        builder.TextBody = Testo;
-                            //    }
-                            //}
-                            //else
-                            //{
-                            //    var htxt = message.HtmlBody;
-                            //    if (!htxt.Contains("<body>"))
-                            //    {
-                            //        htxt = $"<body>{htxt}</body>";
-                            //    }
-
-                            //    if (Testo == null) { 
-                            //        string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
-                            //        string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
-                            //        builder.HtmlBody = htxt.Replace("<body>", $"<body><div><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></div><br>");
-                            //        }
-                            //    else
-                            //    {
-                            //        builder.HtmlBody = htxt.Replace("<body>", $"<body><div>{Testo}<br><br></div><br>");
-                            //    }
-                            //}
-
-                            //string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
-                            //NomePdf = Path.Combine(NomePdf, $"riepilogo_{IdAllegato}.pdf.sav");
-                            //if (File.Exists(NomePdf))
-                            //{
-                            //    builder.Attachments.Add(NomePdf);
-                            //}
-                            
                             newmessage.Body = builder.ToMessageBody();
                             await client.SendAsync(newmessage, c);
                             //-------- Memorizzo l'operazione----------------------
@@ -2753,26 +2724,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                             };
                             _logMan.Salva(log, true);
 
-                            ////-------- Memorizzo l'operazione----------------------
 
-                            //if (chiudi)
-                            //{
-                            //    al.Stato = StatoAllegato.Chiuso;
-                            //    //await _context.SaveChangesAsync();
-                            //    _allMan.Salva(al, false);
-                            //    //-------- Memorizzo l'operazione----------------------
-                            //    log = new LogDoc()
-                            //    {
-                            //        Data = DateTime.Now,
-                            //        IdOggetto = al.Id,
-                            //        TipoOggetto = TipiOggetto.ALLEGATO,
-                            //        Operazione = TipoOperazione.Chiuso,
-                            //        Utente = User.Identity.Name
-                            //    };
-                            //    _logMan.Salva(log, true);
-                            //    //-------- Memorizzo l'operazione----------------------
-
-                            //}
                               Allegati newall = new Allegati()
                                 {
                                     Descrizione = Oggetto,
@@ -2784,7 +2736,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                     UtenteC = User.Identity.Name,
                                     UtenteUM = User.Identity.Name
                               };
-                              newall.elencoAttributi = al.TipoNavigation.Attributi;
+                            newall.elencoAttributi = _allMan.GetTipoAllegato(al.TipoNavigation.Codice).Attributi;
                             string emailmitt = newmessage.From.Mailboxes.First().Address;
                             newall.SetAttributo("Mittente", emailmitt);
                             newall.SetAttributo("Destinatario", to);
