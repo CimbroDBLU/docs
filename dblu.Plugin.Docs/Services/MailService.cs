@@ -2372,6 +2372,11 @@ namespace dblu.Portale.Plugin.Docs.Services
                     v = VariableValue.FromObject(JsonConvert.SerializeObject(Info));
                     variabili.Add("_ProcessInfo", v);
 
+                    //### COMPAB TEMPORANEO DA RIMUOVERE
+                    if (this._elmMan.GetAllAllegatiElemento(el.Id).FirstOrDefault(x => x.Tipo == "MAIL").Origine.ToUpperInvariant() == "VENDITE")
+                        variabili.Add("sNote", VariableValue.FromObject("Solo in digitale"));
+                    //### COMPAB TEMPORANEO DA RIMUOVERE
+
                     var pi = pd.Start("", el.TipoNavigation.Processo, el.Id.ToString(), variabili);
 
                     res = (pi != null && pi.Result != null );
