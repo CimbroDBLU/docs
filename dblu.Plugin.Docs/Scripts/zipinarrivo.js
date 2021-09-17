@@ -220,7 +220,10 @@ function PulisciDettaglio() {
     $('#NomeSoggetto').val("");
 
     $("#TestoEmail").val("");
-    $('#zipAttachments').data('kendoGrid').dataSource.data("{}")
+    try {
+        $('#zipAttachments').data('kendoGrid').dataSource.data("{}")
+    }
+    catch (err) { }
     $('#divFascicolo').hide();
 
     $('#divElemento').hide();
@@ -274,8 +277,12 @@ function MostraDettaglio(dettaglio) {
         }
     }
     //$('#zipAttachments').data('kendoGrid').dataSource.data(dettaglio.FileAllegati);
-    $('#zipAttachments').data('kendoGrid').dataSource.data("{}");
-    $('#gridZipElementi').data('kendoGrid').dataSource.read();
+    try {
+        $('#zipAttachments').data('kendoGrid').dataSource.data("{}");
+    } catch (err) { }
+    try {
+        $('#gridZipElementi').data('kendoGrid').dataSource.read();
+    } catch (err) { }
 }
 
 var loadingTimes = 0;
