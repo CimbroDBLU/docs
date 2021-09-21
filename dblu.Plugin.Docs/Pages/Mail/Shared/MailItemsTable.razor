@@ -50,7 +50,7 @@
                 <Template>
                     <div style="display:flex">
                         <ComboActions @ref="ActionsCombo" nItemTypes="@Actions" @bind-nItemType="@ActionSelected"></ComboActions>
-                        <SfButton OnClick="Run" CssClass="e-primary ml-2 smallb"><i class="fas fa-play"></i></SfButton>
+                        <SfButton OnClick="OnRun" CssClass="e-primary ml-2 smallb"><i class="fas fa-play"></i></SfButton>
                     </div>
                 </Template>
             </ToolbarItem>
@@ -335,6 +335,7 @@
         if (((int)args.Data.Stato) > 1)
             IsSummaryActive = false;
         else IsSummaryActive = true;
+        OnSelectedItem.InvokeAsync(args.Data);
     }
 
     /// <summary>
@@ -353,7 +354,10 @@
             case "Open":
                 nItem = Elem;
                 await _SessionStore.SetAsync("Referrer", $"/Mail/Inbox/{nAttachID}");
-                _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
+                if ((int)Elem.Stato > 1)
+                    _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
+                else
+                    Run(Elem.TipoElemento);
                 break;
             case "Add":
                 ShowAddConfirm = true;
@@ -378,12 +382,23 @@
         }
     }
 
+
     /// <summary>
     /// On Run, acivate the custom action, if any
     /// </summary>
-    public async void Run()
+    public async void OnRun()
     {
-        TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
+        EmailElementi Elem = (await Grid.GetSelectedRecords()).FirstOrDefault();
+        Run(Elem.TipoElemento);
+    }
+
+    /// <summary>
+    /// Start custom action for the selected item
+    /// </summary>
+    /// <param name="Code"></param>
+    public async void Run(string Code)
+    {
+        TipiElementi T = Actions.Where(x => x.Codice == Code).FirstOrDefault();
         if (T != null)
         {
             ComponentName = T.ViewAttributi;

@@ -2373,7 +2373,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     variabili.Add("_ProcessInfo", v);
 
                     //### COMPAB TEMPORANEO DA RIMUOVERE
-                    if (this._elmMan.GetAllAllegatiElemento(el.Id).FirstOrDefault(x => x.Tipo == "MAIL").Origine.ToUpperInvariant() == "VENDITE")
+                    if (this._elmMan.GetAllAllegatiElemento(el.Id).FirstOrDefault(x => x.Tipo == "EMAIL")?.Origine?.ToUpperInvariant() == "VENDITE")
                         variabili.Add("sNote", VariableValue.FromObject("Solo in digitale"));
                     //### COMPAB TEMPORANEO DA RIMUOVERE
 
