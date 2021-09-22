@@ -151,7 +151,7 @@
                                                 <div>@CostumerDesc</div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <MailCustomer OnLinkedToItem="OnLinkToItem" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></MailCustomer>
+                                                <MailCustomer OnLinkedToCostumer="OnLinkCostumer" OnLinkedToItem="OnLinkToItem" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></MailCustomer>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -646,6 +646,12 @@
         IsDossierVisible = true;
     }
 
+    public async void OnLinkCostumer(ISoggetti Customer)
+    {
+        CustomerCode = Customer.Codice;
+        IsDossierVisible = true;
+
+    }
     /// <summary>
     /// On completed attach, i refresh the grid
     /// </summary>

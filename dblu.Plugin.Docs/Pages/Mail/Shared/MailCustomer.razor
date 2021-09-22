@@ -3,20 +3,20 @@
 *@
 @using System.IO
 @using dblu.Portale.Plugin.Docs.Services
-
+@using dblu.Docs.Interfacce
 
 <div class="row">
     <div class="col">
-        <MailCustomerSearch nCostumerCode="@nCostumerCode" nReadOnly="@nReadOnly" OnLinkedToItem="OnLink" nAttachID="@nAttachID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument"></MailCustomerSearch>
+        <MailCustomerSearch nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly" OnLinkedToItem="OnLink" nAttachID="@nAttachID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument"></MailCustomerSearch>
     </div>
 </div>
 @if (!nReadOnly)
 {
-<div class="row mt-2">
-    <div class="col">
-        <MailOpenItemsTable nCustomerCode="@nCostumerCode"></MailOpenItemsTable>
+    <div class="row mt-2">
+        <div class="col">
+            <MailOpenItemsTable nCustomerCode="@nCostumerCode"></MailOpenItemsTable>
+        </div>
     </div>
-</div>
 }
 
 
@@ -58,6 +58,9 @@
     [Parameter]
     public bool nReadOnly { get; set; } = false;
 
+    [Parameter]
+    public EventCallback<ISoggetti> OnLinkedToCostumer { get; set; }
+
     /// <summary>
     /// Forward the link event
     /// </summary>
@@ -65,5 +68,14 @@
     public async void OnLink((string Dossier, string Item) data)
     {
         await OnLinkedToItem.InvokeAsync(data);
+    }
+
+    /// <summary>
+    /// Forward the link event
+    /// </summary>
+    /// <param name="data"></param>
+    public async void OnLinkCostumer(ISoggetti Costumer)
+    {
+        await OnLinkedToCostumer.InvokeAsync(Costumer);
     }
 }

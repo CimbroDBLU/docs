@@ -74,6 +74,9 @@
     [Parameter]
     public EventCallback<(string, string)> OnLinkedToItem { get; set; }
 
+    [Parameter]
+    public EventCallback<ISoggetti> OnLinkedToCostumer { get; set; }
+
     /// <summary>
     /// Indicates if is possible to change user/order
     /// </summary>
@@ -109,10 +112,13 @@
     /// On  changing user, refresh the component
     /// </summary>
     /// <param name="args"></param>
-    public void OnSelectedCustomer(ISoggetti args)
+    public async void OnSelectedCustomer(ISoggetti args)
     {
         if (args is null) return;
-        nCostumerCode = args.Codice; OnParametersSet();
+        nCostumerCode = args.Codice; 
+        OnParametersSet();
+        StateHasChanged();
+        await  OnLinkedToCostumer.InvokeAsync(args);
     }
 
     /// <summary>

@@ -357,7 +357,7 @@
                 if ((int)Elem.Stato > 1)
                     _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
                 else
-                    Run(Elem.TipoElemento);
+                    Run(Elem.TipoElemento,true);
                 break;
             case "Add":
                 ShowAddConfirm = true;
@@ -388,22 +388,28 @@
     /// </summary>
     public async void OnRun()
     {
-        EmailElementi Elem = (await Grid.GetSelectedRecords()).FirstOrDefault();
-        Run(Elem.TipoElemento);
+        Run(ActionSelected);
     }
 
     /// <summary>
     /// Start custom action for the selected item
     /// </summary>
     /// <param name="Code"></param>
-    public async void Run(string Code)
+    public async void Run(string Code,bool OpenItem=false)
     {
+
+
         TipiElementi T = Actions.Where(x => x.Codice == Code).FirstOrDefault();
         if (T != null)
         {
             ComponentName = T.ViewAttributi;
             if(!ComponentName.StartsWith("blz:/"))
                 IsShowUndefined = true;
+        }
+        if (OpenItem)
+        {
+            Register();
+            return;
         }
         if (!IsShowUndefined)
         {
@@ -476,7 +482,7 @@
         TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
 
         //1)aggiungo al fascicolo
-        Elementi e = await _MailService.CreaElementoFascicoloAsync(nAttachID, nDossierID, nItem.IdElemento.ToString(), T.Categoria, nItem.TipoElemento,"162003"/* nCostumerCode */, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "", null, true, nItem.DscElemento, User);
+        Elementi e = await _MailService.CreaElementoFascicoloAsync(nAttachID, nDossierID, nItem?.IdElemento.ToString()??"", T.Categoria, T.Codice, nCostumerCode , _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "", null, true, nItem?.DscElemento??"", User);
         if (e == null)
             ToastActionKO.Show();
         else
