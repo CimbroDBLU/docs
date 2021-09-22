@@ -10,9 +10,11 @@
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
 @using dblu.Portale.Plugin.Docs.Pages.Mail.Shared
 @using dblu.Portale.Plugin.Docs.Classes
-@using Microsoft.AspNetCore.Http;
-@using System.IO;
+@using Microsoft.AspNetCore.Http
+@using System.IO
+@using dblu.Docs.Interfacce
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject IHttpContextAccessor _HttpContextAccessor
 @inject ILogger<Inbox> _Logger
 
@@ -328,8 +330,11 @@
     /// <summary>
     /// Costumer Code
     /// </summary>
-    private string CustomerCode { get;
-        set; }
+    private string CustomerCode
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Show delete confirm
@@ -415,8 +420,14 @@
         if (DossierID != e.IdFascicolo.ToString())
             DossierID = e.IdFascicolo.ToString();
 
-        if (CustomerCode != e.Chiave3)
-            CustomerCode = e.Chiave3;
+        if (CustomerCode != e.GetAttributo("CodiceSoggetto"))
+            CustomerCode = e.GetAttributo("CodiceSoggetto");
+
+        if (string.IsNullOrEmpty(CustomerCode))
+        {
+            List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Attach.Mittente);
+            CustomerCode = Costumers.FirstOrDefault()?.Codice ?? "";
+        }
 
         OnAbort();
         IsDossierVisible = (!string.IsNullOrEmpty(DossierID));
