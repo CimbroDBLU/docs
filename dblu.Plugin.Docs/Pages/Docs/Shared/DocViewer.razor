@@ -298,16 +298,20 @@
     /// <summary>
     /// On Set parameter, reload the control
     /// </summary>
-    protected override async void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         //Non e' il caso di aggiornare.
         if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
             return;
 
         IsSpinnerVisible = true;
-        DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
-        LoadDocument();
-        OnPDFViewerCreated();
+        await Task.Run(() =>
+        {
+
+            DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
+            LoadDocument();
+            OnPDFViewerCreated();
+        });
         IsSpinnerVisible = false;
     }
 

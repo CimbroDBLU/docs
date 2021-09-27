@@ -38,6 +38,9 @@
 </style>
 
 
+<SfSpinner @bind-Visible="IsSpinnerVisible">
+</SfSpinner>
+
 <SfGrid @ref="@Grid" SelectedRowIndex="0" DataSource="@nItems" AllowTextWrap="false" AllowPaging="true">
     <SfToolbar>
         <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
@@ -279,6 +282,11 @@
     private string ActionSelected { get; set; }
 
     /// <summary>
+    /// Spinner that will be shown wile document loading
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; }
+
+    /// <summary>
     /// On initialize load all data
     /// </summary>
     protected override async void OnInitialized()
@@ -294,17 +302,21 @@
     /// <summary>
     /// On parameter setted relof the grid if necessary
     /// </summary>
-    protected override async void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if (string.IsNullOrEmpty(nAttachID) || string.IsNullOrEmpty(nDossierID)) return;
 
         if (LastAttachId == nAttachID && LastDossierId == nDossierID) return;
 
-        nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
-        //_MailService._allMan.Get(nAttachID);
-        LastDossierId = nDossierID;
-        LastAttachId = nAttachID;
-
+        IsSpinnerVisible = true;
+        await Task.Run(() =>
+        {
+            nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
+            //_MailService._allMan.Get(nAttachID);
+            LastDossierId = nDossierID;
+            LastAttachId = nAttachID;
+        });
+        IsSpinnerVisible = false;
     }
 
     /// <summary>
