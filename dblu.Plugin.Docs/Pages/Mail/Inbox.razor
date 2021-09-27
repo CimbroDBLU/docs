@@ -420,8 +420,8 @@
         if (DossierID != e.IdFascicolo.ToString())
             DossierID = e.IdFascicolo.ToString();
 
-        if (CustomerCode != e.GetAttributo("CodiceSoggetto"))
-            CustomerCode = e.GetAttributo("CodiceSoggetto");
+        if (CustomerCode != e.Chiave3)
+            CustomerCode = e.Chiave3;
 
         if (string.IsNullOrEmpty(CustomerCode))
         {

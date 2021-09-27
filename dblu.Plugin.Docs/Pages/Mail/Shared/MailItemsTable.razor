@@ -84,8 +84,9 @@
 <QuestionDialog nShowDialog="ShowAddConfirm" nText="Aggiungo all'elemento selezionato?" nTitle="Conferma" OnNoPressed="CloseDialog" OnClose="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="AddToItem"></QuestionDialog>
 <QuestionDialog nShowDialog="ShowDuplicateConfirm" nText="Confermi la creazione di un nuovo elemento nel fascicolo corrente?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Duplicate"></QuestionDialog>
 <QuestionDialog nShowDialog="ShowDeleteConfirm" nText="Sei sicuro di eliminare completamente l'elemento?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Delete"></QuestionDialog>
-<QuestionDialog nShowDialog="ShowDossierConfirm" nText="Confermi la creazione di un nuovo elemento nel fascicolo corrente?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Register"></QuestionDialog>
 <AlertDialog nShowDialog="ShowAlertNoDelete" nText="Non è possibile eliminare un elemento già processato." OnOKPressed="()=> { ShowAlertNoDelete = false; }" OnClose="()=> { ShowAlertNoDelete = false; }"></AlertDialog>
+<QuestionDialog nShowDialog="ShowDossierConfirm" nText="Confermi la creazione di un nuovo elemento nel fascicolo corrente?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Register"></QuestionDialog>
+
 
 <Toast @ref="ToastAddOK" nToastType="Toast.e_ToastType.OK" nTitle="Aggiungi a elemento" nContent="Allegato aggiunto"></Toast>
 <Toast @ref="ToastAddKO" nToastType="Toast.e_ToastType.Fail" nTitle="Aggiungi a elemento" nContent="Allegato NON aggiunto"></Toast>
@@ -209,7 +210,7 @@
     private Toast ToastDupKO { get; set; }
 
     /// <summary>
-    /// Toast for a positive action 
+    /// Toast for a positive action
     /// </summary>
     private Toast ToastActionOK { get; set; }
 
@@ -300,6 +301,7 @@
         if (LastAttachId == nAttachID && LastDossierId == nDossierID) return;
 
         nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
+        //_MailService._allMan.Get(nAttachID);
         LastDossierId = nDossierID;
         LastAttachId = nAttachID;
 
@@ -352,12 +354,7 @@
         switch (args.Item.Id)
         {
             case "Open":
-                nItem = Elem;
-                await _SessionStore.SetAsync("Referrer", $"/Mail/Inbox/{nAttachID}");
-                if ((int)Elem.Stato > 1)
-                    _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
-                else
-                    Run(Elem.TipoElemento,true);
+                OnOpen(Elem);
                 break;
             case "Add":
                 ShowAddConfirm = true;
@@ -382,35 +379,35 @@
         }
     }
 
-
-    /// <summary>
-    /// On Run, acivate the custom action, if any
-    /// </summary>
-    public async void OnRun()
+    public async void OnOpen(EmailElementi Elem)
     {
-        Run(ActionSelected);
-    }
-
-    /// <summary>
-    /// Start custom action for the selected item
-    /// </summary>
-    /// <param name="Code"></param>
-    public async void Run(string Code,bool OpenItem=false)
-    {
-
-
-        TipiElementi T = Actions.Where(x => x.Codice == Code).FirstOrDefault();
+        TipiElementi T = Actions.Where(x => x.Codice == Elem.TipoElemento).FirstOrDefault();
         if (T != null)
         {
             ComponentName = T.ViewAttributi;
-            if(!ComponentName.StartsWith("blz:/"))
+            if (!ComponentName.StartsWith("blz:/"))
                 IsShowUndefined = true;
         }
-        if (OpenItem)
+        await _SessionStore.SetAsync("Referrer", $"/Mail/Inbox/{nAttachID}");
+        if ((int)Elem.Stato > 1)
+            _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
+        else
         {
-            Register();
-            return;
+            string Url = $"{ComponentName.Replace("blz:/", "")}/{Elem.Id}";
+            _NavigationManager.NavigateTo(Url);
         }
+    }
+
+    public async void OnRun()
+    {
+        TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
+        if (T != null)
+        {
+            ComponentName = T.ViewAttributi;
+            if (!ComponentName.StartsWith("blz:/"))
+                IsShowUndefined = true;
+        }
+
         if (!IsShowUndefined)
         {
             ShowDossierConfirm = true;
@@ -474,6 +471,7 @@
         ShowDossierConfirm = false;
     }
 
+
     /// <summary>
     /// Open the customized page for the specific element type
     /// </summary>
@@ -482,7 +480,7 @@
         TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
 
         //1)aggiungo al fascicolo
-        Elementi e = await _MailService.CreaElementoFascicoloAsync(nAttachID, nDossierID, nItem?.IdElemento.ToString()??"", T.Categoria, T.Codice, nCostumerCode , _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "", null, true, nItem?.DscElemento??"", User);
+        Elementi e = await _MailService.CreaElementoFascicoloAsync(nAttachID, nDossierID, nItem?.IdElemento.ToString() ?? "", T.Categoria, T.Codice, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "", null, true, nItem?.DscElemento, User);
         if (e == null)
             ToastActionKO.Show();
         else
