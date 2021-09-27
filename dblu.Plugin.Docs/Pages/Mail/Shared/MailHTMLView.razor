@@ -11,25 +11,29 @@
 @inject IHttpContextAccessor _HttpContextAccessor
 @inject ILogger<MailHTMLView> _Logger
 
+
+<SfSpinner @bind-Visible="IsSpinnerVisible">
+</SfSpinner>
+
 <div class="row form-group">
     <div class="col-12">
         @if (IsHtml)
-            {
+        {
             <iframe style="width:100%; height:@(nHeight.ToString())px" srcdoc="@Source.Item1"></iframe>
-            }
+        }
         else
-            {
-              <SfTextBox HtmlAttributes="@(new Dictionary<string, object>(){{ "style", $"width:100%; height:{nHeight}px "}})" Multiline="true" Value="@Source.Item2"></SfTextBox>
-            }
+        {
+            <SfTextBox HtmlAttributes="@(new Dictionary<string, object>(){{ "style", $"width:100%; height:{nHeight}px "}})" Multiline="true" Value="@Source.Item2"></SfTextBox>
+        }
     </div>
 </div>
 @if (nShowBack)
 {
-<div class="row">
-    <div class="col">
-        <SfButton CssClass="e-primary" OnClick="OnGoBack">Indietro</SfButton>
+    <div class="row">
+        <div class="col">
+            <SfButton CssClass="e-primary" OnClick="OnGoBack">Indietro</SfButton>
+        </div>
     </div>
-</div>
 }
 
 @code {
@@ -73,7 +77,7 @@
     /// <summary>
     /// HTML/Text source to display
     /// </summary>
-    private (string,string) Source { get; set; } = ("","");
+    private (string, string) Source { get; set; } = ("", "");
 
     /// <summary>
     /// Indicates if we need to show html or text
@@ -85,26 +89,42 @@
     /// </summary>
     public AllegatoEmail LastAttach { get; set; } = null;
 
-    /// <summary>, load the HTML from email
-    /// On Init
+
+    /// <summary>
+    /// Spinner that will be shown wile document loading
     /// </summary>
-    protected override async void OnParametersSet()
+    private bool IsSpinnerVisible { get; set; }
+
+    /// <summary>
+    /// On Init, load the HTML from email
+    /// </summary>
+    protected override async Task OnParametersSetAsync()
     {
         try
         {
-            if (nAttach is not null && LastAttach!=nAttach)
+            bool ToSend = false;
+            Document Doc = null;
+
+            IsSpinnerVisible = true;
+
+            await Task.Run(async () =>
             {
-                Stopwatch sw = Stopwatch.StartNew();
-                DocumentManager DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
-                Source = (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), false)).AsEmail();
-                if(nReadAttachments)
+                if (nAttach is not null && LastAttach != nAttach)
+                {
+                    LastAttach = nAttach;
+                    Stopwatch sw = Stopwatch.StartNew();
+                    DocumentManager DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
+                    Source = (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), false)).AsEmail();
+                    if (nReadAttachments)
                     {
-                        Document Doc = (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), true));
-                        await OnDocumentLoaded.InvokeAsync(Doc.SourceAttachments);
+                        Doc = (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), true));
+                        ToSend = true;
                     }
-                _Logger.LogInformation($"MailHTMLView.OnParametersSet: HTML in {sw.ElapsedMilliseconds} ms");
-                LastAttach = nAttach;
-            }
+                    _Logger.LogInformation($"MailHTMLView.OnParametersSet: HTML in {sw.ElapsedMilliseconds} ms");
+                }
+            });
+            if (ToSend) await OnDocumentLoaded.InvokeAsync(Doc.SourceAttachments);
+            IsSpinnerVisible = false;
         }
         catch (Exception ex)
         {
