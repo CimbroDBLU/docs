@@ -3,6 +3,7 @@
 *@
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject ILogger<AddressingTile> _Logger
 
 <Tile nTitle="@Number"
       nDescription="Email da smistare"
@@ -23,8 +24,10 @@
     /// </summary>
     protected override async void OnInitialized()
     {
+        Stopwatch SW = Stopwatch.StartNew();
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         Number = _MailService.CountEmailInArrivo("EMAIL", user.Claims, dblu.Docs.Models.StatoAllegato.DaSmistare).ToString();
+        _Logger.LogDebug($"AddressingTile.OnInitialized: {Number} Addresssable emails in {SW.ElapsedMilliseconds} ms");
     }
 }

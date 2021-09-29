@@ -5,6 +5,8 @@
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject IConfiguration _conf
+@inject ILogger<MailTile> _Logger
+
 
 <Tile nTitle="@Number"
       nDescription="Email in arrivo"
@@ -26,9 +28,12 @@
     /// </summary>
     protected override async void OnInitialized()
     {
+        Stopwatch SW = Stopwatch.StartNew();
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         Number = _MailService.CountEmailInArrivo("EMAIL", user.Claims).ToString();
+        _Logger.LogDebug($"MailTile.OnInitialized: {Number} emails in {SW.ElapsedMilliseconds} ms");
+
     }
 
 }

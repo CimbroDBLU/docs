@@ -355,10 +355,12 @@
     /// </summary>
     private async void OnSave()
     {
-        if (Viewer.IsDocumentEdited)
-            Doc = await DocManager.Save(new MemoryStream(await Viewer.GetDocument()));
-        else
-            Doc = await DocManager.Save();
+     
+     //   if (Viewer.IsDocumentEdited)
+
+        Doc = await DocManager.Save(new MemoryStream(await Viewer.GetDocument()));
+       // else
+        // Doc = await DocManager.Save();
         if (Doc.Payload != null && Doc.Payload.Length != 0)
         {
             string base64String = Convert.ToBase64String(Doc.Payload.ToArray());

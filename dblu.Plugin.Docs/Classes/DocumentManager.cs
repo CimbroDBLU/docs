@@ -323,6 +323,7 @@ namespace dblu.Portale.Plugin.Docs.Classes
 
             if (stream == null) stream = Doc.Payload;
 
+       
             try
             {
                 Stopwatch SW = Stopwatch.StartNew();
@@ -333,7 +334,7 @@ namespace dblu.Portale.Plugin.Docs.Classes
                     foreach (PdfLoadedPage P in loadedDocument.Pages)
                         foreach (PdfLoadedAnnotation A in P.Annotations)
                             A.Flatten = true;
-
+                   
                     loadedDocument.Save(Optimized);
                     if (!Doc.IsTransformation)
                     {

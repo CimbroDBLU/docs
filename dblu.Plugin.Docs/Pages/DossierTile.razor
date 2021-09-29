@@ -2,6 +2,7 @@
     Component for displaying a Tile for linking Dossiers
 *@
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachmentsService
+@inject ILogger<DossierTile> _Logger
 <Tile nTitle="@Number"
       nDescription="Fascicoli"
       nLink="Docs/Dossiers"
@@ -21,6 +22,8 @@
     /// </summary>
     protected override async void OnInitialized()
     {
+        Stopwatch SW = Stopwatch.StartNew();
         Number = _AttachmentsService.CountFascicoli().ToString();
+        _Logger.LogDebug($"DossierTile.OnInitialized: {Number} Dossiers in {SW.ElapsedMilliseconds} ms");
     }
 }

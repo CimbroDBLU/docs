@@ -3,6 +3,7 @@
 *@
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
+@inject ILogger<FileTile> _Logger
 
 <Tile nTitle="@Number"
       nDescription="Documenti in arrivo"
@@ -23,8 +24,10 @@
     /// </summary>
     protected override async void OnInitialized()
     {
+        Stopwatch SW = Stopwatch.StartNew();
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         Number = _ZipService.CountZipInArrivo("ZIP", user.Claims).ToString();
+        _Logger.LogDebug($"FileTile.OnInitialized: {Number} Files in {SW.ElapsedMilliseconds} ms");
     }
-    }
+}

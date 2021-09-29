@@ -4,6 +4,7 @@
 
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
+@inject ILogger<RequestTile> _Logger
 
 <Tile nTitle="@Number"
       nDescription="Richieste in arrivo"
@@ -24,8 +25,10 @@
     /// </summary>
     protected override async void OnInitialized()
     {
+        Stopwatch SW = Stopwatch.StartNew();
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         Number = _ZipService.CountZipInArrivo("REQ", user.Claims).ToString();
+        _Logger.LogDebug($"RequestTile.OnInitialized: {Number} requests in {SW.ElapsedMilliseconds} ms");
     }
 }
