@@ -19,7 +19,7 @@
         <label>@nLabel</label>
     </div>
     <div class="col-9">
-        <SfDropDownList @bind-Value="@(nServer.Nome)" TValue="string" TItem="EmailServer" DataSource="@Servers">
+        <SfDropDownList Value="@(nServer?.Nome??"")" TValue="string" TItem="EmailServer" DataSource="@Servers">
             <DropDownListFieldSettings Text="Nome" Value="Nome"></DropDownListFieldSettings>
             <DropDownListEvents TValue="string" TItem="EmailServer" OnValueSelect="OnValueChange"></DropDownListEvents>
         </SfDropDownList>
@@ -62,6 +62,7 @@
     protected override async void OnInitialized()
     {
         Servers = new ObservableCollection<EmailServer>(_MailService._serMan.GetServersEmailinRoles(_MailService.getRuoli(_HttpContextAccessor.HttpContext.User.Claims, ""), TipiRecordServer.CartellaMail));
+        //Servers = new ObservableCollection<EmailServer>();
         if (nExcludedServers != null)
             Servers = new ObservableCollection<EmailServer>(Servers.Where(x => (nExcludedServers.FirstOrDefault(c => c == x.Nome)) == null));
         if (Servers.Count > 0 && nServer is null)
@@ -69,6 +70,8 @@
             nServer = Servers[0];
             await nServerChanged.InvokeAsync(nServer);
         }
+
+
     }
 
     /// <summary>
