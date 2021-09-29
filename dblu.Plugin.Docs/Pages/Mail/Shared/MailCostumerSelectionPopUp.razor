@@ -1,0 +1,122 @@
+﻿@*
+    Component for displaying a selction of costumer dialog (used once selecting an email attach) 
+*@
+@using dblu.Docs.Interfacce
+@using dblu.Portale.Plugin.Docs.Pages.Custom.Shared
+
+
+<style>
+    .e-dlg-container {
+        z-index: 1400 !important;
+    }
+</style>
+<SfDialog Width="700px" ShowCloseIcon="true" IsModal="true" @bind-Visible="@nShowDialog">
+    <DialogTemplates>
+        <Header>
+            <i style="font-weight:900" class="@nIcon"></i> @nTitle
+        </Header>
+        <Content>
+            <SfGrid SelectedRowIndex="0" DataSource="@nCostumers" AllowSorting="true" AllowFiltering="true" AllowTextWrap="true" AllowPaging="true" Toolbar="@(new List<object>(){"Search"})">
+                <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
+                <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
+                <GridPageSettings PageSize="10"></GridPageSettings>
+                <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu">
+                    <GridEvents TValue="ISoggetti" RowSelected="OnRecordSelect" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
+                </GridFilterSettings>
+                <GridColumns>
+                    <GridColumn AllowSorting="true" AllowFiltering="true" Width="120" HeaderText="Codice" Field=@nameof(ISoggetti.Codice) IsPrimaryKey="true" Visible="true"></GridColumn>
+                    <GridColumn AllowSorting="true" AllowFiltering="true" Width="400" HeaderText="Cliente" Field=@nameof(ISoggetti.Nome)></GridColumn>
+                    <GridColumn AllowSorting="true" AllowFiltering="true" HeaderText="Localita" Field=@nameof(ISoggetti.Localita)></GridColumn>
+                </GridColumns>
+            </SfGrid>
+        </Content>
+    </DialogTemplates>
+    <DialogButtons>
+        <DialogButton Content="@nSelect" IsPrimary="true" OnClick="OnSelectPressed" />
+        <DialogButton Content="@nExit" IsPrimary="false" OnClick="OnExitPressed" />
+    </DialogButtons>
+    <DialogAnimationSettings Effect="DialogEffect.Zoom" Duration=400 />
+    <DialogEvents OnClose="@OnClose"></DialogEvents>
+</SfDialog>
+
+@code {
+    /// <summary>
+    /// Title of the Dialog
+    /// </summary>
+    [Parameter]
+    public string nTitle { get; set; } = "Seleziona il cliente desiderato";
+
+    /// <summary>
+    /// Icon of the dialog
+    /// </summary>
+    [Parameter]
+    public string nIcon { get; set; } = "fas fa-user-check";
+
+    /// <summary>
+    /// List of costumer that needs to be rendered
+    /// </summary>
+    [Parameter]
+    public ObservableCollection<ISoggetti> nCostumers { get; set; }
+
+    /// <summary>
+    /// Yes Text
+    /// </summary>
+    [Parameter]
+    public string nSelect { get; set; } = "Seleziona";
+
+    /// <summary>
+    /// Exit text
+    /// </summary>
+    [Parameter]
+    public string nExit { get; set; } = "Annulla";
+
+    /// <summary>
+    /// Show/hide the dialog
+    /// </summary>
+    [Parameter]
+    public bool nShowDialog { get; set; } = false;
+
+    /// <summary>
+    /// Event for managing the pression of YES button
+    /// </summary>
+    [Parameter]
+    public EventCallback OnSelectPressed { get; set; }
+
+    /// <summary>
+    /// Event for managing the pression of EXIT button
+    /// </summary>
+    [Parameter]
+    public EventCallback OnExitPressed { get; set; }
+
+    /// <summary>
+    /// Event for managing closing of the dialog
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    /// <summary>
+    /// Current selected costumewr if any
+    /// </summary>
+    public ISoggetti SelectedCostumer { get; set; } = null;
+
+
+    /// <summary>
+    /// On record select forward the selection
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnRecordSelect(RowSelectEventArgs<ISoggetti> args)
+    {
+        SelectedCostumer=args.Data;
+    }
+
+    /// <summary>
+    /// On double click forward the selection
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnDoubleClick(RecordDoubleClickEventArgs<ISoggetti> args)
+    {
+        SelectedCostumer = args.RowData;
+        await OnSelectPressed.InvokeAsync();
+    }
+
+}

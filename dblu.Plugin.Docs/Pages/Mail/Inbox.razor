@@ -242,6 +242,7 @@
     <Toast @ref="ToastAnswerOK" nToastType="Toast.e_ToastType.OK" nTitle="Rispondi a email" nContent="Email inviata correttamente"></Toast>
     <Toast @ref="ToastAnswerKO" nToastType="Toast.e_ToastType.Fail" nTitle="Rispondi a email" nContent="Invio NON riuscito"></Toast>
 
+    <MailCostumerSelectionPopUp @ref="@CustomerSelector" nCostumers="@CostumerToAssing" OnExitPressed="@(()=>OnSelectedCostumer())" OnClose="@(()=>OnSelectedCostumer())" OnSelectPressed="@(()=> OnSelectedCostumer(true))" nShowDialog="@ShowCostumerSelection"></MailCostumerSelectionPopUp>
 </section>
 
 @code
@@ -402,9 +403,24 @@
     private ObservableCollection<OriginalAttachments> SourceAttach { get; set; } = new();
 
     /// <summary>
+    /// List of available users for the current attachment email
+    /// </summary>
+    private ObservableCollection<ISoggetti> CostumerToAssing { get; set; } = new();
+
+    /// <summary>
     /// Current Document as memory stream
     /// </summary>
     public MemoryStream Document => Viewer?.Doc?.Payload ?? new();
+
+    /// <summary>
+    /// Dialog for selecting the costumer from email
+    /// </summary>
+    private MailCostumerSelectionPopUp CustomerSelector { get; set; }
+
+    /// <summary>
+    /// Show/Hide the dialog for the current selection
+    /// </summary>
+    private bool ShowCostumerSelection { get; set; } = false;
 
     /// <summary>
     /// On selection of the email,shows and hide panels properly
@@ -412,25 +428,39 @@
     /// <param name="e"></param>
     public async void OnSelectAttach(AllegatoEmail e)
     {
-        Attach = e;
-
-        if (AttachID != e.Id.ToString())
-            AttachID = e.Id.ToString();
-
-        if (DossierID != e.IdFascicolo.ToString())
-            DossierID = e.IdFascicolo.ToString();
-
-        if (CustomerCode != e.Chiave3)
-            CustomerCode = e.Chiave3;
-
-        if (string.IsNullOrEmpty(CustomerCode))
+        try
         {
-            List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Attach.Mittente);
-            CustomerCode = Costumers.FirstOrDefault()?.Codice ?? "";
-        }
+            Attach = e;
 
-        OnAbort();
-        IsDossierVisible = (!string.IsNullOrEmpty(DossierID));
+            if (AttachID != e.Id.ToString())
+                AttachID = e.Id.ToString();
+
+            if (DossierID != e.IdFascicolo.ToString())
+                DossierID = e.IdFascicolo.ToString();
+
+            if (CustomerCode != e.Chiave3)
+                CustomerCode = e.Chiave3;
+
+            if (string.IsNullOrEmpty(CustomerCode))
+            {
+
+                List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Attach.Mittente);
+                _Logger.LogDebug($"Inbox.OnSelectAttach: {Costumers.Count} costumers retrived for {Attach.Mittente}");
+                if (Costumers.Count > 1)
+                {
+                    CostumerToAssing = new ObservableCollection<ISoggetti>(_SubjectService.GetSoggettiByMail(Attach.Mittente));
+                    ShowCostumerSelection = true;
+                }
+                else CustomerCode = Costumers.FirstOrDefault()?.Codice ?? "";
+            }
+
+            OnAbort();
+            IsDossierVisible = (!string.IsNullOrEmpty(DossierID));
+        }
+        catch(Exception ex)
+        {
+            _Logger.LogError($"Inbox.OnSelectAttach: Unexpected errro on selecting attach {ex}");
+        }
     }
 
     /// <summary>
@@ -646,12 +676,16 @@
         IsDossierVisible = true;
     }
 
+    /// <summary>
+    /// Link the costumer to current Attach 
+    /// </summary>
+    /// <param name="Customer">Costumer to link</param>
     public async void OnLinkCostumer(ISoggetti Customer)
     {
-        CustomerCode = Customer.Codice;
+        CustomerCode = Customer?.Codice??"";
         IsDossierVisible = true;
-
     }
+
     /// <summary>
     /// On completed attach, i refresh the grid
     /// </summary>
@@ -661,5 +695,17 @@
         Grid.Refresh();
         Grid.SelectedRow = 0;
     }
+
+    /// <summary>
+    /// On closing dialog, change the visible value and  evnetually link the customer
+    /// </summary>
+    /// <param name="Save">True id the customer must be linked to</param>
+    public async void OnSelectedCostumer(bool Save=false)
+    {
+        ShowCostumerSelection = false;
+        if (Save && CustomerSelector.SelectedCostumer != null)
+            OnLinkCostumer(CustomerSelector.SelectedCostumer);
+    }
+
 
 }
