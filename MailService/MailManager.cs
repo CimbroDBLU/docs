@@ -205,7 +205,7 @@ namespace dbluMailService
                                             var newall = false;
 
                                             var descr = "";
-                                            string emailmitt = message.From.Mailboxes.First().Address;              
+                                            string emailmitt = message.From.Mailboxes.FirstOrDefault()?.Address??"";              
                                             if (!string.IsNullOrEmpty(message.Subject))
                                             {
                                                 descr = message.Subject;
