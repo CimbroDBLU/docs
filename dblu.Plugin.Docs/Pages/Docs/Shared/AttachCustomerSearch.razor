@@ -23,13 +23,13 @@
 
                 @if (!nReadOnly)
                 {
-                    <div class="col-4">
+                    <div class="col-6" >
                         <SfTextBox Readonly="true" Placeholder="Cliente" Value="@Description"></SfTextBox>
                     </div>
 
-                    <div class="col-6">
+                    <div class="col-4" style="display: inline-flex; justify-content: flex-end;">
                         <SfButton Content="Cerca" OnClick="OnSearch"></SfButton>
-                        <SfButton Content="Associa" OnClick="OnLink"></SfButton>
+                        <SfButton CssClass="ml-2" Content="Associa" OnClick="OnLink"></SfButton>
                     </div>
                 }
                 else
@@ -123,7 +123,7 @@
             /// <summary>
             /// Current Selected costumer
             /// </summary>
-            private ISoggetti CurrentCostumer { get; set; } = null;
+            public ISoggetti CurrentCostumer { get; set; } = null;
 
             /// <summary>
             /// On  changing user, refresh the component
@@ -169,7 +169,10 @@
                     Description = CurrentCostumer?.Nome ?? "";
                 }
                 else if (string.IsNullOrEmpty(nCostumerCode))
+                {
+                    CurrentCostumer = null;
                     Description = "";
+                }
                 LastCostumerCode = nCostumerCode;
             }
 

@@ -7,7 +7,7 @@
 
 <div class="row">
     <div class="col">
-        <AttachCustomerSearch nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly" OnLinkedToItem="OnLink" nAttachID="@nAttachID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument"></AttachCustomerSearch>
+        <AttachCustomerSearch @ref="@ACS" nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly" OnLinkedToItem="OnLink" nAttachID="@nAttachID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument"></AttachCustomerSearch>
     </div>
 </div>
 @if (!nReadOnly)
@@ -73,11 +73,17 @@
         await OnLinkedToItem.InvokeAsync(data);
     }
 
+    private AttachCustomerSearch  ACS {get;set;}
+    /// <summary>
+    /// Current Selected costumer
+    /// </summary>
+    public ISoggetti CurrentCostumer => ACS.CurrentCostumer;
+
     /// <summary>
     /// Forward the link event
     /// </summary>
     /// <param name="data"></param>
-    public async void OnLinkCostumer(ISoggetti Costumer)
+        public async void OnLinkCostumer(ISoggetti Costumer)
     {
         await OnLinkedToCostumer.InvokeAsync(Costumer);
     }

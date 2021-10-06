@@ -151,7 +151,7 @@
                                                 <div>@CostumerDesc</div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <AttachCustomer OnLinkedToCostumer="OnLinkCostumer" OnLinkedToItem="OnLinkToItem" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID" ></AttachCustomer>
+                                                <AttachCustomer @ref="CustomerComponent" OnLinkedToCostumer="OnLinkCostumer" OnLinkedToItem="OnLinkToItem" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID" ></AttachCustomer>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -273,10 +273,6 @@
     /// </summary>
     private bool IsSpinnerVisible { get; set; } = false;
 
-    /// <summary>
-    /// Description to show on "Costumer" tab
-    /// </summary>
-    private string CostumerDesc { get; set; } = "Cliente";
 
     /// <summary>
     /// Indicates if Mail attachments panel is visible
@@ -433,6 +429,16 @@
     public string PDFSourceId { get; set; }
 
     /// <summary>
+    /// Reference to che Customer Component
+    /// </summary>
+    private AttachCustomer CustomerComponent { get; set; }
+
+    /// <summary>
+    /// Description to show on "Costumer" tab
+    /// </summary>
+    private string CostumerDesc => (CustomerComponent?.CurrentCostumer == null) ? "Cliente da selezionare" : $"{CustomerComponent?.CurrentCostumer?.Codice ?? ""} - {CustomerComponent?.CurrentCostumer?.Nome ?? ""}";
+
+    /// <summary>
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
@@ -470,7 +476,7 @@
                         OnLinkCostumer(Costumers.FirstOrDefault());
                 }
 
-                OnAbort();               
+                OnAbort();
             }
             else IsDossierVisible = true;
         }
@@ -703,6 +709,7 @@
     public async void OnLinkCostumer(ISoggetti Customer)
     {
         CustomerCode = Customer?.Codice??"";
+        //    CostumerDesc = $"{Customer?.Codice ?? ""} - {Customer?.Nome}";
         IsDossierVisible = true;
     }
 
