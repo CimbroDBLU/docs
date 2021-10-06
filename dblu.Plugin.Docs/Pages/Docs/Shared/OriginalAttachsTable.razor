@@ -3,6 +3,7 @@
 *@
 
 @using dblu.Portale.Plugin.Docs.Services
+@using dblu.Docs.Models
 @inject IJSRuntime JSRuntime
 
 <style>
@@ -58,6 +59,12 @@
     public string nAttachID { get; set; }
 
     /// <summary>
+    /// Type of the attachment wwe are processing 
+    /// </summary>
+    [Parameter]
+    public TipiRecordServer nRecordServer { get; set; } = TipiRecordServer.CartellaMail;
+
+    /// <summary>
     /// Apply a different style if an attach has some feature that cannot coverted in pdf
     /// </summary>
     /// <param name="args"></param>
@@ -76,7 +83,10 @@
     {
         try
         {
-            JSRuntime.InvokeAsync<string>("open", $"/MailView/OpenFile?IdAllegato={AttachID}&NomeFile={FileName}", "_blank");
+            string Controller = "MailView";
+            if (nRecordServer == TipiRecordServer.CartellaFile)
+                Controller = "ZipView";
+            JSRuntime.InvokeAsync<string>("open", $"/{Controller}/OpenFile?IdAllegato={AttachID}&NomeFile={FileName}", "_blank");
         }
         catch (Exception) { }
     }
@@ -90,7 +100,10 @@
     {
         try
         {
-            JSRuntime.InvokeVoidAsync("BlazorSetHREF", $@"/MailView/ApriFile?IdAllegato={AttachID}&NomeFile={FileName}");
+            string Controller = "MailView";
+            if (nRecordServer == TipiRecordServer.CartellaFile)
+                Controller = "ZipView";
+            JSRuntime.InvokeVoidAsync("BlazorSetHREF", $@"/{Controller}/ApriFile?IdAllegato={AttachID}&NomeFile={FileName}");
         }
         catch (Exception) { }
     }

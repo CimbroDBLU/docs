@@ -3,11 +3,12 @@
 *@
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
+@inject IConfiguration _conf
 @inject ILogger<FileTile> _Logger
 
 <Tile nTitle="@Number"
       nDescription="Documenti in arrivo"
-      nLink="ZipView/ZipInArrivo"
+      nLink="@Link"
       nIcon="fas fa-file-archive"
       nBackColor="#85144b"
       nForeColor="white"></Tile>
@@ -20,9 +21,14 @@
     public string Number { get; set; }
 
     /// <summary>
+    /// Link to Open
+    /// </summary>
+    public string Link => string.IsNullOrEmpty(_conf["Beta"]) ? "ZipView/ZipInArrivo" : "Files/ZIP/Inbox";
+
+    /// <summary>
     /// On Init component
     /// </summary>
-    protected override async void OnInitialized()
+        protected override async void OnInitialized()
     {
         Stopwatch SW = Stopwatch.StartNew();
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();

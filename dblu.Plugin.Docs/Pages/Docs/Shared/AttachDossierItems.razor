@@ -4,21 +4,24 @@
 
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using dblu.Portale.Plugin.Docs.Services
+@using dblu.Docs.Models
 @using System.IO
 
 <div class="row">
     <div class="col">
-        <MailItemsSearch OnAttachCompleted="OnAttachCompleted" nDisplayComplete="@DisplayComplete" nDossierID="@nDossierID" nAttachID="@nAttachID" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode"></MailItemsSearch>
+        <AttachItemsSearch nRecordServer="@nRecordServer"  nDocumentType="@nDocumentType" OnAttachCompleted="OnAttachCompleted" nDisplayComplete="@DisplayComplete" nDossierID="@nDossierID" nAttachID="@nAttachID" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode"></AttachItemsSearch>
     </div>
 </div>
 <div class="row mt-2">
     <div class="col">
-        <MailItemsTable @ref="@Table" nAttachID="@nAttachID" nDossierID="@nDossierID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode" OnSelectedItem="OnSelectItem"></MailItemsTable>
+        <AttachItemsTable  nRecordServer="@nRecordServer" nDocumentType="@nDocumentType" @ref="@Table" nAttachID="@nAttachID" nDossierID="@nDossierID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode" OnSelectedItem="OnSelectedItemZ"></AttachItemsTable>
     </div>
 </div>
 
 
 @code {
+
+
     /// <summary>
     /// Attach ID
     /// </summary>
@@ -36,6 +39,18 @@
     /// </summary>
     [Parameter]
     public string nDossierID { get; set; }
+
+    /// <summary>
+    /// Type of the attachment wwe are processing 
+    /// </summary>
+    [Parameter]
+    public TipiRecordServer nRecordServer { get; set; } = TipiRecordServer.CartellaMail;
+
+    /// <summary>
+    /// If we are processing document specify witch type 
+    /// </summary>
+    [Parameter]
+    public TipiDocumentiFile nDocumentType { get; set; } = TipiDocumentiFile.ZIP;
 
     /// <summary>
     /// List of original attachments
@@ -56,6 +71,12 @@
     public EventCallback<string> OnAttachCompleted { get; set; }
 
     /// <summary>
+    /// Fires when a Dossier has been selected
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> OnSelectedItem { get; set; }
+
+    /// <summary>
     /// Indicates to display or not the complete button
     /// </summary>
     public bool DisplayComplete { get; set; } = false;
@@ -63,7 +84,7 @@
     /// <summary>
     /// Reference to the items table
     /// </summary>
-    private MailItemsTable Table { get; set; }
+    private AttachItemsTable Table { get; set; }
 
     /// <summary>
     /// Refresh the items table
@@ -77,8 +98,9 @@
     /// On selection of Item, decide if complete butto has to be displayed
     /// </summary>
     /// <param name="e"></param>
-    public async void OnSelectItem(EmailElementi e)
+    public async void OnSelectedItemZ(EmailElementi e)
     {
         DisplayComplete = (int)(e.Stato) > 1;
+        this.OnSelectedItem.InvokeAsync(e.Id);
     }
 }

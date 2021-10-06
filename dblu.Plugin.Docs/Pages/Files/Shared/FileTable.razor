@@ -7,12 +7,12 @@
 @using dblu.Portale.Plugin.Docs.Services
 @using dblu.Portale.Core.Infrastructure.Identity.Classes
 @using dblu.Portale.Core.Infrastructure.Identity.Services
-@using Microsoft.AspNetCore.Http;
-@using System.Security.Claims;
-
-@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@using Microsoft.AspNetCore.Http
+@using System.Security.Claims
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
 @inject IHttpContextAccessor _HttpContextAccessor
-@inject ILogger<MailTable> _Logger
+@inject ILogger<FileTable> _Logger
 
 <style>
     .e-answer:before {
@@ -30,10 +30,11 @@
     .e-show:before {
         content: "\eb64"
     }
+
     .e-reopen:before {
         content: "\e818"
     }
-    
+
     .e-logs:before {
         content: "\eb67"
     }
@@ -41,19 +42,19 @@
 
 
 
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" AllowGrouping="false" AllowTextWrap="true" DataSource="@nEmails" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
-    <GridSelectionSettings   PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" AllowGrouping="false" AllowTextWrap="true" DataSource="@nFiles" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+    <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSize="10"></GridPageSettings>
-    <GridEvents TValue="AllegatoEmail" OnDataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="OnRecordSelect"></GridEvents>
+    <GridEvents TValue="Allegati" OnDataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="OnRecordSelect"></GridEvents>
 
     <GridColumns>
-        <GridColumn IsPrimaryKey="true" Visible="false" Field=@nameof(AllegatoEmail.Id)></GridColumn>
-        <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(AllegatoEmail.Mittente) HeaderText="Email">
+        <GridColumn IsPrimaryKey="true" Visible="false" Field=@nameof(Allegati.Id)></GridColumn>
+        <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Allegati.Chiave3) HeaderText="Mittente">
             <Template>
                 @{
-                    var Attach = (context as AllegatoEmail);
+                    var Attach = (context as Allegati);
                     bool IsClient = !string.IsNullOrEmpty(Attach.Chiave3);
                     <div>
                         @if (IsClient)
@@ -62,16 +63,28 @@
                             <br />
                         }
                         <b>@Attach.Chiave4</b><br />
-                        @Attach.Mittente
                     </div>
                 }
             </Template>
         </GridColumn>
-        <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(AllegatoEmail.Oggetto) HeaderText="Oggetto"></GridColumn>
-        <GridColumn AllowEditing="false" Width="120px" AllowSorting="true" Field=@nameof(AllegatoEmail.Data) HeaderText="Data" Format="d" Type="ColumnType.Date"></GridColumn>
-        <GridColumn AllowEditing="false" Width="40px" AllowSorting="true" Field=@nameof(AllegatoEmail.LastOp) HeaderText="LastOp">
+        <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(Allegati.Descrizione) HeaderText="Descrizione">
             <Template>
-                <LastOperation nOperation="@((context as AllegatoEmail).LastOp)"></LastOperation>
+                @{
+                    var Attach = (context as Allegati);
+                    <div>
+
+                        <span>@Attach.Descrizione</span>
+                        <br />
+
+                        <b>RIF: @Attach.Chiave5</b><br />
+                    </div>
+                }
+            </Template>
+        </GridColumn>
+        <GridColumn AllowEditing="false" Width="120px" AllowSorting="true" Field=@nameof(Allegati.DataC) HeaderText="Data" Format="d" Type="ColumnType.Date"></GridColumn>
+        <GridColumn AllowEditing="false" Width="40px" AllowSorting="true" Field=@nameof(Allegati.LastOp) HeaderText="LastOp">
+            <Template>
+                <LastOperation nOperation="@((context as Allegati).LastOp)"></LastOperation>
             </Template>
         </GridColumn>
     </GridColumns>
@@ -79,6 +92,7 @@
 
 
 @code {
+
 
     /// <summary>
     ///Type of mail that we need to show
@@ -92,33 +106,31 @@
         /// <summary>
         /// Processed emails
         /// </summary>
-        Processed,
-        /// <summary>
-        /// Sent emails
-        /// </summary>
-        Sent,
-        /// <summary>
-        /// Sorting of emails
-        /// </summary>
-        Sorting
+        Processed
     };
 
     /// <summary>
     /// Id of the table
     /// </summary>
-    public string Id => "MailTable" + nType.ToString();
+    public string Id => "FileTable" + nType.ToString();
 
     /// <summary>
     /// Mailbox that we are browsing
     /// </summary>
     [Parameter]
-    public EmailServer nMailBox { get; set; }
+    public EmailServer nFolder { get; set; }
 
     /// <summary>
     /// Type of maitable we are browsing
     /// </summary>
     [Parameter]
     public TableType nType { get; set; } = TableType.Inbox;
+
+    /// <summary>
+    /// Specify witch type od file we are processing
+    /// </summary>
+    [Parameter]
+    public TipiDocumentiFile nDocumentType { get; set; } = TipiDocumentiFile.ZIP;
 
     /// <summary>
     /// Attachment we have to select if any (useful for go back)
@@ -130,64 +142,64 @@
     /// Fires when an attach is selected
     /// </summary>
     [Parameter]
-    public EventCallback<AllegatoEmail> OnSelectAttachment { get; set; }
+    public EventCallback<Allegati> OnSelectAttachment { get; set; }
 
     /// <summary>
     /// Fires when user request to reply
     /// </summary>
     [Parameter]
-    public EventCallback<AllegatoEmail> OnReplyAttachment { get; set; }
+    public EventCallback<Allegati> OnReplyAttachment { get; set; }
 
     /// <summary>
     /// Fires when user request to forward
     /// </summary>
     [Parameter]
-    public EventCallback<AllegatoEmail> OnForwardAttachment { get; set; }
+    public EventCallback<Allegati> OnForwardAttachment { get; set; }
 
     /// <summary>
     /// Fires when user request to move an item
     /// </summary>
     [Parameter]
-    public EventCallback<AllegatoEmail> OnMoveAttachment { get; set; }
+    public EventCallback<Allegati> OnMoveAttachment { get; set; }
 
     /// <summary>
     /// Fires when user request to see source of an email
     /// </summary>
     [Parameter]
-    public EventCallback<AllegatoEmail> OnShowAttachment { get; set; }
+    public EventCallback<Allegati> OnShowAttachment { get; set; }
 
     /// <summary>
     /// Fires when user request to see operative logs
     /// </summary>
     [Parameter]
-    public EventCallback<AllegatoEmail> OnShowLogsAttachment { get; set; }
+    public EventCallback<Allegati> OnShowLogsAttachment { get; set; }
 
     /// <summary>
     /// Fires when user request to delete an email
     /// </summary>
     [Parameter]
-    public EventCallback<AllegatoEmail> OnDeleteAttachment { get; set; }
+    public EventCallback<Allegati> OnDeleteAttachment { get; set; }
 
     /// <summary>
     /// Fires when user request to re-opem an email
     /// </summary>
     [Parameter]
-    public EventCallback<AllegatoEmail> OnReOpenAttachment { get; set; }
+    public EventCallback<Allegati> OnReOpenAttachment { get; set; }
 
     /// <summary>
     /// Reference to the grid
     /// </summary>
-    private SfGrid<AllegatoEmail> Grid { get; set; }
+    private SfGrid<Allegati> Grid { get; set; }
 
     /// <summary>
     /// Previous selected Mailbox
     /// </summary>
-    public EmailServer nMailBoxOld { get; set; }
+    public EmailServer nFolderOld { get; set; }
 
     /// <summary>
     /// List of attachment to show
     /// </summary>
-    private ObservableCollection<AllegatoEmail> nEmails { get; set; } = new();
+    private ObservableCollection<Allegati> nFiles { get; set; } = new();
 
     /// <summary>
     /// Get/set the current selected row
@@ -201,45 +213,23 @@
     {
         get
         {
-            if(nType== TableType.Inbox)
+            if (nType == TableType.Inbox)
                 return new List<Object>()
-                {
-                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-answer" },
-                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
+{
                 new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-move" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "ShowHTML",Text = "", TooltipText = "Mostra", PrefixIcon = "e-show" },
                 new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
                 new string ("Search")
                 };
             if (nType == TableType.Processed)
                 return new List<Object>()
-                {
-                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-answer" },
-                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
+            {
                 new ItemModel() { Id = "ReOpen",Text = "", TooltipText = "Riapri", PrefixIcon = "e-reopen" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
                 new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
                 new string ("Search")
                 };
-            if (nType == TableType.Sent)
-                return new List<Object>()
-                {
-                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
-                new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
-                new string ("Search")
-                };
-            if (nType == TableType.Sorting)
-                return new List<Object>()
-                {
-                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-answer" },
-                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
-                new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-move" } ,
-                new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
-                new string ("Search")
-                };
+
             return new List<Object>();
         }
     }
@@ -249,21 +239,21 @@
     /// </summary>
     protected override async void OnParametersSet()
     {
-        if (nMailBox is not null)
+        if (nFolder is not null)
         {
-            if (nMailBoxOld != nMailBox)
+            if (nFolderOld != nFolder)
             {
                 Refresh();
             }
         }
-        else nEmails = new();
+        else nFiles = new();
     }
 
     /// <summary>
     /// On record select forward the selection
     /// </summary>
     /// <param name="args"></param>
-    public async void OnRecordSelect(RowSelectEventArgs<AllegatoEmail> args)
+    public async void OnRecordSelect(RowSelectEventArgs<Allegati> args)
     {
         OnSelectAttachment.InvokeAsync(args.Data);
     }
@@ -274,7 +264,7 @@
     /// <param name="args"></param>
     public async void OnToolbarClick(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
-        AllegatoEmail Attach = (await Grid.GetSelectedRecords()).FirstOrDefault();
+        Allegati Attach = (await Grid.GetSelectedRecords()).FirstOrDefault();
 
         if (Attach == null) return;
 
@@ -299,41 +289,33 @@
     /// </summary>
     public void Refresh()
     {
+        string DocType = "ZIP";
+        if (nDocumentType == TipiDocumentiFile.REQ)
+            DocType = "REQ";
+
         if (nType == TableType.Inbox)
         {
             Stopwatch sw = Stopwatch.StartNew();
-            nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderByDescending(x => x.DataC));
-            nMailBoxOld = nMailBox;
-            _Logger.LogInformation($"MailTable.Refresh: Loaded {nEmails.Count} inbox emails in {sw.ElapsedMilliseconds} ms");
+            nFiles = new ObservableCollection<Allegati>(_ZipService._allMan.GetZipInArrivo(DocType, nFolder.Cartella).OrderByDescending(x => x.DataC));
+            nFolderOld = nFolder;
+            _Logger.LogInformation($"FileTable.Refresh: Loaded {nFiles.Count} {DocType} inbox files in {sw.ElapsedMilliseconds} ms");
         }
         else if (nType == TableType.Processed)
         {
             Stopwatch sw = Stopwatch.StartNew();
-            nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailProcessate("EMAIL", nMailBox.Nome).OrderByDescending(x => x.DataC));
-            nMailBoxOld = nMailBox;
-            _Logger.LogInformation($"MailTable.Refresh: Loaded {nEmails.Count} processed emails in {sw.ElapsedMilliseconds} ms");
+            nFiles = new ObservableCollection<Allegati>(_ZipService._allMan.GetEmailProcessate(DocType, nFolder.Cartella).OrderByDescending(x => x.DataC));
+            nFolderOld = nFolder;
+            _Logger.LogInformation($"FileTable.Refresh: Loaded {nFiles.Count} {DocType} processed files in {sw.ElapsedMilliseconds} ms");
         }
-        else if (nType == TableType.Sent)
-        {
-            Stopwatch sw = Stopwatch.StartNew();
-            nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInviate("EMAIL", nMailBox.Nome).OrderByDescending(x => x.DataC));
-            nMailBoxOld = nMailBox;
-            _Logger.LogInformation($"MailTable.Refresh: Loaded {nEmails.Count} sent emails in {sw.ElapsedMilliseconds} ms");
-        }
-        else if(nType==TableType.Sorting)
-        {
-            Stopwatch sw = Stopwatch.StartNew();
-            nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailDaSmistare("EMAIL", nMailBox.Nome).OrderByDescending(x => x.DataC));
-            nMailBoxOld = nMailBox;
-            _Logger.LogInformation($"MailTable.Refresh: Loaded {nEmails.Count} emails to sort out in {sw.ElapsedMilliseconds} ms");
-        }
+
+
     }
 
     /// <summary>
     /// On reloading list of email, the presel attach will be selected
     /// </summary>
     /// <param name="args"></param>
-    public async void DataBoundHandler(BeforeDataBoundArgs<AllegatoEmail> args)
+    public async void DataBoundHandler(BeforeDataBoundArgs<Allegati> args)
     {
         if (!string.IsNullOrEmpty(nPreselAttach))
         {

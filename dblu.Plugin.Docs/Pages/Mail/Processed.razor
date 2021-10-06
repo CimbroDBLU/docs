@@ -2,7 +2,7 @@
     Page that manage the processed emails and its interactions 
 *@
 
-@page  "/Mail/Processed"
+@page "/Mail/Processed"
 @page "/Mail/Processed/{nPreselAttach}"
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
@@ -91,7 +91,7 @@
                                                 <div>Operazioni sulla mail <b>@AttachSubject</b></div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <MailLogs nAttach="@Attach" OnAbort="OnAbort"></MailLogs>
+                                                <AttachLogs nAttach="@Attach" OnAbort="OnAbort"></AttachLogs>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -111,7 +111,7 @@
                                                 <div>@CostumerDesc</div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <MailCustomer nAttachments="@SourceAttach" nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></MailCustomer>
+                                                <AttachCustomer nAttachments="@SourceAttach" nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -148,7 +148,7 @@
                                                     <div>Allegati in Email</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <MailOriginalAttachsTable nAttachID="@AttachID" nAttachments="@SourceAttach"></MailOriginalAttachsTable>
+                                                    <OriginalAttachsTable nAttachID="@AttachID" nAttachments="@SourceAttach"></OriginalAttachsTable>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -443,7 +443,7 @@
                 var User = _HttpContextAccessor.HttpContext.User;
 
                 Models.RisultatoAzione res = await _MailService.CancellaEmail(Attach.Id.ToString(), nServer, User);
-                _Logger.LogInformation($"Processed.OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
+                _Logger.LogInformation($"Processed[MAIL].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
                 Grid.Refresh();
                 ToastOK.Show();
             }
@@ -454,7 +454,7 @@
         }
         catch (Exception ex)
         {
-            _Logger.LogError($"Processed.OnDeleteConfirmed: Unexpeted error deleting {Attach.Id}, {ex}");
+            _Logger.LogError($"Processed[MAIL].OnDeleteConfirmed: Unexpeted error deleting {Attach.Id}, {ex}");
             ToastKO.Show();
         }
     }

@@ -73,7 +73,7 @@ namespace dblu.Portale.Plugin.Documenti
                         new MenuItem("50.1.6", 2, "Stats/History", "Storico", "fas fa-shoe-prints", null),
                      };
                     
-        var subItemM= new MenuItem[]
+                var subItemM= new MenuItem[]
                      {                                        
                     new MenuItem("50.1.3", 1,  string.IsNullOrEmpty(_conf["Beta"]) ? "MailView/InArrivo" : "Mail/Inbox", "Email in arrivo", "fas fa-envelope-open-text", null),
                     new MenuItem("50.1.3", 2,  string.IsNullOrEmpty(_conf["Beta"]) ? "MailView/emailProcessate" : "Mail/Processed", "Email processate", "fas fa-envelope", null),
@@ -82,19 +82,23 @@ namespace dblu.Portale.Plugin.Documenti
 
                 var subItemZ = new MenuItem[]
                     {
-                    new MenuItem("50.1.4", 4, "ZipView/ZipInArrivo", "File in arrivo", "fas fa-file-archive", null),
-                    new MenuItem("50.1.4", 5, "ZipView/ZipProcessati", "File processati", "fas fa-file-archive", null),
-                    new MenuItem("50.1.4", 6, "ZipView/ZipInArrivo?Tipo=REQ", "Deals in arrivo", "fas fa-ruler", null),
-                    new MenuItem("50.1.4", 6, "ZipView/ZipProcessati?Tipo=REQ", "Deals processati", "fas fa-pencil-ruler", null),
+                    new MenuItem("50.1.4", 1, string.IsNullOrEmpty(_conf["Beta"]) ? "ZipView/ZipInArrivo" : "Files/ZIP/Inbox", "File in arrivo", "fas fa-file", null),
+                    new MenuItem("50.1.4", 2, string.IsNullOrEmpty(_conf["Beta"]) ? "ZipView/ZipProcessati": "Files/ZIP/Processed","File processati", "fas fa-file-excel", null),              
                     };
 
+                var subItemZ1 = new MenuItem[]
+                    {
+                    new MenuItem("50.1.5", 1, string.IsNullOrEmpty(_conf["Beta"]) ? "ZipView/ZipInArrivo?Tipo=REQ" : "Files/REQ/Inbox", "Richieste in arrivo", "fas fa-comments", null),
+                    new MenuItem("50.1.5", 2, string.IsNullOrEmpty(_conf["Beta"]) ? "ZipView/ZipProcessati?Tipo=REQ" : "Files/REQ/Processed", "Richieste processate", "fas fa-comment-slash", null),
+                    };
                 return new MenuItem[]
                 {
                     new MenuItem("50.1.1", 1, "Docs/Tabelle", "Tabelle", "fas fa-table", subItemT),
-                    new MenuItem("50.1.2", 1, "Docs/Fascicoli", "Fascicoli", "fas fa-archive", subItemF),                    
-                    new MenuItem("50.1.5", 1, "MailView/Smistamento", "Smistamento", "fas fa-map-signs", null),
-                    new MenuItem("50.1.3", 1, "MailView/InArrivo", "Email", "fas fa-envelope-open-text", subItemM),
-                    new MenuItem("50.1.4", 4, "ZipView/ZipInArrivo", "Altri documenti", "fas fa-file", subItemZ),       
+                    new MenuItem("50.1.2", 2, "Docs/Fascicoli", "Fascicoli", "fas fa-archive", subItemF),                    
+                    new MenuItem("50.1.5", 3, "Mail/Sorting", "Smistamento", "fas fa-map-signs", null),
+                    new MenuItem("50.1.3", 4, "Mail/Inbox", "Email", "fas fa-envelope-open-text", subItemM),
+                    new MenuItem("50.1.4", 5, "Files/ZIP/Inbox", "Files", "fas fa-file", subItemZ),
+                    new MenuItem("50.1.5", 6, "Files/REQ/Inbox", "Richieste", "fas fa-comments", subItemZ1),
                     new MenuItem("50.1.6", 7, "Stats/History", "Statistiche", "fas fas fa-chart-area", subItemS),
                     
                 };

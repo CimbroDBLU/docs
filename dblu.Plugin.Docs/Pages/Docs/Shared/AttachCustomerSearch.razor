@@ -10,7 +10,7 @@
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject NavigationManager _NavigatorManager
 @inject AuthenticationStateProvider _AuthenticationStateProvider
-@inject ILogger<MailCustomerSearch> _Logger
+@inject ILogger<AttachCustomerSearch> _Logger
 
     <div>
             <div class="row">
@@ -78,6 +78,9 @@
             [Parameter]
             public EventCallback<(string, string)> OnLinkedToItem { get; set; }
 
+            /// <summary>
+            /// Fires when a costumer has been selected
+            /// </summary>
             [Parameter]
             public EventCallback<ISoggetti> OnLinkedToCostumer { get; set; }
 
@@ -145,9 +148,9 @@
 
                 await Task.Run(() =>
                 {
-                Stopwatch SW = Stopwatch.StartNew();
-                OnParametersSet();
-                _Logger.LogInformation($"MailCostumerSearch.Search: Retreived Costumer from code {nCostumerCode} in {SW.ElapsedMilliseconds} ms");
+                    Stopwatch SW = Stopwatch.StartNew();
+                    OnParametersSet();
+                    _Logger.LogInformation($"AttachCostumerSearch.Search: Retreived Costumer from code {nCostumerCode} in {SW.ElapsedMilliseconds} ms");
                 });
                 IsSpinnerVisible = false;
 
@@ -211,7 +214,7 @@
                 }
                 catch (Exception ex)
                 {
-                    _Logger.LogError($"MailCostumerSearch.UndefinedComponent: Unexpected error {ex}");
+                    _Logger.LogError($"AttachCostumerSearch.UndefinedComponent: Unexpected error {ex}");
                 }
             }
 
@@ -274,7 +277,7 @@
                 }
                 catch (Exception ex)
                 {
-                    _Logger.LogError($"MailCostumerSearch.OnSearch: Unexpected error {ex}");
+                    _Logger.LogError($"AttachCostumerSearch.OnSearch: Unexpected error {ex}");
                 }
             }
 
@@ -352,7 +355,7 @@
                 }
                 catch (Exception ex)
                 {
-                    _Logger.LogError($"MailCostumerSearch.OnLink: Unexpected error {ex}");
+                    _Logger.LogError($"AttachCostumerSearch.OnLink: Unexpected error {ex}");
                 }
 
             }

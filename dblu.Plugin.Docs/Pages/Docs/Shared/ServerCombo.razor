@@ -7,10 +7,11 @@
 @using dblu.Portale.Plugin.Docs.Services
 @using dblu.Portale.Core.Infrastructure.Identity.Classes
 @using dblu.Portale.Core.Infrastructure.Identity.Services
-@using Microsoft.AspNetCore.Http;
-@using System.Security.Claims;
+@using Microsoft.AspNetCore.Http
+@using System.Security.Claims
 
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
 @inject IHttpContextAccessor _HttpContextAccessor
 
 
@@ -20,13 +21,22 @@
     </div>
     <div class="col-9">
         <SfDropDownList Value="@(nServer?.Nome??"")" TValue="string" TItem="EmailServer" DataSource="@Servers">
-            <DropDownListFieldSettings Text="Nome" Value="Nome"></DropDownListFieldSettings>
+            @if (nRecordServer == TipiRecordServer.CartellaMail)
+            {
+                <DropDownListFieldSettings Text="Nome" Value="Nome"></DropDownListFieldSettings>
+            }
+            else
+            {
+                <DropDownListFieldSettings Text="Nome" Value="Nome"></DropDownListFieldSettings>
+            }
             <DropDownListEvents TValue="string" TItem="EmailServer" OnValueSelect="OnValueChange"></DropDownListEvents>
         </SfDropDownList>
     </div>
 </div>
 
 @code {
+
+
     /// <summary>
     /// Label for namimbng the dropdown
     /// </summary>
@@ -52,6 +62,18 @@
     public List<string> nExcludedServers { get; set; }
 
     /// <summary>
+    /// Type of the attachment wwe are processing 
+    /// </summary>
+    [Parameter]
+    public TipiRecordServer nRecordServer { get; set; } = TipiRecordServer.CartellaMail;
+
+    /// <summary>
+    /// If we are processing document specify witch type 
+    /// </summary>
+    [Parameter]
+    public TipiDocumentiFile nDocumentType { get; set; } = TipiDocumentiFile.ZIP;
+
+    /// <summary>
     /// List of available services
     /// </summary>
     private ObservableCollection<EmailServer> Servers { get; set; }
@@ -59,19 +81,31 @@
     /// <summary>
     /// On Init component
     /// </summary>
-    protected override async void OnInitialized()
+    protected override async void OnParametersSet()
     {
-        Servers = new ObservableCollection<EmailServer>(_MailService._serMan.GetServersEmailinRoles(_MailService.getRuoli(_HttpContextAccessor.HttpContext.User.Claims, ""), TipiRecordServer.CartellaMail));
-        //Servers = new ObservableCollection<EmailServer>();
+
+        List<string> Roles = new();
+        if (nRecordServer == TipiRecordServer.CartellaMail)
+        {
+            Roles = _MailService.getRuoli(_HttpContextAccessor.HttpContext.User.Claims, "");
+            Servers = new ObservableCollection<EmailServer>(_MailService._serMan.GetServersEmailinRoles(Roles, nRecordServer));
+        }
+        else
+        {
+            string s = "ZIP";
+            if (nDocumentType == TipiDocumentiFile.REQ)
+                s = "REQ";
+            Roles = _ZipService.GetRuoliTipoAll(_HttpContextAccessor.HttpContext.User.Claims, s);
+            Servers = new ObservableCollection<EmailServer>(_ZipService._serMan.GetServersEmailinRoles(Roles, nRecordServer));
+        }
+
         if (nExcludedServers != null)
             Servers = new ObservableCollection<EmailServer>(Servers.Where(x => (nExcludedServers.FirstOrDefault(c => c == x.Nome)) == null));
-        if (Servers.Count > 0 && nServer is null)
+        if (Servers.Count > 0 && (nServer is null || !Servers.Select(x=>x.Nome).Contains(nServer.Nome)))
         {
             nServer = Servers[0];
             await nServerChanged.InvokeAsync(nServer);
         }
-
-
     }
 
     /// <summary>

@@ -674,6 +674,36 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             return File(ff, t, NomeFile);
         }
 
+
+        /// <summary>
+        /// Get a file included into a ZIP as a stream in GET
+        /// </summary>
+        /// <param name="IdAllegato">Attachment in with file is container</param>
+        /// <param name="NomeFile">Name of the file to get</param>
+        /// <returns>
+        /// The stream required
+        /// </returns>
+        [HttpGet]
+        [HasPermission("50.1.3")]
+        public async Task<ActionResult> OpenFile(string IdAllegato, string NomeFile)
+        {
+
+            MemoryStream ff = new MemoryStream();
+            try
+            {
+                ff = await _zipsvc.GetFileFromZipAsync(IdAllegato, NomeFile);
+                string t = _zipsvc._allMan.GetContentType(NomeFile);
+                if (string.IsNullOrEmpty(t))
+                    t = "application/octet";
+                return File(ff, t);
+            }
+            catch (Exception e)
+            {
+
+            }
+            return NotFound();
+        }
+
         #endregion
 
 

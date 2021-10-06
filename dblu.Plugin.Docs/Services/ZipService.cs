@@ -816,8 +816,44 @@ namespace dblu.Portale.Plugin.Docs.Services
             return res;
         }
 
+        /// <summary>
+        /// Get the list of the file incluede in this ZIP attachment
+        /// </summary>
+        /// <param name="Allegato">Attachment</param>
+        /// <param name="FileZip">Zip that need to be browsed</param>
+        /// <returns>
+        /// A list of the file included into ZIP
+        /// </returns>
+        public async Task<List<OriginalAttachments>> GetIncludedFileAsync(Allegati Allegato, ZipArchive FileZip)
+        {
+            List<OriginalAttachments> res = new List<OriginalAttachments>();
 
-                public async Task<bool> RemoveFileFromZipAsync(string IdAllegato, string NomeFile)
+            var m = await _allMan.GetFileAsync(Allegato.Id.ToString());
+            if (FileZip == null)
+                FileZip = new ZipArchive(m, ZipArchiveMode.Read);
+
+            foreach (ZipArchiveEntry entry in FileZip.Entries)
+            {
+                string fileName = entry.Name;
+                var incluso = false;
+                switch (System.IO.Path.GetExtension(fileName).ToLower())
+                {
+                    case ".pdf":
+                    case ".jpg":
+                    case ".jpeg":
+                    case ".png":
+                        incluso = true;
+                        break;
+                }
+                var a = new OriginalAttachments { Id = fileName, Name = fileName, IsValid = false, IsIncluded = incluso };
+                res.Add(a);
+            }
+
+            return res;
+        }
+
+
+        public async Task<bool> RemoveFileFromZipAsync(string IdAllegato, string NomeFile)
         {
             bool res = false;
             try

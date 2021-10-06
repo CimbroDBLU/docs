@@ -11,8 +11,10 @@
 @using System.IO
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using dblu.Portale.Plugin.Docs.Pages.Custom
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject ProtectedSessionStorage _SessionStore
 @inject NavigationManager  _NavigationManager
@@ -35,20 +37,49 @@
     .e-print:before {
         content: '\e7df';
     }
+
+    .e-input-search:before {
+        content: "\ebe6";
+        font-family: e-icons;
+    }
+
+    .e-toolbar .e-dblu .e-icons {
+        background-color: Highlight;
+        color: white;
+        font-weight: bold;
+    }
+
+    .e-toolbar.e-toolbar-items .e-toolbar-item.e-dblu,
+    .e-toolbar.e-toolbar-items .e-toolbar-item.e-dblu button {
+        background-color: Highlight;
+        color: white;
+        font-weight: bold;
+    }
+
+        .e-toolbar .e-toolbar-items .e-toolbar-item.e-dblu .e-tbar-btn-text,
+        .e-toolbar .e-toolbar-items .e-toolbar-item.e-dblu .e-tbar-btn.e-btn,
+        .e-toolbar .e-toolbar-items .e-toolbar-item.e-dblu .e-tbar-btn.e-icons,
+        .e-toolbar .e-toolbar-items.e-dblu .e-toolbar-item.e-dblu .e-tbar-btn.e-btn:hover,
+        .e-toolbar .e-toolbar-items .e-toolbar-item.e-dblu .e-tbar-btn.e-btn:active,
+        .e-toolbar.e-toolbar-items .e-toolbar-item.e-dblu .e-tbar-btn.e-btn:focus {
+            background-color: Highlight;
+            color: white;
+            font-weight: bold;
+        }
 </style>
 
 
 <SfSpinner @bind-Visible="IsSpinnerVisible">
 </SfSpinner>
 
-<SfGrid @ref="@Grid" SelectedRowIndex="0" DataSource="@nItems" AllowTextWrap="false" AllowPaging="true">
+<SfGrid @ref="@Grid" DataSource="@nItems" AllowTextWrap="false" AllowPaging="true">
     <SfToolbar>
         <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
         <ToolbarItems>
             <ToolbarItem Id="Open" PrefixIcon="e-open" TooltipText="Apri"></ToolbarItem>
             <ToolbarItem Id="Add" PrefixIcon="e-add" TooltipText="Aggiungi"></ToolbarItem>
             <ToolbarItem Id="Duplicate" PrefixIcon="e-duplicate" TooltipText="Duplica"></ToolbarItem>
-            <ToolbarItem Id="Print" PrefixIcon="e-print" TooltipText="Riepilogo" Disabled="@IsSummaryActive"></ToolbarItem>
+            <ToolbarItem Id="Print" CssClass="e-dblu" PrefixIcon="e-print" Disabled="@IsSummaryActive"></ToolbarItem>
             <ToolbarItem Id="Run" Type="ItemType.Input">
                 <Template>
                     <div style="display:flex">
@@ -57,12 +88,16 @@
                     </div>
                 </Template>
             </ToolbarItem>
-
             <ToolbarItem Id="Delete" PrefixIcon="e-delete" TooltipText="Elimina"></ToolbarItem>
+            <ToolbarItem Align=ItemAlign.Right Id="SearchText" Type="ItemType.Input">
+                <Template>
+                    <SfTextBox @ref="@SearchText" @bind-Value="@SearchKey" @onchange="OnSearch" Placeholder="Ricerca" Created="@OnSearchCreated"></SfTextBox>
+                </Template>
+            </ToolbarItem>
         </ToolbarItems>
     </SfToolbar>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-    <GridEvents TValue="EmailElementi" DataBound="DataBoundMe" RowSelected="OnRecordSelect"></GridEvents>
+    <GridEvents TValue="EmailElementi" RowSelected="OnRecordSelect"></GridEvents>
     <GridPageSettings PageSize="4"></GridPageSettings>
     <GridColumns>
         <GridColumn Field=@nameof(EmailElementi.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
@@ -141,6 +176,18 @@
     /// </summary>
     [Parameter]
     public EventCallback<EmailElementi> OnSelectedItem { get; set; }
+
+    /// <summary>
+    /// Type of the attachment wwe are processing 
+    /// </summary>
+    [Parameter]
+    public TipiRecordServer nRecordServer { get; set; } = TipiRecordServer.CartellaMail;
+
+    /// <summary>
+    /// If we are processing document specify witch type 
+    /// </summary>
+    [Parameter]
+    public TipiDocumentiFile nDocumentType { get; set; } = TipiDocumentiFile.ZIP;
 
     /// <summary>
     /// reference to the combo with all the available actions
@@ -223,15 +270,6 @@
     private Toast ToastActionKO { get; set; }
 
     /// <summary>
-    /// On data bound of the grid, select the first line
-    /// </summary>
-    public void DataBoundMe()
-    {
-        if (Grid is not null)
-            Grid.SelectRowAsync(0);
-    }
-
-    /// <summary>
     /// Current Item
     /// </summary>
     public EmailElementi nItem { get; set; }
@@ -285,6 +323,16 @@
     /// Spinner that will be shown wile document loading
     /// </summary>
     private bool IsSpinnerVisible { get; set; }
+
+    /// <summary>
+    /// Text box for seaching
+    /// </summary>
+    private SfTextBox SearchText { get; set; }
+
+    /// <summary>
+    /// The key text type inside search box
+    /// </summary>
+    private string SearchKey { get; set; } = "";
 
     /// <summary>
     /// On initialize load all data
@@ -359,7 +407,7 @@
     public async void OnToolbarClick(Syncfusion.Blazor.Navigations.ClickEventArgs args)
     {
         EmailElementi Elem = (await Grid.GetSelectedRecords()).FirstOrDefault();
-
+        string z = _NavigationManager.Uri;
         if (Elem == null) return;
         nItem = Elem;
 
@@ -383,7 +431,7 @@
             case "Print":
                 if (((int)nItem.Stato) > 1)
                 {
-                    await _SessionStore.SetAsync("Referrer", $"/Mail/Inbox/{nAttachID}");
+                    await _SessionStore.SetAsync("Referrer", $"/{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}/{nAttachID}");
                     string url = $"/Docs/Attachment/{nAttachID}/{"false"}/{"true"}";
                     await JSRuntime.InvokeAsync<object>("open", url, "_blank");
                 }
@@ -400,7 +448,7 @@
             if (!ComponentName.StartsWith("blz:/"))
                 IsShowUndefined = true;
         }
-        await _SessionStore.SetAsync("Referrer", $"/Mail/Inbox/{nAttachID}");
+        await _SessionStore.SetAsync("Referrer", $"/{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}/{nAttachID}");
         if ((int)Elem.Stato > 1)
             _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
         else
@@ -499,7 +547,8 @@
             ToastActionOK.Show();
 
         //2)Apro la pagina di protocollazione indicata
-        await _SessionStore.SetAsync("Referrer", $"/Mail/Inbox/{nAttachID}");
+
+        await _SessionStore.SetAsync("Referrer", $"/{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}/{nAttachID}");
         string Url = $"{ComponentName.Replace("blz:/", "")}/{e.Id}";
         _NavigationManager.NavigateTo(Url);
 
@@ -511,22 +560,56 @@
     /// <returns></returns>
     public List<TipiElementi> GetActions()
     {
-        List<TipiElementi> ListaTipiElementi = new();
-
-        List<string> ListaRuoli = _MailService.getRuoli(User.Claims, "");
-
-        ListaTipiElementi = _MailService._elmMan.GetAllTipiElementi(ListaRuoli);
-        List<EmailServer> ListaServer = _MailService._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaMail);
-        List<EmailServer> ListaServerIngresso = _MailService._serMan.GetServerEmailInIngresso();
-
-        if (ListaServer != null && ListaServer.Count > 0)
+        if (nRecordServer == TipiRecordServer.CartellaMail)
         {
-            var ListaRuoliServ = _MailService.getRuoli(ListaRuoli, ListaServer);
-            return _MailService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.AggregaAElemento == false).ToList();
+
+            List<string> ListaRuoli = _MailService.getRuoli(User.Claims, "");
+            List<TipiElementi> ListaTipiElementi = _MailService._elmMan.GetAllTipiElementi(ListaRuoli);
+            List<EmailServer> ListaServer = _MailService._serMan.GetServersEmailinRoles(ListaRuoli, nRecordServer);
+
+            if (ListaServer != null && ListaServer.Count > 0)
+            {
+
+                var ListaRuoliServ = _MailService.getRuoli(ListaRuoli, ListaServer);
+                return _MailService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.AggregaAElemento == false).ToList();
+            }
+            else
+            {
+                return ListaTipiElementi.Where(z => z.AggregaAElemento == false).ToList();
+            }
         }
         else
         {
-            return ListaTipiElementi.Where(z => z.AggregaAElemento == false).ToList();
+            List<string> ListaRuoli = _ZipService.GetRuoliTipoAll(User.Claims,(nDocumentType== TipiDocumentiFile.ZIP)?"ZIP":"REQ");
+            List<EmailServer> ListaServer = _ZipService._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaFile);
+
+            if (ListaServer != null && ListaServer.Count > 0)
+            {
+
+                var ListaRuoliServ = _ZipService.getRuoli(ListaRuoli, ListaServer[0].Nome);
+                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.AggregaAElemento == false).ToList();
+            }
+            else
+            {
+                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoli).Where(z => z.AggregaAElemento == false).ToList();
+            }
         }
+
+    }
+
+    /// <summary>
+    /// Add the search icon to the text box
+    /// </summary>
+    public void OnSearchCreated()
+    {
+        this.SearchText.AddIcon("append", "e-input-search");
+    }
+
+    /// <summary>
+    /// Apply the search
+    /// </summary>
+    public void OnSearch()
+    {
+        Grid.SearchAsync(SearchKey);
     }
 }

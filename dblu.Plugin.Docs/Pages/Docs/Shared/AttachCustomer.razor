@@ -7,14 +7,14 @@
 
 <div class="row">
     <div class="col">
-        <MailCustomerSearch nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly" OnLinkedToItem="OnLink" nAttachID="@nAttachID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument"></MailCustomerSearch>
+        <AttachCustomerSearch nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly" OnLinkedToItem="OnLink" nAttachID="@nAttachID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument"></AttachCustomerSearch>
     </div>
 </div>
 @if (!nReadOnly)
 {
     <div class="row mt-2">
         <div class="col">
-            <MailOpenItemsTable nCustomerCode="@nCostumerCode"></MailOpenItemsTable>
+            <AttachOpenItemsTable nCustomerCode="@nCostumerCode"></AttachOpenItemsTable>
         </div>
     </div>
 }
@@ -58,6 +58,9 @@
     [Parameter]
     public bool nReadOnly { get; set; } = false;
 
+    /// <summary>
+    /// Fires when a costumer has been selected
+    /// </summary>
     [Parameter]
     public EventCallback<ISoggetti> OnLinkedToCostumer { get; set; }
 

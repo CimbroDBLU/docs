@@ -21,6 +21,9 @@
     /// </summary>
     public string Number { get; set; }
 
+    /// <summary>
+    /// Link to Open
+    /// </summary>
     public string Link => string.IsNullOrEmpty(_conf["Beta"]) ? "MailView/InArrivo" : "Mail/Inbox";
 
     /// <summary>

@@ -4,6 +4,21 @@ using System.Collections.Generic;
 
 namespace dblu.Docs.Models
 {
+    /// <summary>
+    /// Types of docuemnt that can be managed as file
+    /// </summary>
+    public enum TipiDocumentiFile
+    {
+        /// <summary>
+        /// ZIP files coming from 3CAD
+        /// </summary>
+        ZIP,
+        /// <summary>
+        /// Request Zip file, coming from dbluDealers
+        /// </summary>
+        REQ
+    }
+
     public enum TipiRecordServer
     {
         CartellaMail = 0,

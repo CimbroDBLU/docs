@@ -5,7 +5,7 @@
 @using dblu.Docs.Classi
 @using dblu.Portale.Core.Infrastructure.Identity.Classes
 @using dblu.Portale.Core.Infrastructure.Identity.Services;
-@inject ILogger<MailLogs> _Logger
+@inject ILogger<AttachLogs> _Logger
 @inject dbluDocsContext _DbContext
 @inject IApplicationUsersManager  _ApplicationUsersManager
 
@@ -46,7 +46,7 @@
     /// Attachment that we are inspecting
     /// </summary>
     [Parameter]
-    public AllegatoEmail nAttach { get; set; }
+    public Allegati nAttach { get; set; }
 
     /// <summary>
     /// Fires when log inspection has finished

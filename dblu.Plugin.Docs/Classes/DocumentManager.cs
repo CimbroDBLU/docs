@@ -289,8 +289,14 @@ namespace dblu.Portale.Plugin.Docs.Classes
                             return new Document(A1?.NomeFile, stream, DetectedType);
                         case "ZIP":
                             MemoryStream PayloadZip = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
-                            var zip = DocumentService.PDF_From_ZIP(A1?.NomeFile, new ZipArchive(PayloadZip));
+                            string TextZIP = $"Da: {A1.elencoAttributi.Get("NomeSoggetto")} \nOggetto: {A1.Descrizione} \ndel: { A1.elencoAttributi.Get("Data")??A1.DataC}\n\n {A1.Testo} ";
+                            var zip = DocumentService.PDF_From_ZIP(A1?.NomeFile, new ZipArchive(PayloadZip), TextZIP);
                             return new Document(A1?.NomeFile, zip.Payload, e_DocType.PDF) { SourceAttachments = zip.Attachments, IsTransformation = true };
+                        case "REQ":
+                            MemoryStream PayloadReq = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
+                            string TextREQ = $"Da: {A1.elencoAttributi.Get("NomeSoggetto")} \nOggetto: {A1.Descrizione} \ndel: { A1.elencoAttributi.Get("Data") ?? A1.DataC}\nRiferimento: {A1.elencoAttributi.Get("Riferimento")??""}\nTipo: {A1.elencoAttributi.Get("Tipo")??""}\n\n {A1.Testo} ";
+                            var req = DocumentService.PDF_From_ZIP(A1?.NomeFile, new ZipArchive(PayloadReq), TextREQ);
+                            return new Document(A1?.NomeFile, req.Payload, e_DocType.PDF) { SourceAttachments = req.Attachments, IsTransformation = true };
                         default:
                             MemoryStream Payload = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
                             var email = DocumentService.PDF_From_EMail(MimeMessage.Load(Payload));

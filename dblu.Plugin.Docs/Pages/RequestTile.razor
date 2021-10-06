@@ -5,10 +5,12 @@
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
 @inject ILogger<RequestTile> _Logger
+@inject IConfiguration _conf
+
 
 <Tile nTitle="@Number"
       nDescription="Richieste in arrivo"
-      nLink="/ZipView/ZipInArrivo?Tipo=REQ"
+      nLink="@Link"
       nIcon="fas fa-ruler"
       nBackColor="#ffc107"
       nForeColor="black"></Tile>
@@ -19,6 +21,11 @@
     /// Number of the incoming request
     /// </summary>
     public string Number { get; set; }
+
+    /// <summary>
+    /// Link to Open
+    /// </summary>
+    public string Link => string.IsNullOrEmpty(_conf["Beta"]) ? "ZipView/ZipInArrivo" : "Files/REQ/Inbox";
 
     /// <summary>
     /// On Init component

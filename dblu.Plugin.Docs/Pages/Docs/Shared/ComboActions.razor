@@ -2,10 +2,23 @@
     Component for showing a combo with all action s that can be done on an Item (looking into ElementType)
 *@
 @using dblu.Docs.Models
-@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject AuthenticationStateProvider _AuthenticationStateProvider
+<style>
+    .e-dblu.e-ddl.e-input-group.e-control-wrapper .e-input {
+        background-color: Highlight;
+        color: white;
+        font-weight: bold;
+    }
 
-<SfDropDownList TValue="string" Placeholder="Azione" TItem="ActionTranslation" @bind-Value="@nItemType" DataSource="@ActionsList">
+    .e-dblu.e-ddl .e-input-group-icon.e-ddl-icon.e-icons, .e-dblu.e-ddl .e-input-group-icon.e-ddl-icon.e-icons:hover {
+        background-color: Highlight;
+        color: white;
+        font-weight: bold;
+    }
+
+</style>
+
+<SfDropDownList CssClass="e-dblu" TValue="string" Placeholder="Azione" TItem="ActionTranslation" @bind-Value="@nItemType" DataSource="@ActionsList">
     <DropDownListFieldSettings Text="Desc" Value="Item"></DropDownListFieldSettings>
 </SfDropDownList>
 
@@ -38,7 +51,6 @@
     [Parameter]
     public EventCallback<string> nItemTypeChanged { get; set; }
 
-
     /// <summary>
     /// Selected item type
     /// </summary>
@@ -48,7 +60,6 @@
     /// List of available actions
     /// </summary>
     public List<ActionTranslation> ActionsList { get; set; } = new();
-
 
     /// <summary>
     /// Class for relate an ItemType code with the action it is proposing

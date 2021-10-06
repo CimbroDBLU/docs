@@ -1,0 +1,105 @@
+﻿@*
+    Component for move an attachment in an another mailbox/folder
+*@
+
+@using dblu.Docs.Models
+@using Microsoft.AspNetCore.Http;
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
+@inject IHttpContextAccessor _HttpContextAccessor
+@inject ILogger<AttachMoveInFolder> _Logger
+
+<div class="row form-group">
+    <div class="col-12">
+        <ServerCombo nRecordServer="@nRecordServer" @bind-nServer="@Destination" nDocumentType="@nDocumentType" nExcludedServers="@(new List<string>() { nSourceServer.Nome })" nLabel="Sposta in"></ServerCombo>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <SfButton OnClick="OnMove" CssClass="e-primary">Sposta</SfButton>
+        <SfButton OnClick="OnGoBack">Indietro</SfButton>
+    </div>
+</div>
+
+@code {
+
+
+    /// <summary>
+    /// Attachment to move
+    /// </summary>
+    [Parameter]
+    public Allegati nAttach { get; set; }
+
+    /// <summary>
+    /// Soruce server for the attachment
+    /// </summary>
+    [Parameter]
+    public EmailServer nSourceServer { get; set; }
+
+    /// <summary>
+    /// Type of the attachment we are processing 
+    /// </summary>
+    [Parameter]
+    public TipiRecordServer nRecordServer { get; set; } = TipiRecordServer.CartellaMail;
+
+    /// <summary>
+    /// If we are processing document specify witch type 
+    /// </summary>
+    [Parameter]
+    public TipiDocumentiFile nDocumentType { get; set; } = TipiDocumentiFile.ZIP;
+
+    /// <summary>
+    /// Fires when operation has been done
+    /// </summary>
+    [Parameter]
+    public EventCallback<Models.RisultatoAzione> OnOperationDone { get; set; }
+
+    /// <summary>
+    /// Fires when operation has been aborted
+    /// </summary>
+    [Parameter]
+    public EventCallback OnAbort { get; set; }
+
+    /// <summary>
+    /// Selected destination server
+    /// </summary>
+    private EmailServer Destination { get; set; }
+
+
+    /// <summary>
+    ///  Move the email to another box
+    /// </summary>
+    private async void OnMove()
+    {
+        try
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            var User = _HttpContextAccessor.HttpContext.User;
+            if (nRecordServer == TipiRecordServer.CartellaMail)
+            {
+                Models.RisultatoAzione RA = _MailService.SpostaEmail(nAttach.Id.ToString(), Destination?.Nome ?? "", User);
+                await OnOperationDone.InvokeAsync(RA);
+                _Logger.LogInformation($"AttachMoveInFolder.OnMove: Moved email {nAttach.Id} in {Destination?.Nome ?? ""} in {sw.ElapsedMilliseconds}");
+            }
+            else
+            {
+                Models.RisultatoAzione RA = _ZipService.SpostaZip(nAttach.Id.ToString(), Destination?.Cartella ?? "", User);
+                await OnOperationDone.InvokeAsync(RA);
+                _Logger.LogInformation($"AttachMoveInFolder.OnMove: Moved file {nAttach.Id} in {Destination?.Nome ?? ""} in {sw.ElapsedMilliseconds}");
+            }
+
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"AttachMoveInFolder.OnMove: Fail to move {nAttach.Id} in {Destination?.Nome ?? ""}, {ex}");
+        }
+    }
+
+    /// <summary>
+    /// Forward the abort event
+    /// </summary>
+    private void OnGoBack()
+    {
+        OnAbort.InvokeAsync();
+    }
+}
