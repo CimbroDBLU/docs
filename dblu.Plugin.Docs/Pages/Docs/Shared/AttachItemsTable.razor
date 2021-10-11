@@ -9,16 +9,20 @@
 @using dblu.Portale.Plugin.Docs.Services
 @using System.Security.Claims
 @using System.IO
+@using Microsoft.AspNetCore.Components.CompilerServices
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using dblu.Portale.Plugin.Docs.Pages.Custom
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using dblu.Docs.Interfacce
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
+@inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject ProtectedSessionStorage _SessionStore
 @inject NavigationManager  _NavigationManager
 @inject IJSRuntime JSRuntime
+@inject ILogger<AttachItemsTable> _Logger
 
 <style>
 
@@ -68,56 +72,63 @@
         }
 </style>
 
+@if (nItems != null && nItems.Count != 0)
+{
 
-<SfSpinner @bind-Visible="IsSpinnerVisible">
-</SfSpinner>
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
 
-<SfGrid @ref="@Grid" DataSource="@nItems" AllowTextWrap="false" AllowPaging="true">
-    <SfToolbar>
-        <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
-        <ToolbarItems>
-            <ToolbarItem Id="Open" PrefixIcon="e-open" TooltipText="Apri"></ToolbarItem>
-            <ToolbarItem Id="Add" PrefixIcon="e-add" TooltipText="Aggiungi"></ToolbarItem>
-            <ToolbarItem Id="Duplicate" PrefixIcon="e-duplicate" TooltipText="Duplica"></ToolbarItem>
-            <ToolbarItem Id="Print" CssClass="e-dblu" PrefixIcon="e-print" Disabled="@IsSummaryActive"></ToolbarItem>
-            <ToolbarItem Id="Run" Type="ItemType.Input">
+    <SfGrid @ref="@Grid" DataSource="@nItems" AllowTextWrap="false" AllowPaging="true">
+        <SfToolbar>
+            <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
+            <ToolbarItems>
+                <ToolbarItem Id="Open" PrefixIcon="e-open" TooltipText="Apri"></ToolbarItem>
+                <ToolbarItem Id="Add" PrefixIcon="e-add" TooltipText="Aggiungi"></ToolbarItem>
+                <ToolbarItem Id="Duplicate" PrefixIcon="e-duplicate" TooltipText="Duplica"></ToolbarItem>
+                <ToolbarItem Id="Print" CssClass="e-dblu" PrefixIcon="e-print" Disabled="@IsSummaryActive"></ToolbarItem>
+
+                <ToolbarItem Id="Delete" PrefixIcon="e-delete" TooltipText="Elimina"></ToolbarItem>
+                <ToolbarItem Align=ItemAlign.Right Id="SearchText" Type="ItemType.Input">
+                    <Template>
+                        <SfTextBox @ref="@SearchText" @bind-Value="@SearchKey" @onchange="OnSearch" Placeholder="Ricerca" Created="@OnSearchCreated"></SfTextBox>
+                    </Template>
+                </ToolbarItem>
+            </ToolbarItems>
+        </SfToolbar>
+        <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
+        <GridEvents TValue="EmailElementi" RowSelected="OnRecordSelect"></GridEvents>
+        <GridPageSettings PageSize="4"></GridPageSettings>
+        <GridColumns>
+            <GridColumn Field=@nameof(EmailElementi.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
+            <GridColumn Width="40px" Field=@nameof(EmailElementi.IsUltimo) HeaderText="Ult"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.DscTipoElemento) HeaderText="Tipo"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.DscElemento) HeaderText="Descrizione"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo1) HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo2) HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo3) HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo4) HeaderText="@Cols[3].Des" Visible="@Cols[3].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo5) HeaderText="@Cols[4].Des" Visible="@Cols[4].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Stato) HeaderText="Stato"></GridColumn>
+
+            <GridColumn Width="40px" AllowSorting="true" Field=@nameof(EmailElementi.LastOp) HeaderText="Last">
                 <Template>
-                    <div style="display:flex">
-                        <ComboActions @ref="ActionsCombo" nItemTypes="@Actions" @bind-nItemType="@ActionSelected"></ComboActions>
-                        <SfButton OnClick="OnRun" CssClass="e-primary ml-2 smallb"><i class="fas fa-play"></i></SfButton>
-                    </div>
+                    <LastOperation nOperation="@((context as EmailElementi).LastOp)"></LastOperation>
                 </Template>
-            </ToolbarItem>
-            <ToolbarItem Id="Delete" PrefixIcon="e-delete" TooltipText="Elimina"></ToolbarItem>
-            <ToolbarItem Align=ItemAlign.Right Id="SearchText" Type="ItemType.Input">
-                <Template>
-                    <SfTextBox @ref="@SearchText" @bind-Value="@SearchKey" @onchange="OnSearch" Placeholder="Ricerca" Created="@OnSearchCreated"></SfTextBox>
-                </Template>
-            </ToolbarItem>
-        </ToolbarItems>
-    </SfToolbar>
-    <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-    <GridEvents TValue="EmailElementi" RowSelected="OnRecordSelect"></GridEvents>
-    <GridPageSettings PageSize="4"></GridPageSettings>
-    <GridColumns>
-        <GridColumn Field=@nameof(EmailElementi.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
-        <GridColumn Width="40px" Field=@nameof(EmailElementi.IsUltimo) HeaderText="Ult"></GridColumn>
-        <GridColumn Field=@nameof(EmailElementi.DscTipoElemento) HeaderText="Tipo"></GridColumn>
-        <GridColumn Field=@nameof(EmailElementi.DscElemento) HeaderText="Descrizione"></GridColumn>
-        <GridColumn Field=@nameof(EmailElementi.Campo1) HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible"></GridColumn>
-        <GridColumn Field=@nameof(EmailElementi.Campo2) HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible"></GridColumn>
-        <GridColumn Field=@nameof(EmailElementi.Campo3) HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible"></GridColumn>
-        <GridColumn Field=@nameof(EmailElementi.Campo4) HeaderText="@Cols[3].Des" Visible="@Cols[3].Visible"></GridColumn>
-        <GridColumn Field=@nameof(EmailElementi.Campo5) HeaderText="@Cols[4].Des" Visible="@Cols[4].Visible"></GridColumn>
-        <GridColumn Field=@nameof(EmailElementi.Stato) HeaderText="Stato"></GridColumn>
-
-        <GridColumn Width="40px" AllowSorting="true" Field=@nameof(EmailElementi.LastOp) HeaderText="Last">
-            <Template>
-                <LastOperation nOperation="@((context as EmailElementi).LastOp)"></LastOperation>
-            </Template>
-        </GridColumn>
-    </GridColumns>
-</SfGrid>
+            </GridColumn>
+        </GridColumns>
+    </SfGrid>
+    <div class="mt-2">
+        <ActionsButtonsList nItemTypes="@Actions" nDisplayActions="@(!string.IsNullOrEmpty(nCostumerCode))" OnLinkItemPressed="OnLinkItem" OnLinkPressed="OnLink" nDisplayComplete="@(!IsSummaryActive)" OnCompletePressed="OnComplete"></ActionsButtonsList>
+    </div>
+}
+else
+{
+   <ActionsButtonsList nItemTypes="@Actions" nDisplayActions="@(!string.IsNullOrEmpty(nCostumerCode))" OnLinkItemPressed="OnLinkItem" OnLinkPressed="OnLink" nDisplayComplete="@(!IsSummaryActive)" OnCompletePressed="OnComplete"></ActionsButtonsList>
+}
+@if (IsShowDialog)
+{
+    <DynamicComponent nType="@DynamicContent" nAttributes="@DynamicAttributes"></DynamicComponent>
+}
 
 <QuestionDialog nShowDialog="ShowAddConfirm" nText="Aggiungo all'elemento selezionato?" nTitle="Conferma" OnNoPressed="CloseDialog" OnClose="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="AddToItem"></QuestionDialog>
 <QuestionDialog nShowDialog="ShowDuplicateConfirm" nText="Confermi la creazione di un nuovo elemento nel fascicolo corrente?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Duplicate"></QuestionDialog>
@@ -178,13 +189,13 @@
     public EventCallback<EmailElementi> OnSelectedItem { get; set; }
 
     /// <summary>
-    /// Type of the attachment wwe are processing 
+    /// Type of the attachment wwe are processing
     /// </summary>
     [Parameter]
     public TipiRecordServer nRecordServer { get; set; } = TipiRecordServer.CartellaMail;
 
     /// <summary>
-    /// If we are processing document specify witch type 
+    /// If we are processing document specify witch type
     /// </summary>
     [Parameter]
     public TipiDocumentiFile nDocumentType { get; set; } = TipiDocumentiFile.ZIP;
@@ -222,7 +233,7 @@
     /// <summary>
     /// Inidicate id the toolbar button for printing the summary is enable or not
     /// </summary>
-    private bool IsSummaryActive { get; set; } = true;
+    private bool IsSummaryActive => (nItems?.Where(x => (int)x.Stato > 1).FirstOrDefault() == null) ? true : false;
 
     /// <summary>
     /// Show /hide the duplicate confirmation
@@ -287,7 +298,7 @@
     /// <summary>
     /// List of items
     /// </summary>
-    private ObservableCollection<EmailElementi> nItems { get; set; } = new();
+    public ObservableCollection<EmailElementi> nItems { get; set; } = new();
 
     /// <summary>
     /// Reference to the grid
@@ -335,6 +346,33 @@
     private string SearchKey { get; set; } = "";
 
     /// <summary>
+    /// Dinamic component to load
+    /// </summary>
+    private Type DynamicContent { get; set; } = null;
+
+    /// <summary>
+    /// Attributes of the dynamic compponent
+    /// </summary>
+    private ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> DynamicAttributes = new();
+
+    /// <summary>
+    /// Indicates id the dialog has to be showed
+    /// </summary>
+    private bool IsShowDialog { get; set; } = false;
+
+    /// <summary>
+    /// Fires when attach has been linked to item
+    /// </summary>
+    [Parameter]
+    public EventCallback<(string, string)> OnLinkedToItem { get; set; }
+
+    /// <summary>
+    /// Fires when the work on this Dosssier with this email has been completed
+    /// </summary>
+    [Parameter]
+    public EventCallback OnComplete { get; set; }
+
+    /// <summary>
     /// On initialize load all data
     /// </summary>
     protected override async void OnInitialized()
@@ -351,17 +389,15 @@
     /// On parameter setted relof the grid if necessary
     /// </summary>
     protected override async Task OnParametersSetAsync()
-    {
-        if (string.IsNullOrEmpty(nAttachID) || string.IsNullOrEmpty(nDossierID)) return;
-
+    {   
         if (LastAttachId == nAttachID && LastDossierId == nDossierID) return;
 
         IsSpinnerVisible = true;
         await Task.Run(() =>
         {
             nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
-            //_MailService._allMan.Get(nAttachID);
-            LastDossierId = nDossierID;
+        //_MailService._allMan.Get(nAttachID);
+        LastDossierId = nDossierID;
             LastAttachId = nAttachID;
         });
         IsSpinnerVisible = false;
@@ -394,9 +430,7 @@
     /// <param name="args"></param>
     public async void OnRecordSelect(RowSelectEventArgs<EmailElementi> args)
     {
-        if (((int)args.Data.Stato) > 1)
-            IsSummaryActive = false;
-        else IsSummaryActive = true;
+
         OnSelectedItem.InvokeAsync(args.Data);
     }
 
@@ -580,7 +614,7 @@
         }
         else
         {
-            List<string> ListaRuoli = _ZipService.GetRuoliTipoAll(User.Claims,(nDocumentType== TipiDocumentiFile.ZIP)?"ZIP":"REQ");
+            List<string> ListaRuoli = _ZipService.GetRuoliTipoAll(User.Claims, (nDocumentType == TipiDocumentiFile.ZIP) ? "ZIP" : "REQ");
             List<EmailServer> ListaServer = _ZipService._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaFile);
 
             if (ListaServer != null && ListaServer.Count > 0)
@@ -611,5 +645,136 @@
     public void OnSearch()
     {
         Grid.SearchAsync(SearchKey);
+    }
+
+    /// <summary>
+    /// Display the Undefined component, using dynmic loading
+    /// </summary>
+    /// <param name="nComponent">Name of the component</param>
+    public void UndefinedComponent(string nComponent)
+    {
+        try
+        {
+            IsShowDialog = true;
+            DynamicAttributes.Clear();
+            string component = "dblu.Portale.Plugin.Docs.Pages.Custom.UndefinedComponentPopUp";
+            DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nComponentName",
+                Position = 1,
+                Value = nComponent
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialog",
+                Position = 1,
+                Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialogChanged",
+                Position = 2,
+                Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
+                EventCallback.Factory.Create<bool>(this,
+                    RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
+            });
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"AttachCostumerSearch.UndefinedComponent: Unexpected error {ex}");
+        }
+    }
+
+    public async void OnLink()
+    {
+        try
+        {
+            string component = _SubjectService.UrlServizioRicercaElementi();
+            DynamicAttributes.Clear();
+
+            IsShowDialog = true;
+
+            DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+
+            if (!component.StartsWith("dblu.Portale") || DynamicContent == null)
+            {
+                UndefinedComponent(component);
+                return;
+            }
+
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nAttachID",
+                Position = 1,
+                Value = nAttachID
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nCostumerCode",
+                Position = 2,
+                Value = nCostumerCode
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialog",
+                Position = 3,
+                Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialogChanged",
+                Position = 4,
+                Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
+                EventCallback.Factory.Create<bool>(this,
+                    RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "OnLinkedToItem",
+                Position = 5,
+                Value = EventCallback.Factory.Create<(string, string)>(this, OnLinkedToItem)
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nAttachments",
+                Position = 6,
+                Value = nAttachments ?? new()
+            });
+
+            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            {
+                Name = "nCurrentDocument",
+                Position = 7,
+                Value = nCurrentDocument
+            });
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"AttachItemsTable.OnLink: Unexpected error {ex}");
+        }
+    }
+
+    public async void OnLinkItem(TipiElementi T)
+    {
+        if (T != null)
+        {
+            ComponentName = T.ViewAttributi;
+            if (!ComponentName.StartsWith("blz:/"))
+                IsShowUndefined = true;
+        }
+
+        if (!IsShowUndefined)
+            ShowDossierConfirm = true;
     }
 }

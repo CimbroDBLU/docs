@@ -18,10 +18,7 @@
 <div class="row">
     <div class="col" style="display:flex">
         <SfTextBox Placeholder="Dossier" Readonly="true" Value="@(Dossier?.Descrizione ?? "")"></SfTextBox>
-        @if (nDisplayComplete)
-        {
-            <SfButton CssClass="ml-2" Content="Completa" IsPrimary="true" OnClick="Complete"></SfButton>
-        }
+
     </div>
 </div>
 
@@ -108,43 +105,5 @@
         }
     }
 
-    /// <summary>
-    /// Complete the current email attach
-    /// </summary>
-    public async void Complete()
-    {
-        try
-        {
-            Stopwatch sw = Stopwatch.StartNew();
-            var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var User = authState.User;
 
-            var all = _MailService._allMan.Get(nAttachID);
-            if (all != null)
-            {
-                all.Stato = StatoAllegato.Chiuso;
-                _MailService._allMan.Salva(all, false);
-
-                LogDoc log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = Guid.Parse(nAttachID),
-                    TipoOggetto = TipiOggetto.ALLEGATO,
-                    Utente = User.Identity.Name,
-                    Operazione = TipoOperazione.Chiuso
-                };
-                _MailService._logMan.Salva(log, true);
-                ToastCompleteOK.Show();
-                OnAttachCompleted.InvokeAsync(nAttachID);
-                _Logger.LogInformation($"AttachItemsSearch.Complete: Attach {nAttachID} has been completed in {sw.ElapsedMilliseconds} ms");
-                return;
-            }
-            ToastCompleteKO.Show();
-        }
-        catch (Exception ex)
-        {
-            _Logger.LogError($"AttachItemsSearch.Complete: Complete fails, {ex}");
-            ToastCompleteKO.Show();
-        }
-    }
 }

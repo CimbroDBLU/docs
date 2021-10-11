@@ -97,7 +97,7 @@
                                                 <div>@CostumerDesc</div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <AttachCustomer OnLinkedToCostumer="OnLinkCostumer" OnLinkedToItem="OnLinkToItem" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                <AttachCustomer @ref="CustomerComponent"  OnLinkedToCostumer="OnLinkCostumer" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -105,25 +105,23 @@
                             </div>
                         </div>
                         @*FASCICOLI*@
-                        @if (IsDossierVisible)
-                        {
-                            <div class="row form-group">
-                                <div class="col">
-                                    <SfAccordion>
-                                        <AccordionItems>
-                                            <AccordionItem Expanded="true">
-                                                <HeaderTemplate>
-                                                    <div>Fascicoli ed elementi</div>
-                                                </HeaderTemplate>
-                                                <ContentTemplate>
-                                                    <AttachDossierItems nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" @ref="@DossierItems" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
-                                                </ContentTemplate>
-                                            </AccordionItem>
-                                        </AccordionItems>
-                                    </SfAccordion>
-                                </div>
+                        <div class="row form-group">
+                            <div class="col">
+                                <SfAccordion>
+                                    <AccordionItems>
+                                        <AccordionItem Expanded="true">
+                                            <HeaderTemplate>
+                                                <div>@DossierDesc</div>
+                                            </HeaderTemplate>
+                                            <ContentTemplate>
+                                                <AttachDossierItems @ref="@DossierItems" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
+                                            </ContentTemplate>
+                                        </AccordionItem>
+                                    </AccordionItems>
+                                </SfAccordion>
                             </div>
-                        }
+                        </div>
+
                         @*ALLEGATI EMAIL*@
                         @if (@IsAttachVisible)
                         {
@@ -225,19 +223,9 @@
     private bool IsSpinnerVisible { get; set; } = false;
 
     /// <summary>
-    /// Description to show on "Costumer" tab
-    /// </summary>
-    private string CostumerDesc { get; set; } = "Cliente";
-
-    /// <summary>
     /// Indicates if Mail attachments panel is visible
     /// </summary>
     private bool IsAttachVisible { get; set; } = false;
-
-    /// <summary>
-    /// Indicates if Dossier attachments panel is visible
-    /// </summary>
-    private bool IsDossierVisible { get; set; } = false;
 
     /// <summary>
     /// Indicates if Move panel is visible
@@ -349,6 +337,22 @@
     public string Title => (DocType == TipiDocumentiFile.ZIP) ? "File in arrivo" : "Richieste in arrivo";
 
     /// <summary>
+    /// Reference to che Customer Component
+    /// </summary>
+    private AttachCustomer CustomerComponent { get; set; }
+
+    /// <summary>
+    /// Description to show on "Costumer" tab
+    /// </summary>
+    private string CostumerDesc => (CustomerComponent?.CurrentCostumer == null) ? "Cliente da selezionare" : $"{CustomerComponent?.CurrentCostumer?.Codice ?? ""} - {CustomerComponent?.CurrentCostumer?.Nome ?? ""}";
+
+    /// <summary>
+    /// Description to show on dossier tab
+    /// </summary>
+    private string DossierDesc => (DossierItems?.CurrentDossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {DossierItems?.CurrentDossier?.Descrizione} [{DossierItems?.CurrentDossier?.Id}]";
+
+    private string nLastDocType { get; set; }="";
+    /// <summary>
     /// Re-calculate type, if changed
     /// </summary>
     protected async override void OnParametersSet()
@@ -356,6 +360,11 @@
         if (nDocType == "REQ")
             DocType = TipiDocumentiFile.REQ;
         else DocType = TipiDocumentiFile.ZIP;
+
+        AttachID = "";
+        DossierID = "";
+        
+        CustomerCode = "";
     }
 
     /// <summary>
@@ -379,11 +388,6 @@
 
             if (CustomerCode != e.Chiave3)
                 CustomerCode = e.Chiave3;
-
-            if (string.IsNullOrEmpty(CustomerCode))
-                IsDossierVisible = false;
-            else IsDossierVisible = true;
-
 
         }
         catch (Exception ex)
@@ -529,8 +533,6 @@
         DossierID = data.DossierId;
         ItemID = data.ItemId;
         Grid.Refresh();
-
-        IsDossierVisible = true;
     }
 
     /// <summary>
@@ -540,7 +542,6 @@
     public async void OnLinkCostumer(ISoggetti Customer)
     {
         CustomerCode = Customer?.Codice ?? "";
-        IsDossierVisible = true;
     }
 
     /// <summary>

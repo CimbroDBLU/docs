@@ -10,9 +10,9 @@
 <div>
     <SfSpinner @bind-Visible="IsSpinnerVisible">
     </SfSpinner>
-    <SfGrid SelectedRowIndex="0" DataSource="@nItems" AllowTextWrap="false" AllowPaging="true">
+    <SfGrid SelectedRowIndex="0" DataSource="@nItems" AllowSorting="true" AllowFiltering="true" AllowTextWrap="false" AllowPaging="true">
         <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-        <GridPageSettings PageSize="3"></GridPageSettings>
+        <GridPageSettings PageSize="5"></GridPageSettings>
         <GridColumns>
             <GridColumn Field=@nameof(ISoggettoElementiAperti.Numero) IsPrimaryKey="true" HeaderText="Numero"></GridColumn>
             <GridColumn Field=@nameof(ISoggettoElementiAperti.Riferimento) HeaderText="Riferimento"></GridColumn>

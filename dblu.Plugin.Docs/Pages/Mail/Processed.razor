@@ -111,7 +111,7 @@
                                                 <div>@CostumerDesc</div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <AttachCustomer nAttachments="@SourceAttach" nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                <AttachCustomer nAttachments="@SourceAttach" @ref="CustomerComponent"  nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -125,7 +125,7 @@
                                     <AccordionItems>
                                         <AccordionItem Expanded="true">
                                             <HeaderTemplate>
-                                                <div>Struttura di <b>@Attach?.Oggetto</b></div>
+                                                <div>Struttura di <span style="font-weight:800;color:#114b5a">@Attach?.Oggetto</span></div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
                                                 <MailHTMLView nShowBack="false" nAttach="@Attach" OnDocumentLoaded="OnDocumentLoaded" nReadAttachments="true" nHeight="300"></MailHTMLView>
@@ -203,11 +203,6 @@
     /// Indicates if the spinner has to be showed
     /// </summary>
     private bool IsSpinnerVisible { get; set; } = false;
-
-    /// <summary>
-    /// Description to show on "Costumer" tab
-    /// </summary>
-    private string CostumerDesc { get; set; } = "Cliente";
 
     /// <summary>
     /// Indicates if HTML panel is visible
@@ -323,6 +318,16 @@
     /// List of current Attach source Attachments
     /// </summary>
     private ObservableCollection<OriginalAttachments> SourceAttach { get; set; } = new();
+
+    /// <summary>
+    /// Reference to che Customer Component
+    /// </summary>
+    private AttachCustomer CustomerComponent { get; set; }
+
+    /// <summary>
+    /// Description to show on "Costumer" tab
+    /// </summary>
+    private string CostumerDesc => (CustomerComponent?.CurrentCostumer == null) ? "Cliente da selezionare" : $"{CustomerComponent?.CurrentCostumer?.Codice ?? ""} - {CustomerComponent?.CurrentCostumer?.Nome ?? ""}";
 
 
     /// <summary>

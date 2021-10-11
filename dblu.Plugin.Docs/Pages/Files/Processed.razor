@@ -74,7 +74,7 @@
                                                 <div>@CostumerDesc</div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <AttachCustomer nAttachments="@SourceAttach" nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                <AttachCustomer @ref="CustomerComponent"  nAttachments="@SourceAttach" nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -172,11 +172,6 @@
     /// Indicates if the spinner has to be showed
     /// </summary>
     private bool IsSpinnerVisible { get; set; } = false;
-
-    /// <summary>
-    /// Description to show on "Costumer" tab
-    /// </summary>
-    private string CostumerDesc { get; set; } = "Cliente";
 
     /// <summary>
     /// Indicates if HTML panel is visible
@@ -297,6 +292,17 @@
     /// Depending of type, shows a different title
     /// </summary>
     public string Title => (DocType == TipiDocumentiFile.ZIP) ? "File processati" : "Richieste processate";
+
+    /// <summary>
+    /// Reference to che Customer Component
+    /// </summary>
+    private AttachCustomer CustomerComponent { get; set; }
+
+    /// <summary>
+    /// Description to show on "Costumer" tab
+    /// </summary>
+    private string CostumerDesc => (CustomerComponent?.CurrentCostumer == null) ? "Cliente da selezionare" : $"{CustomerComponent?.CurrentCostumer?.Codice ?? ""} - {CustomerComponent?.CurrentCostumer?.Nome ?? ""}";
+
 
     /// <summary>
     ///  Re-calculate type, if changed

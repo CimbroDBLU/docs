@@ -6,21 +6,18 @@
 @using dblu.Portale.Plugin.Docs.Services
 @using dblu.Docs.Models
 @using System.IO
+@using dblu.Docs.Classi
+@using Microsoft.AspNetCore.Components.CompilerServices
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject ILogger<AttachDossierItems> _Logger
 
-<div class="row">
-    <div class="col">
-        <AttachItemsSearch nRecordServer="@nRecordServer"  nDocumentType="@nDocumentType" OnAttachCompleted="OnAttachCompleted" nDisplayComplete="@DisplayComplete" nDossierID="@nDossierID" nAttachID="@nAttachID" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode"></AttachItemsSearch>
-    </div>
-</div>
-<div class="row mt-2">
-    <div class="col">
-        <AttachItemsTable  nRecordServer="@nRecordServer" nDocumentType="@nDocumentType" @ref="@Table" nAttachID="@nAttachID" nDossierID="@nDossierID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode" OnSelectedItem="OnSelectedItemZ"></AttachItemsTable>
-    </div>
-</div>
-
+<AttachItemsTable nRecordServer="@nRecordServer" nDocumentType="@nDocumentType" @ref="@Table" nAttachID="@nAttachID" nDossierID="@nDossierID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode" OnSelectedItem="OnSelectedItemZ" OnLinkedToItem="OnLink" OnComplete="Complete"></AttachItemsTable>
+<Toast @ref="ToastCompleteOK" nToastType="Toast.e_ToastType.OK" nTitle="Completa email" nContent="Email completata"></Toast>
+<Toast @ref="ToastCompleteKO" nToastType="Toast.e_ToastType.Fail" nTitle="Completa email" nContent="Completamento non riuscito"></Toast>
 
 @code {
-
 
     /// <summary>
     /// Attach ID
@@ -41,13 +38,13 @@
     public string nDossierID { get; set; }
 
     /// <summary>
-    /// Type of the attachment wwe are processing 
+    /// Type of the attachment wwe are processing
     /// </summary>
     [Parameter]
     public TipiRecordServer nRecordServer { get; set; } = TipiRecordServer.CartellaMail;
 
     /// <summary>
-    /// If we are processing document specify witch type 
+    /// If we are processing document specify witch type
     /// </summary>
     [Parameter]
     public TipiDocumentiFile nDocumentType { get; set; } = TipiDocumentiFile.ZIP;
@@ -77,6 +74,23 @@
     public EventCallback<string> OnSelectedItem { get; set; }
 
     /// <summary>
+    /// Fires when attach has been linked to item
+    /// </summary>
+    [Parameter]
+    public EventCallback<(string, string)> OnLinkedToItem { get; set; }
+
+
+    /// <summary>
+    /// Toast for a positive Complete action
+    /// </summary>
+    private Toast ToastCompleteOK { get; set; }
+
+    /// <summary>
+    /// Toast for a negative Complete action
+    /// </summary>
+    private Toast ToastCompleteKO { get; set; }
+
+    /// <summary>
     /// Indicates to display or not the complete button
     /// </summary>
     public bool DisplayComplete { get; set; } = false;
@@ -86,12 +100,83 @@
     /// </summary>
     private AttachItemsTable Table { get; set; }
 
+    public Fascicoli CurrentDossier => Dossier;
+
+    /// <summary>
+    /// Current Dossier
+    /// </summary>
+    private Fascicoli Dossier { get; set; }
+
+    /// <summary>
+    /// Previous dossier ID
+    /// </summary>
+    private string LastDossierID { get; set; }
+
+    /// <summary>
+    /// Redraw the component only if necessary
+    /// </summary>
+    protected override async void OnParametersSet()
+    {
+        if (LastDossierID != nDossierID && !string.IsNullOrEmpty(nDossierID))
+        {
+            Dossier = _MailService._fasMan.Get(nDossierID);
+            LastDossierID = nDossierID;
+         
+        }
+        else if (string.IsNullOrEmpty(nDossierID))
+        {
+            Dossier = null;
+           
+        }
+    }
+
     /// <summary>
     /// Refresh the items table
     /// </summary>
     public void Refresh()
     {
         Table.Refresh();
+
+    }
+
+    /// <summary>
+    /// Complete the current email attach
+    /// </summary>
+    public async void Complete()
+    {
+        try
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var User = authState.User;
+
+            var all = _MailService._allMan.Get(nAttachID);
+            if (all != null)
+            {
+                all.Stato = StatoAllegato.Chiuso;
+                _MailService._allMan.Salva(all, false);
+
+                LogDoc log = new LogDoc()
+                {
+                    Data = DateTime.Now,
+                    IdOggetto = Guid.Parse(nAttachID),
+                    TipoOggetto = TipiOggetto.ALLEGATO,
+                    Utente = User.Identity.Name,
+                    Operazione = TipoOperazione.Chiuso
+                };
+                _MailService._logMan.Salva(log, true);
+                ToastCompleteOK.Show();
+                OnAttachCompleted.InvokeAsync(nAttachID);
+                _Logger.LogInformation($"AttachDossierItems.Complete: Attach {nAttachID} has been completed in {sw.ElapsedMilliseconds} ms");
+                return;
+            }
+            ToastCompleteKO.Show();
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"AttachDossierItems.Complete: Complete fails, {ex}");
+            ToastCompleteKO.Show();
+        }
     }
 
     /// <summary>
@@ -100,7 +185,16 @@
     /// <param name="e"></param>
     public async void OnSelectedItemZ(EmailElementi e)
     {
-        DisplayComplete = (int)(e.Stato) > 1;
+
         this.OnSelectedItem.InvokeAsync(e.Id);
+    }
+
+    /// <summary>
+    /// Forward the link event
+    /// </summary>
+    /// <param name="data"></param>
+    public async void OnLink((string Dossier, string Item) data)
+    {
+        await OnLinkedToItem.InvokeAsync(data);
     }
 }

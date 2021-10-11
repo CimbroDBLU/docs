@@ -151,7 +151,7 @@
                                                 <div>@CostumerDesc</div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <AttachCustomer @ref="CustomerComponent" OnLinkedToCostumer="OnLinkCostumer" OnLinkedToItem="OnLinkToItem" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID" ></AttachCustomer>
+                                                <AttachCustomer @ref="CustomerComponent" OnLinkedToCostumer="OnLinkCostumer"  nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -159,25 +159,22 @@
                             </div>
                         </div>
                         @*FASCICOLI*@
-                        @if (IsDossierVisible)
-                        {
                             <div class="row form-group">
                                 <div class="col">
                                     <SfAccordion>
                                         <AccordionItems>
                                             <AccordionItem Expanded="true">
                                                 <HeaderTemplate>
-                                                    <div>Fascicoli ed elementi</div>
+                                                    <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachDossierItems @ref="@DossierItems" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted"  OnSelectedItem="OnSelectedItem"></AttachDossierItems>
+                                                    <AttachDossierItems  @ref="@DossierItems" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
                                     </SfAccordion>
                                 </div>
                             </div>
-                        }
                         @*ALLEGATI EMAIL*@
                         @if (@IsAttachVisible)
                         {
@@ -273,16 +270,10 @@
     /// </summary>
     private bool IsSpinnerVisible { get; set; } = false;
 
-
     /// <summary>
     /// Indicates if Mail attachments panel is visible
     /// </summary>
     private bool IsAttachVisible { get; set; } = false;
-
-    /// <summary>
-    /// Indicates if Dossier attachments panel is visible
-    /// </summary>
-    private bool IsDossierVisible { get; set; } = false;
 
     /// <summary>
     /// Indicates if Answer panel is visible
@@ -434,9 +425,19 @@
     private AttachCustomer CustomerComponent { get; set; }
 
     /// <summary>
+    /// Reference to che Customer Component
+    /// </summary>
+    private AttachDossierItems DossierComponent { get; set; }
+
+    /// <summary>
     /// Description to show on "Costumer" tab
     /// </summary>
     private string CostumerDesc => (CustomerComponent?.CurrentCostumer == null) ? "Cliente da selezionare" : $"{CustomerComponent?.CurrentCostumer?.Codice ?? ""} - {CustomerComponent?.CurrentCostumer?.Nome ?? ""}";
+
+    /// <summary>
+    /// Description to show on dossier tab
+    /// </summary>
+    private string DossierDesc => (DossierItems?.CurrentDossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {DossierItems?.CurrentDossier?.Descrizione} [{DossierItems?.CurrentDossier?.Id}]";
 
     /// <summary>
     /// On selection of the email,shows and hide panels properly
@@ -446,6 +447,7 @@
     {
         try
         {
+
             Attach = e;
             PDFSourceId = e.Id.ToString();
             PDFSourceType = e_SourceType.Attachment;
@@ -461,8 +463,6 @@
 
             if (string.IsNullOrEmpty(CustomerCode))
             {
-                IsDossierVisible = false;
-
                 List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Attach.Mittente);
                 _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: {Costumers.Count} costumers retrived for {Attach.Mittente}");
                 if (Costumers.Count > 1)
@@ -478,13 +478,16 @@
 
                 OnAbort();
             }
-            else IsDossierVisible = true;
+
+
+
         }
         catch (Exception ex)
         {
             _Logger.LogError($"Inbox[MAIL].OnSelectAttach: Unexpected errro on selecting attach {ex}");
         }
     }
+
 
     /// <summary>
     /// Once a document has been loaded, refresh the source attachment
@@ -698,8 +701,6 @@
         DossierID = data.DossierId;
         ItemID = data.ItemId;
         Grid.Refresh();
-
-        IsDossierVisible = true;
     }
 
     /// <summary>
@@ -709,8 +710,6 @@
     public async void OnLinkCostumer(ISoggetti Customer)
     {
         CustomerCode = Customer?.Codice??"";
-        //    CostumerDesc = $"{Customer?.Codice ?? ""} - {Customer?.Nome}";
-        IsDossierVisible = true;
     }
 
     /// <summary>

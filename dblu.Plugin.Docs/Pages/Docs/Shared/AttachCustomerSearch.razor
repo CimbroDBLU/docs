@@ -23,13 +23,12 @@
 
                 @if (!nReadOnly)
                 {
-                    <div class="col-6" >
+                    <div class="col-8" >
                         <SfTextBox Readonly="true" Placeholder="Cliente" Value="@Description"></SfTextBox>
                     </div>
 
-                    <div class="col-4" style="display: inline-flex; justify-content: flex-end;">
-                        <SfButton Content="Cerca" OnClick="OnSearch"></SfButton>
-                        <SfButton CssClass="ml-2" Content="Associa" OnClick="OnLink"></SfButton>
+                    <div class="col-2" style="display: inline-flex; justify-content: flex-end;">
+                        <SfButton Content="Cerca" OnClick="OnSearch"></SfButton>                        
                     </div>
                 }
                 else
@@ -71,12 +70,6 @@
             /// </summary>
             [Parameter]
             public MemoryStream nCurrentDocument { get; set; }
-
-            /// <summary>
-            /// Fires when attach has been linked to item
-            /// </summary>
-            [Parameter]
-            public EventCallback<(string, string)> OnLinkedToItem { get; set; }
 
             /// <summary>
             /// Fires when a costumer has been selected
@@ -284,82 +277,4 @@
                 }
             }
 
-            /// <summary>
-            /// Display the custom component for  item link
-            /// </summary>
-            public async void OnLink()
-            {
-                try
-                {
-                    string component = _SubjectService.UrlServizioRicercaElementi();
-                    DynamicAttributes.Clear();
-
-                    IsShowDialog = true;
-
-                    DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
-
-                    if (!component.StartsWith("dblu.Portale") || DynamicContent == null)
-                    {
-                        UndefinedComponent(component);
-                        return;
-                    }
-
-
-                    DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-                    {
-                        Name = "nAttachID",
-                        Position = 1,
-                        Value = nAttachID
-                    });
-
-                    DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-                    {
-                        Name = "nCostumerCode",
-                        Position = 2,
-                        Value = nCostumerCode
-                    });
-
-                    DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-                    {
-                        Name = "IsShowDialog",
-                        Position = 3,
-                        Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
-                    });
-
-                    DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-                    {
-                        Name = "IsShowDialogChanged",
-                        Position = 4,
-                        Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
-                        EventCallback.Factory.Create<bool>(this,
-                            RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
-                    });
-
-                    DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-                    {
-                        Name = "OnLinkedToItem",
-                        Position = 5,
-                        Value = EventCallback.Factory.Create<(string, string)>(this, OnLinkedToItem)
-                    });
-
-                    DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-                    {
-                        Name = "nAttachments",
-                        Position = 6,
-                        Value = nAttachments ?? new()
-                    });
-
-                    DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
-                    {
-                        Name = "nCurrentDocument",
-                        Position = 7,
-                        Value = nCurrentDocument
-                    });
-                }
-                catch (Exception ex)
-                {
-                    _Logger.LogError($"AttachCostumerSearch.OnLink: Unexpected error {ex}");
-                }
-
-            }
         }

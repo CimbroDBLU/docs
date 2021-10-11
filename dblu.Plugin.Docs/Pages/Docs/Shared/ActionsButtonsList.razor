@@ -1,0 +1,115 @@
+﻿@*
+    Component for showing a combo with all action s that can be done on an Item (looking into ElementType)
+*@
+@using dblu.Docs.Models
+@using dblu.Docs.Interfacce
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
+
+<div>
+    @if (nDisplayActions)
+    {
+    @foreach (ActionTranslation A in ActionsList)
+    {
+        <SfButton CssClass="e-primary mt-1 mr-1" OnClick="@(() => OnLinkItem(A.Item))">@A.Desc</SfButton>
+    }
+    }
+    <SfButton CssClass="e-primary mt-1 mr-1" OnClick="OnLink">Associa</SfButton>
+    @if (nDisplayComplete)
+    {
+    <SfButton CssClass="e-primary mt-1 mr-1" OnClick="OnComplete">Completa</SfButton>
+    }
+</div>
+
+@code {
+
+    /// <summary>
+    /// List of supported Item Types
+    /// </summary>
+    [Parameter]
+    public List<TipiElementi> nItemTypes { get; set; } = new List<TipiElementi>();
+
+    /// <summary>
+    /// Fires when a costumer has been selected
+    /// </summary>
+    [Parameter]
+    public EventCallback OnLinkPressed { get; set; }
+
+    /// <summary>
+    /// Fires when a costumer has been selected
+    /// </summary>
+    [Parameter]
+    public EventCallback<TipiElementi> OnLinkItemPressed { get; set; }
+
+    /// <summary>
+    /// Fires when a costumer has been selected
+    /// </summary>
+    [Parameter]
+    public EventCallback OnCompletePressed { get; set; }
+
+    [Parameter]
+    public bool nDisplayComplete { get; set; } = false;
+
+    [Parameter]
+    public bool nDisplayActions { get; set; } = false;
+
+    /// <summary>
+    /// List of available actions
+    /// </summary>
+    public List<ActionTranslation> ActionsList { get; set; } = new();
+
+    /// <summary>
+    /// Class for relate an ItemType code with the action it is proposing
+    /// </summary>
+    public class ActionTranslation
+    {
+        /// <summary>
+        /// Code of the Item
+        /// </summary>
+        public string Item { get; set; }
+
+        /// <summary>
+        /// Description of the Item
+        /// </summary>
+        public string Desc { get; set; }
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="nCode">Code of the Item</param>
+        /// <param name="nDesc">Description of the Item</param>
+        public ActionTranslation(string nItem, string nDesc)
+        {
+            Item = nItem;
+            Desc = nDesc;
+        }
+    }
+
+    /// <summary>
+    /// On Init, popolate the combo
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        ActionsList.AddRange(nItemTypes.Where(x => x.AggregaAElemento == false).Select(t => new ActionTranslation(t.Codice, t.Descrizione)).ToList());
+    }
+
+
+    /// <summary>
+    /// Display the custom component for  item link
+    /// </summary>
+    public async void OnLink()
+    {
+        await OnLinkPressed.InvokeAsync();
+    }
+
+    public async void OnLinkItem(string Code)
+    {
+        await OnLinkItemPressed.InvokeAsync(nItemTypes.FirstOrDefault(c => c.Codice == Code));
+    }
+
+
+    public async void OnComplete()
+    {
+        await OnCompletePressed.InvokeAsync();
+    }
+}
