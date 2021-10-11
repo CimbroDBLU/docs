@@ -389,15 +389,14 @@ else
     /// On parameter setted relof the grid if necessary
     /// </summary>
     protected override async Task OnParametersSetAsync()
-    {   
+    {
         if (LastAttachId == nAttachID && LastDossierId == nDossierID) return;
 
         IsSpinnerVisible = true;
         await Task.Run(() =>
         {
             nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
-        //_MailService._allMan.Get(nAttachID);
-        LastDossierId = nDossierID;
+            LastDossierId = nDossierID;
             LastAttachId = nAttachID;
         });
         IsSpinnerVisible = false;
@@ -473,6 +472,10 @@ else
         }
     }
 
+    /// <summary>
+    /// Open the selected element
+    /// </summary>
+    /// <param name="Elem"></param>
     public async void OnOpen(EmailElementi Elem)
     {
         TipiElementi T = Actions.Where(x => x.Codice == Elem.TipoElemento).FirstOrDefault();
@@ -489,22 +492,6 @@ else
         {
             string Url = $"{ComponentName.Replace("blz:/", "")}/{Elem.Id}";
             _NavigationManager.NavigateTo(Url);
-        }
-    }
-
-    public async void OnRun()
-    {
-        TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
-        if (T != null)
-        {
-            ComponentName = T.ViewAttributi;
-            if (!ComponentName.StartsWith("blz:/"))
-                IsShowUndefined = true;
-        }
-
-        if (!IsShowUndefined)
-        {
-            ShowDossierConfirm = true;
         }
     }
 
@@ -690,6 +677,9 @@ else
         }
     }
 
+    /// <summary>
+    /// Open the component for linking the email to an element
+    /// </summary>
     public async void OnLink()
     {
         try
@@ -765,6 +755,10 @@ else
         }
     }
 
+    /// <summary>
+    /// On request to link item: check the view and show the confimation
+    /// </summary>
+    /// <param name="T"></param>
     public async void OnLinkItem(TipiElementi T)
     {
         if (T != null)
