@@ -20,7 +20,7 @@
         @nLabel
     </div>
     <div class="col-9">
-        <SfDropDownList Value="@(nServer?.Nome??"")" TValue="string" TItem="EmailServer" DataSource="@Servers">
+        <SfDropDownList Value="@(nServer?.Nome??"")" TValue="string" AllowFiltering="true" TItem="EmailServer" DataSource="@Servers">
             @if (nRecordServer == TipiRecordServer.CartellaMail)
             {
                 <DropDownListFieldSettings Text="Nome" Value="Nome"></DropDownListFieldSettings>

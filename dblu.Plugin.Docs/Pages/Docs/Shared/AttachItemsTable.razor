@@ -96,7 +96,7 @@
             </ToolbarItems>
         </SfToolbar>
         <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-        <GridEvents TValue="EmailElementi" RowSelected="OnRecordSelect"></GridEvents>
+        <GridEvents TValue="EmailElementi" RowSelected="OnRecordSelect" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
         <GridPageSettings PageSize="4"></GridPageSettings>
         <GridColumns>
             <GridColumn Field=@nameof(EmailElementi.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
@@ -753,6 +753,15 @@ else
         {
             _Logger.LogError($"AttachItemsTable.OnLink: Unexpected error {ex}");
         }
+    }
+
+    /// <summary>
+    /// On double click open the Dossier
+    /// </summary>
+    /// <param name="args"></param>
+    public void OnDoubleClick(RecordDoubleClickEventArgs<EmailElementi> args)
+    {
+        OnOpen(args.RowData);
     }
 
     /// <summary>

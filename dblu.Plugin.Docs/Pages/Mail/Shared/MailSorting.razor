@@ -1,0 +1,77 @@
+﻿@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Services
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using dblu.Portale.Plugin.Docs.Pages.Mail.Shared
+@using dblu.Portale.Plugin.Docs.Classes
+@using Microsoft.AspNetCore.Http
+@using System.IO
+@using dblu.Docs.Interfacce
+@using System.Security.Claims;
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
+@inject IHttpContextAccessor _HttpContextAccessor
+
+<SfTab>
+    <TabItems>
+        @foreach (TipiElementi T in Items)
+        {
+            if (!T.AggregaAElemento || !string.IsNullOrEmpty(T.ViewAttributi))
+            {
+            <TabItem>
+                <ChildContent>
+                    <TabHeader Text="@T.Descrizione"></TabHeader>
+                </ChildContent>
+                <ContentTemplate>
+                    @if (string.IsNullOrEmpty(T.ViewAttributi))
+                    {
+                        <p>draw the customer form here</p>
+                    }
+                    else
+                    {
+                     <p>draw the component @T.ViewAttributi</p>
+                    }
+                </ContentTemplate>    
+            </TabItem>
+            }
+        }
+</TabItems>
+</SfTab>
+
+@code {
+
+    private List<dblu.Docs.Models.TipiElementi> Items { get; set; } = new();
+
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+
+        List<dblu.Docs.Models.TipiElementi> ListaTipiElementiServ;
+        TipiAllegati TipoAll = _MailService._allMan.GetTipoAllegato("EMAIL");
+        List<string> ListaRuoli = null;
+
+        ListaRuoli = _MailService.getRuoli("50.1.5", "");
+
+        Items = _MailService._elmMan.GetAllTipiElementi(ListaRuoli);
+        var ListaServer = _MailService._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaMail);
+
+
+        var ListaServerIngresso = _MailService._serMan.GetServerEmailInIngresso();
+        if (ListaServer != null && ListaServer.Count > 0)
+        {
+            var ListaRuoliServ = _MailService.getRuoli(ListaRuoli, ListaServer);
+            ListaTipiElementiServ = _MailService._elmMan.GetAllTipiElementi(ListaRuoliServ);
+        }
+        else
+        {
+            ListaTipiElementiServ = Items;
+        }
+        bool mostraSposta = ListaServerIngresso.Count > 1;
+
+        List<dblu.Docs.Models.Colonna> ElCols = _AttachService.GetColonne("vELEMENTO");
+
+    }
+}

@@ -12,13 +12,14 @@
     </SfSpinner>
     <SfGrid SelectedRowIndex="0" DataSource="@nItems" AllowSorting="true" AllowFiltering="true" AllowTextWrap="false" AllowPaging="true">
         <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-        <GridPageSettings PageSize="5"></GridPageSettings>
-        <GridColumns>
-            <GridColumn Field=@nameof(ISoggettoElementiAperti.Numero) IsPrimaryKey="true" HeaderText="Numero"></GridColumn>
-            <GridColumn Field=@nameof(ISoggettoElementiAperti.Riferimento) HeaderText="Riferimento"></GridColumn>
-            <GridColumn Field=@nameof(ISoggettoElementiAperti.DataConsegna) Format="d" HeaderText="Consegna"></GridColumn>
-            <GridColumn Field=@nameof(ISoggettoElementiAperti.Stato) HeaderText="Stato"></GridColumn>
-        </GridColumns>
+        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+            <GridPageSettings PageSize="5"></GridPageSettings>
+            <GridColumns>
+                <GridColumn Field=@nameof(ISoggettoElementiAperti.Numero) IsPrimaryKey="true" HeaderText="Numero"></GridColumn>
+                <GridColumn Field=@nameof(ISoggettoElementiAperti.Riferimento) HeaderText="Riferimento"></GridColumn>
+                <GridColumn Field=@nameof(ISoggettoElementiAperti.DataConsegna) Format="d" HeaderText="Consegna"></GridColumn>
+                <GridColumn Field=@nameof(ISoggettoElementiAperti.Stato) HeaderText="Stato"></GridColumn>
+            </GridColumns>
     </SfGrid>
 </div>
 }
