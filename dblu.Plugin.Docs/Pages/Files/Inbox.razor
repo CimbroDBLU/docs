@@ -185,17 +185,17 @@
 
 @code
 {
-    /// <summary>
-    /// Email that has to be selected, if any. We expect to receive the qattach id of the email selected
-    /// </summary>
-    [Parameter]
-    public string nPreselAttach { get; set; } = "";
+        /// <summary>
+        /// Email that has to be selected, if any. We expect to receive the qattach id of the email selected
+        /// </summary>
+        [Parameter]
+        public string nPreselAttach { get; set; } = "";
 
-    /// <summary>
-    /// Type of document we need to manage (ZIP,REQ...)
-    /// </summary>
-    [Parameter]
-    public string nDocType { get; set; } = "ZIP";
+        /// <summary>
+        /// Type of document we need to manage (ZIP,REQ...)
+        /// </summary>
+        [Parameter]
+        public string nDocType { get; set; } = "ZIP";
 
     /// <summary>
     /// Type of document we need to manage as enum
@@ -363,7 +363,7 @@
 
         AttachID = "";
         DossierID = "";
-        
+
         CustomerCode = "";
     }
 
@@ -371,29 +371,32 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public async void OnSelectAttach(Allegati e)
+    public void OnSelectAttach(Allegati e)
     {
-        try
+        Task.Run(() =>
         {
-            Attach = e;
-            PDFSourceId = e.Id.ToString();
-            PDFSourceType = e_SourceType.Attachment;
+            try
+            {
+                Attach = e;
+                PDFSourceId = e.Id.ToString();
+                PDFSourceType = e_SourceType.Attachment;
 
-            if (AttachID != e.Id.ToString())
-                AttachID = e.Id.ToString();
+                if (AttachID != e.Id.ToString())
+                    AttachID = e.Id.ToString();
 
-            if (DossierID != e.IdFascicolo.ToString())
-                DossierID = e.IdFascicolo.ToString();
+                if (DossierID != e.IdFascicolo.ToString())
+                    DossierID = e.IdFascicolo.ToString();
 
 
-            if (CustomerCode != e.Chiave3)
-                CustomerCode = e.Chiave3;
+                if (CustomerCode != e.Chiave3)
+                    CustomerCode = e.Chiave3;
 
-        }
-        catch (Exception ex)
-        {
-            _Logger.LogError($"Inbox[FILE,{nDocType}].OnSelectAttach: Unexpected errro on selecting attach {ex}");
-        }
+            }
+            catch (Exception ex)
+            {
+                _Logger.LogError($"Inbox[FILE,{nDocType}].OnSelectAttach: Unexpected errro on selecting attach {ex}");
+            }
+        });
     }
 
     /// <summary>

@@ -188,11 +188,11 @@
 
 @code
 {
-    /// <summary>
-    /// Email that has to be selected, if any. We expect to receive the qattach id of the email selected
-    /// </summary>
-    [Parameter]
-    public string nPreselAttach { get; set; } = "";
+        /// <summary>
+        /// Email that has to be selected, if any. We expect to receive the qattach id of the email selected
+        /// </summary>
+        [Parameter]
+        public string nPreselAttach { get; set; } = "";
 
     /// <summary>
     /// Reference to the Mail grid
@@ -334,21 +334,26 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public async void OnSelectAttach(AllegatoEmail e)
+    public void OnSelectAttach(AllegatoEmail e)
     {
-        Attach = e;
+        Task.Run(() =>
+        {
+            Attach = e;
 
-        if (AttachID != e.Id.ToString())
-            AttachID = e.Id.ToString();
+            if (AttachID != e.Id.ToString())
+                AttachID = e.Id.ToString();
 
-        if (DossierID != e.IdFascicolo.ToString())
-            DossierID = e.IdFascicolo.ToString();
+            if (DossierID != e.IdFascicolo.ToString())
+                DossierID = e.IdFascicolo.ToString();
 
-        if (CustomerCode != e.Chiave3)
-            CustomerCode = e.Chiave3;
+            if (CustomerCode != e.Chiave3)
+                CustomerCode = e.Chiave3;
 
-        OnAbort();
-    }
+            OnAbort();
+
+        });
+
+   }
 
 
     /// <summary>

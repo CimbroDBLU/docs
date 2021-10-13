@@ -164,11 +164,11 @@
 
 @code
 {
-    /// <summary>
-    /// Email that has to be selected, if any. We expect to receive the qattach id of the email selected
-    /// </summary>
-    [Parameter]
-    public string nPreselAttach { get; set; } = "";
+        /// <summary>
+        /// Email that has to be selected, if any. We expect to receive the qattach id of the email selected
+        /// </summary>
+        [Parameter]
+        public string nPreselAttach { get; set; } = "";
 
     /// <summary>
     /// Reference to the Mail grid
@@ -290,184 +290,187 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public async void OnSelectAttach(AllegatoEmail e)
+    public void OnSelectAttach(AllegatoEmail e)
     {
-        Attach = e;
+        Task.Run(() =>
+        {
+            Attach = e;
 
-        if (AttachID != e.Id.ToString())
-            AttachID = e.Id.ToString();
+            if (AttachID != e.Id.ToString())
+                AttachID = e.Id.ToString();
 
-        if (DossierID != e.IdFascicolo.ToString())
-            DossierID = e.IdFascicolo.ToString();
+            if (DossierID != e.IdFascicolo.ToString())
+                DossierID = e.IdFascicolo.ToString();
 
-        if (CustomerCode != e.Chiave3)
-            CustomerCode = e.Chiave3;
+            if (CustomerCode != e.Chiave3)
+                CustomerCode = e.Chiave3;
 
-        OnAbort();
-    }
+            OnAbort();
+        });
+     }
 
 
     /// <summary>
     /// Change the mail box selected
     /// </summary>
     /// <param name="e"></param>
-    public async void OnMailboxChanged(EmailServer e)
-    {
-        MailBox = e;
-    }
+        public async void OnMailboxChanged(EmailServer e)
+        {
+            MailBox = e;
+        }
 
-    /// <summary>
-    /// Activate replay panel
-    /// </summary>
-    /// <param name="e"></param>
-    public async void OnReply(AllegatoEmail e)
-    {
-        AttachSubject = e.Chiave4;
+        /// <summary>
+        /// Activate replay panel
+        /// </summary>
+        /// <param name="e"></param>
+        public async void OnReply(AllegatoEmail e)
+        {
+            AttachSubject = e.Chiave4;
 
-        IsForwardDialog = false;
-        IsLogsDialog = false;
+            IsForwardDialog = false;
+            IsLogsDialog = false;
 
-        IsAnswerDialog = !IsAnswerDialog;
-    }
+            IsAnswerDialog = !IsAnswerDialog;
+        }
 
-    /// <summary>
-    /// Activate forward panel
-    /// </summary>
-    /// <param name="e"></param>
-    public async void OnForward(AllegatoEmail e)
-    {
-        AttachSubject = e.Chiave4;
-        IsAnswerDialog = false;
-        IsLogsDialog = false;
+        /// <summary>
+        /// Activate forward panel
+        /// </summary>
+        /// <param name="e"></param>
+        public async void OnForward(AllegatoEmail e)
+        {
+            AttachSubject = e.Chiave4;
+            IsAnswerDialog = false;
+            IsLogsDialog = false;
 
-        IsForwardDialog = !IsForwardDialog;
-    }
-
-
-    /// <summary>
-    /// Activate HTML panel
-    /// </summary>
-    /// <param name="e"></param>
-    public async void OnShow(AllegatoEmail e)
-    {
-        AttachSubject = e.Chiave4;
-        IsAnswerDialog = false;
-        IsForwardDialog = false;
-        IsLogsDialog = false;
-
-        IsShowDialog = !IsShowDialog;
-    }
-
-    /// <summary>
-    /// Activate logs panel
-    /// </summary>
-    /// <param name="e"></param>
-    public async void OnShowLogs(AllegatoEmail e)
-    {
-        AttachSubject = e.Chiave4;
-        IsAnswerDialog = false;
-        IsForwardDialog = false;
-
-        IsLogsDialog = !IsLogsDialog;
-    }
-
-    /// <summary>
-    /// Ask deletion confirm
-    /// </summary>
-    /// <param name="e"></param>
-    public async void OnDelete(AllegatoEmail e)
-    {
-        ShowConfirm = true;
-    }
-
-    /// <summary>
-    /// Close dialog confirm
-    /// </summary>
-    public async void OnCloseDialog()
-    {
-        ShowConfirm = false;
-    }
+            IsForwardDialog = !IsForwardDialog;
+        }
 
 
-    /// <summary>
-    /// Delete selected attachment
-    /// </summary>
-    public async void OnDeleteConfirmed(bool nServer)
-    {
-        try
+        /// <summary>
+        /// Activate HTML panel
+        /// </summary>
+        /// <param name="e"></param>
+        public async void OnShow(AllegatoEmail e)
+        {
+            AttachSubject = e.Chiave4;
+            IsAnswerDialog = false;
+            IsForwardDialog = false;
+            IsLogsDialog = false;
+
+            IsShowDialog = !IsShowDialog;
+        }
+
+        /// <summary>
+        /// Activate logs panel
+        /// </summary>
+        /// <param name="e"></param>
+        public async void OnShowLogs(AllegatoEmail e)
+        {
+            AttachSubject = e.Chiave4;
+            IsAnswerDialog = false;
+            IsForwardDialog = false;
+
+            IsLogsDialog = !IsLogsDialog;
+        }
+
+        /// <summary>
+        /// Ask deletion confirm
+        /// </summary>
+        /// <param name="e"></param>
+        public async void OnDelete(AllegatoEmail e)
+        {
+            ShowConfirm = true;
+        }
+
+        /// <summary>
+        /// Close dialog confirm
+        /// </summary>
+        public async void OnCloseDialog()
         {
             ShowConfirm = false;
-            if (Attach != null)
-            {
-                Stopwatch sw = Stopwatch.StartNew();
-                var User = _HttpContextAccessor.HttpContext.User;
+        }
 
-                Models.RisultatoAzione res = await _MailService.CancellaEmail(Attach.Id.ToString(), nServer, User);
-                _Logger.LogInformation($"Sent[MAIL].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
-                Grid.Refresh();
-                ToastOK.Show();
-            }
-            else
+
+        /// <summary>
+        /// Delete selected attachment
+        /// </summary>
+        public async void OnDeleteConfirmed(bool nServer)
+        {
+            try
             {
+                ShowConfirm = false;
+                if (Attach != null)
+                {
+                    Stopwatch sw = Stopwatch.StartNew();
+                    var User = _HttpContextAccessor.HttpContext.User;
+
+                    Models.RisultatoAzione res = await _MailService.CancellaEmail(Attach.Id.ToString(), nServer, User);
+                    _Logger.LogInformation($"Sent[MAIL].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
+                    Grid.Refresh();
+                    ToastOK.Show();
+                }
+                else
+                {
+                    ToastKO.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                _Logger.LogError($"Sent[MAIL].OnDeleteConfirmed: Unexpeted error deleting {Attach.Id}, {ex}");
                 ToastKO.Show();
             }
         }
-        catch (Exception ex)
+
+
+        /// <summary>
+        /// Once forward has done, show the proper toast
+        /// </summary>
+        /// <param name="RA"></param>
+        private async void OnForward(Models.RisultatoAzione RA)
         {
-            _Logger.LogError($"Sent[MAIL].OnDeleteConfirmed: Unexpeted error deleting {Attach.Id}, {ex}");
-            ToastKO.Show();
+            if (RA.Successo)
+                ToastForwardOK.Show();
+            else ToastForwardKO.Show();
+            Grid.Refresh();
+            OnAbort();
         }
-    }
 
-
-    /// <summary>
-    /// Once forward has done, show the proper toast
-    /// </summary>
-    /// <param name="RA"></param>
-    private async void OnForward(Models.RisultatoAzione RA)
-    {
-        if (RA.Successo)
-            ToastForwardOK.Show();
-        else ToastForwardKO.Show();
-        Grid.Refresh();
-        OnAbort();
-    }
-
-    /// <summary>
-    /// Close all dialog panels
-    /// </summary>
-    private async void OnAbort()
-    {
-        IsForwardDialog = false; IsShowDialog = false; IsLogsDialog = false;
-    }
-
-    /// <summary>
-    /// On completed attach, i refresh the grid
-    /// </summary>
-    /// <param name="AttachId"></param>
-    public async void OnAttachCompleted(string AttachId)
-    {
-        Grid.Refresh();
-        Grid.SelectedRow = 0;
-    }
-
-
-    /// <summary>
-    /// Onche a docuemtn has been loaded it displays the list of original attachments
-    /// </summary>
-    /// <param name="Attachs">List of the attachments to diplay</param>
-    public void OnDocumentLoaded(List<OriginalAttachments> Attachs)
-    {
-        if (Attachs != null && Attachs.Count != 0)
+        /// <summary>
+        /// Close all dialog panels
+        /// </summary>
+        private async void OnAbort()
         {
-            IsAttachVisible = true;
-            SourceAttach = new ObservableCollection<OriginalAttachments>(Attachs);
+            IsForwardDialog = false; IsShowDialog = false; IsLogsDialog = false;
         }
-        else
+
+        /// <summary>
+        /// On completed attach, i refresh the grid
+        /// </summary>
+        /// <param name="AttachId"></param>
+        public async void OnAttachCompleted(string AttachId)
         {
-            IsAttachVisible = false;
-            SourceAttach.Clear();
+            Grid.Refresh();
+            Grid.SelectedRow = 0;
         }
-    }
+
+
+        /// <summary>
+        /// Onche a docuemtn has been loaded it displays the list of original attachments
+        /// </summary>
+        /// <param name="Attachs">List of the attachments to diplay</param>
+        public void OnDocumentLoaded(List<OriginalAttachments> Attachs)
+        {
+            if (Attachs != null && Attachs.Count != 0)
+            {
+                IsAttachVisible = true;
+                SourceAttach = new ObservableCollection<OriginalAttachments>(Attachs);
+            }
+            else
+            {
+                IsAttachVisible = false;
+                SourceAttach.Clear();
+            }
+        }
 
 }

@@ -443,49 +443,53 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public async void OnSelectAttach(AllegatoEmail e)
+    public void OnSelectAttach(AllegatoEmail e)
     {
-        try
+        Task.Run(() =>
         {
-
-            Attach = e;
-            PDFSourceId = e.Id.ToString();
-            PDFSourceType = e_SourceType.Attachment;
-
-            if (AttachID != e.Id.ToString())
-                AttachID = e.Id.ToString();
-
-            if (DossierID != e.IdFascicolo.ToString())
-                DossierID = e.IdFascicolo.ToString();
-
-            if (CustomerCode != e.Chiave3)
-                CustomerCode = e.Chiave3;
-
-            if (string.IsNullOrEmpty(CustomerCode))
+            try
             {
-                List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Attach.Mittente);
-                _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: {Costumers.Count} costumers retrived for {Attach.Mittente}");
-                if (Costumers.Count > 1)
+
+                Attach = e;
+                PDFSourceId = e.Id.ToString();
+                PDFSourceType = e_SourceType.Attachment;
+
+                if (AttachID != e.Id.ToString())
+                    AttachID = e.Id.ToString();
+
+                if (DossierID != e.IdFascicolo.ToString())
+                    DossierID = e.IdFascicolo.ToString();
+
+                if (CustomerCode != e.Chiave3)
+                    CustomerCode = e.Chiave3;
+
+                if (string.IsNullOrEmpty(CustomerCode))
                 {
-                    CostumerToAssing = new ObservableCollection<ISoggetti>(_SubjectService.GetSoggettiByMail(Attach.Mittente));
-                    ShowCostumerSelection = true;
-                }
-                else
-                {
-                    if(Costumers.FirstOrDefault()!=null)
-                        OnLinkCostumer(Costumers.FirstOrDefault());
+                    List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Attach.Mittente);
+                    _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: {Costumers.Count} costumers retrived for {Attach.Mittente}");
+                    if (Costumers.Count > 1)
+                    {
+                        CostumerToAssing = new ObservableCollection<ISoggetti>(_SubjectService.GetSoggettiByMail(Attach.Mittente));
+                        ShowCostumerSelection = true;
+                    }
+                    else
+                    {
+                        if (Costumers.FirstOrDefault() != null)
+                            OnLinkCostumer(Costumers.FirstOrDefault());
+                    }
+
+                    OnAbort();
                 }
 
-                OnAbort();
+
+
+            }
+            catch (Exception ex)
+            {
+                _Logger.LogError($"Inbox[MAIL].OnSelectAttach: Unexpected errro on selecting attach {ex}");
             }
 
-
-
-        }
-        catch (Exception ex)
-        {
-            _Logger.LogError($"Inbox[MAIL].OnSelectAttach: Unexpected errro on selecting attach {ex}");
-        }
+        });
     }
 
 

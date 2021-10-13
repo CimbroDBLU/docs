@@ -47,46 +47,46 @@
         @code {
 
 
-            /// <summary>
-            /// Costumer code
-            /// </summary>
-            [Parameter]
-            public string nCostumerCode { get; set; }
+                /// <summary>
+                /// Costumer code
+                /// </summary>
+                [Parameter]
+                public string nCostumerCode { get; set; }
 
-            /// <summary>
-            /// Attachment ID
-            /// </summary>
-            [Parameter]
-            public string nAttachID { get; set; }
+                /// <summary>
+                /// Attachment ID
+                /// </summary>
+                [Parameter]
+                public string nAttachID { get; set; }
 
-            /// <summary>
-            /// List of the original attachment coming from the email
-            /// </summary>
-            [Parameter]
-            public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
+                /// <summary>
+                /// List of the original attachment coming from the email
+                /// </summary>
+                [Parameter]
+                public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
 
-            /// <summary>
-            /// Currend PDF document in edit
-            /// </summary>
-            [Parameter]
-            public MemoryStream nCurrentDocument { get; set; }
+                /// <summary>
+                /// Currend PDF document in edit
+                /// </summary>
+                [Parameter]
+                public MemoryStream nCurrentDocument { get; set; }
 
-            /// <summary>
-            /// Fires when a costumer has been selected
-            /// </summary>
-            [Parameter]
-            public EventCallback<ISoggetti> OnLinkedToCostumer { get; set; }
+                /// <summary>
+                /// Fires when a costumer has been selected
+                /// </summary>
+                [Parameter]
+                public EventCallback<ISoggetti> OnLinkedToCostumer { get; set; }
 
-            /// <summary>
-            /// Indicates if is possible to change user/order
-            /// </summary>
-            [Parameter]
-            public bool nReadOnly { get; set; } = false;
+                /// <summary>
+                /// Indicates if is possible to change user/order
+                /// </summary>
+                [Parameter]
+                public bool nReadOnly { get; set; } = false;
 
-            /// <summary>
-            /// Indicates if spinner must be visible
-            /// </summary>
-            private bool IsSpinnerVisible { get; set; } = false;
+                /// <summary>
+                /// Indicates if spinner must be visible
+                /// </summary>
+                private bool IsSpinnerVisible { get; set; } = false;
 
             /// <summary>
             /// Last selected costumer
@@ -154,19 +154,22 @@
             /// <summary>
             /// Refresh the component , if necessary
             /// </summary>
-            protected override async void OnParametersSet()
+            protected override Task OnParametersSetAsync()
             {
-                if (LastCostumerCode != nCostumerCode && !string.IsNullOrEmpty(nCostumerCode))
+                return Task.Run(() =>
                 {
-                    CurrentCostumer = _MailService._soggetti.GetSoggetto(nCostumerCode);
-                    Description = CurrentCostumer?.Nome ?? "";
-                }
-                else if (string.IsNullOrEmpty(nCostumerCode))
-                {
-                    CurrentCostumer = null;
-                    Description = "";
-                }
-                LastCostumerCode = nCostumerCode;
+                    if (LastCostumerCode != nCostumerCode && !string.IsNullOrEmpty(nCostumerCode))
+                    {
+                        CurrentCostumer = _MailService._soggetti.GetSoggetto(nCostumerCode);
+                        Description = CurrentCostumer?.Nome ?? "";
+                    }
+                    else if (string.IsNullOrEmpty(nCostumerCode))
+                    {
+                        CurrentCostumer = null;
+                        Description = "";
+                    }
+                    LastCostumerCode = nCostumerCode;
+                });
             }
 
 

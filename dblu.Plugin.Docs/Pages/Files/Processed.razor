@@ -319,25 +319,28 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public async void OnSelectAttach(Allegati e)
+    public void OnSelectAttach(Allegati e)
     {
-        Attach = e;
+        Task.Run(async () =>
+        {
+            Attach = e;
 
-        if (AttachID != e.Id.ToString())
-            AttachID = e.Id.ToString();
+            if (AttachID != e.Id.ToString())
+                AttachID = e.Id.ToString();
 
-        if (DossierID != e.IdFascicolo.ToString())
-            DossierID = e.IdFascicolo.ToString();
+            if (DossierID != e.IdFascicolo.ToString())
+                DossierID = e.IdFascicolo.ToString();
 
-        if (CustomerCode != e.Chiave3)
-            CustomerCode = e.Chiave3;
+            if (CustomerCode != e.Chiave3)
+                CustomerCode = e.Chiave3;
 
-        SourceAttach = new ObservableCollection<OriginalAttachments>(await _ZipService.GetIncludedFileAsync(Attach, null));
-        if (SourceAttach != null && SourceAttach.Count != 0)
-            IsAttachVisible = true;
-        else IsAttachVisible = false;
+            SourceAttach = new ObservableCollection<OriginalAttachments>(await _ZipService.GetIncludedFileAsync(Attach, null));
+            if (SourceAttach != null && SourceAttach.Count != 0)
+                IsAttachVisible = true;
+            else IsAttachVisible = false;
 
-        OnAbort();
+            OnAbort();
+        });
     }
 
 
