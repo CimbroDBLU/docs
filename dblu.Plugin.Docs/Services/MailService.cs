@@ -1900,6 +1900,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             {
                 /// 1) MARCO LA MAIL COM PROCESSATA
                 MailAttach.SetAttributo("CodiceSoggetto", f.GetAttributo("CodiceSoggetto"));
+                MailAttach.SetAttributo("NomeSoggetto", f.GetAttributo("NomeSoggetto"));                
                 MailAttach.IdFascicolo = f.Id;
                 MailAttach.IdElemento = e.Id;
                 MailAttach.Stato = StatoAllegato.Elaborato;
@@ -1954,8 +1955,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                 FILE.SetAttributo("Mittente", MailAttach.GetAttributo("Mittente"));
                 FILE.SetAttributo("Data", MailAttach.GetAttributo("Data"));
                 FILE.SetAttributo("CodiceSoggetto", MailAttach.GetAttributo("CodiceSoggetto"));
+                FILE.SetAttributo("NomeSoggetto", MailAttach.GetAttributo("NomeSoggetto"));
                 FILE.SetAttributo("Oggetto", MailAttach.GetAttributo("Oggetto"));
                 FILE.SetAttributo("MessageId", MailAttach.GetAttributo("MessageId"));
+
 
                 /// 5) SALVO SUL TIPO FILE IL PDF
                 FILE = await _allMan.SalvaAsync(FILE, Doc, isNewFILE);
@@ -2375,6 +2378,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                     //### COMPAB TEMPORANEO DA RIMUOVERE
                     if (this._elmMan.GetAllAllegatiElemento(el.Id).FirstOrDefault(x => x.Tipo == "EMAIL")?.Origine?.ToUpperInvariant() == "VENDITE")
                         variabili.Add("sNote", VariableValue.FromObject("Solo in digitale"));
+                    else
+                        variabili.Add("sNote", VariableValue.FromObject(""));
                     //### COMPAB TEMPORANEO DA RIMUOVERE
 
                     var pi = pd.Start("", el.TipoNavigation.Processo, el.Id.ToString(), variabili);
