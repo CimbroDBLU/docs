@@ -860,10 +860,20 @@ function documentPrint(e) {
 
         e.cancel = true;
     }
+    else {
+        var dialog = $("#wAttendi").data("kendoWindow");
+        if (dialog)
+        dialog.center().open();
+    }
 }
 
 function documentPrinted() {
-
+    var dialog = $("#wAttendi").data("kendoWindow");
+    if (dialog) {
+        setTimeout(function () {
+            dialog.close();
+        }, 500);
+    }
     $.ajax({
         url: UrlActions.ZipView_InArrivo_Stampato,
         type: 'POST',

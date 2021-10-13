@@ -54,10 +54,10 @@
 
     string IsPrintedLocally = "true";
     string Printer = "";
-    if (!string.IsNullOrEmpty(_Man.GetCurrentUser(Context).Properties["Printer",""]))
+    if (!string.IsNullOrEmpty(_Man.GetCurrentUser(Context).Properties["Printer", ""]))
     {
         IsPrintedLocally = "false";
-        Printer = _Man.GetCurrentUser().Properties["Printer",""];
+        Printer = _Man.GetCurrentUser().Properties["Printer", ""];
     }
 
 
@@ -125,7 +125,9 @@
         content: "\e132"; /* Adds a glyph using the Unicode character number */
     }
 
-.my-icon-class-mostra:before { content: "\e501"; /* Adds a glyph using the Unicode character number */ }
+    .my-icon-class-mostra:before {
+        content: "\e501"; /* Adds a glyph using the Unicode character number */
+    }
 
     body.waiting * {
         cursor: progress;
@@ -193,7 +195,7 @@
         ControllaStampa: '@Url.Action("ControllaStampa", "MailView")',
         MailView_GetHTML:'@Url.Action("GetHTML", "MailView")'
 
-        
+
     };
 
     TipoAll = {
@@ -706,7 +708,7 @@
                                                    printEnd="documentPrinted"
                                                    documentLoad="documentLoaded"
                                                    annotationAdd="annotationAdd"
-                                                   printStart="documentPrint"
+                                                   printStart="documentPrint"                                                   
                                                    enableStampAnnotations="false"
                                                    enableAnnotation="true"
                                                    enableFreeText="true"
@@ -725,10 +727,10 @@
 
 
             @*<div class="row">
-                <div class="col-5" style="align-self: auto;">
-                    <component type="typeof(dblu.Portale.Plugin.Docs.Pages.Mail.MailBrowser)" render-mode="Server" />
-                </div>
-            </div>*@
+                    <div class="col-5" style="align-self: auto;">
+                        <component type="typeof(dblu.Portale.Plugin.Docs.Pages.Mail.MailBrowser)" render-mode="Server" />
+                    </div>
+                </div>*@
 
 
             <div class="modal fade" id="MsgControllaStampa" tabindex="-1" role="dialog" aria-labelledby="MsgControllaStampaLabel" aria-hidden="true">
@@ -1013,7 +1015,6 @@
         .Modal(true)
                 .Events(e => e.Close("wPdfEditorClose").Open("wPdfEditorOpen"))
         )
-
 @(Html.Kendo().Window()
         .Name("wMostraEmail")
         .Size("auto")
@@ -1023,7 +1024,18 @@
         .Actions(actions => actions.Refresh().Close())
         .Content("")
         .Scrollable(true)
-        .Modal(true)                
+        .Modal(true)
+        )
+@(Html.Kendo().Window()
+        .Name("wAttendi")
+        .Size("auto")
+        .Width(400)
+        .Title("Attendere prego")
+        .Visible(false)
+        .Actions(actions => actions.Refresh().Close())
+        .Content("Caricamento della stampa in corso...")
+        .Scrollable(false)
+        .Modal(true)
         )
 
 @(Html.Kendo().Window()

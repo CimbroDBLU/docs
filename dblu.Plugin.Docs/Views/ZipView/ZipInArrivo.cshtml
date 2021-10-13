@@ -5,7 +5,7 @@
 @using dblu.Docs.Classi
 @using dblu.Portale.Core.Infrastructure.Interfaces
 @using dblu.Portale.Core.Infrastructure.Identity.Classes
-@using dblu.Portale.Core.UI 
+@using dblu.Portale.Core.UI
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _zipservice
 @inject dblu.Docs.Interfacce.ISoggettiService  _sggservice
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _allservice
@@ -64,10 +64,10 @@
 
     string IsPrintedLocally = "true";
     string Printer = "";
-    if (!string.IsNullOrEmpty(_Man.GetCurrentUser(Context).Properties["Printer",""]))
+    if (!string.IsNullOrEmpty(_Man.GetCurrentUser(Context).Properties["Printer", ""]))
     {
         IsPrintedLocally = "false";
-        Printer = _Man.GetCurrentUser().Properties["Printer",""];
+        Printer = _Man.GetCurrentUser().Properties["Printer", ""];
     }
 
     List<dblu.Docs.Models.Colonna> ElCols = _allservice.GetColonne("vELEMENTO");
@@ -570,9 +570,9 @@
                                     .HtmlAttributes(new { style = "font-size:12" })
                                     )
                                             @*
-                                             .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
-                                             .Events(events => events.Change("Attachments_OnRowSelect"))
-                                            .Events(ev => ev.Change("xxonChange"))*@
+                                                 .ClientTemplate("<input type='checkbox' #= Incluso ? checked='checked' :'' # />")
+                                                 .Events(events => events.Change("Attachments_OnRowSelect"))
+                                                .Events(ev => ev.Change("xxonChange"))*@
                                         </div><br /><br />
                                     </div>
 
@@ -794,6 +794,17 @@
         .Action("onConfermaElimina");
     })
 )
+@(Html.Kendo().Window()
+        .Name("wAttendi")
+        .Size("auto")
+        .Width(400)
+        .Title("Attendere prego")
+        .Visible(false)
+        .Actions(actions => actions.Refresh().Close())
+        .Content("Caricamento della stampa in corso...")
+        .Scrollable(false)
+        .Modal(true)
+        )
 @(Html.Kendo().Window()
     .Name("wPdfEditor")
     .Size("auto")
