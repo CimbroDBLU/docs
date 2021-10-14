@@ -238,6 +238,7 @@ function PulisciDettaglio() {
     try {
         var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
         zippdfviewer.fileName = '';
+        zippdfviewer.toolbar.showToolbarItem(new Array("PrintOption"), false);
         zippdfviewer.load('');
     }
     catch (err) {
@@ -299,6 +300,7 @@ function MostraPdfCompleto(idElemento) {
     if (loadingTimes++ != 0)
         zippdfviewer.magnification.zoomTo(110);
 
+    zippdfviewer.toolbar.showToolbarItem(new Array("PrintOption"), false);
     zippdfviewer.load(JSON.stringify(PdfCorrente));
     $("#tbdescrizione").html(PdfCorrente.Descrizione);
     zippdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
@@ -804,7 +806,7 @@ function documentLoaded(args) {
 
     var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
     zippdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
-
+    zippdfviewer.toolbar.showToolbarItem(new Array("PrintOption"), true);
     //carico lista file allegati
     $.ajax({
         url: UrlActions.PdfEditor_GetPdfEditAction,
@@ -816,6 +818,7 @@ function documentLoaded(args) {
             $('#zipAttachments').data('kendoGrid').dataSource.data(PdfCorrente.FileAllegati);
         },
         error: function (data) {
+            zippdfviewer.toolbar.showToolbarItem(new Array("PrintOption"), false);
             zippdfviewer.load('');
         }
     });
@@ -894,6 +897,7 @@ function exportSuccess(args) {
     if (PdfCorrente.iAzione == docsAzioniPdf.Salva) {
 
         var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
+        zippdfviewer.toolbar.showToolbarItem(new Array("PrintOption"), false);
         zippdfviewer.load(JSON.stringify(PdfCorrente))
         zippdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 
@@ -942,6 +946,7 @@ function tbpdf_click(e) {
 
         }
         else {
+            zippdfviewer.toolbar.showToolbarItem(new Array("PrintOption"), false);
             zippdfviewer.load(JSON.stringify(PdfCorrente))
             zippdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
         }
@@ -955,6 +960,7 @@ function wPdfEditorClose(e) {
         PdfCorrente.iAzione = docsAzioniPdf.Ricarica;
         var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
 
+        zippdfviewer.toolbar.showToolbarItem(new Array("PrintOption"), false);
         zippdfviewer.load(JSON.stringify(PdfCorrente));
         zippdfviewer.downloadFileName = PdfCorrente.IdAllegato + ".pdf";
 
