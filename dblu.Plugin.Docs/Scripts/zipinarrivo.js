@@ -238,8 +238,7 @@ function PulisciDettaglio() {
     try {
         var zippdfviewer = document.getElementById('zippdfviewer').ej2_instances[0];
         zippdfviewer.fileName = '';
-        zippdfviewer.toolbar.showToolbarItem(new Array("PrintOption"), false);
-        zippdfviewer.load('');
+        zippdfviewer.unload();
     }
     catch (err) {
 
