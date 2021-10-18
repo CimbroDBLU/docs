@@ -1,0 +1,237 @@
+﻿@*
+    Component for editing an Item (with or without metadata)
+*@
+@using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using dblu.Portale.Plugin.Docs.Classes
+@using System.IO
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject NavigationManager  _NavigationManager
+@inject ProtectedSessionStorage _SessionStore
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject ILogger<EditItem> _Logger
+
+
+<div class="container-fluid" style="margin:5px">
+    @if (nShowMetadata)
+    {
+
+        <SfAccordion>
+            <AccordionItems>
+                <AccordionItem Expanded="false">
+                    <HeaderTemplate>
+                        <div>Elemento [@nItem.Descrizione - @(nItem.Id)]</div>
+                    </HeaderTemplate>
+                    <ContentTemplate>
+                        <div class="form-group row">
+                            <div class="col-2">
+                                <label>ID Element</label>
+                            </div>
+                            <div class="col-4">
+                                <SfTextBox Readonly="true" Value="@(nItem.Id.ToString())"></SfTextBox>
+                            </div>
+                            <div class="col-2">
+                                <label>Descrizione</label>
+                            </div>
+                            <div class="col-4">
+                                <SfTextBox Readonly="true" Value="@(nItem.Descrizione)"></SfTextBox>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-2">
+                                <label>Creato il</label>
+                            </div>
+                            <div class="col-4">
+                                <SfTextBox Readonly="true" Value="@(nItem.DataC.ToString())"></SfTextBox>
+                            </div>
+                            <div class="col-2">
+                                <label>Utente creazione</label>
+                            </div>
+                            <div class="col-4">
+                                <SfTextBox Readonly="true" Value="@(nItem.UtenteC.ToString())"></SfTextBox>
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div class="col-2">
+                                <label>Modificato il</label>
+                            </div>
+                            <div class="col-4">
+                                <SfTextBox Readonly="true" Value="@(nItem.DataUM.ToString())"></SfTextBox>
+                            </div>
+                            <div class="col-2">
+                                <label>Utente ultima modifica</label>
+                            </div>
+                            <div class="col-4">
+                                <SfTextBox Readonly="true" Value="@(nItem.UtenteUM.ToString())"></SfTextBox>
+                            </div>
+                        </div>
+                    </ContentTemplate>
+                </AccordionItem>
+            </AccordionItems>
+        </SfAccordion>
+    }
+
+    <div class="row">
+        @if (nShowMetadata)
+        {
+            <div class="col-5 mt-2" style="align-self: auto;">
+                <SfAccordion>
+                    <AccordionItems>
+                        <AccordionItem Expanded="true">
+                            <HeaderTemplate>
+                                <div>Attributi</div>
+                            </HeaderTemplate>
+                            <ContentTemplate>
+                                <AttributesForm nAttributeList="@nItem.elencoAttributi"></AttributesForm>
+                            </ContentTemplate>
+                        </AccordionItem>
+                    </AccordionItems>
+                </SfAccordion>
+            </div>
+        }
+        <div class="@ColSize mt-2" style="align-self: auto;">
+            <SfAccordion>
+                <AccordionItems>
+                    <AccordionItem Expanded="true">
+                        <HeaderTemplate>
+                            <div>Allegati</div>
+                        </HeaderTemplate>
+                        <ContentTemplate>
+                            <AttachmentsTable nEnableRemove="@IsAdmin" nAttachments="@Attachments" OnSelectAttachment="OnSelectAttach" OnAddRequested="OnAddAttach" OnOpenAttachment="OnOpenAttach" OnDownloadAttachment="OnDownloadAttach" OnRemoveAttachment="OnRemoveAttach"></AttachmentsTable>
+                        </ContentTemplate>
+                    </AccordionItem>
+                </AccordionItems>
+            </SfAccordion>
+            <div class="mt-2">
+                <DocViewer nHeight=1000 nSourceType="e_SourceType.Attachment" nDocIdentifier="@SelAttach"></DocViewer>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    /// <summary>
+    /// Current Item
+    /// </summary>
+    [Parameter]
+    public Elementi nItem { get; set; }
+
+    [Parameter]
+    public bool nShowMetadata { get; set; } = false;
+
+    /// <summary>
+    /// Selected attachment of the item's one
+    /// </summary>
+    private string SelAttach { get; set; } = "";
+
+    /// <summary>
+    /// List of the attachments own by this item
+    /// </summary>
+    public ObservableCollection<viewAllegati> Attachments { get; set; } = new();
+
+    /// <summary>
+    /// Get the correct css class depending if metadata are required
+    /// </summary>
+    private string ColSize => (nShowMetadata) ? "col-7" : "col-12";
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        Stopwatch Sw = Stopwatch.StartNew();
+        Attachments = new ObservableCollection<viewAllegati>(_AttachService.GetvAllegatiElemento(nItem.Id));
+
+        SelAttach = Attachments?.FirstOrDefault(x => x.Tipo == "FILE").IdAllegato.ToString();
+
+        _Logger.LogInformation($"EditItemMetadata.OnInitialized: Loaded Attachments in {Sw.ElapsedMilliseconds} ms");
+
+    }
+
+    /// <summary>
+    /// Save the current Attach id in memory
+    /// </summary>
+    /// <param name="Attach"></param>
+    public async void OnSelectAttach(Guid Attach)
+    {
+        SelAttach = Attach.ToString();
+    }
+
+    /// <summary>
+    /// Open the attachmnent
+    /// </summary>
+    /// <param name="Attach"></param>
+    public async void OnOpenAttach(Guid Attach)
+    {
+        await _SessionStore.SetAsync("Referrer", $"/Docs/Item/{nItem.Id}");
+        _NavigationManager.NavigateTo($"/Docs/Attachment/{Attach.ToString()}");
+    }
+
+    /// <summary>
+    /// Indicates if current user is a superadmin
+    /// </summary>
+    private bool IsAdmin => (_AuthenticationStateProvider.GetAuthenticationStateAsync().Result).User.IsAdmin();
+
+    /// <summary>
+    /// Download the attachment using Mailview controller
+    /// </summary>
+    /// <param name="Attach"></param>
+    public async void OnDownloadAttach(Guid Attach)
+    {
+        viewAllegati A = Attachments.ToList().FirstOrDefault(z => z.IdAllegato == Attach);
+        _NavigationManager.NavigateTo($"/MailView/DownloadFile?IdAllegato={A.IdAllegato}&NomeFile={A.NomeFile}", true);
+    }
+
+    /// <summary>
+    /// Add a new attachment to the item
+    /// </summary>
+    /// <param name="files"></param>
+    public async void OnAddAttach(List<dblu.Portale.Core.UI.UploadFilesDialog.UploadedFile> files)
+    {
+        Stopwatch Sw = Stopwatch.StartNew();
+        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User.Identity.Name;
+        foreach (var f in files)
+        {
+            Allegati A = new Allegati()
+            {
+                NomeFile = f.FileName,
+                elencoAttributi = new(),
+                UtenteC = user,
+                UtenteUM = user,
+                Stato = 0,
+                Descrizione = nItem.Descrizione,
+                Tipo = "FILE",
+                IdElemento = nItem.Id,
+                IdFascicolo = nItem.IdFascicolo
+            };
+
+            await _AttachService._allMan.SalvaAsync(A, f.Data, true);
+            _Logger.LogInformation($"EditItem.OnAddAttach: {A.NomeFile} has been added");
+        }
+
+        _Logger.LogInformation($"EditItem.OnAddAttach: Uploaded {files.Count} files in {Sw.ElapsedMilliseconds} ms");
+
+        Attachments.Clear();
+        foreach (var A in _AttachService.GetvAllegatiElemento(nItem.Id))
+            Attachments.Add(A);
+    }
+
+    /// <summary>
+    /// Remove an attachment on the current selected item
+    /// </summary>
+    /// <param name="Attach"></param>
+    public async void OnRemoveAttach(Guid Attach)
+    {
+        Stopwatch Sw = Stopwatch.StartNew();
+
+        var A = Attachments.ToList().FirstOrDefault(z => z.IdAllegato == Attach);
+        _AttachService._allMan.Cancella(A.IdAllegato);
+        Attachments.Remove(A);
+
+        _Logger.LogInformation($"EditItem.OnRemoveAttach: Removed attached in {Sw.ElapsedMilliseconds} ms");
+    }
+}

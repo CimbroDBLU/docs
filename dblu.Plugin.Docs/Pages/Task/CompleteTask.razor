@@ -1,0 +1,112 @@
+﻿@* 
+    Component for Complete a task, showing details of the element
+*@
+@using BPMClient
+@using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using dblu.Portale.Plugin.Docs.Classes
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject NavigationManager  _NavigationManager
+@inject ProtectedSessionStorage _SessionStore
+@inject dblu.Portale.Plugin.TaskListBase.Services.Camunda.CamundaService  _CamundaService
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
+@inject ILogger<CompleteTask> _Logger
+
+<PageTitle nTitle="Completa attività" />
+
+<section class="content">
+    <EditItemMetadata nItem="@Item" nShowMetadata="false"></EditItemMetadata>
+    <CardContent EnableSeperator="true">
+        <div class="row">
+            <div class="col-12">
+                <SfButton OnClick="Complete" CssClass="e-primary">Completa</SfButton>
+                <SfButton OnClick="GoBack">Indietro</SfButton>
+            </div>
+        </div>
+    </CardContent>
+
+    <Toast @ref="ToastCompleteKO" nToastType="Toast.e_ToastType.Fail" nTitle="Completamento task" nContent="Comnpletamento task NON riuscito"></Toast>
+</section>
+
+
+@code {
+
+    /// <summary>
+    /// Task that is managed from this view
+    /// </summary>
+    [Parameter]
+    public BPMTaskDto nTask { get; set; }
+
+    /// <summary>
+    /// List of variables of the Task
+    /// </summary>
+    private Dictionary<string, VariableValue> Variables { get; set; } = new();
+
+    /// <summary>
+    /// Item  ID under process
+    /// </summary>
+    private Elementi Item { get; set; }
+
+    /// <summary>
+    /// Toaster to show in case of failed task
+    /// </summary>
+    private Toast ToastCompleteKO { get; set; }
+
+    /// <summary>
+    /// Initialize the collections
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        BPMVariable var = new BPMVariable();
+        Variables = var.GetAll(_CamundaService._eng, nTask.id).Result;
+
+        if (Variables.ContainsKey("IdElemento"))
+            Item = _AttachService.GetElemento(Guid.Parse((string)Variables["IdElemento"].value), 0);
+    }
+
+    /// <summary>
+    /// Go back to the caller
+    /// </summary>
+    private async void GoBack()
+    {
+        string back = (await _SessionStore.GetAsync<string>("Referrer")).Value;
+        if (string.IsNullOrEmpty(back))
+            _NavigationManager.NavigateTo($"/BPM/ActivityList");
+        else
+        {
+            _NavigationManager.NavigateTo(back);
+            await _SessionStore.DeleteAsync("Referrer");
+        }
+    }
+
+    /// <summary>
+    /// Complete the task
+    /// </summary>
+    public async void Complete()
+    {
+        bool res = false;
+        try
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            BPMTask tsk = new BPMTask();
+            Dictionary<string, VariableValue> fVars = await tsk.GetTaskFormVariables(_CamundaService._eng, nTask.id);
+            BPMTaskDto tdto = tsk.Get(_CamundaService._eng, nTask.id);
+            res = tsk.SubmitTaskForm(_CamundaService._eng, nTask.id, fVars);
+            if (res)
+            {
+                _Logger.LogInformation($"CompleteTask.Complete: Completed task {nTask.id} in {sw.ElapsedMilliseconds} ms");
+                GoBack();
+            }
+            else
+            {
+                ToastCompleteKO.Show();
+            }
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"CompleteTask.Complete: Unexpected exception {ex}");
+        }
+
+    }
+
+}
