@@ -61,10 +61,12 @@ using dblu.Portale.Core.Infrastructure.Identity.Classes;
 using dblu.CamundaClient;
 using AutoMapper;
 using Syncfusion.Pdf.Graphics;
+using dblu.Portale.Plugin.Docs.Classes;
+using System.Diagnostics;
 
 namespace dblu.Portale.Plugin.Docs.Services
 {
-    public class MailService 
+    public class MailService
     {
         public readonly dbluDocsContext _context;
         public readonly ILogger _logger;
@@ -121,8 +123,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                 //string sServizioSoggetti = _config["Docs:ServizioSoggetti"];
 
                 //if (!string.IsNullOrEmpty(sServizioSoggetti)) {
-//                    ServizioSoggetti = new dblu.sgGeaClient.Classi.GeaClientService(); // System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(sServizioSoggetti);
-//                    ServizioSoggetti.Init(_config, _logger);
+                //                    ServizioSoggetti = new dblu.sgGeaClient.Classi.GeaClientService(); // System.Reflection.Assembly.GetExecutingAssembly().CreateInstance(sServizioSoggetti);
+                //                    ServizioSoggetti.Init(_config, _logger);
                 //}
             }
             catch
@@ -171,7 +173,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 }
             }
             return l;
-            
+
         }
 
 
@@ -179,11 +181,11 @@ namespace dblu.Portale.Plugin.Docs.Services
         {
             List<string> l = new List<string>();
 
-            if (ElencoServer!=null && ElencoServer.Count() >0)
+            if (ElencoServer != null && ElencoServer.Count() > 0)
             {
                 try
                 {
-                    List<string>nomiServer = (from s in ElencoServer select s.Nome).ToList();
+                    List<string> nomiServer = (from s in ElencoServer select s.Nome).ToList();
 
                     using (SqlConnection cn = new SqlConnection(_context.Connessione))
                     {
@@ -217,9 +219,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                 string xRol = "'";
                 foreach (Role x in Roles)
                 {
-                      xRol = xRol + x.Code + "','";
+                    xRol = xRol + x.Code + "','";
                 }
-          
+
                 xRol = xRol.Substring(0, xRol.Length - 2);
                 try
                 {
@@ -256,15 +258,15 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
 
-        public int CountEmailInArrivo(string Tipo, IEnumerable<Claim> Roles, 
+        public int CountEmailInArrivo(string Tipo, IEnumerable<Claim> Roles,
             StatoAllegato stato = StatoAllegato.Elaborato,
-            TipiRecordServer TipoCartella= TipiRecordServer.CartellaMail)
+            TipiRecordServer TipoCartella = TipiRecordServer.CartellaMail)
         {
 
             int l = 0;
             try
             {
-                
+
                 List<EmailServer> ListaServer = _serMan.GetServersEmailinRoles(Roles, TipoCartella);
 
                 if (ListaServer != null && ListaServer.Count > 0)
@@ -294,7 +296,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                     }
                 }
-                
+
 
             }
 
@@ -305,7 +307,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
             return l;
         }
-        
+
         public async Task<MailViewModel> GetMailViewModel(Guid t)
         {
             MailViewModel mv = new MailViewModel();
@@ -323,7 +325,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 mv.TaskVar.Add("sMittente", new VariableValue { value = mv.Allegato.Chiave1 });
                 mv.TaskVar.Add("dData", new VariableValue { value = mv.Allegato.Chiave2 });
                 mv.TaskVar.Add("sOggetto", new VariableValue { value = mv.Allegato.Chiave4 });
-                  
+
 
 
                 //var FMan = new FascicoliManager(_context, _logger);
@@ -332,14 +334,14 @@ namespace dblu.Portale.Plugin.Docs.Services
                 mv.ListaTipiElementi = await _elmMan.GetAllTipiElementiAsync();
 
                 mv.Fascicolo = _fasMan.Get(mv.IdFascicolo);
-                mv.Elemento = _elmMan.Get(mv.IdElemento,0);
+                mv.Elemento = _elmMan.Get(mv.IdElemento, 0);
                 if (string.IsNullOrEmpty(mv.CodiceSoggetto) && mv.Fascicolo != null)
                 {
                     mv.Allegato.SetAttributo("CodiceSoggetto", mv.Fascicolo.CodiceSoggetto);
                 }
                 if (!string.IsNullOrEmpty(mv.CodiceSoggetto))
-                mv.Soggetto = _soggetti.GetSoggetto(mv.CodiceSoggetto);
-                
+                    mv.Soggetto = _soggetti.GetSoggetto(mv.CodiceSoggetto);
+
                 if (mv.Soggetto == null)
                 { mv.Soggetto = new Soggetti(); }
 
@@ -378,12 +380,12 @@ namespace dblu.Portale.Plugin.Docs.Services
                 mv.Fascicolo = _fasMan.Get(mv.IdFascicolo);
                 mv.Elemento = _elmMan.Get(mv.IdElemento, 0);
                 mv.Soggetto = _soggetti.GetSoggetto(mv.CodiceSoggetto);
-                
+
                 var m = await _allMan.GetFileAsync(mv.IdAllegato);
                 mv.Messaggio = MimeKit.MimeMessage.Load(m, new CancellationToken());
 
-               // mv.FileAllegati = await GetTmpPdfCompletoAsync(mv.Allegato, mv.Messaggio, false);
-                    }
+                // mv.FileAllegati = await GetTmpPdfCompletoAsync(mv.Allegato, mv.Messaggio, false);
+            }
             catch (Exception ex)
             {
                 _logger.LogError($" GetMailViewModel : {ex.Message}");
@@ -408,7 +410,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     Descrizione = Des
 
                 };
-               // _context.Elementi.Add(elemento);
+                // _context.Elementi.Add(elemento);
 
                 var cancel = new CancellationToken();
 
@@ -447,7 +449,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         //using (var stream = File.Create(fileName))
                         part.Content.DecodeTo(m);
                     }
-                    
+
                     if (elencoFile.Contains(fileName))
                     {
                         var all = new Allegati()
@@ -506,16 +508,16 @@ namespace dblu.Portale.Plugin.Docs.Services
                 _logger.LogError($"CreaElementoAsync : {ex.Message}");
             }
             return null;
-            
+
         }
 
         public async Task<MemoryStream> GetFileAsync(string IdAllegato, string NomeFile)
-           
+
         {
             var cancel = new CancellationToken();
             var m = await _allMan.GetFileAsync(IdAllegato);
             var Messaggio = MimeKit.MimeMessage.Load(m, cancel);
-            
+
             var mpdf = new MemoryStream();
             int i = 0;
             foreach (var attachment in Messaggio.Allegati())
@@ -542,7 +544,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     var part = (MimePart)attachment;
                     fileName = part.FileName;
 
-                    if (string.Compare(fileName, NomeFile, true) == 0  || string.Compare(NomeAllegato, NomeFile, true) == 0)
+                    if (string.Compare(fileName, NomeFile, true) == 0 || string.Compare(NomeAllegato, NomeFile, true) == 0)
                     {
                         part.Content.DecodeTo(mpdf);
                         break;
@@ -595,7 +597,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 }
             }
 
-           
+
             switch (System.IO.Path.GetExtension(NomeFile).ToLower())
             {
                 case ".pdf":
@@ -649,7 +651,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
             string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
             if (!Directory.Exists(NomePdf))
-        {
+            {
                 Directory.CreateDirectory(NomePdf);
             }
             NomePdf = Path.Combine(NomePdf, $"{Allegato.Id}.pdf");
@@ -657,7 +659,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 File.Delete(NomePdf);
 
             Allegati ll = null;
-            if (daEmail==false && Allegato.IdElemento != null)
+            if (daEmail == false && Allegato.IdElemento != null)
             {
                 try
                 {
@@ -670,36 +672,36 @@ namespace dblu.Portale.Plugin.Docs.Services
                         ll = cn.QueryFirstOrDefault<Allegati>(
                             "Select * from Allegati where IdElemento=@IdElemento AND NomeFile = @NomeFile",
                             new { IdElemento = Allegato.IdElemento.ToString(), NomeFile = $"{Allegato.Id.ToString()}.pdf" });
-                        
+
                         if (ll == null) // per pregresso
-                        { 
+                        {
                             ll = cn.QueryFirstOrDefault<Allegati>(
                                "Select * from Allegati where IdElemento=@IdElemento AND NomeFile = @NomeFile",
                             new { IdElemento = Allegato.IdElemento.ToString(), NomeFile = NOME_FILE_CONTENUTO_EMAIL });
-                    }
+                        }
 
                     }
-                 }
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError($"GetTmpPdfCompletoAsync : elemento - {ex.Message}");
                 }
             }
-                    if (ll != null)
-                    {
+            if (ll != null)
+            {
                 var pdfcompleto = await _allMan.GetFileAsync(ll.Id.ToString());
-                        pdfcompleto.Position=0;
+                pdfcompleto.Position = 0;
                 using (var fileStream = new FileStream(NomePdf, FileMode.Create, FileAccess.Write))
                 {
                     pdfcompleto.CopyTo(fileStream);
-                    }
+                }
                 try
                 {
                     if (Allegato.GetAttributo("jAllegati") != null)
                     {
                         JToken jAllegati = Allegato.GetAttributo("jAllegati");
                         res = jAllegati.ToObject<List<EmailAttachments>>();
-                }
+                    }
 
                 }
                 catch
@@ -707,7 +709,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     int i = 0;
                     foreach (var attachment in Messaggio.Allegati())
                     {
-                         i++;
+                        i++;
                         var fileName = attachment.NomeAllegato(i);
                         //if (attachment is MessagePart)
                         //{
@@ -732,7 +734,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 incluso = true;
                                 break;
                         }
-                        var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso=incluso };
+                        var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = incluso };
                         res.Add(a);
                     }
                 }
@@ -742,7 +744,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 try
                 {
                     //res = CreaTmpPdfCompleto(NomePdf, Messaggio);
-                    var sfdpf = new SFPdf(_appEnvironment,_logger,_config, _allMan);
+                    var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
                     res = sfdpf.CreaTmpPdfCompletoSF(NomePdf, Messaggio);
                 }
                 catch (Exception ex)
@@ -768,75 +770,75 @@ namespace dblu.Portale.Plugin.Docs.Services
             IFormatProvider<RadFlowDocument> formatProvider = new PdfFormatProvider();
 
             var oggetto = Messaggio.Subject;
-            var txt =  Messaggio.TextBody==null ? "": Messaggio.TextBody;
+            var txt = Messaggio.TextBody == null ? "" : Messaggio.TextBody;
             var pdfstream = new MemoryStream();
 
-            if (txt.Trim().Length > 5  || Messaggio.Allegati().Count() ==0 )
+            if (txt.Trim().Length > 5 || Messaggio.Allegati().Count() == 0)
             {
-            if (Messaggio.HtmlBody == null)
-            {
-                if (txt != null)
+                if (Messaggio.HtmlBody == null)
                 {
-                document = new RadFlowDocument();
-                RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
+                    if (txt != null)
+                    {
+                        document = new RadFlowDocument();
+                        RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
                         editor.InsertText($"Oggetto: {oggetto}");
                         editor.InsertBreak(BreakType.LineBreak);
                         editor.InsertText($"del: {Messaggio.Date.DateTime}");
                         editor.InsertBreak(BreakType.LineBreak);
-                editor.InsertText(txt);
+                        editor.InsertText(txt);
+                    }
                 }
-            }
-            else
-            {
-               
-                try
+                else
                 {
-                
+
+                    try
+                    {
+
                         var htxt = Messaggio.HtmlBody.Replace("http://", "_http://").Replace("https://", "_https://");
-                    HtmlFormatProvider htmlFormatProvider = new HtmlFormatProvider();
+                        HtmlFormatProvider htmlFormatProvider = new HtmlFormatProvider();
                         document = htmlFormatProvider.Import(htxt);
-      
-                } 
-                catch (Exception ex)
-                {
-                    document = new RadFlowDocument();
-                    RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        document = new RadFlowDocument();
+                        RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
                         editor.InsertText($"Oggetto: {oggetto}");
                         editor.InsertBreak(BreakType.LineBreak);
                         editor.InsertText($"del: {Messaggio.Date.DateTime}");
                         editor.InsertBreak(BreakType.LineBreak);
-                    editor.InsertText(txt);
-                }                
-                
-            }
-            if (document != null)
-            {
-            Section section = document.Sections.First();
-            Footer footer = section.Footers.Add(HeaderFooterType.Default);
-            Paragraph paragraph = footer.Blocks.AddParagraph();
-            FieldInfo field = new FieldInfo(document);
-            paragraph.Inlines.Add(field.Start);
-            paragraph.Inlines.AddRun("Page");
-            paragraph.Inlines.Add(field.Separator);
-            paragraph.Inlines.AddRun("0");
-            paragraph.Inlines.Add(field.End);
-            document.UpdateFields();
+                        editor.InsertText(txt);
+                    }
 
-                try
+                }
+                if (document != null)
                 {
-                formatProvider.Export(document, pdfstream);
-            }
-                catch (Exception ex)
-                {
-                document = new RadFlowDocument();
-                RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
+                    Section section = document.Sections.First();
+                    Footer footer = section.Footers.Add(HeaderFooterType.Default);
+                    Paragraph paragraph = footer.Blocks.AddParagraph();
+                    FieldInfo field = new FieldInfo(document);
+                    paragraph.Inlines.Add(field.Start);
+                    paragraph.Inlines.AddRun("Page");
+                    paragraph.Inlines.Add(field.Separator);
+                    paragraph.Inlines.AddRun("0");
+                    paragraph.Inlines.Add(field.End);
+                    document.UpdateFields();
+
+                    try
+                    {
+                        formatProvider.Export(document, pdfstream);
+                    }
+                    catch (Exception ex)
+                    {
+                        document = new RadFlowDocument();
+                        RadFlowDocumentEditor editor = new RadFlowDocumentEditor(document);
                         //editor.InsertText(txt);
                         editor.InsertText($"Oggetto: {oggetto}");
                         editor.InsertBreak(BreakType.LineBreak);
-                editor.InsertText(txt);
-                formatProvider.Export(document, pdfstream);
-            } 
-            }
+                        editor.InsertText(txt);
+                        formatProvider.Export(document, pdfstream);
+                    }
+                }
             }
 
             using (PdfStreamWriter pdfWriter = new PdfStreamWriter(File.OpenWrite(NomePdf)))
@@ -880,9 +882,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                     try
                     {
                         PdfFileSource pdfToMerge = null;
-                    switch (System.IO.Path.GetExtension(fileName).ToLower())
-                    {
-                        case ".pdf":
+                        switch (System.IO.Path.GetExtension(fileName).ToLower())
+                        {
+                            case ".pdf":
                                 try
                                 {
                                     try
@@ -894,7 +896,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                         pdfToMerge = new PdfFileSource(m.RepairPdfWithSimpleCrossReferenceTable());
                                     }
                                     using (pdfToMerge)
-                            {
+                                    {
                                         //TEST PDF
                                         var flok = true;
                                         try
@@ -917,8 +919,8 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                                         if (flok)
                                         {
-                                foreach (PdfPageSource pageToMerge in pdfToMerge.Pages)
-                                {
+                                            foreach (PdfPageSource pageToMerge in pdfToMerge.Pages)
+                                            {
                                                 //var scalaX = 1.0;
                                                 //var scalaY = 1.0;
                                                 //if (pageToMerge.Size.Height > pageToMerge.Size.Width) // verticale
@@ -953,49 +955,49 @@ namespace dblu.Portale.Plugin.Docs.Services
                                                 //}
                                                 //else
                                                 //{
-                                    pdfWriter.WritePage(pageToMerge);
+                                                pdfWriter.WritePage(pageToMerge);
                                                 //}
-                                                   
+
                                             }
-                                            incluso = pdfToMerge.Pages.Length>0;
-     
-                                }
-                            }
+                                            incluso = pdfToMerge.Pages.Length > 0;
+
+                                        }
+                                    }
                                 }
                                 catch (Exception ex)
                                 {
                                     _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il file {fileName}. {ex.Message}");
                                 }
-                            break;
-                        case ".jpg":
+                                break;
+                            case ".jpg":
                             case ".jpeg":
                             case ".png":
                                 try
                                 {
-                            var fxdoc = new RadFixedDocument();
-                            AddPageWithImage(fxdoc, fileName, new ImageSource(m, ImageQuality.High));
-                            IFormatProvider<RadFixedDocument> fxProvider = new Telerik.Windows.Documents.Fixed.FormatProviders.Pdf.PdfFormatProvider();
-                            var imgstream = new MemoryStream();
-                            fxProvider.Export(fxdoc, imgstream);
+                                    var fxdoc = new RadFixedDocument();
+                                    AddPageWithImage(fxdoc, fileName, new ImageSource(m, ImageQuality.High));
+                                    IFormatProvider<RadFixedDocument> fxProvider = new Telerik.Windows.Documents.Fixed.FormatProviders.Pdf.PdfFormatProvider();
+                                    var imgstream = new MemoryStream();
+                                    fxProvider.Export(fxdoc, imgstream);
 
                                     pdfToMerge = new PdfFileSource(imgstream);
                                     using (pdfToMerge)
-                            {
-                                foreach (PdfPageSource pageToMerge in pdfToMerge.Pages)
-                                {
-                                    pdfWriter.WritePage(pageToMerge);
-                                }
-                            }
+                                    {
+                                        foreach (PdfPageSource pageToMerge in pdfToMerge.Pages)
+                                        {
+                                            pdfWriter.WritePage(pageToMerge);
+                                        }
+                                    }
                                     incluso = true;
                                 }
                                 catch (Exception ex)
                                 {
                                     _logger.LogError($"CreaTmpPdfCompleto: impossibile includere il file {fileName}. {ex.Message}");
                                 }
-                            break;
-                        default:
-                            break;
-                    }
+                                break;
+                            default:
+                                break;
+                        }
 
                     }
                     catch (Exception ex)
@@ -1005,19 +1007,19 @@ namespace dblu.Portale.Plugin.Docs.Services
                     var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = incluso };
                     res.Add(a);
                 }
-                    }
+            }
 
             return res;
         }
-                    
 
-        public async Task<MemoryStream> GetPdfCompletoAsync(string IdAllegato, string IdElemento, bool daEmail )
+
+        public async Task<MemoryStream> GetPdfCompletoAsync(string IdAllegato, string IdElemento, bool daEmail)
         {
             string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
             if (!Directory.Exists(NomePdf))
             {
                 Directory.CreateDirectory(NomePdf);
-                }
+            }
             NomePdf = Path.Combine(NomePdf, $"{IdAllegato}.pdf");
             if (!File.Exists(NomePdf))
             {
@@ -1241,13 +1243,13 @@ namespace dblu.Portale.Plugin.Docs.Services
         //}
 
 
-        private async Task<Allegati> EstraiAllegatiEmail( 
-            Allegati Mail, 
-            string ElencoFile, 
-            bool AllegaEmail, 
-            string Descrizione, 
-            TipiAllegati tipoAll, 
-            bool daEmail ,
+        private async Task<Allegati> EstraiAllegatiEmail(
+            Allegati Mail,
+            string ElencoFile,
+            bool AllegaEmail,
+            string Descrizione,
+            TipiAllegati tipoAll,
+            bool daEmail,
             string Utente,
             CancellationToken cancel)
         {
@@ -1256,22 +1258,23 @@ namespace dblu.Portale.Plugin.Docs.Services
             {
                 using (SqlConnection cn = new SqlConnection(_context.Connessione))
                 {
-                if (!string.IsNullOrEmpty(ElencoFile) || AllegaEmail)
-                {
+                    if (!string.IsNullOrEmpty(ElencoFile) || AllegaEmail)
+                    {
                         //var fileName = NOME_FILE_CONTENUTO_EMAIL ;
                         var fileName = $"{Mail.Id.ToString()}.pdf";
                         var m = await _allMan.GetFileAsync(Mail.Id.ToString());
                         var Messaggio = MimeKit.MimeMessage.Load(m, cancel);
-                    string emailmitt = Messaggio.From.Mailboxes.First().Address;
-                   
-                    if (AllegaEmail )
-                    {  //file pdf completo
+                        string emailmitt = Messaggio.From.Mailboxes.First().Address;
+
+                        if (AllegaEmail)
+                        {  //file pdf completo
                             MemoryStream mpdf = new MemoryStream();
                             PdfEditAction pdfed = new PdfEditAction();
                             pdfed.IdAllegato = Mail.Id.ToString();
                             pdfed.TempFolder = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
-                            
-                            if (File.Exists(pdfed.FilePdfModificato)) {
+
+                            if (File.Exists(pdfed.FilePdfModificato))
+                            {
                                 using (FileStream fileStream = File.OpenRead(pdfed.FilePdfModificato))
                                 {
                                     mpdf.SetLength(fileStream.Length);
@@ -1280,14 +1283,15 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 }
                                 _allMan.Salva(Mail, false);
                             }
-                            else { 
-                        var l =  await GetTmpPdfCompletoAsync(Mail, null, daEmail); 
+                            else
+                            {
+                                var l = await GetTmpPdfCompletoAsync(Mail, null, daEmail);
 
-                        Mail.SetAttributo("jAllegati", JToken.FromObject(l));
-                        //_context.SaveChanges();
-                        _allMan.Salva(Mail, false);
+                                Mail.SetAttributo("jAllegati", JToken.FromObject(l));
+                                //_context.SaveChanges();
+                                _allMan.Salva(Mail, false);
 
-                        //prende il file tmp appena creato
+                                //prende il file tmp appena creato
                                 mpdf = await GetPdfCompletoAsync(Mail.Id.ToString(), null, daEmail);
                             }
                             //var all = _context.Allegati
@@ -1295,141 +1299,141 @@ namespace dblu.Portale.Plugin.Docs.Services
                             //    .FirstOrDefault();
                             if (daEmail == false && Mail.IdElemento != null)
                             {
-                            all = cn.QueryFirstOrDefault<Allegati>(
-                                "Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile",
-                                new { IdElemento = Mail.IdElemento.ToString(), NomeFile = fileName });
+                                all = cn.QueryFirstOrDefault<Allegati>(
+                                    "Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile",
+                                    new { IdElemento = Mail.IdElemento.ToString(), NomeFile = fileName });
                             }
                             var isNewAll = false;
-                        if (all == null)
-                        {
-                            all = new Allegati()
+                            if (all == null)
                             {
-                                Descrizione = Descrizione,
-                                NomeFile = fileName,
-                                Tipo = "FILE",
-                                TipoNavigation = tipoAll,
-                                Stato = StatoAllegato.Attivo,
-                                IdFascicolo = Mail.IdFascicolo,
-                                IdElemento = Mail.IdElemento,
-                                jNote = Mail.jNote,
-                                UtenteC = Utente,
-                                UtenteUM = Utente,
-                            };
+                                all = new Allegati()
+                                {
+                                    Descrizione = Descrizione,
+                                    NomeFile = fileName,
+                                    Tipo = "FILE",
+                                    TipoNavigation = tipoAll,
+                                    Stato = StatoAllegato.Attivo,
+                                    IdFascicolo = Mail.IdFascicolo,
+                                    IdElemento = Mail.IdElemento,
+                                    jNote = Mail.jNote,
+                                    UtenteC = Utente,
+                                    UtenteUM = Utente,
+                                };
                                 //_context.Add(all);
                                 isNewAll = true;
-                        }
-                        else
-                        {
-                            all.Descrizione = Descrizione;
-                        };
+                            }
+                            else
+                            {
+                                all.Descrizione = Descrizione;
+                            };
 
-                        if (all.elencoAttributi == null) { all.elencoAttributi = tipoAll.Attributi; }
+                            if (all.elencoAttributi == null) { all.elencoAttributi = tipoAll.Attributi; }
 
-                        all.SetAttributo("Mittente", emailmitt);
-                        all.SetAttributo("Data", Messaggio.Date.UtcDateTime);
-                        all.SetAttributo("CodiceSoggetto", Mail.GetAttributo("CodiceSoggetto"));
-                        all.SetAttributo("Oggetto", Messaggio.Subject);
-                        all.SetAttributo("MessageId", Messaggio.MessageId);
+                            all.SetAttributo("Mittente", emailmitt);
+                            all.SetAttributo("Data", Messaggio.Date.UtcDateTime);
+                            all.SetAttributo("CodiceSoggetto", Mail.GetAttributo("CodiceSoggetto"));
+                            all.SetAttributo("Oggetto", Messaggio.Subject);
+                            all.SetAttributo("MessageId", Messaggio.MessageId);
 
-                            
+
                             if (File.Exists(pdfed.FileAnnotazioni))
                             {
                                 var note = File.ReadAllText(pdfed.FileAnnotazioni);
                                 all.jNote = JObject.Parse(note);
                             }
-                            
-                        all = await _allMan.SalvaAsync(all, mpdf, isNewAll);
-                    }
-                    //else   // file separati
-                    //{ 
 
-                    //    var m = await _allMan.GetFileAsync(Mail.Id.ToString());
-                    //    var Messaggio = MimeKit.MimeMessage.Load(m, cancel);
+                            all = await _allMan.SalvaAsync(all, mpdf, isNewAll);
+                        }
+                        //else   // file separati
+                        //{ 
 
-                    //    string emailmitt = Messaggio.From.Mailboxes.First().Address;  
-                    
-                    //    if (AllegaEmail)
-                    //    {
-                    //        var fileName = "email-contenuto";
-                    //        var txt = Messaggio.TextBody;
-                    //        if (Messaggio.HtmlBody == null)
-                    //        {
-                    //            fileName += ".txt";
-                    //        }
-                    //        else
-                    //        {
-                    //            fileName += ".html";
-                    //            txt = Messaggio.HtmlBody;
-                    //        }
+                        //    var m = await _allMan.GetFileAsync(Mail.Id.ToString());
+                        //    var Messaggio = MimeKit.MimeMessage.Load(m, cancel);
 
-                    //        byte[] byteArray = Encoding.UTF8.GetBytes(txt);
-                    //        var mb = new MemoryStream(byteArray);
+                        //    string emailmitt = Messaggio.From.Mailboxes.First().Address;  
 
-                    //        var all = _context.Allegati
-                    //            .Where(a => (a.Tipo == "FILE" && a.IdElemento == Mail.IdElemento && a.NomeFile== fileName))
-                    //            .FirstOrDefault();
+                        //    if (AllegaEmail)
+                        //    {
+                        //        var fileName = "email-contenuto";
+                        //        var txt = Messaggio.TextBody;
+                        //        if (Messaggio.HtmlBody == null)
+                        //        {
+                        //            fileName += ".txt";
+                        //        }
+                        //        else
+                        //        {
+                        //            fileName += ".html";
+                        //            txt = Messaggio.HtmlBody;
+                        //        }
 
-                    //        if (all == null)
-                    //        {
-                    //            all = new Allegati()
-                    //            {
-                    //                Descrizione = Descrizione,
-                    //                NomeFile = fileName,
-                    //                Tipo = "FILE",
-                    //                TipoNavigation = tipoAll,
-                    //                Stato = StatoAllegato.Attivo,
-                    //                IdFascicolo = Mail.IdFascicolo,
-                    //                IdElemento = Mail.IdElemento
-                    //            };
-                    //            _context.Add(all);
-                    //        } else
-                    //        {
-                    //            all.Descrizione = Descrizione;
-                    //        };
+                        //        byte[] byteArray = Encoding.UTF8.GetBytes(txt);
+                        //        var mb = new MemoryStream(byteArray);
 
-                    //        if (all.Attributi == null) { all.Attributi = tipoAll.Attributi; }
+                        //        var all = _context.Allegati
+                        //            .Where(a => (a.Tipo == "FILE" && a.IdElemento == Mail.IdElemento && a.NomeFile== fileName))
+                        //            .FirstOrDefault();
 
-                    //        all.SetAttributo("Mittente", emailmitt);
-                    //        all.SetAttributo("Data", Messaggio.Date.UtcDateTime);
-                    //        all.SetAttributo("CodiceSoggetto", Mail.GetAttributo("CodiceSoggetto"));
-                    //        all.SetAttributo("Oggetto", Messaggio.Subject);
-                    //        all.SetAttributo("MessageId", Messaggio.MessageId);
+                        //        if (all == null)
+                        //        {
+                        //            all = new Allegati()
+                        //            {
+                        //                Descrizione = Descrizione,
+                        //                NomeFile = fileName,
+                        //                Tipo = "FILE",
+                        //                TipoNavigation = tipoAll,
+                        //                Stato = StatoAllegato.Attivo,
+                        //                IdFascicolo = Mail.IdFascicolo,
+                        //                IdElemento = Mail.IdElemento
+                        //            };
+                        //            _context.Add(all);
+                        //        } else
+                        //        {
+                        //            all.Descrizione = Descrizione;
+                        //        };
 
-                    //        all = await _allMan.SalvaAsync(all, mb);
-                    //    }
+                        //        if (all.Attributi == null) { all.Attributi = tipoAll.Attributi; }
+
+                        //        all.SetAttributo("Mittente", emailmitt);
+                        //        all.SetAttributo("Data", Messaggio.Date.UtcDateTime);
+                        //        all.SetAttributo("CodiceSoggetto", Mail.GetAttributo("CodiceSoggetto"));
+                        //        all.SetAttributo("Oggetto", Messaggio.Subject);
+                        //        all.SetAttributo("MessageId", Messaggio.MessageId);
+
+                        //        all = await _allMan.SalvaAsync(all, mb);
+                        //    }
 
 
-                    //file da allegare singolarmente
-                    if (!string.IsNullOrEmpty(ElencoFile))
-                    {
-                var listafile = ElencoFile.Split(";").ToList();
+                        //file da allegare singolarmente
+                        if (!string.IsNullOrEmpty(ElencoFile))
+                        {
+                            var listafile = ElencoFile.Split(";").ToList();
                             int i = 0;
                             foreach (var attachment in Messaggio.Allegati())
-                {
+                            {
                                 i++;
                                 fileName = attachment.NomeAllegato(i);
-                    m = new MemoryStream();
-                    if (attachment is MessagePart)
-                    {
+                                m = new MemoryStream();
+                                if (attachment is MessagePart)
+                                {
                                     //fileName = attachment.ContentDisposition?.FileName;
                                     //if (string.IsNullOrEmpty(fileName))
                                     //  fileName = "email-allegata.eml";                                    
 
-                        var rfc822 = (MessagePart)attachment;
+                                    var rfc822 = (MessagePart)attachment;
 
-                        //using (var stream = File.Create(fileName))
-                        rfc822.Message.WriteTo(m);
-                    }
-                    else
-                    {
-                        var part = (MimePart)attachment;
+                                    //using (var stream = File.Create(fileName))
+                                    rfc822.Message.WriteTo(m);
+                                }
+                                else
+                                {
+                                    var part = (MimePart)attachment;
                                     //fileName = part.FileName;
 
-                        //using (var stream = File.Create(fileName))
-                        part.Content.DecodeTo(m);
-                    }
-                    if (listafile.Contains(fileName))
-                    {
+                                    //using (var stream = File.Create(fileName))
+                                    part.Content.DecodeTo(m);
+                                }
+                                if (listafile.Contains(fileName))
+                                {
                                     //var all = _context.Allegati
                                     //    .Where(a => (a.Tipo == "FILE" && a.IdElemento == Mail.IdElemento && a.NomeFile == fileName))
                                     //    .FirstOrDefault();
@@ -1440,20 +1444,20 @@ namespace dblu.Portale.Plugin.Docs.Services
                                     var isNewAll = false;
 
                                     if (all2 == null)
-                                {
+                                    {
                                         all2 = new Allegati()
-                        {
-                                        Descrizione = Mail.Descrizione,
-                            NomeFile = fileName,
-                            Tipo = "FILE",
-                            TipoNavigation = tipoAll,
-                            Stato = StatoAllegato.Attivo,
-                                        IdFascicolo = Mail.IdFascicolo,
-                                        IdElemento = Mail.IdElemento
-                        };
+                                        {
+                                            Descrizione = Mail.Descrizione,
+                                            NomeFile = fileName,
+                                            Tipo = "FILE",
+                                            TipoNavigation = tipoAll,
+                                            Stato = StatoAllegato.Attivo,
+                                            IdFascicolo = Mail.IdFascicolo,
+                                            IdElemento = Mail.IdElemento
+                                        };
                                         //_context.Add(all);
                                         isNewAll = true;
-                                }
+                                    }
 
                                     if (all2.elencoAttributi == null) { all2.elencoAttributi = tipoAll.Attributi; }
                                     all2.Descrizione = Descrizione;
@@ -1462,13 +1466,13 @@ namespace dblu.Portale.Plugin.Docs.Services
                                     all2.SetAttributo("CodiceSoggetto", Mail.GetAttributo("CodiceSoggetto"));
                                     all2.SetAttributo("Oggetto", Messaggio.Subject);
                                     all2.SetAttributo("MessageId", Messaggio.MessageId);
-                               
+
                                     all2 = await _allMan.SalvaAsync(all2, m, isNewAll);
 
+                                }
+                            }
+                        }
                     }
-                }
-                }
-                }
                 }
             }
             catch (Exception ex)
@@ -1479,15 +1483,16 @@ namespace dblu.Portale.Plugin.Docs.Services
             return all;
         }
 
-        public async Task<Elementi> CreaElementoFascicoloAsync(string IdAllegato, 
+
+        public async Task<Elementi> CreaElementoFascicoloAsync(string IdAllegato,
             string IdFascicolo,
-            string IdElemento, 
-            string Categoria, 
-            string TipoElemento, 
-            string CodiceSoggetto, 
+            string IdElemento,
+            string Categoria,
+            string TipoElemento,
+            string CodiceSoggetto,
             string NomeSoggetto,
-            string ElencoFile, 
-            bool AllegaEmail, 
+            string ElencoFile,
+            bool AllegaEmail,
             string Descrizione,
             ClaimsPrincipal User)
         {
@@ -1507,7 +1512,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 Allegato.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 Allegato.SetAttributo("NomeSoggetto", NomeSoggetto);
-                
+
                 //var attr = Allegato.Attributi;
                 //attr["CodiceCliente"] = CodiceCliente;
                 //Allegato.Attributi = attr;
@@ -1535,20 +1540,21 @@ namespace dblu.Portale.Plugin.Docs.Services
                 }
                 else
                 {
-                    
+
                     //f = _context.Fascicoli
                     //    .Where(x => x.Id == Allegato.IdFascicolo)
                     //    .Include(s => s.CategoriaNavigation)
                     //    .FirstOrDefault();
                     f = _fasMan.Get(IdFascicolo);
-                    if (f.elencoAttributi == null) { 
+                    if (f.elencoAttributi == null)
+                    {
                         f.elencoAttributi = f.CategoriaNavigation.Attributi;
                     }
                 }
                 f.CodiceSoggetto = CodiceSoggetto;
                 f.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 f.SetAttributo("NomeSoggetto", NomeSoggetto);
-                if (_fasMan.Salva(f, isNew) == false) return null ;
+                if (_fasMan.Salva(f, isNew) == false) return null;
 
 
                 //-------- Memorizzo l'operazione----------------------
@@ -1565,18 +1571,18 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 //if (Allegato.IdElemento == null)
                 //{
-                    //crea nuovo elemento e e assegna alla mail ?
-                    var e = new Elementi();
-                    e.Tipo = TipoElemento;
-                    e.IdFascicolo = f.Id;
-                    e.Descrizione = Descrizione;
+                //crea nuovo elemento e e assegna alla mail ?
+                var e = new Elementi();
+                e.Tipo = TipoElemento;
+                e.IdFascicolo = f.Id;
+                e.Descrizione = Descrizione;
                 //_context.Add(e);
                 isNew = true;
                 e.IdFascicoloNavigation = f;
                 //TipiElementi tipoEl = _context.TipiElementi
                 //        .Where(t => t.Codice == TipoElemento)
                 //        .FirstOrDefault();
-                TipiElementi tipoEl =  _elmMan.GetTipoElemento(TipoElemento);
+                TipiElementi tipoEl = _elmMan.GetTipoElemento(TipoElemento);
                 e.TipoNavigation = tipoEl;
                 if (e.elencoAttributi == null)
                 {
@@ -1594,40 +1600,42 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 //eredita attributi email 
                 var kk = Allegato.elencoAttributi.Nomi();
-                foreach (var att in e.elencoAttributi.ToList()) {
-                    if (att.Duplicabile && kk.Contains(att.Nome) ) {
+                foreach (var att in e.elencoAttributi.ToList())
+                {
+                    if (att.Duplicabile && kk.Contains(att.Nome))
+                    {
                         e.SetAttributo(att.Nome, Allegato.GetAttributo(att.Nome));
                     }
                 }
-                
+
                 e.SetAttributo("CodiceSoggetto", CodiceSoggetto);
                 e.SetAttributo("NomeSoggetto", NomeSoggetto);
                 e.SetAttributo("DataRichiesta", e.GetAttributo("Data"));
-                if (_elmMan.Salva(e,isNew) == false) return null;
+                if (_elmMan.Salva(e, isNew) == false) return null;
 
                 //-------- Memorizzo l'operazione----------------------
                 log = new LogDoc()
                 {
                     Data = DateTime.Now,
                     IdOggetto = e.Id,
-                    TipoOggetto = TipiOggetto.ELEMENTO ,
+                    TipoOggetto = TipiOggetto.ELEMENTO,
                     Operazione = TipoOperazione.Creato,
                     Utente = User.Identity.Name
                 };
-                 _logMan.Salva(log, true);
+                _logMan.Salva(log, true);
                 //-------- Memorizzo l'operazione----------------------
 
 
                 //var i = await _context.SaveChangesAsync(cancel);
                 Allegato.Stato = StatoAllegato.Elaborato;
-                if (_allMan.Salva(Allegato, false)== false) return null;
+                if (_allMan.Salva(Allegato, false) == false) return null;
 
                 //-------- Memorizzo l'operazione----------------------
                 log = new LogDoc()
                 {
                     Data = DateTime.Now,
                     IdOggetto = Allegato.Id,
-                    TipoOggetto = TipiOggetto.ALLEGATO ,
+                    TipoOggetto = TipiOggetto.ALLEGATO,
                     Operazione = TipoOperazione.Elaborato,
                     Utente = User.Identity.Name
                 };
@@ -1638,9 +1646,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                 var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, User.Identity.Name, cancel);
 
                 return e;
-                    }
+            }
             catch (Exception ex)
-                    {
+            {
                 _logger.LogError($"CreaFascicoloAsync : {ex.Message}");
             }
             return null;
@@ -1648,9 +1656,9 @@ namespace dblu.Portale.Plugin.Docs.Services
 
         public async Task<Elementi> CreaElementoAsync(string IdFascicolo, string IdAllegato, string TipoElemento,
             string CodiceSoggetto, string ElencoFile, bool AllegaEmail, string Descrizione, ClaimsPrincipal User)
-            {
+        {
             try
-                {
+            {
                 //Fascicoli f = null;
                 Elementi e = null;
                 var cancel = new CancellationToken();
@@ -1676,20 +1684,20 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 //if (Allegato.IdElemento == null)
                 //{
-                    //crea nuovo elemento e e assegna alla mail ?
-                    e = new Elementi();
-                    e.Tipo = TipoElemento;
-                    e.IdFascicolo = (Guid)Allegato.IdFascicolo;
-                    e.Descrizione = Descrizione;
-                    //_context.Add(e);
+                //crea nuovo elemento e e assegna alla mail ?
+                e = new Elementi();
+                e.Tipo = TipoElemento;
+                e.IdFascicolo = (Guid)Allegato.IdFascicolo;
+                e.Descrizione = Descrizione;
+                //_context.Add(e);
 
-                    Allegato.IdElemento = e.Id;
+                Allegato.IdElemento = e.Id;
                 //}else
                 //{
                 //    e = _context.Elementi
-                 //           .Where(x => x.Id == Allegato.IdElemento)
-                 //           .FirstOrDefault();
-                 //}
+                //           .Where(x => x.Id == Allegato.IdElemento)
+                //           .FirstOrDefault();
+                //}
 
                 //var i = await _context.SaveChangesAsync(cancel);
                 var i = _elmMan.Salva(e, true);
@@ -1708,7 +1716,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 //-------- Memorizzo l'operazione----------------------
 
 
-                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, User.Identity.Name,cancel);
+                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, User.Identity.Name, cancel);
 
 
                 return e;
@@ -1787,9 +1795,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                 var e = new Elementi();
                 e.Tipo = TipoElemento;
                 e.IdFascicolo = f.Id;
-               
+
                 e.Descrizione = Descrizione;
- 
+
                 isNew = true;
                 e.IdFascicoloNavigation = f;
                 //TipiElementi tipoEl = _context.TipiElementi
@@ -1799,13 +1807,13 @@ namespace dblu.Portale.Plugin.Docs.Services
                 e.TipoNavigation = tipoEl;
                 e.elencoAttributi = tipoEl.Attributi;
 
-                Elementi oldEl = _elmMan.Get(IdElemento,0);
+                Elementi oldEl = _elmMan.Get(IdElemento, 0);
                 foreach (Attributo xx in e.elencoAttributi.ToList())
                 {
                     if (xx.Duplicabile)
                     {
                         xx.Valore = oldEl.GetAttributo(xx.Nome);
-                    } 
+                    }
 
                 }
 
@@ -1852,7 +1860,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 //-------- Memorizzo l'operazione----------------------
 
                 //estrae i file dalla mail presenti in lista e li assegna all'elemento
-                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false , utente, cancel);
+                var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, utente, cancel);
 
                 return e;
             }
@@ -1864,123 +1872,6 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
 
-        /// <summary>
-        /// Attach an email attachment to an Elmennt
-        /// </summary>
-        /// <param name="AttachID">Id of the attachment</param>
-        /// <param name="DossierID">Id of the Dossier</param>
-        /// <param name="ItemID">Id of the Item</param>
-        /// <param name="Description">Description</param>
-        /// <param name="Doc">Memory stream od the referred document</param>
-        /// <param name="Attachs">Attachments of the email</param>
-        /// <param name="User">User that do the operation</param>
-        /// <param name="Info">Info regarding the BPM</param>
-        /// <param name="Vars">Variables for the workflow</param>
-        /// <returns></returns>
-        public async Task<bool> AttachToItem(string AttachID,
-              string DossierID,
-              string ItemID,
-              string Description,
-              MemoryStream Doc,
-              List<OriginalAttachments> Attachs,
-              ClaimsPrincipal User,
-              BPMDocsProcessInfo Info,
-              Dictionary<string, VariableValue> Vars)
-        {
-
-            bool RET = true;
-
-            Allegati  MailAttach = _allMan.Get(AttachID);
-            if (string.IsNullOrEmpty(Description)) Description = MailAttach.Descrizione;
-            TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
-            Fascicoli f = _fasMan.Get(DossierID);
-            Elementi e = _elmMan.Get(ItemID, 0);
-
-            if (tipoAll != null && f != null & e != null)
-            {
-                /// 1) MARCO LA MAIL COM PROCESSATA
-                MailAttach.SetAttributo("CodiceSoggetto", f.GetAttributo("CodiceSoggetto"));
-                MailAttach.SetAttributo("NomeSoggetto", f.GetAttributo("NomeSoggetto"));                
-                MailAttach.IdFascicolo = f.Id;
-                MailAttach.IdElemento = e.Id;
-                MailAttach.Stato = StatoAllegato.Elaborato;
-                MailAttach.SetAttributo("jAllegati", JToken.FromObject(Attachs));             
-                var i = _allMan.Salva(MailAttach, false);
-
-                /// 2) LOGGO
-                LogDoc log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = MailAttach.Id,
-                    TipoOggetto = TipiOggetto.ALLEGATO,
-                    Operazione = TipoOperazione.Elaborato,
-                    Utente = User.Identity.Name
-                };
-                _logMan.Salva(log, true);
-
-                /// 3) MARCO PDF IN MEMORIA
-                (bool, MemoryStream) T = _TranformationService.SignPDF(Doc, MailAttach.elencoAttributi);
-                if (T.Item1)
-                    Doc = T.Item2;
-
-
-                /// 4) CREO UNA ALLEGATO DI TIPO FILE 
-                var fileName = $"{MailAttach.Id.ToString()}.pdf";
-                Allegati FILE = null;
-                using (SqlConnection cn = new SqlConnection(_context.Connessione))
-                    { FILE = cn.QueryFirstOrDefault<Allegati>("Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile", new { IdElemento = MailAttach.IdElemento.ToString(), NomeFile = fileName }); }
-
-                bool isNewFILE = false;
-                if (FILE == null)
-                {
-                    FILE = new Allegati()
-                    {
-                    Descrizione = Description,
-                    NomeFile = fileName,
-                    Tipo = "FILE",
-                    TipoNavigation = tipoAll,
-                    Stato = StatoAllegato.Attivo,
-                    IdFascicolo = MailAttach.IdFascicolo,
-                    IdElemento = MailAttach.IdElemento,
-                    jNote = MailAttach.jNote,
-                    UtenteC = User.Identity.Name,
-                    UtenteUM = User.Identity.Name,
-                    };
-                    isNewFILE = true;
-                }
-                else { FILE.Descrizione = Description; };
-
-                if (FILE.elencoAttributi == null) { FILE.elencoAttributi = tipoAll.Attributi; }
-
-                FILE.SetAttributo("Mittente", MailAttach.GetAttributo("Mittente"));
-                FILE.SetAttributo("Data", MailAttach.GetAttributo("Data"));
-                FILE.SetAttributo("CodiceSoggetto", MailAttach.GetAttributo("CodiceSoggetto"));
-                FILE.SetAttributo("NomeSoggetto", MailAttach.GetAttributo("NomeSoggetto"));
-                FILE.SetAttributo("Oggetto", MailAttach.GetAttributo("Oggetto"));
-                FILE.SetAttributo("MessageId", MailAttach.GetAttributo("MessageId"));
-
-
-                /// 5) SALVO SUL TIPO FILE IL PDF
-                FILE = await _allMan.SalvaAsync(FILE, Doc, isNewFILE);
-
-
-                /// 6 ATTIVO PROCESSI
-
-                if (Info != null)
-                {
-                    Info.StatoPrec = (int)e.Stato;
-                    Info.Stato = (int)e.Stato;
-                    if (Vars == null)
-                        Vars = new Dictionary<string, VariableValue>();
-                    if (!Vars.ContainsKey("IdAllegato"))
-                        Vars.Add("IdAllegato", VariableValue.FromObject(AttachID));
-
-                    RET =  AvviaProcesso(Info, e, Vars);
-                }
-            }
-            return RET;
-        }
-
         public async Task<bool> AllegaAElementoFascicolo(string IdAllegato,
                 string IdFascicolo,
                 string IdElemento,
@@ -1990,13 +1881,13 @@ namespace dblu.Portale.Plugin.Docs.Services
                 ClaimsPrincipal User,
                 BPMDocsProcessInfo Info,
                 Dictionary<string, VariableValue> variabili)
-         {
+        {
             try
             {
                 var cancel = new CancellationToken();
 
                 var Allegato = _allMan.Get(IdAllegato);
-                
+
                 if (Descrizione == null)
                     Descrizione = Allegato.Descrizione;
 
@@ -2011,7 +1902,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     //if (Allegato.IdFascicolo == null)
                     Allegato.IdFascicolo = f.Id;
                     //if (Allegato.IdElemento == null)
-                    Allegato.IdElemento = e.Id; 
+                    Allegato.IdElemento = e.Id;
                     //var i = await _context.SaveChangesAsync(cancel);
                     Allegato.Stato = StatoAllegato.Elaborato;
                     var i = _allMan.Salva(Allegato, false);
@@ -2029,7 +1920,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     //-------- Memorizzo l'operazione----------------------
 
                     //estrae i file dalla mail presenti in lista e li assegna all'elemento
-                    Allegati all = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll,true, User.Identity.Name, cancel);
+                    Allegati all = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, true, User.Identity.Name, cancel);
 
                     var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
                     var estrai = all != null;
@@ -2126,15 +2017,15 @@ namespace dblu.Portale.Plugin.Docs.Services
                         {
                             var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
                             bool r = await sfdpf.MarcaAllegatoSF(a, el.elencoAttributi);
-                        res = res && r;                    
+                            res = res && r;
+                        }
                     }
-                }
 
-            }
+                }
             }
             catch (Exception ex)
             {
-                res=false;
+                res = false;
                 _logger.LogError($"MarcaAllegati : {ex.Message}");
             }
             return res;
@@ -2168,9 +2059,9 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 foreach (Attributo a in att.ToList())
                 {
-                    if (a.Valore!=null)
+                    if (a.Valore != null)
                     {
-                    reportSource.Parameters.Add(a.Nome,  a.Valore == null ? "" : a.Valore ) ;
+                        reportSource.Parameters.Add(a.Nome, a.Valore == null ? "" : a.Valore);
                     }
                 }
 
@@ -2187,52 +2078,52 @@ namespace dblu.Portale.Plugin.Docs.Services
                 Size A4 = PaperTypeConverter.ToSize(PaperTypes.A4);
 
                 if (pdfstream != null)
-                { 
-                    using (PdfStreamWriter pdfWriter = new PdfStreamWriter(File.OpenWrite(NomePdf)))
                 {
-                    PdfFileSource pdfToMerge = null;
-                    try
+                    using (PdfStreamWriter pdfWriter = new PdfStreamWriter(File.OpenWrite(NomePdf)))
                     {
+                        PdfFileSource pdfToMerge = null;
+                        try
+                        {
                             pdfstream.Position = 0;
-                        pdfToMerge = new PdfFileSource(pdfstream);
-                    }
-                    catch (Exception ex)
-                    {
-                        pdfToMerge = new PdfFileSource(pdfstream.RepairPdfWithSimpleCrossReferenceTable());
-                    }
+                            pdfToMerge = new PdfFileSource(pdfstream);
+                        }
+                        catch (Exception ex)
+                        {
+                            pdfToMerge = new PdfFileSource(pdfstream.RepairPdfWithSimpleCrossReferenceTable());
+                        }
 
-                    using (pdfToMerge)
-                    {
-                        PdfPageStreamWriter resultPage = null;
+                        using (pdfToMerge)
+                        {
+                            PdfPageStreamWriter resultPage = null;
 
-                        var p = 0;
-                        var pt = pdfToMerge.Pages.Length;
+                            var p = 0;
+                            var pt = pdfToMerge.Pages.Length;
                             double scalaX = 1.0;
                             double scalaY = 1.0;
 
-                        foreach (PdfPageSource pageToMerge in pdfToMerge.Pages)
-                        {
-                            p++;
-                            var rot = pageToMerge.Rotation;
-                            double newWidth = pageToMerge.Size.Width * .95;
-                            double newHeight = pageToMerge.Size.Height * .95;
-                            double MarginX = 0;
-                            double MarginY = pageToMerge.Size.Height - newHeight;
-                            double rotaz = 0;
+                            foreach (PdfPageSource pageToMerge in pdfToMerge.Pages)
+                            {
+                                p++;
+                                var rot = pageToMerge.Rotation;
+                                double newWidth = pageToMerge.Size.Width * .95;
+                                double newHeight = pageToMerge.Size.Height * .95;
+                                double MarginX = 0;
+                                double MarginY = pageToMerge.Size.Height - newHeight;
+                                double rotaz = 0;
 
-                            //switch (pageToMerge.Rotation)
-                            //{
-                            //    case Rotation.Rotate90:
-                            //        rotaz = 90;
-                            //        break;
-                            //    case Rotation.Rotate180:
-                            //        rotaz = 180;
-                            //        break;
-                            //    case Rotation.Rotate270:
-                            //        rotaz = 270;
-                            //        break;
-                            //}
-                               if (pageToMerge.Size.Height > pageToMerge.Size.Width) // verticale
+                                //switch (pageToMerge.Rotation)
+                                //{
+                                //    case Rotation.Rotate90:
+                                //        rotaz = 90;
+                                //        break;
+                                //    case Rotation.Rotate180:
+                                //        rotaz = 180;
+                                //        break;
+                                //    case Rotation.Rotate270:
+                                //        rotaz = 270;
+                                //        break;
+                                //}
+                                if (pageToMerge.Size.Height > pageToMerge.Size.Width) // verticale
                                 {
                                     if (pageToMerge.Size.Height > A4.Height)
                                     {
@@ -2255,94 +2146,94 @@ namespace dblu.Portale.Plugin.Docs.Services
                                     }
                                 }
 
-                            if ((pageToMerge.Rotation == Rotation.Rotate0 ||
-                                  pageToMerge.Rotation == Rotation.Rotate180)
-                                && pageToMerge.Size.Width > pageToMerge.Size.Height)
-                            {
-                                if (pageToMerge.Rotation == Rotation.Rotate0)
+                                if ((pageToMerge.Rotation == Rotation.Rotate0 ||
+                                      pageToMerge.Rotation == Rotation.Rotate180)
+                                    && pageToMerge.Size.Width > pageToMerge.Size.Height)
                                 {
-                                    rot = Rotation.Rotate90;
-                                    rotaz = 90;
-                                }
-                                else
-                                {
-                                    rot = Rotation.Rotate270;
-                                    rotaz = 270;
-                                }
+                                    if (pageToMerge.Rotation == Rotation.Rotate0)
+                                    {
+                                        rot = Rotation.Rotate90;
+                                        rotaz = 90;
+                                    }
+                                    else
+                                    {
+                                        rot = Rotation.Rotate270;
+                                        rotaz = 270;
+                                    }
                                     newWidth = pageToMerge.Size.Height * .95 * scalaY;
                                     newHeight = pageToMerge.Size.Width * .95 * scalaX;
-                                MarginX = pageToMerge.Size.Width - newHeight;
-                                MarginY = 0;
-                            }
-                            resultPage = pdfWriter.BeginPage(pageToMerge.Size, rot);
-
-                            using (resultPage.SaveContentPosition())
-                            {
-
-                                //reportSource.Parameters.Add("NumeroProtocollo", "124578/2020");
-                                //reportSource.Parameters.Add("DataConsegna", DateTime.Today.AddDays(20));
-                                //reportSource.Parameters.Add("DataConsRich", DateTime.Today.AddDays(15));
-                                //reportSource.Parameters.Add("CodiceSoggetto", "25468");
-                                reportSource.Parameters.Add("NPag", p);
-                                reportSource.Parameters.Add("TPag", pt);
-
-                                RenderingResult curEti = reportProcessor.RenderReport("PDF", reportSource, null);
-
-                                PdfFileSource pdfeti = new PdfFileSource(new MemoryStream(curEti.DocumentBytes));
-                                //if (rot != pageToMerge.Rotation)
-                                //{
-                                //    resultPage.ContentPosition.Rotate(-90);
-                                //    resultPage.ContentPosition.Translate(0, pageToMerge.Size.Height);
-                                //}
-                                //else
-                                //{
-                                //    resultPage.ContentPosition.Translate(0, 0);
-                                //}
-                                switch (rot)
-                                {
-                                    case Rotation.Rotate90:
-                                        resultPage.ContentPosition.Rotate(-90);
-                                        resultPage.ContentPosition.Translate(0, pageToMerge.Size.Height);
-                                        break;
-                                    case Rotation.Rotate180:
-                                        resultPage.ContentPosition.Rotate(-180);
-                                        resultPage.ContentPosition.Translate(pageToMerge.Size.Width, pageToMerge.Size.Height);
-                                        break;
-                                    case Rotation.Rotate270:
-                                        resultPage.ContentPosition.Rotate(90);
-                                        resultPage.ContentPosition.Translate(pageToMerge.Size.Width, 0);
-                                        break;
-
-                                    default:
-                                        resultPage.ContentPosition.Translate(0, 0);
-                                        break;
+                                    MarginX = pageToMerge.Size.Width - newHeight;
+                                    MarginY = 0;
                                 }
-                                resultPage.WriteContent(pdfeti.Pages[0]);
+                                resultPage = pdfWriter.BeginPage(pageToMerge.Size, rot);
 
-                                //aggiungo la pagina ridotta
-                                resultPage.ContentPosition.Rotate(0);
+                                using (resultPage.SaveContentPosition())
+                                {
+
+                                    //reportSource.Parameters.Add("NumeroProtocollo", "124578/2020");
+                                    //reportSource.Parameters.Add("DataConsegna", DateTime.Today.AddDays(20));
+                                    //reportSource.Parameters.Add("DataConsRich", DateTime.Today.AddDays(15));
+                                    //reportSource.Parameters.Add("CodiceSoggetto", "25468");
+                                    reportSource.Parameters.Add("NPag", p);
+                                    reportSource.Parameters.Add("TPag", pt);
+
+                                    RenderingResult curEti = reportProcessor.RenderReport("PDF", reportSource, null);
+
+                                    PdfFileSource pdfeti = new PdfFileSource(new MemoryStream(curEti.DocumentBytes));
+                                    //if (rot != pageToMerge.Rotation)
+                                    //{
+                                    //    resultPage.ContentPosition.Rotate(-90);
+                                    //    resultPage.ContentPosition.Translate(0, pageToMerge.Size.Height);
+                                    //}
+                                    //else
+                                    //{
+                                    //    resultPage.ContentPosition.Translate(0, 0);
+                                    //}
+                                    switch (rot)
+                                    {
+                                        case Rotation.Rotate90:
+                                            resultPage.ContentPosition.Rotate(-90);
+                                            resultPage.ContentPosition.Translate(0, pageToMerge.Size.Height);
+                                            break;
+                                        case Rotation.Rotate180:
+                                            resultPage.ContentPosition.Rotate(-180);
+                                            resultPage.ContentPosition.Translate(pageToMerge.Size.Width, pageToMerge.Size.Height);
+                                            break;
+                                        case Rotation.Rotate270:
+                                            resultPage.ContentPosition.Rotate(90);
+                                            resultPage.ContentPosition.Translate(pageToMerge.Size.Width, 0);
+                                            break;
+
+                                        default:
+                                            resultPage.ContentPosition.Translate(0, 0);
+                                            break;
+                                    }
+                                    resultPage.WriteContent(pdfeti.Pages[0]);
+
+                                    //aggiungo la pagina ridotta
+                                    resultPage.ContentPosition.Rotate(0);
                                     resultPage.ContentPosition.Scale(0.95 * scalaX, 0.95 * scalaY);
-                                resultPage.ContentPosition.Translate(MarginX, MarginY);
-                                resultPage.WriteContent(pageToMerge);
+                                    resultPage.ContentPosition.Translate(MarginX, MarginY);
+                                    resultPage.WriteContent(pageToMerge);
 
-                                resultPage.Dispose();
+                                    resultPage.Dispose();
+                                }
+
                             }
 
                         }
-
                     }
-                }
-                MemoryStream mpdf = new MemoryStream();
-                using (FileStream fileStream = File.OpenRead(NomePdf))
-                {
-                    mpdf.SetLength(fileStream.Length);
-                    //read file to MemoryStream
-                    fileStream.Read(mpdf.GetBuffer(), 0, (int)fileStream.Length);
-                }
-               //mpdf.Position = 0;
-               var al = await _allMan.SalvaAsync(all, mpdf, false);
-               if (File.Exists(NomePdf))
-                    File.Delete(NomePdf);
+                    MemoryStream mpdf = new MemoryStream();
+                    using (FileStream fileStream = File.OpenRead(NomePdf))
+                    {
+                        mpdf.SetLength(fileStream.Length);
+                        //read file to MemoryStream
+                        fileStream.Read(mpdf.GetBuffer(), 0, (int)fileStream.Length);
+                    }
+                    //mpdf.Position = 0;
+                    var al = await _allMan.SalvaAsync(all, mpdf, false);
+                    if (File.Exists(NomePdf))
+                        File.Delete(NomePdf);
                 }
             }
             catch (Exception ex)
@@ -2353,7 +2244,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             return res;
         }
 
-        public bool AvviaProcesso(BPMDocsProcessInfo Info , Elementi el, Dictionary<string, VariableValue> variabili)
+        public bool AvviaProcesso(BPMDocsProcessInfo Info, Elementi el, Dictionary<string, VariableValue> variabili)
         {
             bool res = true;
             try
@@ -2362,12 +2253,14 @@ namespace dblu.Portale.Plugin.Docs.Services
                 {
 
                     var pd = new BPMProcessDefinition(_bpm._eng);
-                    if (variabili== null) 
+                    if (variabili == null)
                         variabili = new Dictionary<string, VariableValue>();
 
                     VariableValue v = VariableValue.FromObject(el.Id.ToString());
-                    if (variabili.ContainsKey("IdElemento")) {
-                        variabili.Remove("IdElemento"); }
+                    if (variabili.ContainsKey("IdElemento"))
+                    {
+                        variabili.Remove("IdElemento");
+                    }
                     variabili.Add("IdElemento", v);
                     v = VariableValue.FromObject(JsonConvert.SerializeObject(el));
                     variabili.Add("jElemento", v);
@@ -2384,7 +2277,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                     var pi = pd.Start("", el.TipoNavigation.Processo, el.Id.ToString(), variabili);
 
-                    res = (pi != null && pi.Result != null );
+                    res = (pi != null && pi.Result != null);
 
                 }
             }
@@ -2395,13 +2288,13 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
             return res;
         }
-    
+
         public bool AvviaProcesso(BPMDocsProcessInfo Info, Elementi el)
         {
             return AvviaProcesso(Info, el, null);
         }
 
-        public async Task<RisultatoAzione> InoltraEmail(string IdAllegato, string Indirizzi, bool chiudi, ClaimsPrincipal User, string NomeServer="")
+        public async Task<RisultatoAzione> InoltraEmail(string IdAllegato, string Indirizzi, bool chiudi, ClaimsPrincipal User, string NomeServer = "")
         {
             RisultatoAzione res = new RisultatoAzione();
             try
@@ -2428,15 +2321,15 @@ namespace dblu.Portale.Plugin.Docs.Services
                     }
 #if (DEBUG)
                     srv = new();
-    srv.Email = "jobaid@dblu.it";
-    srv.Server = "mail.dblu.it";
-    srv.Porta = 465;
-    srv.Ssl = true;
-    srv.Utente = "jobaid@dblu.it";
-    srv.Password = "j0b41d!";
+                    srv.Email = "jobaid@dblu.it";
+                    srv.Server = "mail.dblu.it";
+                    srv.Porta = 465;
+                    srv.Ssl = true;
+                    srv.Utente = "jobaid@dblu.it";
+                    srv.Password = "j0b41d!";
 
 #endif
-                    
+
                     if (srv == null)
                     {
                         res.Successo = false;
@@ -2450,7 +2343,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     {
                         if (srv.Utente != "")
                         {
-                        await client.AuthenticateAsync(srv.Utente, srv.Password, c);
+                            await client.AuthenticateAsync(srv.Utente, srv.Password, c);
                             flOk = client.IsAuthenticated;
                         }
 
@@ -2500,8 +2393,8 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             if (!htxt.Contains("<body>"))
                                 htxt = $"<body>{htxt}</body>";
-                            
-                            htxt = message.HtmlBody;                            
+
+                            htxt = message.HtmlBody;
                             string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
                             string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
                             if (!string.IsNullOrEmpty(htxt) && !htxt.Contains("<body>"))
@@ -2514,7 +2407,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                             builder.HtmlBody = htxt;
 
 
-                            foreach (MimeEntity att in message.Allegati()) { 
+                            foreach (MimeEntity att in message.Allegati())
+                            {
                                 builder.Attachments.Add(att);
                             }
                             newmessage.Body = builder.ToMessageBody();
@@ -2559,10 +2453,11 @@ namespace dblu.Portale.Plugin.Docs.Services
                             newall = await _allMan.SalvaAsync(newall, file, true);
 
 
-                            if (chiudi) { 
+                            if (chiudi)
+                            {
                                 al.Stato = StatoAllegato.Chiuso;
                                 //await _context.SaveChangesAsync();
-                                _allMan.Salva(al,false);
+                                _allMan.Salva(al, false);
                                 //-------- Memorizzo l'operazione----------------------
                                 log = new LogDoc()
                                 {
@@ -2589,7 +2484,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         res.Successo = false;
                         res.Messaggio = "connessione al server di posta fallita.";
                     }
-                }                
+                }
             }
             catch (Exception ex)
             {
@@ -2603,16 +2498,16 @@ namespace dblu.Portale.Plugin.Docs.Services
 
 
         public async Task<RisultatoAzione> RispondiEmail(
-            string IdAllegato, 
-            string NomeServer, 
+            string IdAllegato,
+            string NomeServer,
             string to,
             string cc,
-            string Oggetto, 
-            string Testo, 
-            bool allegaEmail, 
+            string Oggetto,
+            string Testo,
+            bool allegaEmail,
             bool chiudiEmail,
             ClaimsPrincipal User)
-         
+
         {
             RisultatoAzione res = new RisultatoAzione();
             try
@@ -2627,7 +2522,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     return res;
                 }
                 CancellationToken c = new CancellationToken();
-               
+
                 MimeKit.MimeMessage message = MimeKit.MimeMessage.Load(eml, c);
 
                 using (var client = new SmtpClient())
@@ -2637,18 +2532,18 @@ namespace dblu.Portale.Plugin.Docs.Services
                     using (SqlConnection cn = new SqlConnection(_context.Connessione))
                     {
                         srv = cn.QueryFirstOrDefault<EmailServer>($"Select * from EmailServer where Nome in (Select NomeServerInUscita from  EmailServer where Nome = '{NomeServer}')");
-                        if (srv == null) srv  = cn.QueryFirstOrDefault<EmailServer>("select Top 1 * from EmailServer where Attivo=1 and InUscita=1");
+                        if (srv == null) srv = cn.QueryFirstOrDefault<EmailServer>("select Top 1 * from EmailServer where Attivo=1 and InUscita=1");
                     }
-                    #if (DEBUG)
-                        srv = new();
-                        srv.Email = "jobaid@dblu.it";
-                        srv.Server = "mail.dblu.it";
-                        srv.Porta = 465;
-                        srv.Ssl = true;
-                        srv.Utente = "jobaid@dblu.it";
-                        srv.Password = "j0b41d!";
+#if (DEBUG)
+                    srv = new();
+                    srv.Email = "jobaid@dblu.it";
+                    srv.Server = "mail.dblu.it";
+                    srv.Porta = 465;
+                    srv.Ssl = true;
+                    srv.Utente = "jobaid@dblu.it";
+                    srv.Password = "j0b41d!";
 
-                    #endif
+#endif
 
                     if (srv == null)
                     {
@@ -2673,10 +2568,11 @@ namespace dblu.Portale.Plugin.Docs.Services
                             var utente = _usrManager.GetUser(User.Identity.Name);
                             if (utente != null && !string.IsNullOrEmpty(utente.Email))
                             {
-                               newmessage.From.Add(new MailboxAddress($"{utente.Name} {utente.LastName}", utente.Email));
+                                newmessage.From.Add(new MailboxAddress($"{utente.Name} {utente.LastName}", utente.Email));
                             }
-                            else { 
-                            newmessage.From.Add(new MailboxAddress(srv.Nome, srv.Email));
+                            else
+                            {
+                                newmessage.From.Add(new MailboxAddress(srv.Nome, srv.Email));
                             }
                             //newmessage.ReplyTo.Add(new MailboxAddress(srv.Nome, srv.Email));
 
@@ -2687,32 +2583,33 @@ namespace dblu.Portale.Plugin.Docs.Services
                             }
                             newmessage.To.AddRange(listind);
                             listind.Clear();
-                            if(!string.IsNullOrEmpty(cc))
+                            if (!string.IsNullOrEmpty(cc))
                                 foreach (string ind in cc.Replace(";", ",").Split(","))
                                 {
                                     listind.Add(new MailboxAddress("", ind));
                                 }
-                            if (listind.Count > 0) {
+                            if (listind.Count > 0)
+                            {
                                 newmessage.Cc.AddRange(listind);
                             }
                             newmessage.Subject = Oggetto;  //"FWD: " + message.Subject;
 
                             // now to create our body...
                             var builder = new BodyBuilder();
-                                         
-                            var htxt = Testo??"";
-                            var ttxt = Testo??"";
+
+                            var htxt = Testo ?? "";
+                            var ttxt = Testo ?? "";
                             if (!htxt.Contains("<body>"))
                                 htxt = $"<body>{htxt}</body>";
 
                             if (allegaEmail)
-                            {                              
-                                htxt = message.HtmlBody ;
+                            {
+                                htxt = message.HtmlBody;
                                 string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
                                 string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
                                 if (!string.IsNullOrEmpty(htxt) && !htxt.Contains("<body>"))
                                     htxt = $"<body>{htxt}</body>";
-                                
+
                                 ttxt = $"{Testo}\n\n\n\nDa : {message.From}\nA : {message.To}\nInviato : {message.Date.DateTime}\nOggetto: {message.Subject}\n\n{message.TextBody}";
                                 htxt = htxt?.Replace("<body>", $"<body><p>{Testo}</p><p></p><p><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></p><br>");
 
@@ -2735,17 +2632,17 @@ namespace dblu.Portale.Plugin.Docs.Services
                             _logMan.Salva(log, true);
 
 
-                              Allegati newall = new Allegati()
-                                {
-                                    Descrizione = Oggetto,
-                                    NomeFile = "email",
-                                    Tipo = al.Tipo,
-                                    TipoNavigation = al.TipoNavigation,
-                                    Stato = StatoAllegato.Spedito,
-                                    Origine = NomeServer,
-                                    UtenteC = User.Identity.Name,
-                                    UtenteUM = User.Identity.Name
-                              };
+                            Allegati newall = new Allegati()
+                            {
+                                Descrizione = Oggetto,
+                                NomeFile = "email",
+                                Tipo = al.Tipo,
+                                TipoNavigation = al.TipoNavigation,
+                                Stato = StatoAllegato.Spedito,
+                                Origine = NomeServer,
+                                UtenteC = User.Identity.Name,
+                                UtenteUM = User.Identity.Name
+                            };
                             newall.elencoAttributi = _allMan.GetTipoAllegato(al.TipoNavigation.Codice).Attributi;
                             string emailmitt = newmessage.From.Mailboxes.First().Address;
                             newall.SetAttributo("Mittente", emailmitt);
@@ -2756,14 +2653,16 @@ namespace dblu.Portale.Plugin.Docs.Services
                             newall.SetAttributo("CodiceSoggetto", al.GetAttributo("CodiceSoggetto"));
                             newall.SetAttributo("NomeSoggetto", al.GetAttributo("NomeSoggetto"));
 
-                            
+
                             MemoryStream file = new MemoryStream();
                             await newmessage.WriteToAsync(file);
                             newall = await _allMan.SalvaAsync(newall, file, true);
 
-                            if (chiudiEmail) {
+                            if (chiudiEmail)
+                            {
                                 al.Stato = StatoAllegato.Chiuso;
-                                if (_allMan.Salva(al, false)) {
+                                if (_allMan.Salva(al, false))
+                                {
                                     LogDoc logC = new LogDoc()
                                     {
                                         Data = DateTime.Now,
@@ -2776,7 +2675,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 }
 
                             }
-                            
+
                         }
                         else
                         {
@@ -2814,10 +2713,11 @@ namespace dblu.Portale.Plugin.Docs.Services
                     //    new { Origine = NomeServer, Id = IdAllegato });
                     Allegati all = _allMan.Get(IdAllegato);
                     all.Origine = NomeServer;
-                    if (all.Stato == StatoAllegato.DaSmistare) {
+                    if (all.Stato == StatoAllegato.DaSmistare)
+                    {
                         all.Stato = StatoAllegato.Attivo;
                     }
-                    if( _allMan.Salva(all, false, false))
+                    if (_allMan.Salva(all, false, false))
                     //if (n > 0)
                     {
                         res.Successo = true;
@@ -2859,8 +2759,8 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 if (!string.IsNullOrEmpty(IdFascicolo))
                 {
-                using (SqlConnection cn = new SqlConnection(_context.Connessione))
-                {
+                    using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                    {
                         //var sqlEl = " SELECT distinct  e.Id, e.Revisione, e.Tipo, e.Descrizione, e.Chiave1, e.Chiave2, e.Chiave3, e.Chiave4, e.Chiave5, te.Descrizione AS DescrizioneTipo, e.Stato, e.IdFascicolo, isnull(am.stato, 0) as Ultimo "
                         //    + " FROM Elementi AS e INNER JOIN TipiElementi AS te ON te.Codice = e.Tipo "
                         //    + " LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.id and am.tipo = 'EMAIL' "
@@ -2884,22 +2784,22 @@ namespace dblu.Portale.Plugin.Docs.Services
                             LEFT JOIN Allegati AM on am.idfascicolo = e.idfascicolo and am.idelemento = e.IdElemento and am.tipo = 'EMAIL'  {sqlall}
                             WHERE (e.IdFascicolo = @IdFascicolo) ORDER BY Ultimo DESC, e.DataC DESC ";
 
-                    res = cn.Query<EmailElementi>(sqlEl, new { IdFascicolo = IdFascicolo, IdAllegato = IdAllegato }).ToList();
+                        res = cn.Query<EmailElementi>(sqlEl, new { IdFascicolo = IdFascicolo, IdAllegato = IdAllegato }).ToList();
+                    }
                 }
-            }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"ListaElementiEmail : {ex.Message}");
             }
 
-         
+
             return res;
 
         }
 
 
-        public async Task<MemoryStream> GetPdfRiepilogo(string IdEmail)
+        public async Task<MemoryStream> GetPdfRiepilogo(string IdEmail, string IdFascicolo = "")
         {
             MemoryStream mpdf = null;
 
@@ -2912,32 +2812,35 @@ namespace dblu.Portale.Plugin.Docs.Services
             {
 
                 if (!File.Exists(NomePdf))
-            {
-                string etichetta = Path.Combine(_appEnvironment.ContentRootPath, "Report", _config["Docs:EtichettaProtocollo"]);
-                if (!File.Exists(etichetta))
                 {
-                    _logger.LogError("etichetta inesistente");
-                    return null;
-                }
-                Telerik.Reporting.Report eti;
-                var reportPackager = new ReportPackager();
+                    string etichetta = Path.Combine(_appEnvironment.ContentRootPath, "Report", _config["Docs:EtichettaProtocollo"]);
+                    if (!File.Exists(etichetta))
+                    {
+                        _logger.LogError("etichetta inesistente");
+                        return null;
+                    }
+                    Telerik.Reporting.Report eti;
+                    var reportPackager = new ReportPackager();
 
-                using (var sourceStream = System.IO.File.OpenRead(etichetta))
-                {
-                    eti = (Telerik.Reporting.Report)reportPackager.UnpackageDocument(sourceStream);
-                }
-                var reportProcessor = new Telerik.Reporting.Processing.ReportProcessor();
-                var reportSource = new Telerik.Reporting.InstanceReportSource();
-                reportSource.ReportDocument = eti;
+                    using (var sourceStream = System.IO.File.OpenRead(etichetta))
+                    {
+                        eti = (Telerik.Reporting.Report)reportPackager.UnpackageDocument(sourceStream);
+                    }
+                    var reportProcessor = new Telerik.Reporting.Processing.ReportProcessor();
+                    var reportSource = new Telerik.Reporting.InstanceReportSource();
+                    reportSource.ReportDocument = eti;
 
                     // cambiato in left join per elementi senza allegato
+                    var Dossier = "";
+                    if (!string.IsNullOrEmpty(IdFascicolo))
+                        Dossier = " and m.IdFascicolo like @IdFascicolo ";
 
                     var sql = "SELECT e.* FROM allegati m INNER JOIN elementi e ON e.idfascicolo = m.idfascicolo " +
                     " LEFT JOIN allegati f ON f.idfascicolo = m.idfascicolo and f.idelemento = e.id and f.Tipo = 'FILE' and f.NomeFile = cast(m.id as varchar(50)) + '.pdf' " +
-                    " WHERE m.id = @IdEmail Order by e.datac";
+                    " WHERE m.id = @IdEmail " + Dossier + " Order by e.datac";
                     using (SqlConnection cn = new SqlConnection(_context.Connessione))
                     {
-                        List<Elementi> el = cn.QueryAsync<Elementi>(sql, new { IdEmail = IdEmail }).Result.ToList();
+                        List<Elementi> el = cn.QueryAsync<Elementi>(sql, new { IdEmail = IdEmail, IdFascicolo = IdFascicolo }).Result.ToList();
 
                         //Create a new PDF document
                         Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
@@ -2964,153 +2867,156 @@ namespace dblu.Portale.Plugin.Docs.Services
 
 
                         float curpos = 0;
-                        float etiHeight = page.Size.Height * (float) .05;
+                        float etiHeight = page.Size.Height * (float).05;
                         int i = 0;
                         //foreach (Elementi e in el)
-                        int nrpag = (int)Math.Round(el.Count() / 12.0+0.5,0,MidpointRounding.AwayFromZero) ;
+                        int nrpag = (int)Math.Round(el.Count() / 12.0 + 0.5, 0, MidpointRounding.AwayFromZero);
 
-                        for(int p=0; p< nrpag; p++) {
-                            if (p > 0) {
+                        for (int p = 0; p < nrpag; p++)
+                        {
+                            if (p > 0)
+                            {
                                 page = document.Pages.Add();
                                 graphics = page.Graphics;
                                 curpos = 0;
                             }
-                            for (i=0; i< 12;i++)
-                        {
+                            for (i = 0; i < 12; i++)
+                            {
                                 int j = p * 12 + i;
                                 if (j >= el.Count())
                                     break;
-                                
+
                                 Elementi e = el[j];
 
-                            e.TipoNavigation = _elmMan.GetTipoElemento(e.Tipo);
-                            e.elencoAttributi = e.TipoNavigation.Attributi;
-                            e.elencoAttributi.SetValori(e.Attributi);
-                        
-                            foreach (Attributo a in e.elencoAttributi.ToList())
-                            {
-                                if (a.Valore != null)
+                                e.TipoNavigation = _elmMan.GetTipoElemento(e.Tipo);
+                                e.elencoAttributi = e.TipoNavigation.Attributi;
+                                e.elencoAttributi.SetValori(e.Attributi);
+
+                                foreach (Attributo a in e.elencoAttributi.ToList())
                                 {
-                                    reportSource.Parameters.Add(a.Nome, a.Valore == null ? "" : a.Valore);
+                                    if (a.Valore != null)
+                                    {
+                                        reportSource.Parameters.Add(a.Nome, a.Valore == null ? "" : a.Valore);
+                                    }
                                 }
-                            }
                                 //i++;
-                                reportSource.Parameters.Add("NPag", p+1);
-                                reportSource.Parameters.Add("TPag", pdftmp.Pages.Count + nrpag );
+                                reportSource.Parameters.Add("NPag", p + 1);
+                                reportSource.Parameters.Add("TPag", pdftmp.Pages.Count + nrpag);
 
-                            RenderingResult curEti = reportProcessor.RenderReport("PDF", reportSource, null);
+                                RenderingResult curEti = reportProcessor.RenderReport("PDF", reportSource, null);
 
-                            Syncfusion.Pdf.Parsing.PdfLoadedDocument pdfEti = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(new MemoryStream(curEti.DocumentBytes));
+                                Syncfusion.Pdf.Parsing.PdfLoadedDocument pdfEti = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(new MemoryStream(curEti.DocumentBytes));
 
-                            //Load the page
+                                //Load the page
 
-                            Syncfusion.Pdf.PdfLoadedPage loadedPage = pdfEti.Pages[0] as Syncfusion.Pdf.PdfLoadedPage;
+                                Syncfusion.Pdf.PdfLoadedPage loadedPage = pdfEti.Pages[0] as Syncfusion.Pdf.PdfLoadedPage;
 
-                            //Create the template from the page.
-                            Syncfusion.Pdf.Graphics.PdfTemplate template = loadedPage.CreateTemplate();
+                                //Create the template from the page.
+                                Syncfusion.Pdf.Graphics.PdfTemplate template = loadedPage.CreateTemplate();
 
-                            //Draw the template
-                            Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = curpos  };
-                                
-                            graphics.DrawPdfTemplate(template, posizione,
-                                new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height));
-                            curpos += (etiHeight + etiHeight*0.5F);
-                            pdfEti.Close();
+                                //Draw the template
+                                Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = curpos };
 
-                    }
+                                graphics.DrawPdfTemplate(template, posizione,
+                                    new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height));
+                                curpos += (etiHeight + etiHeight * 0.5F);
+                                pdfEti.Close();
+
+                            }
                         }
-               
+
                         i = nrpag;
-                        foreach (Syncfusion.Pdf.PdfLoadedPage lptmp in pdftmp.Pages) {
-                            
+                        foreach (Syncfusion.Pdf.PdfLoadedPage lptmp in pdftmp.Pages)
+                        {
+
 
                             try
                             {
 
                                 Syncfusion.Pdf.Graphics.PdfTemplate template = lptmp.CreateTemplate();
-                            page = document.Pages.Add();
- 
-                            graphics = page.Graphics;
-                            etiHeight = page.Size.Height * .05F + 5;
+                                page = document.Pages.Add();
 
-                            Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = etiHeight + 1 };
+                                graphics = page.Graphics;
+                                etiHeight = page.Size.Height * .05F + 5;
 
-                            Syncfusion.Drawing.SizeF pDest = SFPdf.CalcolaProporzioni(lptmp.Size.Width  , lptmp.Size.Height , page.Size.Width * 0.95F, page.Size.Height - etiHeight);
+                                Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = etiHeight + 1 };
 
-                            switch (lptmp.Rotation)
-                            {
-                                case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle90:
-                                    if (pDest.Height < pDest.Width)
-                                    {
-                                         graphics.TranslateTransform(page.Size.Width, etiHeight);
-                                    graphics.RotateTransform(90);
-                                        posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
-                                    }
-                                    graphics.DrawPdfTemplate(template, posizione, pDest);
+                                Syncfusion.Drawing.SizeF pDest = SFPdf.CalcolaProporzioni(lptmp.Size.Width, lptmp.Size.Height, page.Size.Width * 0.95F, page.Size.Height - etiHeight);
 
-                                    if (pDest.Height < pDest.Width)
-                                    {
-                                        
-                                    graphics.RotateTransform(-90);
-                                        graphics.TranslateTransform(-page.Size.Width, -etiHeight);
-                                    }
-                                    break;
-                                case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle270:
-                                    if (pDest.Height < pDest.Width)
-                                    {
-                                    graphics.TranslateTransform(0, page.Size.Height);
-                                    graphics.RotateTransform(-90);
-                                        posizione = new Syncfusion.Drawing.PointF() { X = 0, Y =  0};
-                                    }
-                            
-                                    graphics.DrawPdfTemplate(template, posizione, pDest);
-                                    if (pDest.Height < pDest.Width)
-                                    {
-                                     graphics.RotateTransform(90);
-                                     graphics.TranslateTransform(0, -page.Size.Height);
-                                    }
-                                    break;
-                                default:
+                                switch (lptmp.Rotation)
+                                {
+                                    case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle90:
+                                        if (pDest.Height < pDest.Width)
+                                        {
+                                            graphics.TranslateTransform(page.Size.Width, etiHeight);
+                                            graphics.RotateTransform(90);
+                                            posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
+                                        }
+                                        graphics.DrawPdfTemplate(template, posizione, pDest);
 
-                                    
-                                    if (pDest.Height  < pDest.Width)
-                                    {
-                                        graphics.TranslateTransform(0, page.Size.Height);
-                                        graphics.RotateTransform(-90);
-                                        posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
-                                    }
-                                    graphics.DrawPdfTemplate(template, posizione, pDest);
-                
-                                    if (pDest.Height < pDest.Width)
-                                    {
-                                        graphics.RotateTransform(90);
-                                        graphics.TranslateTransform(0, -page.Size.Height);
-                                    }
+                                        if (pDest.Height < pDest.Width)
+                                        {
 
-                                    break;
-                            }
-                            
-                            i++;
-                            reportSource.Parameters.Add("NPag", i);
-                            reportSource.Parameters.Add("TPag", pdftmp.Pages.Count+nrpag);
-                            reportSource.Parameters.Add("flRiepilogo", true);
+                                            graphics.RotateTransform(-90);
+                                            graphics.TranslateTransform(-page.Size.Width, -etiHeight);
+                                        }
+                                        break;
+                                    case Syncfusion.Pdf.PdfPageRotateAngle.RotateAngle270:
+                                        if (pDest.Height < pDest.Width)
+                                        {
+                                            graphics.TranslateTransform(0, page.Size.Height);
+                                            graphics.RotateTransform(-90);
+                                            posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
+                                        }
 
-                            RenderingResult curEti = reportProcessor.RenderReport("PDF", reportSource, null);
-                            Syncfusion.Pdf.Parsing.PdfLoadedDocument pdfEti = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(new MemoryStream(curEti.DocumentBytes));
-                            posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 5 };
-                            Syncfusion.Pdf.PdfLoadedPage loadedPage = pdfEti.Pages[0] as Syncfusion.Pdf.PdfLoadedPage;
-                            template = loadedPage.CreateTemplate();
+                                        graphics.DrawPdfTemplate(template, posizione, pDest);
+                                        if (pDest.Height < pDest.Width)
+                                        {
+                                            graphics.RotateTransform(90);
+                                            graphics.TranslateTransform(0, -page.Size.Height);
+                                        }
+                                        break;
+                                    default:
+
+
+                                        if (pDest.Height < pDest.Width)
+                                        {
+                                            graphics.TranslateTransform(0, page.Size.Height);
+                                            graphics.RotateTransform(-90);
+                                            posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
+                                        }
+                                        graphics.DrawPdfTemplate(template, posizione, pDest);
+
+                                        if (pDest.Height < pDest.Width)
+                                        {
+                                            graphics.RotateTransform(90);
+                                            graphics.TranslateTransform(0, -page.Size.Height);
+                                        }
+
+                                        break;
+                                }
+
+                                i++;
+                                reportSource.Parameters.Add("NPag", i);
+                                reportSource.Parameters.Add("TPag", pdftmp.Pages.Count + nrpag);
+                                reportSource.Parameters.Add("flRiepilogo", true);
+
+                                RenderingResult curEti = reportProcessor.RenderReport("PDF", reportSource, null);
+                                Syncfusion.Pdf.Parsing.PdfLoadedDocument pdfEti = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(new MemoryStream(curEti.DocumentBytes));
+                                posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 5 };
+                                Syncfusion.Pdf.PdfLoadedPage loadedPage = pdfEti.Pages[0] as Syncfusion.Pdf.PdfLoadedPage;
+                                template = loadedPage.CreateTemplate();
 
 
                                 Syncfusion.Drawing.SizeF pDestE = new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height);
                                 graphics.DrawPdfTemplate(template, posizione, pDestE);
-                            pdfEti.Close();
+                                pdfEti.Close();
                             }
                             catch (Exception ex)
                             {
                                 _logger.LogError($"GetPdfRiepilogo (errore pagina { i } ) : {ex.Message}");
 
-                                document.ImportPageRange(pdftmp, i-1, i-1);
+                                document.ImportPageRange(pdftmp, i - 1, i - 1);
                                 i++;
 
                             }
@@ -3150,7 +3056,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
 
-        public  RisultatoAzione RiapriEmail(string IdAllegato, ClaimsPrincipal User)
+        public RisultatoAzione RiapriEmail(string IdAllegato, ClaimsPrincipal User)
         {
             RisultatoAzione res = new RisultatoAzione();
             try
@@ -3160,11 +3066,12 @@ namespace dblu.Portale.Plugin.Docs.Services
                 {
                     al.Stato = StatoAllegato.Attivo;
                 }
-                else {
+                else
+                {
                     al.Stato = StatoAllegato.Elaborato;
                 }
                 res.Successo = _allMan.Salva(al, false);
-                
+
                 //-------- Memorizzo l'operazione----------------------
                 LogDoc log = new LogDoc()
                 {
@@ -3172,7 +3079,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     TipoOggetto = TipiOggetto.ALLEGATO,
                     Utente = User.Identity.Name
                 };
-                 log.Operazione = TipoOperazione.Riaperto; 
+                log.Operazione = TipoOperazione.Riaperto;
                 _logMan.Salva(log, true);
                 //-------- Memorizzo l'operazione----------------------
 
@@ -3192,11 +3099,11 @@ namespace dblu.Portale.Plugin.Docs.Services
             RisultatoAzione res = new RisultatoAzione();
             try
             {
-                
+
                 if (EliminaDaServer)
                 {
                     Allegati al = _allMan.Get(IdAllegato);
-                    
+
                     MemoryStream eml = new MemoryStream();
                     eml = await _allMan.GetFileAsync(al.Id.ToString());
                     if (eml == null)
@@ -3213,7 +3120,8 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                         EmailServer srv = _serMan.GetServer(al.Origine);
 
-                        if (srv == null) {
+                        if (srv == null)
+                        {
                             res.Successo = false;
                             res.Messaggio = $"Server di posta non valido: {al.Origine}.";
                             return res;
@@ -3223,7 +3131,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         var flOk = true;
                         if (client.IsConnected)
                         {
-                            
+
                             if (srv.Utente != "")
                             {
                                 await client.AuthenticateAsync(srv.Utente, srv.Password, c);
@@ -3243,7 +3151,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                     inbox = client.Inbox;
                                 }
                                 await inbox.OpenAsync(FolderAccess.ReadWrite, c);
-                                
+
                                 var uids = await inbox.SearchAsync(SearchQuery.HeaderContains("Message-Id", message.MessageId));
                                 inbox.AddFlags(uids, MessageFlags.Deleted, silent: true);
                                 inbox.Close();
@@ -3256,19 +3164,21 @@ namespace dblu.Portale.Plugin.Docs.Services
                         }
                         await client.DisconnectAsync(true);
                     }
-                    
+
                 }
 
-                
+
                 if (_allMan.Cancella(IdAllegato))
                 {
                     res.Successo = true;
                     //-------- Memorizzo l'operazione----------------------
-                    _logMan.Salva( new LogDoc { IdOggetto = Guid.Parse(IdAllegato) ,
+                    _logMan.Salva(new LogDoc
+                    {
+                        IdOggetto = Guid.Parse(IdAllegato),
                         TipoOggetto = TipiOggetto.ALLEGATO,
                         Operazione = TipoOperazione.Cancellato,
                         Utente = User.Identity.Name
-                    } ,  true);
+                    }, true);
                     //-------- Memorizzo l'operazione----------------------
                 }
 
@@ -3291,7 +3201,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                 using (SqlConnection cn = new SqlConnection(_context.Connessione))
                 {
 
-                    if (_elmMan.Cancella(IdElemento, Revisione)) { 
+                    if (_elmMan.Cancella(IdElemento, Revisione))
+                    {
                         res.Successo = true;
 
                         _logMan.Salva(new LogDoc
@@ -3317,7 +3228,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         public async Task<PdfEditAction> GetFilePdfCompletoAsync(PdfEditAction pdf, bool daEmail)
         {
             pdf.FilePdf = "";
-           string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
+            string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
             if (!Directory.Exists(NomePdf))
             {
                 Directory.CreateDirectory(NomePdf);
@@ -3334,7 +3245,8 @@ namespace dblu.Portale.Plugin.Docs.Services
             return pdf;
         }
 
-        public bool PulisciFileTemp(string IdAllegato) {
+        public bool PulisciFileTemp(string IdAllegato)
+        {
 
             try
             {
@@ -3369,7 +3281,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
         public BPMDocsProcessInfo GetProcessInfo(
             TipiOggetto Tipo,
-            AzioneOggetto Azione 
+            AzioneOggetto Azione
             )
         {
             BPMProcessInfo baseinfo = _bpm.GetProcessInfo();
@@ -3397,7 +3309,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 var Allegato = _allMan.Get(IdAllegato);
 
-               var Descrizione = Allegato.Descrizione;
+                var Descrizione = Allegato.Descrizione;
 
                 TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
                 Fascicoli f = _fasMan.Get(Allegato.IdFascicolo);
@@ -3405,19 +3317,19 @@ namespace dblu.Portale.Plugin.Docs.Services
                 Allegati mail = null;
                 using (SqlConnection cn = new SqlConnection(_context.Connessione))
                 {
-                    mail = cn.Query<Allegati>("select * from allegati where tipo='EMAIL' and IdFascicolo=@IdFascicolo and IdElemento=@IdElemento ", 
-                        new { IdFascicolo , IdElemento }).FirstOrDefault();
+                    mail = cn.Query<Allegati>("select * from allegati where tipo='EMAIL' and IdFascicolo=@IdFascicolo and IdElemento=@IdElemento ",
+                        new { IdFascicolo, IdElemento }).FirstOrDefault();
                 }
 
-                if (tipoAll != null && f != null & e != null & mail !=null)
+                if (tipoAll != null && f != null & e != null & mail != null)
                 {
                     //estrae i file dalla mail presenti in lista e li assegna all'elemento
                     var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
                     string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp", $"{Allegato.Id}.pdf");
                     var m = await _allMan.GetFileAsync(mail.Id.ToString());
                     var Messaggio = MimeKit.MimeMessage.Load(m, cancel);
-                    
-                    var l= sfdpf.CreaTmpPdfCompletoSF(NomePdf, Messaggio);
+
+                    var l = sfdpf.CreaTmpPdfCompletoSF(NomePdf, Messaggio);
                     MemoryStream mpdf = new MemoryStream();
                     using (FileStream fileStream = File.OpenRead(NomePdf))
                     {
@@ -3437,6 +3349,395 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
             return false;
         }
-    
+
+
+        /// <summary>
+        /// Create a dossier and an item (if necessary) for the attach specificied
+        /// </summary>
+        /// <param name="AttachID">Id of the attachment</param>
+        /// <param name="DossierID">Id of the Dossier</param>
+        /// <param name="Category">Category of the Dossier</param>
+        /// <param name="ItemType">Item type of the element</param>
+        /// <param name="CostumerCode">Customer Code</param>
+        /// <param name="CustomerName">Name of customer</param>
+        /// <param name="Attachs">List of the attachment fot this item</param>
+        /// <param name="Description"></param>
+        /// <param name="User">Use that is operating</param>
+        /// <param name="nDocument">Memory stream with the PDF that need to be saved as main attach</param>
+        /// <returns>
+        ///     The Item created
+        /// </returns>
+        public async Task<Elementi> CreateItemDossier(string AttachID, string DossierID,string Category,string ItemType,string CostumerCode,string CustomerName, List<OriginalAttachments> Attachs, string Description,  ClaimsPrincipal User, MemoryStream nDocument)
+        {
+            try
+            {
+
+                Stopwatch sw = Stopwatch.StartNew();
+                ///RICARICA ALLEGATO
+                Fascicoli f = null;
+                var Allegato = _allMan.Get(AttachID);
+                if (Description == null)
+                    Description = Allegato.Descrizione;
+
+                TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
+                Allegato.SetAttributo("CodiceSoggetto", CostumerCode);
+                Allegato.SetAttributo("NomeSoggetto", CustomerName);
+                Allegato.DataUM = DateTime.Now;
+                if (Allegato.IdFascicolo == null && !string.IsNullOrEmpty(DossierID))
+                    Allegato.IdFascicolo = Guid.Parse(DossierID);
+
+                ///1) CREO FASCICOLO SE MANCA 
+                var isNew = false;
+                if (Allegato.IdFascicolo == null)
+                {
+                    //CreaFascicolo nuovo fascicolo e assegna alla mail
+                    f = new Fascicoli();
+                    f.Categoria = Category;
+                    f.CategoriaNavigation = _fasMan.GetCategoria(Category);
+                    f.elencoAttributi = f.CategoriaNavigation.Attributi;
+                    isNew = true;
+                    Allegato.IdFascicolo = f.Id;
+                    f.Descrizione = Description;
+                }
+                else
+                {
+                    f = _fasMan.Get(DossierID);
+                    if (f.elencoAttributi == null)
+                    {
+                        f.elencoAttributi = f.CategoriaNavigation.Attributi;
+                    }
+                }
+                f.CodiceSoggetto = CostumerCode;
+                f.SetAttributo("CodiceSoggetto", CostumerCode);
+                f.SetAttributo("NomeSoggetto", CustomerName);
+                if (_fasMan.Salva(f, isNew) == false) return null;
+
+
+                ///2) LOGGO
+                LogDoc log = new LogDoc()
+                {
+                    Data = DateTime.Now,
+                    IdOggetto = f.Id,
+                    TipoOggetto = TipiOggetto.FASCICOLO,
+                    Utente = User.Identity.Name
+                };
+                if (isNew) log.Operazione = TipoOperazione.Creato; else log.Operazione = TipoOperazione.Modificato;
+                _logMan.Salva(log, true);
+
+                ///3) ELEMENTO
+                var e = new Elementi();
+                e.Tipo = ItemType;
+                e.IdFascicolo = f.Id;
+                e.Descrizione = Description;
+                isNew = true;
+                e.IdFascicoloNavigation = f;
+
+                TipiElementi tipoEl = _elmMan.GetTipoElemento(ItemType);
+                e.TipoNavigation = tipoEl;
+                if (e.elencoAttributi == null)
+                {
+                    e.elencoAttributi = e.TipoNavigation.Attributi;
+                }
+
+                Allegato.IdElemento = e.Id;
+                var kk = Allegato.elencoAttributi.Nomi();
+                foreach (var att in e.elencoAttributi.ToList())
+                {
+                    if (att.Duplicabile && kk.Contains(att.Nome))
+                    {
+                        e.SetAttributo(att.Nome, Allegato.GetAttributo(att.Nome));
+                    }
+                }
+
+                e.SetAttributo("CodiceSoggetto", CostumerCode);
+                e.SetAttributo("NomeSoggetto", CustomerName);
+                e.SetAttributo("DataRichiesta", e.GetAttributo("Data"));
+                if (_elmMan.Salva(e, isNew) == false) return null;
+
+                ///4) LOGGO
+
+                log = new LogDoc()
+                {
+                    Data = DateTime.Now,
+                    IdOggetto = e.Id,
+                    TipoOggetto = TipiOggetto.ELEMENTO,
+                    Operazione = TipoOperazione.Creato,
+                    Utente = User.Identity.Name
+                };
+                _logMan.Salva(log, true);
+
+
+                ///5) SALVO ALLEGATO COME ELABORATO
+
+                Allegato.Stato = StatoAllegato.Elaborato;
+                if (_allMan.Salva(Allegato, false) == false) return null;
+
+                ///6) LOGGO
+                log = new LogDoc()
+                {
+                    Data = DateTime.Now,
+                    IdOggetto = Allegato.Id,
+                    TipoOggetto = TipiOggetto.ALLEGATO,
+                    Operazione = TipoOperazione.Elaborato,
+                    Utente = User.Identity.Name
+                };
+                _logMan.Salva(log, true);
+
+                /// 7) CREO UNA ALLEGATO DI TIPO FILE 
+                var fileName = $"{Allegato.Id.ToString()}.pdf";
+                Allegati FILE = null;
+                using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                { FILE = cn.QueryFirstOrDefault<Allegati>("Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile", new { IdElemento = Allegato.IdElemento.ToString(), NomeFile = fileName }); }
+
+                bool isNewFILE = false;
+                if (FILE == null)
+                {
+                    FILE = new Allegati()
+                    {
+                        Descrizione = Allegato.Descrizione,
+                        NomeFile = fileName,
+                        Tipo = "FILE",
+                        TipoNavigation = tipoAll,
+                        Stato = StatoAllegato.Attivo,
+                        IdFascicolo = Allegato.IdFascicolo,
+                        IdElemento = Allegato.IdElemento,
+                        jNote = Allegato.jNote,
+                        UtenteC = User.Identity.Name,
+                        UtenteUM = User.Identity.Name,
+                    };
+                    isNewFILE = true;
+                }
+                else { FILE.Descrizione = Description; };
+
+                if (FILE.elencoAttributi == null) { FILE.elencoAttributi = tipoAll.Attributi; }
+
+                FILE.SetAttributo("Mittente", Allegato.GetAttributo("Mittente"));
+                FILE.SetAttributo("Data", Allegato.GetAttributo("Data"));
+                FILE.SetAttributo("CodiceSoggetto", Allegato.GetAttributo("CodiceSoggetto"));
+                FILE.SetAttributo("NomeSoggetto", Allegato.GetAttributo("NomeSoggetto"));
+                FILE.SetAttributo("Oggetto", Allegato.GetAttributo("Oggetto"));
+                FILE.SetAttributo("MessageId", Allegato.GetAttributo("MessageId"));
+
+
+                /// 8) SALVO SUL TIPO FILE IL PDF
+                FILE = await _allMan.SalvaAsync(FILE, nDocument, isNewFILE);
+                /// 9) Salva eventuali allegati segnalati
+                await ExtractAttachments(Allegato, Attachs, Description, tipoAll);
+
+                _logger.LogInformation($"MailService.CreateItemDossier : Item created in {sw.ElapsedMilliseconds} ms");
+                return e;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"MailService.CreateItemDossier : Unexpected exception {ex.Message}");
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Attach an  attachment to an Elmennt
+        /// </summary>
+        /// <param name="AttachID">Id of the attachment</param>
+        /// <param name="DossierID">Id of the Dossier</param>
+        /// <param name="ItemID">Id of the Item</param>
+        /// <param name="Description">Description</param>
+        /// <param name="Doc">Memory stream od the referred document</param>
+        /// <param name="Attachs">Attachments of the email</param>
+        /// <param name="User">User that do the operation</param>
+        /// <param name="Info">Info regarding the BPM</param>
+        /// <param name="Vars">Variables for the workflow</param>
+        /// <returns>
+        /// True if attachment has be done
+        /// </returns>
+        public async Task<bool> AttachToItem(string AttachID, string DossierID, string ItemID, string Description, MemoryStream Doc, List<OriginalAttachments> Attachs, ClaimsPrincipal User,BPMDocsProcessInfo Info, Dictionary<string, VariableValue> Vars)
+        {
+            try
+            { 
+            bool RET = true;
+
+            Stopwatch sw = Stopwatch.StartNew();
+
+            Allegati MailAttach = _allMan.Get(AttachID);
+            if (string.IsNullOrEmpty(Description)) Description = MailAttach.Descrizione;
+            TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
+            Fascicoli f = _fasMan.Get(DossierID);
+            Elementi e = _elmMan.Get(ItemID, 0);
+
+                if (tipoAll != null && f != null & e != null)
+                {
+                    /// 1) MARCO LA MAIL COM PROCESSATA
+                    MailAttach.SetAttributo("CodiceSoggetto", f.GetAttributo("CodiceSoggetto"));
+                    MailAttach.SetAttributo("NomeSoggetto", f.GetAttributo("NomeSoggetto"));
+                    MailAttach.IdFascicolo = f.Id;
+                    MailAttach.IdElemento = e.Id;
+                    MailAttach.Stato = StatoAllegato.Elaborato;
+                    MailAttach.SetAttributo("jAllegati", JToken.FromObject(Attachs));
+                    var i = _allMan.Salva(MailAttach, false);
+
+                    /// 2) LOGGO
+                    LogDoc log = new LogDoc()
+                    {
+                        Data = DateTime.Now,
+                        IdOggetto = MailAttach.Id,
+                        TipoOggetto = TipiOggetto.ALLEGATO,
+                        Operazione = TipoOperazione.Elaborato,
+                        Utente = User.Identity.Name
+                    };
+                    _logMan.Salva(log, true);
+
+                    //2.1) Aggiungo gli allegati che sono selezionati
+                    await ExtractAttachments(MailAttach, Attachs, Description, tipoAll);
+
+                    /// 3) MARCO PDF IN MEMORIA
+                    (bool, MemoryStream) T = _TranformationService.SignPDF(Doc, MailAttach.elencoAttributi);
+                    if (T.Item1)
+                        Doc = T.Item2;
+
+
+                    /// 4) CREO UNA ALLEGATO DI TIPO FILE 
+                    var fileName = $"{MailAttach.Id.ToString()}.pdf";
+                    Allegati FILE = null;
+                    using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                    { FILE = cn.QueryFirstOrDefault<Allegati>("Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile", new { IdElemento = MailAttach.IdElemento.ToString(), NomeFile = fileName }); }
+
+                    bool isNewFILE = false;
+                    if (FILE == null)
+                    {
+                        FILE = new Allegati()
+                        {
+                            Descrizione = Description,
+                            NomeFile = fileName,
+                            Tipo = "FILE",
+                            TipoNavigation = tipoAll,
+                            Stato = StatoAllegato.Attivo,
+                            IdFascicolo = MailAttach.IdFascicolo,
+                            IdElemento = MailAttach.IdElemento,
+                            jNote = MailAttach.jNote,
+                            UtenteC = User.Identity.Name,
+                            UtenteUM = User.Identity.Name,
+                        };
+                        isNewFILE = true;
+                    }
+                    else { FILE.Descrizione = Description; };
+
+                    if (FILE.elencoAttributi == null) { FILE.elencoAttributi = tipoAll.Attributi; }
+
+                    FILE.SetAttributo("Mittente", MailAttach.GetAttributo("Mittente"));
+                    FILE.SetAttributo("Data", MailAttach.GetAttributo("Data"));
+                    FILE.SetAttributo("CodiceSoggetto", MailAttach.GetAttributo("CodiceSoggetto"));
+                    FILE.SetAttributo("NomeSoggetto", MailAttach.GetAttributo("NomeSoggetto"));
+                    FILE.SetAttributo("Oggetto", MailAttach.GetAttributo("Oggetto"));
+                    FILE.SetAttributo("MessageId", MailAttach.GetAttributo("MessageId"));
+
+
+                    /// 5) SALVO SUL TIPO FILE IL PDF
+                    FILE = await _allMan.SalvaAsync(FILE, Doc, isNewFILE);
+
+
+                    /// 6 ATTIVO PROCESSI
+
+                    if (Info != null)
+                    {
+                        Info.StatoPrec = (int)e.Stato;
+                        Info.Stato = (int)e.Stato;
+                        if (Vars == null)
+                            Vars = new Dictionary<string, VariableValue>();
+                        if (!Vars.ContainsKey("IdAllegato"))
+                            Vars.Add("IdAllegato", VariableValue.FromObject(AttachID));
+
+                        RET = AvviaProcesso(Info, e, Vars);
+                    }
+                }
+                _logger.LogInformation($"MailService.AttachToItem : Item attached in {sw.ElapsedMilliseconds} ms");
+                return RET;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"MailService.AttachToItem : Unexpected exception {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Extract Attachments from email and save them into Item, if they are selected into attachs
+        /// </summary>
+        /// <param name="AttachID">Id of the Attachment</param>
+        /// <param name="Attachs">List of attachments</param>
+        /// <param name="Description">Description to add to attachments</param>
+        /// <param name="AttachTypes">List of attached types</param>
+        private  async Task ExtractAttachments(Allegati AttachID, List<OriginalAttachments> Attachs, string Description, TipiAllegati AttachTypes)
+        {
+            try
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+                using SqlConnection cn = new(_context.Connessione);
+
+                var fileName = $"{AttachID.Id.ToString()}.pdf";
+                var m = await _allMan.GetFileAsync(AttachID.Id.ToString());
+                var Messaggio = MimeKit.MimeMessage.Load(m, new CancellationToken());
+                string emailmitt = Messaggio.From.Mailboxes.First().Address;
+
+                var listafile = Attachs.Where(x => x.IsSelected == true).Select(x => x.Name).ToList();
+                int i = 0;
+
+                ///Per tutti gli allegati
+                foreach (var attachment in Messaggio.Allegati())
+                {
+                    i++;
+                    fileName = attachment.NomeAllegato(i);
+                    m = new MemoryStream();
+                    if (attachment is MessagePart)
+                    {
+                        var rfc822 = (MessagePart)attachment;
+                        rfc822.Message.WriteTo(m);
+                    }
+                    else
+                    {
+                        var part = (MimePart)attachment;
+                        part.Content.DecodeTo(m);
+                    }
+
+                    if (listafile.Contains(fileName))
+                    {
+                        var all2 = cn.QueryFirstOrDefault<Allegati>(
+                            "Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile",
+                            new { IdElemento = AttachID.IdElemento.ToString(), NomeFile = fileName });
+
+                        var isNewAll = false;
+
+                        if (all2 == null)
+                        {
+                            all2 = new Allegati()
+                            {
+                                Descrizione = AttachID.Descrizione,
+                                NomeFile = fileName,
+                                Tipo = "FILE",
+                                TipoNavigation = AttachTypes,
+                                Stato = StatoAllegato.Attivo,
+                                IdFascicolo = AttachID.IdFascicolo,
+                                IdElemento = AttachID.IdElemento
+                            };
+                            isNewAll = true;
+                        }
+
+                        if (all2.elencoAttributi == null) { all2.elencoAttributi = AttachTypes.Attributi; }
+                        all2.Descrizione = Description;
+                        all2.SetAttributo("Mittente", emailmitt);
+                        all2.SetAttributo("Data", Messaggio.Date.UtcDateTime);
+                        all2.SetAttributo("CodiceSoggetto", AttachID.GetAttributo("CodiceSoggetto"));
+                        all2.SetAttributo("Oggetto", Messaggio.Subject);
+                        all2.SetAttributo("MessageId", Messaggio.MessageId);
+                        all2 = await _allMan.SalvaAsync(all2, m, isNewAll);
+                    }
+                }
+                _logger.LogInformation($"MailService.ExtractAttachments: Attach included in {sw.ElapsedMilliseconds} ms");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"MailService.ExtractAttachments: {ex.Message}");
+            }
+        }
+
+
     }
 }

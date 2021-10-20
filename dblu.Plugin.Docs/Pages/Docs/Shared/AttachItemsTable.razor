@@ -118,12 +118,12 @@
         </GridColumns>
     </SfGrid>
     <div class="mt-2">
-        <ActionsButtonsList nItemTypes="@Actions" nDisplayActions="@(!string.IsNullOrEmpty(nCostumerCode))" OnLinkItemPressed="OnLinkItem" OnLinkPressed="OnLink" nDisplayComplete="@(!IsSummaryActive)" OnCompletePressed="OnComplete"></ActionsButtonsList>
+        <ActionsButtonsList nAttachID="@nAttachID"nDossierID="@nDossierID" nAttachments="@nAttachments" nCostumerCode="@nCostumerCode"  nCurrentDocument="@nCurrentDocument" nItemTypes="@Actions" nDisplayActions="@(!string.IsNullOrEmpty(nCostumerCode))" OnLinkItemPressed="OnLinkItem" OnLinkPressed="OnLink" nDisplayComplete="@(!IsSummaryActive)" OnCompletePressed="OnComplete" OnAttachCompleted=OnAttachCompleted  ></ActionsButtonsList>
     </div>
 }
 else
 {
-   <ActionsButtonsList nItemTypes="@Actions" nDisplayActions="@(!string.IsNullOrEmpty(nCostumerCode))" OnLinkItemPressed="OnLinkItem" OnLinkPressed="OnLink" nDisplayComplete="@(!IsSummaryActive)" OnCompletePressed="OnComplete"></ActionsButtonsList>
+   <ActionsButtonsList nAttachID="@nAttachID" nDossierID="@nDossierID" nAttachments="@nAttachments" nCostumerCode="@nCostumerCode" nCurrentDocument="@nCurrentDocument" nItemTypes="@Actions" nDisplayActions="@(!string.IsNullOrEmpty(nCostumerCode))" OnLinkItemPressed="OnLinkItem" OnLinkPressed="OnLink" nDisplayComplete="@(!IsSummaryActive)" OnCompletePressed="OnComplete"  OnAttachCompleted=OnAttachCompleted ></ActionsButtonsList>
 }
 @if (IsShowDialog)
 {
@@ -199,6 +199,12 @@ else
     /// </summary>
     [Parameter]
     public TipiDocumentiFile nDocumentType { get; set; } = TipiDocumentiFile.ZIP;
+
+    /// <summary>
+    /// Fires when an attach has been completed
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> OnAttachCompleted { get; set; }
 
     /// <summary>
     /// reference to the combo with all the available actions
@@ -429,7 +435,6 @@ else
     /// <param name="args"></param>
     public async void OnRecordSelect(RowSelectEventArgs<EmailElementi> args)
     {
-
         OnSelectedItem.InvokeAsync(args.Data);
     }
 
@@ -561,13 +566,14 @@ else
         TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
 
         //1)aggiungo al fascicolo
-        Elementi e = await _MailService.CreaElementoFascicoloAsync(nAttachID, nDossierID, nItem?.IdElemento.ToString() ?? "", T.Categoria, T.Codice, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "", null, true, nItem?.DscElemento, User);
+        Elementi e = await _MailService.CreateItemDossier(nAttachID, nDossierID, T.Categoria, T.Codice, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "",nAttachments.ToList(), nItem?.DscElemento, User, nCurrentDocument);
         if (e == null)
             ToastActionKO.Show();
         else
             ToastActionOK.Show();
 
         //2)Apro la pagina di protocollazione indicata
+        string AttachId = _MailService._elmMan.GetAllegatiElemento(e.Id).FirstOrDefault(x => x.Tipo == "FILE")?.Id.ToString()??nAttachID;
 
         await _SessionStore.SetAsync("Referrer", $"/{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}/{nAttachID}");
         string Url = $"{ComponentName.Replace("blz:/", "")}/{e.Id}";

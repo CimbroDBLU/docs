@@ -4,6 +4,7 @@
 
 @using dblu.Portale.Plugin.Docs.Services
 @using dblu.Docs.Models
+@using Newtonsoft.Json 
 @inject IJSRuntime JSRuntime
 
 <style>
@@ -17,16 +18,28 @@
     }
 </style>
 
-<SfGrid EnablePersistence="false" SelectedRowIndex="0" DataSource="@nAttachments" AllowTextWrap="true" AllowPaging="true">
-    <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
+<SfGrid ID="Grid" @ref="grid" EnablePersistence="false" SelectedRowIndex="0" DataSource="@nAttachments" AllowTextWrap="true" AllowPaging="true">
+    <GridEditSettings AllowAdding="false" AllowEditing="true" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSize="4"></GridPageSettings>
-    <GridEvents TValue="OriginalAttachments" QueryCellInfo="CustomizeCell"></GridEvents>
+    <GridEditSettings AllowEditing="true" Mode="EditMode.Batch" AllowEditOnDblClick="true"></GridEditSettings>
+    <GridSelectionSettings Mode="Syncfusion.Blazor.Grids.SelectionMode.Both"></GridSelectionSettings>
+    <GridEvents OnCellEdit="OnCellEdit" QueryCellInfo="CustomizeCell" CellSelected="CellSelectHandler" TValue="OriginalAttachments"></GridEvents>
     <GridColumns>
+        <GridColumn DisplayAsCheckBox="true" AllowEditing="true" HeaderText="" Field=@nameof(OriginalAttachments.IsSelected) Width="50">
+            <EditTemplate>
+                @{
+                    var Att = (context as OriginalAttachments);
+                    <SfCheckBox TChecked="bool"   @bind-Checked=@Att.IsSelected >
+                    </SfCheckBox>
+
+                }
+            </EditTemplate>
+        </GridColumn>
         <GridColumn Field=@nameof(OriginalAttachments.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
-        <GridColumn Field=@nameof(OriginalAttachments.Name) HeaderText="Allegato"></GridColumn>
-        <GridColumn Width="80px" Field=@nameof(OriginalAttachments.IsIncluded) DisplayAsCheckBox="true" HeaderText="Incluso"></GridColumn>
-        <GridColumn Field=@nameof(OriginalAttachments.Warning) HeaderText="Warning"></GridColumn>
-        <GridColumn HeaderTextAlign=TextAlign.Left HeaderText="" Width="60">
+        <GridColumn Field=@nameof(OriginalAttachments.Name) AllowEditing="false" HeaderText="Allegato"></GridColumn>
+        <GridColumn Width="80px" Field=@nameof(OriginalAttachments.IsIncluded) AllowEditing="false" DisplayAsCheckBox="true" HeaderText="Incluso"></GridColumn>
+        <GridColumn Field=@nameof(OriginalAttachments.Warning) AllowEditing="false" HeaderText="Warning"></GridColumn>
+        <GridColumn HeaderTextAlign=TextAlign.Left AllowEditing="false" HeaderText="" Width="60">
             <Template>
                 @{
                     var Att = (context as OriginalAttachments);
@@ -45,7 +58,13 @@
     </GridColumns>
 </SfGrid>
 
-@code {
+@code 
+{
+    /// <summary>
+    /// REference to the grid itself
+    /// </summary>
+    public static SfGrid<OriginalAttachments> grid { get; set; }
+
     /// <summary>
     /// List of the attachment to show
     /// </summary>
@@ -59,7 +78,7 @@
     public string nAttachID { get; set; }
 
     /// <summary>
-    /// Type of the attachment wwe are processing 
+    /// Type of the attachment wwe are processing
     /// </summary>
     [Parameter]
     public TipiRecordServer nRecordServer { get; set; } = TipiRecordServer.CartellaMail;
@@ -108,5 +127,32 @@
         catch (Exception) { }
     }
 
+    /// <summary>
+    /// On cell selected launch the edit (if it is 0)
+    /// </summary>
+    /// <param name="args"></param>
+    public async void CellSelectHandler(CellSelectEventArgs<OriginalAttachments> args)
+    {
+        if (args.CellIndex == 0)
+            grid.EditCell(args.RowIndex, "IsSelected");
+    }
+
+    /// <summary>
+    /// On cell edit, enable /disable the value and refresh the grid 
+    /// </summary>
+    /// <param name="args"></param>
+    public void OnCellEdit(CellEditArgs<OriginalAttachments> args)
+    {
+        if (args.ColumnName == "IsSelected")
+        {
+            if (nAttachments.FirstOrDefault(x => x.Id == args.Data.Id).IsSelected)
+                nAttachments.FirstOrDefault(x => x.Id == args.Data.Id).IsSelected = false;
+            else
+                nAttachments.FirstOrDefault(x => x.Id == args.Data.Id).IsSelected = true;
+            args.Cancel = true;
+            grid.CloseEdit();
+            grid.Refresh();
+        }
+    }
 
 }

@@ -3,25 +3,59 @@
 *@
 @using dblu.Docs.Models
 @using dblu.Docs.Interfacce
+@using System.IO
+@using dblu.Portale.Plugin.Docs.Services
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
+@inject IConfiguration _conf
 
 <div>
     @if (nDisplayActions)
     {
-    @foreach (ActionTranslation A in ActionsList)
-    {
-        <SfButton CssClass="e-primary mt-1 mr-1" OnClick="@(() => OnLinkItem(A.Item))">@A.Desc</SfButton>
-    }
+        @foreach (ActionTranslation A in ActionsList)
+        {
+            <SfButton CssClass="e-primary mt-1 mr-1" OnClick="@(() => OnLinkItem(A.Item))">@A.Desc</SfButton>
+        }
     }
     <SfButton CssClass="e-primary mt-1 mr-1" OnClick="OnLink">Associa</SfButton>
     @if (nDisplayComplete)
     {
-    <SfButton CssClass="e-primary mt-1 mr-1" OnClick="OnComplete">Completa</SfButton>
+        <SfButton CssClass="e-primary mt-1 mr-1" OnClick="OnComplete">Completa</SfButton>
+        <DynamicComponent nType="@DynamicContent" nAttributes="@DynamicAttributes"></DynamicComponent>
     }
 </div>
 
 @code {
+
+    /// <summary>
+    /// Attachment ID
+    /// </summary>
+    [Parameter]
+    public string nAttachID { get; set; }
+
+    /// <summary>
+    /// Id of the current Dossier
+    /// </summary>
+    [Parameter]
+    public string nDossierID { get; set; }
+
+    /// <summary>
+    /// The current documetn in memory
+    /// </summary>
+    [Parameter]
+    public MemoryStream nCurrentDocument { get; set; }
+
+    /// <summary>
+    /// The list of the attachments related to this email attach
+    /// </summary>
+    [Parameter]
+    public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
+
+    /// <summary>
+    /// The costumer code of this dossier
+    /// </summary>
+    [Parameter]
+    public string nCostumerCode { get; set; }
 
     /// <summary>
     /// List of supported Item Types
@@ -47,9 +81,21 @@
     [Parameter]
     public EventCallback OnCompletePressed { get; set; }
 
+    /// <summary>
+    /// Fires when an attach has been completed
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> OnAttachCompleted { get; set; }
+
+    /// <summary>
+    /// Display Complete button
+    /// </summary>
     [Parameter]
     public bool nDisplayComplete { get; set; } = false;
 
+    /// <summary>
+    /// Display the actions
+    /// </summary>
     [Parameter]
     public bool nDisplayActions { get; set; } = false;
 
@@ -57,6 +103,17 @@
     /// List of available actions
     /// </summary>
     public List<ActionTranslation> ActionsList { get; set; } = new();
+
+    /// <summary>
+    /// Dinamic component to load
+    /// </summary>
+    private Type DynamicContent { get; set; } = null;
+
+    /// <summary>
+    /// Attributes of the dynamic compponent
+    /// </summary>
+    private ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> DynamicAttributes = new();
+
 
     /// <summary>
     /// Class for relate an ItemType code with the action it is proposing
@@ -91,6 +148,55 @@
     protected override async void OnInitialized()
     {
         ActionsList.AddRange(nItemTypes.Where(x => x.AggregaAElemento == false).Select(t => new ActionTranslation(t.Codice, t.Descrizione)).ToList());
+
+        DynamicAttributes.Clear();
+
+        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        {
+            Name = "nAttachID",
+            Position = 1,
+            Value = nAttachID
+        });
+
+        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        {
+            Name = "nCostumerCode",
+            Position = 2,
+            Value = nCostumerCode
+        });
+
+        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        {
+            Name = "nDossierID",
+            Position = 3,
+            Value = nDossierID
+        });
+
+        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        {
+            Name = "nCurrentDocument",
+            Position = 4,
+            Value = nCurrentDocument
+        });
+
+
+        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        {
+            Name = "nAttachments",
+            Position = 5,
+            Value = nAttachments
+        });
+
+        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        {
+            Name = "OnAttachCompleted",
+            Position = 6,
+            Value = EventCallback.Factory.Create<string>(this, OnAttachCompleted)
+        });
+
+        string component = _conf["Docs:CustomAction"];
+        DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+
     }
 
 
@@ -102,14 +208,21 @@
         await OnLinkPressed.InvokeAsync();
     }
 
+    /// <summary>
+    /// Forward the item pressed
+    /// </summary>
+    /// <param name="Code"></param>
     public async void OnLinkItem(string Code)
     {
         await OnLinkItemPressed.InvokeAsync(nItemTypes.FirstOrDefault(c => c.Codice == Code));
     }
 
-
+    /// <summary>
+    /// Forward the complete event
+    /// </summary>
     public async void OnComplete()
     {
         await OnCompletePressed.InvokeAsync();
     }
+
 }
