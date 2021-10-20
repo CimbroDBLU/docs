@@ -62,6 +62,9 @@
 
         if (Variables.ContainsKey("IdElemento"))
             Item = _AttachService.GetElemento(Guid.Parse((string)Variables["IdElemento"].value), 0);
+        else
+            if (Variables.ContainsKey("_IdElemento"))
+                Item = _AttachService.GetElemento(Guid.Parse((string)Variables["_IdElemento"].value), 0);
     }
 
     /// <summary>

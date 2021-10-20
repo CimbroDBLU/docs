@@ -25,7 +25,7 @@ namespace dblu.Portale.Plugin.Docs.Actions
         /// <summary>
         /// Registration priority
         /// </summary>
-        public int Priority => 1000;
+        public int Priority => 1001;
 
         /// <summary>
         /// Registration function
