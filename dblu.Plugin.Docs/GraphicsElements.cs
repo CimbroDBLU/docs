@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using System;
 
 namespace dblu.Portale.Plugin.Documenti
 {
@@ -48,9 +49,12 @@ namespace dblu.Portale.Plugin.Documenti
             {
                 ///Since i cannot inject IConfiguration, i'll use these lines below to read the conf once again and understand 
                 ///if i have to show beta funcionalities
+                ///
+                var ENV=Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                 var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{ENV}.json", optional: true)
                 .AddEnvironmentVariables();
 
                 IConfigurationRoot _conf = builder.Build();
@@ -110,31 +114,31 @@ namespace dblu.Portale.Plugin.Documenti
             get
             {
                 // MAIL
-                var myMail = new IndexItem("50.1.3", 1, "", "Mail", "MailDash", "");
+                var myMail = new IndexItem("50.1.3", 2, "", "Mail", "MailDash", "");
                 myMail.Size = new System.Drawing.Size(2, 6);
                 myMail.ElementType = OBJECT_TYPE.TEMPLATE;
                 myMail.Template = "dblu.Portale.Plugin.Docs.Pages.MailTile";
 
                 // FILE
-                var myFile = new IndexItem("50.1.4", 2, "", "File", "FileDash", "");
+                var myFile = new IndexItem("50.1.4", 3, "", "File", "FileDash", "");
                 myFile.Size = new System.Drawing.Size(2, 6);
                 myFile.ElementType = OBJECT_TYPE.TEMPLATE;
                 myFile.Template = "dblu.Portale.Plugin.Docs.Pages.FileTile";
 
                 // DEALERS
-                var myREQ = new IndexItem("50.1.4", 2, "", "Richieste", "FileDash", "");
+                var myREQ = new IndexItem("50.1.4", 4, "", "Richieste", "FileDash", "");
                 myREQ.Size = new System.Drawing.Size(2, 6);
                 myREQ.ElementType = OBJECT_TYPE.TEMPLATE;
                 myREQ.Template = "dblu.Portale.Plugin.Docs.Pages.RequestTile";
 
                 // FASCICOLI
-                var myFascicoli = new IndexItem("50.1.2", 3, "", "Fascicoli", "FascicoliDash", "");
+                var myFascicoli = new IndexItem("50.1.2", 5, "", "Fascicoli", "FascicoliDash", "");
                 myFascicoli.Size = new System.Drawing.Size(2, 6);
                 myFascicoli.ElementType = OBJECT_TYPE.TEMPLATE;
                 myFascicoli.Template = "dblu.Portale.Plugin.Docs.Pages.DossierTile";
 
                 // Smistamento
-                var mySmista = new IndexItem("50.1.5", 4, "", "Smistamento", "MailDash", "");
+                var mySmista = new IndexItem("50.1.5", 1, "", "Smistamento", "MailDash", "");
                 mySmista.Size = new System.Drawing.Size(2, 6);
                 mySmista.ElementType = OBJECT_TYPE.TEMPLATE;
                 mySmista.Template = "dblu.Portale.Plugin.Docs.Pages.AddressingTile";

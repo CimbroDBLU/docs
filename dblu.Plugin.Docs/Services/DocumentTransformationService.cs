@@ -36,6 +36,11 @@ namespace dblu.Portale.Plugin.Docs.Services
         public string Id { get; set; }
 
         /// <summary>
+        /// Indicates if the document has to be included (document in PDF are naturally included)
+        /// </summary>
+        public bool IsSelected { get; set; }
+
+        /// <summary>
         /// Name of the attach
         /// </summary>
         public string Name { get; set; }
@@ -48,7 +53,12 @@ namespace dblu.Portale.Plugin.Docs.Services
         /// <summary>
         /// Indicates if it has been included
         /// </summary>
-        public bool IsIncluded { get; set; }
+        private bool _IsIncluded { get; set; }
+
+        /// <summary>
+        /// Indicates if it has been included
+        /// </summary>
+        public bool IsIncluded { get => _IsIncluded; set { _IsIncluded = value; if (_IsIncluded) IsSelected = true; } }
 
         /// <summary>
         /// Warning generated during process
