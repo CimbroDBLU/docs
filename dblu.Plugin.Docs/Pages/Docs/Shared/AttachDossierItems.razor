@@ -13,7 +13,7 @@
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject ILogger<AttachDossierItems> _Logger
 
-<AttachItemsTable nRecordServer="@nRecordServer" nDocumentType="@nDocumentType" @ref="@Table" nAttachID="@nAttachID" nDossierID="@nDossierID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode" OnSelectedItem="OnSelectedItemZ" OnLinkedToItem="OnLink" OnComplete="Complete" OnAttachCompleted="OnAttachCompleted" ></AttachItemsTable>
+<AttachItemsTable nRecordServer="@nRecordServer" nDocumentType="@nDocumentType" @ref="@Table" nAttachID="@nAttachID" nSourceFolder="@nSourceFolder" nDossierID="@nDossierID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode" OnSelectedItem="OnSelectedItemZ" OnLinkedToItem="OnLink" OnComplete="Complete" OnAttachCompleted="OnAttachCompleted" ></AttachItemsTable>
 <Toast @ref="ToastCompleteOK" nToastType="Toast.e_ToastType.OK" nTitle="Completa email" nContent="Email completata"></Toast>
 <Toast @ref="ToastCompleteKO" nToastType="Toast.e_ToastType.Fail" nTitle="Completa email" nContent="Completamento non riuscito"></Toast>
 
@@ -79,6 +79,11 @@
     [Parameter]
     public EventCallback<(string, string)> OnLinkedToItem { get; set; }
 
+    /// <summary>
+    /// Current Suorce folder for selected attach
+    /// </summary>
+    [Parameter]
+    public string nSourceFolder { get; set; }
 
     /// <summary>
     /// Toast for a positive Complete action
@@ -100,6 +105,9 @@
     /// </summary>
     private AttachItemsTable Table { get; set; }
 
+    /// <summary>
+    /// Get current dossier
+    /// </summary>
     public Fascicoli CurrentDossier => Dossier;
 
     /// <summary>

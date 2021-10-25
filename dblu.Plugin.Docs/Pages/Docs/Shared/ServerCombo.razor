@@ -74,6 +74,12 @@
     public TipiDocumentiFile nDocumentType { get; set; } = TipiDocumentiFile.ZIP;
 
     /// <summary>
+    /// Folder to select, if nServer is not setting anything
+    /// </summary>
+    [Parameter]
+    public string nPresel { get; set; }
+
+    /// <summary>
     /// List of available services
     /// </summary>
     private ObservableCollection<EmailServer> Servers { get; set; }
@@ -83,8 +89,7 @@
     /// </summary>
     protected override async void OnParametersSet()
     {
-
-        List<string> Roles = new();
+       List<string> Roles = new();
         if (nRecordServer == TipiRecordServer.CartellaMail)
         {
             Roles = _MailService.getRuoli(_HttpContextAccessor.HttpContext.User.Claims, "");
@@ -103,7 +108,10 @@
             Servers = new ObservableCollection<EmailServer>(Servers.Where(x => (nExcludedServers.FirstOrDefault(c => c == x.Nome)) == null));
         if (Servers.Count > 0 && (nServer is null || !Servers.Select(x=>x.Nome).Contains(nServer.Nome)))
         {
-            nServer = Servers[0];
+            if (!string.IsNullOrEmpty(nPresel))
+                nServer = Servers.FirstOrDefault(c => c.Nome==nPresel);
+            if (nServer == null)
+                nServer = Servers[0];
             await nServerChanged.InvokeAsync(nServer);
         }
     }

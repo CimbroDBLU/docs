@@ -207,6 +207,12 @@ else
     public EventCallback<string> OnAttachCompleted { get; set; }
 
     /// <summary>
+    /// Current Suorce folder for selected attach
+    /// </summary>
+    [Parameter]
+    public string nSourceFolder { get; set; }
+
+    /// <summary>
     /// reference to the combo with all the available actions
     /// </summary>
     private ComboActions ActionsCombo { get; set; }
@@ -487,17 +493,20 @@ else
         if (T != null)
         {
             ComponentName = T.ViewAttributi;
+            ///// TODO: TEMPORANEO SANGIACOMO
+            if (!ComponentName.Contains("blz:/") && IsMSG())
+                ComponentName = "blz:/Orders/MSG_RegisterOrder";
+            ////  DA RIMUOVERE
             if (!ComponentName.StartsWith("blz:/"))
                 IsShowUndefined = true;
         }
-        await _SessionStore.SetAsync("Referrer", $"/{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}/{nAttachID}");
-        if ((int)Elem.Stato > 1)
-            _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
-        else
-        {
-            string Url = $"{ComponentName.Replace("blz:/", "")}/{Elem.Id}";
-            _NavigationManager.NavigateTo(Url);
-        }
+        string prev= $"{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}";
+        if (!prev.EndsWith("Inbox"))
+            prev = prev.Substring(0, prev.IndexOf("Inbox")+5);
+
+        await _SessionStore.SetAsync("Referrer", $"/{prev}/{nSourceFolder}/{nAttachID}");
+        string Url = $"{ComponentName.Replace("blz:/", "")}/{Elem.Id}";
+        _NavigationManager.NavigateTo(Url);
     }
 
     /// <summary>
@@ -557,27 +566,46 @@ else
         ShowDossierConfirm = false;
     }
 
+    /////// TODO: TEMPORANEO SANGIACOMO
+    private bool IsMSG() => AppDomain.CurrentDomain.GetAssemblies().ToList().Any(Q => Q.GetName().Name.Contains("SanGiacomo"));
+    ////  DA RIMUOVERE
 
     /// <summary>
     /// Open the customized page for the specific element type
     /// </summary>
     public async void Register()
     {
-        TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
+        ShowDossierConfirm=false;
+        IsSpinnerVisible=true;
+        Task.Run(async ()=>
+        {
+            Stopwatch sw=Stopwatch.StartNew();
+            TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
 
-        //1)aggiungo al fascicolo
-        Elementi e = await _MailService.CreateItemDossier(nAttachID, nDossierID, T.Categoria, T.Codice, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "",nAttachments.ToList(), nItem?.DscElemento, User, nCurrentDocument);
-        if (e == null)
-            ToastActionKO.Show();
-        else
-            ToastActionOK.Show();
+            _Logger.LogDebug($"AttachItemsTable.Register: linq incremental  {sw.ElapsedMilliseconds} ms");
 
-        //2)Apro la pagina di protocollazione indicata
-        string AttachId = _MailService._elmMan.GetAllegatiElemento(e.Id).FirstOrDefault(x => x.Tipo == "FILE")?.Id.ToString()??nAttachID;
+            //1)aggiungo al fascicolo
+            Elementi e = await _MailService.CreateItemDossier(nAttachID, nDossierID, T.Categoria, T.Codice, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "",nAttachments.ToList(), nItem?.DscElemento, User, nCurrentDocument);
+            if (e == null)
+                ToastActionKO.Show();
+            else
+                ToastActionOK.Show();
 
-        await _SessionStore.SetAsync("Referrer", $"/{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}/{nAttachID}");
-        string Url = $"{ComponentName.Replace("blz:/", "")}/{e.Id}";
-        _NavigationManager.NavigateTo(Url);
+            _Logger.LogDebug($"AttachItemsTable.Register: CreateItemDossier incremental  {sw.ElapsedMilliseconds} ms");
+            Stopwatch sw1 = Stopwatch.StartNew();
+            //2)Apro la pagina di protocollazione indicata
+            string AttachId = _MailService._elmMan.GetAllegatiElemento(e.Id).FirstOrDefault(x => x.Tipo == "FILE")?.Id.ToString()??nAttachID;
+            _Logger.LogDebug($"AttachItemsTable.Register: GetAllegatiElemento  incremental {sw.ElapsedMilliseconds} ms");
+
+            await _SessionStore.SetAsync("Referrer", $"/{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}/{nAttachID}");
+
+            _Logger.LogDebug($"AttachItemsTable.Register: Created Dossier in {sw.ElapsedMilliseconds} ms");
+
+            string Url = $"{ComponentName.Replace("blz:/", "")}/{e.Id}";
+            _NavigationManager.NavigateTo(Url);
+            IsSpinnerVisible=false;
+        });
+
 
     }
 
@@ -779,6 +807,10 @@ else
         if (T != null)
         {
             ComponentName = T.ViewAttributi;
+            ///// TODO: TEMPORANEO SANGIACOMO
+            if (!ComponentName.Contains("blz:/") && IsMSG())
+                ComponentName = "blz:/Orders/MSG_RegisterOrder";
+            ////  DA RIMUOVERE
             if (!ComponentName.StartsWith("blz:/"))
                 IsShowUndefined = true;
         }

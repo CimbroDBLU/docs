@@ -3387,6 +3387,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     Allegato.IdFascicolo = Guid.Parse(DossierID);
 
                 ///1) CREO FASCICOLO SE MANCA 
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 1 incremental {sw.ElapsedMilliseconds} ms");
                 var isNew = false;
                 if (Allegato.IdFascicolo == null)
                 {
@@ -3412,7 +3413,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 f.SetAttributo("NomeSoggetto", CustomerName);
                 if (_fasMan.Salva(f, isNew) == false) return null;
 
-
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 2 incremental {sw.ElapsedMilliseconds} ms");
                 ///2) LOGGO
                 LogDoc log = new LogDoc()
                 {
@@ -3424,6 +3425,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (isNew) log.Operazione = TipoOperazione.Creato; else log.Operazione = TipoOperazione.Modificato;
                 _logMan.Salva(log, true);
 
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 3 incremental {sw.ElapsedMilliseconds} ms");
                 ///3) ELEMENTO
                 var e = new Elementi();
                 e.Tipo = ItemType;
@@ -3455,7 +3457,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (_elmMan.Salva(e, isNew) == false) return null;
 
                 ///4) LOGGO
-
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 4 incremental {sw.ElapsedMilliseconds} ms");
                 log = new LogDoc()
                 {
                     Data = DateTime.Now,
@@ -3468,11 +3470,12 @@ namespace dblu.Portale.Plugin.Docs.Services
 
 
                 ///5) SALVO ALLEGATO COME ELABORATO
-
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 5 incremental {sw.ElapsedMilliseconds} ms");
                 Allegato.Stato = StatoAllegato.Elaborato;
                 if (_allMan.Salva(Allegato, false) == false) return null;
 
                 ///6) LOGGO
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 6 incremental {sw.ElapsedMilliseconds} ms");
                 log = new LogDoc()
                 {
                     Data = DateTime.Now,
@@ -3483,6 +3486,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 };
                 _logMan.Salva(log, true);
 
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 7 incremental {sw.ElapsedMilliseconds} ms");
                 /// 7) CREO UNA ALLEGATO DI TIPO FILE 
                 var fileName = $"{Allegato.Id.ToString()}.pdf";
                 Allegati FILE = null;
@@ -3518,10 +3522,11 @@ namespace dblu.Portale.Plugin.Docs.Services
                 FILE.SetAttributo("Oggetto", Allegato.GetAttributo("Oggetto"));
                 FILE.SetAttributo("MessageId", Allegato.GetAttributo("MessageId"));
 
-
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 8 incremental {sw.ElapsedMilliseconds} ms");
                 /// 8) SALVO SUL TIPO FILE IL PDF
                 FILE = await _allMan.SalvaAsync(FILE, nDocument, isNewFILE);
                 /// 9) Salva eventuali allegati segnalati
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 9 incremental {sw.ElapsedMilliseconds} ms");
                 await ExtractAttachments(Allegato, Attachs, Description, tipoAll);
 
                 _logger.LogInformation($"MailService.CreateItemDossier : Item created in {sw.ElapsedMilliseconds} ms");
