@@ -4,7 +4,7 @@
 
 @page "/Files/{nDocType}/Inbox"
 @page "/Files/{nDocType}/Inbox/{nPreselAttach}"
-
+@page "/Files/{nDocType}/Inbox/{nPreselFolder}/{nPreselAttach}"
 
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
@@ -97,7 +97,7 @@
                                                 <div>@CostumerDesc</div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <AttachCustomer @ref="CustomerComponent"  OnLinkedToCostumer="OnLinkCostumer" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                <AttachCustomer @ref="CustomerComponent" OnLinkedToCostumer="OnLinkCostumer" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -114,7 +114,7 @@
                                                 <div>@DossierDesc</div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <AttachDossierItems @ref="@DossierItems" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
+                                                <AttachDossierItems @ref="@DossierItems" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -185,17 +185,17 @@
 
 @code
 {
-        /// <summary>
-        /// Email that has to be selected, if any. We expect to receive the qattach id of the email selected
-        /// </summary>
-        [Parameter]
-        public string nPreselAttach { get; set; } = "";
+    /// <summary>
+    /// Email that has to be selected, if any. We expect to receive the qattach id of the email selected
+    /// </summary>
+    [Parameter]
+    public string nPreselAttach { get; set; } = "";
 
-        /// <summary>
-        /// Type of document we need to manage (ZIP,REQ...)
-        /// </summary>
-        [Parameter]
-        public string nDocType { get; set; } = "ZIP";
+    /// <summary>
+    /// Type of document we need to manage (ZIP,REQ...)
+    /// </summary>
+    [Parameter]
+    public string nDocType { get; set; } = "ZIP";
 
     /// <summary>
     /// Type of document we need to manage as enum
@@ -351,7 +351,7 @@
     /// </summary>
     private string DossierDesc => (DossierItems?.CurrentDossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {DossierItems?.CurrentDossier?.Descrizione} [{DossierItems?.CurrentDossier?.Id}]";
 
-    private string nLastDocType { get; set; }="";
+    private string nLastDocType { get; set; } = "";
     /// <summary>
     /// Re-calculate type, if changed
     /// </summary>

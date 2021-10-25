@@ -60,6 +60,9 @@
 </SfGrid>
 
 <UploadFilesDialog nTitle="Aggiungi allegati" nText="Allegati:" nShowDialog="@ShowDialog" OnUploadPressed="OnUpload" OnClose="OnCloseDialog" OnExitPressed="OnCloseDialog"></UploadFilesDialog>
+
+<QuestionDialog nShowDialog="ShowConfirm" nText="Confermi la cancellazione dell'allegato selezionato?" nTitle="Conferma" OnNoPressed="OnCloseDialogConfirm" OnClose="OnCloseDialogConfirm" OnExitPressed="OnCloseDialogConfirm" OnYesPressed="DeleteAttach"></QuestionDialog>
+
 @code
 {
 
@@ -151,6 +154,11 @@
     private List<Colonna> Cols { get; set; } = new List<Colonna>();
 
     /// <summary>
+    /// Show confirm dialog
+    /// </summary>
+    private bool ShowConfirm { get; set; } = false;
+
+    /// <summary>
     /// List of the buttons on toolbar of the grid of attributes
     /// </summary>
     private List<Object> Tool
@@ -224,7 +232,7 @@
         {
             viewAllegati A = (await Grid.GetSelectedRecords()).FirstOrDefault();
             if (A != null)
-                await OnRemoveAttachment.InvokeAsync(A.IdAllegato);
+                ShowConfirm = true;
         }
     }
 
@@ -233,6 +241,25 @@
     /// </summary>
     public async void OnCloseDialog()
     { ShowDialog = false; }
+
+    /// <summary>
+    /// Delete selected items
+    /// </summary>
+    private async void DeleteAttach()
+    {
+        ShowConfirm = false;
+        viewAllegati A = (await Grid.GetSelectedRecords()).FirstOrDefault();
+        if (A != null)
+            await OnRemoveAttachment.InvokeAsync(A.IdAllegato);
+    }
+
+    /// <summary>
+    /// Close the confirmation dialog
+    /// </summary>
+    public async void OnCloseDialogConfirm()
+    {
+        ShowConfirm = false;
+    }
 
     /// <summary>
     /// On upload requested forward the event

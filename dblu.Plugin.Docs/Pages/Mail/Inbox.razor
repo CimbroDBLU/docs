@@ -4,6 +4,7 @@
 
 @page  "/Mail/Inbox"
 @page "/Mail/Inbox/{nPreselAttach}"
+@page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}"
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.Services
@@ -32,7 +33,7 @@
                 <div class="col-5" style="align-self: auto;">
                     <div class="row form-group">
                         <div class="col">
-                            <ServerCombo @bind-nServer="@MailBox"></ServerCombo>
+                            <ServerCombo @bind-nServer="@MailBox" nPresel="@nPreselFolder"></ServerCombo>
                         </div>
                     </div>
                     <div class="row ">
@@ -151,7 +152,7 @@
                                                 <div>@CostumerDesc</div>
                                             </HeaderTemplate>
                                             <ContentTemplate>
-                                                <AttachCustomer @ref="CustomerComponent" OnLinkedToCostumer="OnLinkCostumer"  nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                <AttachCustomer @ref="CustomerComponent" OnLinkedToCostumer="OnLinkCostumer" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
                                             </ContentTemplate>
                                         </AccordionItem>
                                     </AccordionItems>
@@ -159,22 +160,22 @@
                             </div>
                         </div>
                         @*FASCICOLI*@
-                            <div class="row form-group">
-                                <div class="col">
-                                    <SfAccordion>
-                                        <AccordionItems>
-                                            <AccordionItem Expanded="true">
-                                                <HeaderTemplate>
-                                                    <div>@DossierDesc</div>
-                                                </HeaderTemplate>
-                                                <ContentTemplate>
-                                                    <AttachDossierItems  @ref="@DossierItems" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
-                                                </ContentTemplate>
-                                            </AccordionItem>
-                                        </AccordionItems>
-                                    </SfAccordion>
-                                </div>
+                        <div class="row form-group">
+                            <div class="col">
+                                <SfAccordion>
+                                    <AccordionItems>
+                                        <AccordionItem Expanded="true">
+                                            <HeaderTemplate>
+                                                <div>@DossierDesc</div>
+                                            </HeaderTemplate>
+                                            <ContentTemplate>
+                                                <AttachDossierItems @ref="@DossierItems" nCurrentDocument="@Document" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
+                                            </ContentTemplate>
+                                        </AccordionItem>
+                                    </AccordionItems>
+                                </SfAccordion>
                             </div>
+                        </div>
                         @*ALLEGATI EMAIL*@
                         @if (@IsAttachVisible)
                         {
@@ -249,6 +250,12 @@
     /// </summary>
     [Parameter]
     public string nPreselAttach { get; set; } = "";
+
+    /// <summary>
+    /// Folder that has to be preselected
+    /// </summary>
+    [Parameter]
+    public string nPreselFolder { get; set; } = "";
 
     /// <summary>
     /// Document viewer
@@ -708,12 +715,12 @@
     }
 
     /// <summary>
-    /// Link the costumer to current Attach 
+    /// Link the costumer to current Attach
     /// </summary>
     /// <param name="Customer">Costumer to link</param>
     public async void OnLinkCostumer(ISoggetti Customer)
     {
-        CustomerCode = Customer?.Codice??"";
+        CustomerCode = Customer?.Codice ?? "";
     }
 
     /// <summary>
@@ -730,7 +737,7 @@
     /// On closing dialog, change the visible value and  evnetually link the customer
     /// </summary>
     /// <param name="Save">True id the customer must be linked to</param>
-    public async void OnSelectedCostumer(bool Save=false)
+    public async void OnSelectedCostumer(bool Save = false)
     {
         ShowCostumerSelection = false;
         if (Save && CustomerSelector.SelectedCostumer != null)
@@ -746,4 +753,5 @@
         PDFSourceId = Id;
         PDFSourceType = e_SourceType.Item;
     }
+
 }
