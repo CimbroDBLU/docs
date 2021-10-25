@@ -58,7 +58,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         /// <summary>
         /// Indicates if it has been included
         /// </summary>
-        public bool IsIncluded { get => _IsIncluded; set { _IsIncluded = value; if (_IsIncluded) IsSelected = true; } }
+        public bool IsIncluded { get => _IsIncluded; set { _IsIncluded = value; if (!_IsIncluded) IsSelected = true; } }
 
         /// <summary>
         /// Warning generated during process

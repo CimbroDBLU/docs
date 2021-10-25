@@ -90,7 +90,7 @@
                 <ToolbarItem Id="Delete" PrefixIcon="e-delete" TooltipText="Elimina"></ToolbarItem>
                 <ToolbarItem Align=ItemAlign.Right Id="SearchItem" Type="ItemType.Input">
                     <Template>
-                        <SfTextBox @ref="@SearchText" ID="SearchItemText"  Autocomplete="AutoComplete.Off"  @bind-Value="@SearchKey" @onchange="OnSearch" Placeholder="Ricerca" Created="@OnSearchCreated"></SfTextBox>
+                        <SfTextBox @ref="@SearchText" ID="SearchItemText" EnablePersistence="false"  Autocomplete="AutoComplete.On"  @bind-Value="@SearchKey" @onchange="OnSearch" Placeholder="Ricerca" Created="@OnSearchCreated"></SfTextBox>
                     </Template>
                 </ToolbarItem>
             </ToolbarItems>
@@ -491,13 +491,13 @@ else
                 IsShowUndefined = true;
         }
         await _SessionStore.SetAsync("Referrer", $"/{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}/{nAttachID}");
-        if ((int)Elem.Stato > 1)
-            _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
-        else
-        {
+//        if ((int)Elem.Stato > 1)
+//            _NavigationManager.NavigateTo($"/Docs/Item/{Elem.IdElemento}");
+//        else
+//        {
             string Url = $"{ComponentName.Replace("blz:/", "")}/{Elem.Id}";
             _NavigationManager.NavigateTo(Url);
-        }
+//        }
     }
 
     /// <summary>

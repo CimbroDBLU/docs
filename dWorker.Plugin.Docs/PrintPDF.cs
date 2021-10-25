@@ -3,6 +3,7 @@ using Syncfusion.Blazor.PdfViewer;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
@@ -58,9 +59,13 @@ namespace dWorker.Plugin.Docs
                 //Preparo il doc settanto nome e stampante
                 printDocument.DocumentName = Name;
                 printDocument.PrinterSettings.PrinterName = Printer;
-                if (string.IsNullOrEmpty(nPrinter))
+                if (!string.IsNullOrEmpty(nPrinter))
+                {
                     printDocument.PrinterSettings.PrinterName = nPrinter;
 
+
+                }
+                    
                 PrinterSettings ps = new PrinterSettings();
                 var  Resolution = ps.PrinterResolutions.OfType<PrinterResolution>()
                                                          .OrderByDescending(r => r.X)
@@ -70,6 +75,12 @@ namespace dWorker.Plugin.Docs
                 ///Carico il documento su un oggetto per tracciarne l'avanzamento di stampa
                 PrintPDFStatus s = new(loadedDocument, Resolution);
                 printDocument.PrintPage += (_, e) => PrintDocumentOnPrintPage(e, s);
+
+                //if (printDocument.PrinterSettings.SupportsColor)
+                //    {
+                //        // Set the page default's to not print in color.
+                //        printDocument.DefaultPageSettings.Color = false;
+                //    }
                 printDocument.Print();
                 
                 _logger.LogInformation($"PrintPDF.Print: Printing {Name} on {nPrinter}");
@@ -94,6 +105,43 @@ namespace dWorker.Plugin.Docs
                  e.Graphics.DrawImage(bitmapimage, destinationRect);
                 //e.Graphics.DrawImage(bitmapimage, new Point(0, 0));
             e.HasMorePages = state.AdvanceToNextPage();
+           // e.HasMorePages = false;
         }
+
+        private static Bitmap MakeGrayscale3(Bitmap original)
+        {
+            //create a blank bitmap the same size as original
+            Bitmap newBitmap = new Bitmap(original.Width, original.Height);
+
+            //get a graphics object from the new image
+            Graphics g = Graphics.FromImage(newBitmap);
+
+            //create the grayscale ColorMatrix
+            ColorMatrix colorMatrix = new ColorMatrix(
+                new float[][]
+                {
+                        new float[] {.3f, .3f, .3f, 0, 0},
+                        new float[] {.59f, .59f, .59f, 0, 0},
+                        new float[] {.11f, .11f, .11f, 0, 0},
+                        new float[] {0, 0, 0, 1, 0},
+                        new float[] {0, 0, 0, 0, 1}
+                });
+
+            //create some image attributes
+            ImageAttributes attributes = new ImageAttributes();
+
+            //set the color matrix attribute
+            attributes.SetColorMatrix(colorMatrix);
+
+            //draw the original image on the new image
+            //using the grayscale color matrix
+            g.DrawImage(original, new Rectangle(0, 0, original.Width, original.Height),
+               0, 0, original.Width, original.Height, GraphicsUnit.Pixel, attributes);
+
+            //dispose the Graphics object
+            g.Dispose();
+            return newBitmap;
+        }
+
     }
 }
