@@ -71,8 +71,8 @@
         <GridColumn AllowEditing="false" Width="120px" AllowSorting="true" Field=@nameof(AllegatoEmail.Data) HeaderText="Data" Format="d" Type="ColumnType.Date"></GridColumn>
         <GridColumn AllowEditing="false" Width="40px" AllowSorting="true" Field=@nameof(AllegatoEmail.LastOp) HeaderText="LastOp">
             <Template>
-                <LastOperation nOperation="@((context as AllegatoEmail).LastOp)"></LastOperation>
-            </Template>
+                <dblu.Portale.Plugin.Docs.Pages.Docs.Shared.LastOperation nOperation="@((context as AllegatoEmail).LastOp)"></dblu.Portale.Plugin.Docs.Pages.Docs.Shared.LastOperation>
+</Template>
         </GridColumn>
     </GridColumns>
 </SfGrid>

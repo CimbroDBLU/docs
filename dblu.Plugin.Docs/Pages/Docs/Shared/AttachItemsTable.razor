@@ -509,6 +509,8 @@ else
         _NavigationManager.NavigateTo(Url);
     }
 
+
+
     /// <summary>
     /// Add current Attach to item
     /// </summary>
@@ -536,8 +538,9 @@ else
         else ToastDupKO.Show();
 
         ShowDuplicateConfirm = false;
-        Refresh();
-        StateHasChanged();
+        OnOpen(new EmailElementi() { IdElemento = f.Id, TipoElemento = f.Tipo });
+        //Refresh();
+        //StateHasChanged();
 
     }
 
