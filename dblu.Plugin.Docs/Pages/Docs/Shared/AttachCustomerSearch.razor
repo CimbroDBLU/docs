@@ -139,10 +139,10 @@
             {
                 IsSpinnerVisible = true;
 
-                await Task.Run(() =>
+                await Task.Run(async () =>
                 {
                     Stopwatch SW = Stopwatch.StartNew();
-                    OnParametersSet();
+                    await OnParametersSetAsync();
                     _Logger.LogInformation($"AttachCostumerSearch.Search: Retreived Costumer from code {nCostumerCode} in {SW.ElapsedMilliseconds} ms");
                 });
                 IsSpinnerVisible = false;
