@@ -19,13 +19,25 @@
     <CardContent EnableSeperator="true">
         <div class="row">
             <div class="col-12">
-                <SfButton OnClick="Complete" CssClass="e-primary">Completa</SfButton>
+                <SfButton OnClick="ShowDialog" CssClass="e-primary">Completa</SfButton>
                 <SfButton OnClick="GoBack">Indietro</SfButton>
             </div>
         </div>
     </CardContent>
 
-    <Toast @ref="ToastCompleteKO" nToastType="Toast.e_ToastType.Fail" nTitle="Completamento task" nContent="Comnpletamento task NON riuscito"></Toast>
+    <Toast @ref="ToastCompleteKO" nToastType="Toast.e_ToastType.Fail" nTitle="Completamento task" nContent="Completamento task NON riuscito"></Toast>
+
+    <QuestionDialog nTitle="Conferma"
+                    nText="@DialogTitle"
+                    OnExitPressed="OnCloseDialog"
+                    OnNoPressed="OnCloseDialog"
+                    OnYesPressed="OnComplete"
+                    OnClose="OnCloseDialog"
+                    nShowDialog="@IsShowDialog">
+    </QuestionDialog>
+
+    <Toast @ref="ToastCompleteKO" nToastType="Toast.e_ToastType.Fail" nTitle="Completamento task" nContent="Completamento task NON riuscito"></Toast>
+    <Toast @ref="ToastCompleteOK" nToastType="Toast.e_ToastType.OK" nTitle="Completamento task" nContent="Task Completato"></Toast>
 </section>
 
 
@@ -53,6 +65,21 @@
     private Toast ToastCompleteKO { get; set; }
 
     /// <summary>
+    /// Toaster to show in case of completed task
+    /// </summary>
+    private Toast ToastCompleteOK { get; set; }
+
+    /// <summary>
+    /// Title of the complete task dialog
+    /// </summary>
+    private string DialogTitle { get; set; } = "";
+
+    /// <summary>
+    /// Indicateds if dialog for complete task is showed
+    /// </summary>
+    private bool IsShowDialog { get; set; } = false;
+
+    /// <summary>
     /// Initialize the collections
     /// </summary>
     protected override void OnInitialized()
@@ -64,7 +91,7 @@
             Item = _AttachService.GetElemento(Guid.Parse((string)Variables["IdElemento"].value), 0);
         else
             if (Variables.ContainsKey("_IdElemento"))
-                Item = _AttachService.GetElemento(Guid.Parse((string)Variables["_IdElemento"].value), 0);
+            Item = _AttachService.GetElemento(Guid.Parse((string)Variables["_IdElemento"].value), 0);
     }
 
     /// <summary>
@@ -85,11 +112,12 @@
     /// <summary>
     /// Complete the task
     /// </summary>
-    public async void Complete()
+    private async void OnComplete()
     {
         bool res = false;
         try
         {
+            IsShowDialog = false;
             Stopwatch sw = Stopwatch.StartNew();
             BPMTask tsk = new BPMTask();
             Dictionary<string, VariableValue> fVars = await tsk.GetTaskFormVariables(_CamundaService._eng, nTask.id);
@@ -98,6 +126,7 @@
             if (res)
             {
                 _Logger.LogInformation($"CompleteTask.Complete: Completed task {nTask.id} in {sw.ElapsedMilliseconds} ms");
+                ToastCompleteOK.Show();
                 GoBack();
             }
             else
@@ -109,7 +138,23 @@
         {
             _Logger.LogError($"CompleteTask.Complete: Unexpected exception {ex}");
         }
+    }
 
+    /// <summary>
+    /// Open the confirmation dialog
+    /// </summary>
+    private void ShowDialog()
+    {
+        DialogTitle = $"Completi il task {nTask.name} [{nTask.description}] ?";
+        IsShowDialog = true;
+    }
+
+    /// <summary>
+    /// Close the confirmation dialog
+    /// </summary>
+    private void OnCloseDialog()
+    {
+        IsShowDialog = false;
     }
 
 }

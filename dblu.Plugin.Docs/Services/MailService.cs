@@ -2542,6 +2542,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     srv.Ssl = true;
                     srv.Utente = "jobaid@dblu.it";
                     srv.Password = "j0b41d!";
+                    
 
 #endif
 
@@ -2695,7 +2696,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             {
                 res.Successo = false;
                 res.Messaggio = ex.Message;
-                _logger.LogError($"InoltraEmail : {ex.Message}");
+                _logger.LogError($"RispondiEmail : {ex.Message}");
             }
             return res;
         }
