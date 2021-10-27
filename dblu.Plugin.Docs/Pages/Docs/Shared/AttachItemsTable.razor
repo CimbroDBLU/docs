@@ -601,7 +601,10 @@ else
             string AttachId = _MailService._elmMan.GetAllegatiElemento(e.Id).FirstOrDefault(x => x.Tipo == "FILE")?.Id.ToString()??nAttachID;
             _Logger.LogDebug($"AttachItemsTable.Register: GetAllegatiElemento  incremental {sw.ElapsedMilliseconds} ms");
 
-            await _SessionStore.SetAsync("Referrer", $"/{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}/{nAttachID}");
+            string prev = $"{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}";
+            if (!prev.EndsWith("Inbox"))
+                prev = prev.Substring(0, prev.IndexOf("Inbox") + 5);
+            await _SessionStore.SetAsync("Referrer", $"/{prev}/{nSourceFolder}/{nAttachID}");
 
             _Logger.LogDebug($"AttachItemsTable.Register: Created Dossier in {sw.ElapsedMilliseconds} ms");
 
