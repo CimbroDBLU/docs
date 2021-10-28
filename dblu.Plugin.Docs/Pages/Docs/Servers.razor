@@ -12,6 +12,20 @@
 @inject ServerMailService  _ServiceMailServer
 @inject NavigationManager  _NavigationManager
 
+<style>
+    .e-up:before {
+        content: '\e840';
+    }
+
+    .e-down:before {
+        content: '\e83f';
+    }
+
+    .e-apply:before {
+        content: '\e737';
+    }
+</style>
+
 <PageTitle nTitle="Lista Servers" />
 
 <section class="content">
@@ -23,19 +37,38 @@
             <CardHeader Title="Lista Servers" />
             <CardContent EnableSeperator="true">
 
-                <SfGrid @ref="@Grid" ID="ServersGrid" EnablePersistence="true"  AllowGrouping="true" DataSource="@nServers" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar=@Tool>
-                    <GridGroupSettings ShowDropArea="false" Columns="@(new string[]{ "TipoRecord"})"></GridGroupSettings>
-                    <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick" OnToolbarClick="OnToolbarClick" TValue="EmailServer"></GridEvents>
-                    <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
-                    <GridPageSettings PageSize="20"></GridPageSettings>
-                    <GridColumns>
-                        <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Nome) HeaderText="Nome"></GridColumn>
-                        <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Email) HeaderText="Email"></GridColumn>
-                        <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Cartella) HeaderText="Cartella"></GridColumn>
-                        <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.CartellaArchivio) HeaderText="Cartella Archivio"></GridColumn>
-                        <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.NomeServerInUscita) HeaderText="Nome Uscita"></GridColumn>
-                        <GridColumn Visible="false" AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.TipoRecord) HeaderText="Tipo"></GridColumn>
-                    </GridColumns>
+                <SfGrid @ref="@Grid" ID="ServersGrid" EnablePersistence="false" DataSource="@nServers" SelectedRowIndex="0" AllowPaging="false" AllowSorting="true" >
+                    <SfToolbar >
+                        <ToolbarItems>
+                            <ToolbarItem OnClick="OnNew" Text="Nuovo" Id="New" TooltipText="Nuovo" PrefixIcon="e-add"></ToolbarItem>
+                            <ToolbarItem OnClick="OnEdit" Text="Edit" Id="Modifica" TooltipText="Modifica" PrefixIcon="e-edit"></ToolbarItem>
+                            <ToolbarItem OnClick="OnDelete" Text="Delete" Id="Elimina" TooltipText="Elimina" PrefixIcon="e-delete"></ToolbarItem>
+                            <ToolbarItem Type="ItemType.Input" Align="ItemAlign.Right">
+                                <Template>
+                                    <SfDropDownList TValue="TipiRecordServer" TItem="TranslationServerType" @bind-Value="CurrentType" DataSource=@Types Width="200">
+                                        <DropDownListFieldSettings Text="Desc" Value="Code"> </DropDownListFieldSettings>
+                                        <DropDownListEvents TValue="TipiRecordServer" TItem="TranslationServerType" ValueChange="@OnChangeValue"></DropDownListEvents>
+                                    </SfDropDownList>
+                                </Template>
+                            </ToolbarItem>
+                            <ToolbarItem OnClick="OnUp" Text="Sù" Id="Up" TooltipText="Sposta in sù" PrefixIcon="e-up"></ToolbarItem>
+                            <ToolbarItem OnClick="OnDown" Text="Giù" Id="Down" TooltipText="Sposta in giù" PrefixIcon="e-down"></ToolbarItem>
+                            <ToolbarItem OnClick="OnApply" Text="Applica posizione" Id="Apply" TooltipText="Applica posizionamento corrente" PrefixIcon="e-apply"></ToolbarItem>
+                        </ToolbarItems>
+                    </SfToolbar>
+                            <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick"  TValue="EmailServer"></GridEvents>
+                            <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
+                            <GridPageSettings PageSize="20"></GridPageSettings>
+                            <GridColumns>
+                                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Nome) HeaderText="Codice"></GridColumn>
+                                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Descrizione) HeaderText="Descrizione"></GridColumn>
+                                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Email) HeaderText="Email"></GridColumn>
+                                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Posizione) HeaderText="Posizione"></GridColumn>
+                                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Cartella) HeaderText="Cartella"></GridColumn>
+                                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.CartellaArchivio) HeaderText="Cartella Archivio"></GridColumn>
+                                <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.NomeServerInUscita) HeaderText="Nome Uscita"></GridColumn>
+                                <GridColumn Visible="false" AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.TipoRecord) HeaderText="Tipo"></GridColumn>
+                            </GridColumns>
                 </SfGrid>
             </CardContent>
         </SfCard>
@@ -52,10 +85,24 @@
 
 </section>
 
-
-
 @code
 {
+    /// <summary>
+    /// Private class for storing a translation between the type of server and a human readable description
+    /// </summary>
+    private class TranslationServerType
+    {
+        /// <summary>
+        /// Type of server
+        /// </summary>
+        public TipiRecordServer Code { get; set; }
+
+        /// <summary>
+        /// Description of the server
+        /// </summary>
+        public string Desc { get; set; }
+    }
+
     /// <summary>
     /// Indicates if spinner has to be visible
     /// </summary>
@@ -78,30 +125,41 @@
     private SfGrid<EmailServer> Grid;
 
     /// <summary>
+    /// Identifies current selected lines (for keeping it during row movements)
+    /// </summary>
+    private int CurrSel { get; set; }=0;
+
+    /// <summary>
     /// Show/Hide the dialog for deleting users
     /// </summary>
     private bool ShowConfirm { get; set; } = false;
 
     /// <summary>
-    /// List of the buttons on toolbar of the grid
+    /// List of types of server
     /// </summary>
-    private List<Object> Tool = new List<Object>()
-{
-            new ItemModel(){ Id="New",Text="Nuovo", TooltipText="Nuovo", PrefixIcon="e-add" } ,
-            new ItemModel(){ Id="Edit",Text="Modifica", TooltipText="Modifica", PrefixIcon="e-edit" } ,
-            new ItemModel(){ Id="Delete",Text="Elimina", TooltipText="Elimina", PrefixIcon="e-delete" }
-    };
+    private List<TranslationServerType> Types = new();
 
+    /// <summary>
+    /// Current selected type
+    /// </summary>
+    private TipiRecordServer CurrentType { get; set; } = TipiRecordServer.CartellaMail;
 
     /// <summary>
     /// On Init component
     /// </summary>
     protected override void OnInitialized()
     {
-        IsSpinnerVisible = true;
-        ServersManager = new ServerEmailManager(_DbContext.Connessione, _Logger);
-        nServers = new ObservableCollection<EmailServer>(ServersManager.GetAllServersEmail());
-        IsSpinnerVisible = false;
+        Types.Add(new TranslationServerType() { Code = TipiRecordServer.CartellaMail, Desc = "Caselle di posta" });
+        Types.Add(new TranslationServerType() { Code = TipiRecordServer.CartellaFile, Desc = "Cartelle" });
+        Types.Add(new TranslationServerType() { Code = TipiRecordServer.CartellaAltreMail, Desc = "Altre caselle di posta" });
+    }
+
+    /// <summary>
+    /// On parameter set, refresh the grif
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        Refresh();
     }
 
     /// <summary>
@@ -114,37 +172,103 @@
     }
 
     /// <summary>
-    /// Manage the actions that has to be done on toolbar click
+    /// Muove up current selected row
     /// </summary>
-    /// <param name="args"></param>
-    public async void OnToolbarClick(Syncfusion.Blazor.Navigations.ClickEventArgs args)
-    {
-        if (args.Item.Id == "New") _NavigationManager.NavigateTo("/Docs/EditServer");
-
-        List<EmailServer> SelectedServers = await Grid.GetSelectedRecords();
-
-        if (SelectedServers.Count == 0) return;
-
-        switch (args.Item.Id)
+    public async void OnUp()
+    {      
+        int i=(int)(await Grid.GetSelectedRowIndexes()).FirstOrDefault();
+        if (i > 0)
         {
-            case "Edit":
-                foreach (EmailServer U in SelectedServers)
-                {
-                    _NavigationManager.NavigateTo($"/Docs/EditServer/{U.Nome.ToString()}");
-                    break;
-                }
-                break;
-            case "Delete":
-                ShowConfirm = true;
-                break;
-
+            nServers.Move(i, i - 1);
+            CurrSel = i - 1;
         }
     }
 
     /// <summary>
+    /// Apply the current order into db
+    /// </summary>
+    public async void OnApply()
+    {
+        int Position = 0;
+        foreach (EmailServer srv in nServers)
+        {
+            srv.Posizione = Position++;
+            ServersManager.SalvaServerEmail(srv);
+        }
+        Refresh();
+    }
+
+    /// <summary>
+    /// Move down current selected wor
+    /// </summary>
+    public async void OnDown()
+    {
+        int i = (int)(await Grid.GetSelectedRowIndexes()).FirstOrDefault();
+        if (i < nServers.Count - 1)
+        {
+            nServers.Move(i, i + 1);
+            CurrSel = i + 1;
+        }
+
+    }
+
+    /// <summary>
+    /// Create a new server
+    /// </summary>
+    private void OnNew()
+    {
+        _NavigationManager.NavigateTo("/Docs/EditServer");
+    }
+
+    /// <summary>
+    /// Ask configmation for deleting current selected server
+    /// </summary>
+    private void OnDelete()
+    {
+        ShowConfirm = true;
+    }
+
+    /// <summary>
+    /// Open in edit a server
+    /// </summary>
+    private async void OnEdit()
+    {
+        List<EmailServer> SelectedServers = await Grid.GetSelectedRecords();
+
+        if (SelectedServers.Count == 0) return;
+        foreach (EmailServer U in SelectedServers)
+        {
+            _NavigationManager.NavigateTo($"/Docs/EditServer/{U.Nome.ToString()}");
+            break;
+        }
+    }
+
+    /// <summary>
+    /// Reload info from DB
+    /// </summary>
+    public void Refresh()
+    {
+        IsSpinnerVisible = true;
+        ServersManager = new ServerEmailManager(_DbContext.Connessione, _Logger);
+        nServers = new ObservableCollection<EmailServer>(ServersManager.GetAllServersEmail().Where(x => x.TipoRecord == CurrentType).OrderBy(x => x.Posizione));
+        IsSpinnerVisible = false;
+
+    }
+
+    /// <summary>
+    /// When user change type, reload the grid
+    /// </summary>
+    /// <param name="args"></param>
+    private void OnChangeValue(Syncfusion.Blazor.DropDowns.ChangeEventArgs<TipiRecordServer, TranslationServerType> args)
+    {
+        Refresh();
+    }
+
+
+    /// <summary>
     /// When the grid do something, show the spinner
     /// </summary>
-    private void OnActionBegin()
+    private async void OnActionBegin()
     {
         IsSpinnerVisible = true;
     }
@@ -152,9 +276,10 @@
     /// <summary>
     /// When the grid stop doing something, hide the spinner
     /// </summary>
-    private void OnActionEnd()
+    private async void OnActionEnd()
     {
         IsSpinnerVisible = false;
+        await Grid.SelectRow(CurrSel, true);
     }
 
     /// <summary>
@@ -186,7 +311,7 @@
             _Logger.LogError($"Servers.OnDeleteConfirmed: Unable to delete server! Unexpected error => {ex} ");
         }
         finally
-        {         
+        {
             IsSpinnerVisible = false;
         }
     }

@@ -20,22 +20,21 @@
         @nLabel
     </div>
     <div class="col-9">
-        <SfDropDownList Value="@(nServer?.Nome??"")" TValue="string" AllowFiltering="true" TItem="EmailServer" DataSource="@Servers">
-            @if (nRecordServer == TipiRecordServer.CartellaMail)
-            {
-                <DropDownListFieldSettings Text="Nome" Value="Nome"></DropDownListFieldSettings>
-            }
-            else
-            {
-                <DropDownListFieldSettings Text="Nome" Value="Nome"></DropDownListFieldSettings>
-            }
-            <DropDownListEvents TValue="string" TItem="EmailServer" OnValueSelect="OnValueChange"></DropDownListEvents>
+        <SfDropDownList Value="@(nServer?.Nome??"")" TValue="string" AllowFiltering="true" TItem="TranslationServer" DataSource="@TranslationServers">
+                <DropDownListFieldSettings Text="Description" Value="Code"></DropDownListFieldSettings>            
+            <DropDownListEvents TValue="string" TItem="TranslationServer" OnValueSelect="OnValueChange"></DropDownListEvents>
         </SfDropDownList>
     </div>
 </div>
 
 @code {
 
+    private class TranslationServer
+    {
+        public string Code { get; set; }
+
+        public string Description { get; set; }
+    }
 
     /// <summary>
     /// Label for namimbng the dropdown
@@ -82,18 +81,21 @@
     /// <summary>
     /// List of available services
     /// </summary>
-    private ObservableCollection<EmailServer> Servers { get; set; }
+    private ObservableCollection<TranslationServer> TranslationServers { get; set; }
+
+    private List<EmailServer> Servers { get; set; }
+
 
     /// <summary>
     /// On Init component
     /// </summary>
     protected override async void OnParametersSet()
     {
-       List<string> Roles = new();
+        List<string> Roles = new();
         if (nRecordServer == TipiRecordServer.CartellaMail)
         {
             Roles = _MailService.getRuoli(_HttpContextAccessor.HttpContext.User.Claims, "");
-            Servers = new ObservableCollection<EmailServer>(_MailService._serMan.GetServersEmailinRoles(Roles, nRecordServer));
+            Servers = _MailService._serMan.GetServersEmailinRoles(Roles, nRecordServer).OrderBy(y=>y.Posizione).ToList();
         }
         else
         {
@@ -101,11 +103,13 @@
             if (nDocumentType == TipiDocumentiFile.REQ)
                 s = "REQ";
             Roles = _ZipService.GetRuoliTipoAll(_HttpContextAccessor.HttpContext.User.Claims, s);
-            Servers = new ObservableCollection<EmailServer>(_ZipService._serMan.GetServersEmailinRoles(Roles, nRecordServer));
+            Servers = _ZipService._serMan.GetServersEmailinRoles(Roles, nRecordServer).OrderBy(y=>y.Posizione).ToList();
         }
 
         if (nExcludedServers != null)
-            Servers = new ObservableCollection<EmailServer>(Servers.Where(x => (nExcludedServers.FirstOrDefault(c => c == x.Nome)) == null));
+            Servers = Servers.Where(x => (nExcludedServers.FirstOrDefault(c => c == x.Nome)) == null).ToList();
+
+        TranslationServers = new ObservableCollection<TranslationServer>(Servers.Select(x => new TranslationServer() { Code = x.Nome, Description =(string.IsNullOrEmpty(x.Descrizione?.Trim()??""))?x.Nome:x.Descrizione  }));
         if (Servers.Count > 0 && (nServer is null || !Servers.Select(x=>x.Nome).Contains(nServer.Nome)))
         {
             if (!string.IsNullOrEmpty(nPresel))
@@ -120,9 +124,9 @@
     /// Notifies the change of the server
     /// </summary>
     /// <param name="args"></param>
-    public async void OnValueChange(Syncfusion.Blazor.DropDowns.SelectEventArgs<EmailServer> args)
+    private  async void OnValueChange(Syncfusion.Blazor.DropDowns.SelectEventArgs<TranslationServer> args)
     {
-        nServer = args.ItemData as EmailServer;
-        await nServerChanged.InvokeAsync(nServer);
+        var tServer = args.ItemData as TranslationServer;       
+        await nServerChanged.InvokeAsync(Servers.FirstOrDefault(x=>x.Nome==tServer.Code));
     }
 }
