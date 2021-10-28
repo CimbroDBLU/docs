@@ -10,6 +10,7 @@
 @using Microsoft.AspNetCore.Http
 @using System.Security.Claims
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using Syncfusion.Blazor.Data
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
 @inject IHttpContextAccessor _HttpContextAccessor
 @inject ILogger<FileTable> _Logger
@@ -42,7 +43,8 @@
 
 
 
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" AllowGrouping="false" AllowTextWrap="true" DataSource="@nFiles" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+    <SfDataManager Url="@DataUrl" CrossDomain="true" Adaptor=" Syncfusion.Blazor.Adaptors.ODataV4Adaptor"></SfDataManager>
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
@@ -93,6 +95,10 @@
 
 @code {
 
+    /// <summary>
+    /// Url to use to retreive paginated data
+    /// </summary>
+    private string DataUrl => $"/Attachs/GetFiles(Doc='{nDocumentType.ToString()}',Type='{nType.ToString()}',Folder='{nFolder.Cartella}')";
 
     /// <summary>
     ///Type of mail that we need to show
@@ -215,7 +221,7 @@
         {
             if (nType == TableType.Inbox)
                 return new List<Object>()
-{
+                {
                 new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-move" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
                 new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
@@ -223,7 +229,7 @@
                 };
             if (nType == TableType.Processed)
                 return new List<Object>()
-            {
+        {
                 new ItemModel() { Id = "ReOpen",Text = "", TooltipText = "Riapri", PrefixIcon = "e-reopen" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
                 new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
@@ -253,7 +259,7 @@
     /// On record select forward the selection
     /// </summary>
     /// <param name="args"></param>
-    public async void OnRecordSelect(RowSelectEventArgs<Allegati> args)
+    public void OnRecordSelect(RowSelectEventArgs<Allegati> args)
     {
         OnSelectAttachment.InvokeAsync(args.Data);
     }
@@ -289,26 +295,9 @@
     /// </summary>
     public void Refresh()
     {
-        string DocType = "ZIP";
-        if (nDocumentType == TipiDocumentiFile.REQ)
-            DocType = "REQ";
-
-        if (nType == TableType.Inbox)
-        {
-            Stopwatch sw = Stopwatch.StartNew();
-            nFiles = new ObservableCollection<Allegati>(_ZipService._allMan.GetZipInArrivo(DocType, nFolder.Cartella).OrderByDescending(x => x.DataC));
-            nFolderOld = nFolder;
-            _Logger.LogInformation($"FileTable.Refresh: Loaded {nFiles.Count} {DocType} inbox files in {sw.ElapsedMilliseconds} ms");
-        }
-        else if (nType == TableType.Processed)
-        {
-            Stopwatch sw = Stopwatch.StartNew();
-            nFiles = new ObservableCollection<Allegati>(_ZipService._allMan.GetEmailProcessate(DocType, nFolder.Cartella).OrderByDescending(x => x.DataC));
-            nFolderOld = nFolder;
-            _Logger.LogInformation($"FileTable.Refresh: Loaded {nFiles.Count} {DocType} processed files in {sw.ElapsedMilliseconds} ms");
-        }
-
-
+        nFolderOld = nFolder;
+        Grid.DataManager.Url = DataUrl;
+        Grid.Refresh();
     }
 
     /// <summary>

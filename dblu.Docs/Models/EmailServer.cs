@@ -31,6 +31,11 @@ namespace dblu.Docs.Models
 
         [ExplicitKey] 
         public string Nome { get; set; }
+
+        public string Descrizione { get; set; }
+
+        public int Posizione { get; set; }
+
         public string Email { get; set; }
         public string Server { get; set; }
         public int Porta { get; set; }

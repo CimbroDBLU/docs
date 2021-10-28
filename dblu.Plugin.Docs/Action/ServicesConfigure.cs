@@ -35,6 +35,8 @@ namespace dblu.Portale.Plugin.Docs.Action
             {
               endpoints.MapODataRoute("Dossiers", "Dossiers", GetDossiersEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
               endpoints.MapODataRoute("History", "History", GetHistoryEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
+              endpoints.MapODataRoute("Attachs", "Attachs", GetMailsEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
+          //    endpoints.MapODataRoute("Files", "Files", GetFilesEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
             });
         }
 
@@ -59,6 +61,40 @@ namespace dblu.Portale.Plugin.Docs.Action
             odataBuilder.EntitySet<Processi>("ODATA_History");
             return odataBuilder.GetEdmModel();
         }
+
+
+        IEdmModel GetMailsEDMModel()
+        {
+            var builder = new ODataConventionModelBuilder();
+            builder.EntitySet<AllegatoEmail>("ODATA_Mails");
+            var function = builder.Function("GetMails");
+            function.Parameter<string>("Type").Required();
+            function.Parameter<string>("MailBox").Required();
+            function.ReturnsCollectionFromEntitySet<AllegatoEmail>("ODATA_Mails");
+
+            builder.EntitySet<Allegati>("ODATA_Files");
+            function = builder.Function("GetFiles");
+            function.Parameter<string>("Doc").Required();
+            function.Parameter<string>("Type").Required();
+            function.Parameter<string>("Folder").Required();
+            function.ReturnsCollectionFromEntitySet<Allegati>("ODATA_Files");
+
+            return builder.GetEdmModel();
+        }
+
+        //IEdmModel GetFilesEDMModel()
+        //{
+        //    var builder = new ODataConventionModelBuilder();
+        //    builder.EntitySet<Allegati>("ODATA_Files");
+        //    var function = builder.Function("GetFiles");
+        //    function.Parameter<string>("Doc").Required();
+        //    function.Parameter<string>("Type").Required();
+        //    function.Parameter<string>("Folder").Required();
+        //    function.ReturnsCollectionFromEntitySet<Allegati>("ODATA_Files");
+
+
+        //    return builder.GetEdmModel();
+        //}
 
     }
 }
