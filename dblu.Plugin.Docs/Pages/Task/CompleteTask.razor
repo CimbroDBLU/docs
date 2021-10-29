@@ -1,4 +1,4 @@
-﻿@* 
+﻿@*
     Component for Complete a task, showing details of the element
 *@
 @using BPMClient
@@ -11,6 +11,7 @@
 @inject dblu.Portale.Plugin.TaskListBase.Services.Camunda.CamundaService  _CamundaService
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
 @inject ILogger<CompleteTask> _Logger
+@inject IJSRuntime JSRuntime
 
 <PageTitle nTitle="Completa attività" />
 
@@ -104,7 +105,7 @@
             _NavigationManager.NavigateTo($"/BPM/ActivityList");
         else
         {
-            _NavigationManager.NavigateTo(back);
+            await JSRuntime.InvokeVoidAsync("BlazorSetHREF", back);        
             await _SessionStore.DeleteAsync("Referrer");
         }
     }
