@@ -46,7 +46,7 @@
 
 
 
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" AllowGrouping="false" TValue="AllegatoEmail"  AllowTextWrap="true" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" AllowGrouping="false" TValue="AllegatoEmail"  AllowTextWrap="true" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
     <SfDataManager Url="@DataUrl" CrossDomain="true" Adaptor=" Syncfusion.Blazor.Adaptors.ODataV4Adaptor"></SfDataManager>
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
@@ -329,7 +329,6 @@
         nMailBoxOld = nMailBox;
         Grid.DataManager.Url = DataUrl;
         Grid.Refresh();
-        await this.Grid.SelectRow(0);
     }
 
     /// <summary>
@@ -351,10 +350,14 @@
     /// </summary>
     public async void DataBoundHandler()
     {
-        if (Grid.CurrentViewData.Count()==0)
+        if (Grid.CurrentViewData.Count() == 0)
             await OnSelectAttachment.InvokeAsync(null);
-
-        else if ((await Grid.GetSelectedRecordsAsync()).Count != 0)
-            await OnSelectAttachment.InvokeAsync((await Grid.GetSelectedRecordsAsync()).FirstOrDefault());
+        else
+        {
+            AllegatoEmail e =(Grid.CurrentViewData).FirstOrDefault() as AllegatoEmail;
+            var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(e.Id);
+            await this.Grid.SelectRow(PrimayIndex);
+            OnSelectAttachment.InvokeAsync(e);
+        }
     }
 }

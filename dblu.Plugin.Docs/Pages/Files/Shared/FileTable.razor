@@ -47,7 +47,7 @@
 
 
 
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
     <SfDataManager Url="@DataUrl" CrossDomain="true" Adaptor=" Syncfusion.Blazor.Adaptors.ODataV4Adaptor"></SfDataManager>
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
@@ -338,8 +338,12 @@
     {
         if (Grid.CurrentViewData.Count() == 0)
             await OnSelectAttachment.InvokeAsync(null);
-
-        else if ((await Grid.GetSelectedRecordsAsync()).Count != 0)
-            await OnSelectAttachment.InvokeAsync((await Grid.GetSelectedRecordsAsync()).FirstOrDefault());
+        else
+        {
+            Allegati e = (Grid.CurrentViewData).FirstOrDefault() as Allegati;
+            var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(e.Id);
+            await this.Grid.SelectRow(PrimayIndex);
+            OnSelectAttachment.InvokeAsync(e);
+        }
     }
 }
