@@ -39,6 +39,10 @@
     .e-logs:before {
         content: "\eb67"
     }
+
+    .e-refresh:before {
+        content: "\e218"
+    }
 </style>
 
 
@@ -49,7 +53,7 @@
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSize="10"></GridPageSettings>
-    <GridEvents TValue="Allegati" OnDataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="OnRecordSelect"></GridEvents>
+    <GridEvents TValue="Allegati" OnDataBound="OnDataBoundHandler" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
 
     <GridColumns>
         <GridColumn IsPrimaryKey="true" Visible="false" Field=@nameof(Allegati.Id)></GridColumn>
@@ -98,7 +102,7 @@
     /// <summary>
     /// Url to use to retreive paginated data
     /// </summary>
-    private string DataUrl => $"/Attachs/GetFiles(Doc='{nDocumentType.ToString()}',Type='{nType.ToString()}',Folder='{nFolder.Cartella}')";
+    private string DataUrl => $"/ODATA/Files(Doc='{nDocumentType.ToString()}',Type='{nType.ToString()}',Folder='{nFolder.Cartella}')";
 
     /// <summary>
     ///Type of mail that we need to show
@@ -222,6 +226,7 @@
             if (nType == TableType.Inbox)
                 return new List<Object>()
                 {
+                new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
                 new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-move" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
                 new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
@@ -229,7 +234,8 @@
                 };
             if (nType == TableType.Processed)
                 return new List<Object>()
-        {
+                {
+                new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
                 new ItemModel() { Id = "ReOpen",Text = "", TooltipText = "Riapri", PrefixIcon = "e-reopen" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
                 new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
@@ -259,11 +265,20 @@
     /// On record select forward the selection
     /// </summary>
     /// <param name="args"></param>
-    public void OnRecordSelect(RowSelectEventArgs<Allegati> args)
+    public void RowSelected(RowSelectEventArgs<Allegati> args)
     {
         OnSelectAttachment.InvokeAsync(args.Data);
     }
 
+    /// <summary>
+    /// On record select forward the selection
+    /// </summary>
+    /// <param name="args"></param>
+    public async void RowDeselected(RowDeselectEventArgs<Allegati> args)
+    {
+        if ((await Grid.GetSelectedRecordsAsync()).Count == 0)
+            await OnSelectAttachment.InvokeAsync(null);
+    }
     /// <summary>
     /// Forward the events on toolbar button press
     /// </summary>
@@ -286,6 +301,8 @@
             await OnShowLogsAttachment.InvokeAsync(Attach);
         else if (args.Item.Id == "Delete")
             await OnDeleteAttachment.InvokeAsync(Attach);
+        else if (args.Item.Id == "Refresh")
+            Refresh();
         else if (args.Item.Id == "ReOpen")
             await OnReOpenAttachment.InvokeAsync(Attach);
     }
@@ -304,13 +321,25 @@
     /// On reloading list of email, the presel attach will be selected
     /// </summary>
     /// <param name="args"></param>
-    public async void DataBoundHandler(BeforeDataBoundArgs<Allegati> args)
+    public async void OnDataBoundHandler(BeforeDataBoundArgs<Allegati> args)
     {
         if (!string.IsNullOrEmpty(nPreselAttach))
         {
             await Task.Delay(200);
             var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(Guid.Parse(nPreselAttach));
-            this.Grid.SelectRow(PrimayIndex);
+            await this.Grid.SelectRow(PrimayIndex);
         }
+    }
+
+    /// <summary>
+    /// On databound check id there is content, to send selection properly
+    /// </summary>
+    public async void DataBoundHandler()
+    {
+        if (Grid.CurrentViewData.Count() == 0)
+            await OnSelectAttachment.InvokeAsync(null);
+
+        else if ((await Grid.GetSelectedRecordsAsync()).Count != 0)
+            await OnSelectAttachment.InvokeAsync((await Grid.GetSelectedRecordsAsync()).FirstOrDefault());
     }
 }

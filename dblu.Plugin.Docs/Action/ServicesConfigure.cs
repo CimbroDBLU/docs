@@ -33,68 +33,37 @@ namespace dblu.Portale.Plugin.Docs.Action
         {
             applicationBuilder.UseEndpoints(endpoints =>
             {
-              endpoints.MapODataRoute("Dossiers", "Dossiers", GetDossiersEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
-              endpoints.MapODataRoute("History", "History", GetHistoryEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
-              endpoints.MapODataRoute("Attachs", "Attachs", GetMailsEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
-          //    endpoints.MapODataRoute("Files", "Files", GetFilesEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
+              endpoints.MapODataRoute("ODATA", "ODATA", GetEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand(); 
             });
         }
 
-        /// <summary>
-        /// Make a model for the Dossier entities
-        /// </summary>
-        /// <returns>Return the EDM model for the service</returns>
-        IEdmModel GetDossiersEDMModel()
-        {
-            var odataBuilder = new ODataConventionModelBuilder();
-            odataBuilder.EntitySet<viewFascicoli>("ODATA_Dossiers");
-            return odataBuilder.GetEdmModel();
-        }
-
-        /// <summary>
-        /// Make a model for the History entities
-        /// </summary>
-        /// <returns>Return the EDM model for the service</returns>
-        IEdmModel GetHistoryEDMModel()
-        {
-            var odataBuilder = new ODataConventionModelBuilder();
-            odataBuilder.EntitySet<Processi>("ODATA_History");
-            return odataBuilder.GetEdmModel();
-        }
 
 
-        IEdmModel GetMailsEDMModel()
+        IEdmModel GetEDMModel()
         {
             var builder = new ODataConventionModelBuilder();
             builder.EntitySet<AllegatoEmail>("ODATA_Mails");
-            var function = builder.Function("GetMails");
+            var function = builder.Function("Mails");
             function.Parameter<string>("Type").Required();
             function.Parameter<string>("MailBox").Required();
             function.ReturnsCollectionFromEntitySet<AllegatoEmail>("ODATA_Mails");
 
             builder.EntitySet<Allegati>("ODATA_Files");
-            function = builder.Function("GetFiles");
+            function = builder.Function("Files");
             function.Parameter<string>("Doc").Required();
             function.Parameter<string>("Type").Required();
             function.Parameter<string>("Folder").Required();
             function.ReturnsCollectionFromEntitySet<Allegati>("ODATA_Files");
 
+            builder.EntitySet<Processi>("ODATA_History");
+            function = builder.Function("History");
+            function.ReturnsCollectionFromEntitySet<Processi>("ODATA_History");
+
+            builder.EntitySet<viewFascicoli>("ODATA_Dossiers");
+            function = builder.Function("Dossiers");
+            function.ReturnsCollectionFromEntitySet<viewFascicoli>("ODATA_Dossiers");
+
             return builder.GetEdmModel();
-        }
-
-        //IEdmModel GetFilesEDMModel()
-        //{
-        //    var builder = new ODataConventionModelBuilder();
-        //    builder.EntitySet<Allegati>("ODATA_Files");
-        //    var function = builder.Function("GetFiles");
-        //    function.Parameter<string>("Doc").Required();
-        //    function.Parameter<string>("Type").Required();
-        //    function.Parameter<string>("Folder").Required();
-        //    function.ReturnsCollectionFromEntitySet<Allegati>("ODATA_Files");
-
-
-        //    return builder.GetEdmModel();
-        //}
-
+        }        
     }
 }

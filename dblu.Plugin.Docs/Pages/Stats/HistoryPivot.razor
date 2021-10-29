@@ -16,7 +16,7 @@
 
             <SfPivotView AllowPdfExport="true" AllowExcelExport="true" Height="600" TValue="Processi"  @ref="@pivot"  >
                 <PivotViewDataSourceSettings TValue="Processi"  ExpandAll=false EnableSorting=true>
-                    <SfDataManager HttpClientInstance="@Client" CrossDomain="true" Url="/History/ODATA_History" Adaptor="Syncfusion.Blazor.Adaptors.ODataV4Adaptor" ></SfDataManager>
+                    <SfDataManager HttpClientInstance="@Client" CrossDomain="true" Url="/ODATA/History" Adaptor="Syncfusion.Blazor.Adaptors.ODataV4Adaptor" ></SfDataManager>
                     <PivotViewRows>
                         <PivotViewRow Name="Processes"  Caption="Processi"></PivotViewRow>
                         <PivotViewRow Name="Nome" Caption="Processo"></PivotViewRow>

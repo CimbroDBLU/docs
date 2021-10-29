@@ -20,7 +20,7 @@
         <CardContent EnableSeperator="true">
 
             <SfGrid EnablePersistence="false" ID="ODATA_Historys" TValue="Processi" AllowFiltering="true" AllowGrouping="false" AllowTextWrap="true" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@(new List<Object>() { "Search" })">
-                <SfDataManager HttpClientInstance="@Client" Url="/History/ODATA_History" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
+                <SfDataManager HttpClientInstance="@Client" Url="/ODATA/History" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
                 <GridEvents TValue="Processi"></GridEvents>
                 <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>

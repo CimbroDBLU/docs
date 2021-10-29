@@ -10,10 +10,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.AspNet.OData.Query;
 using System.Diagnostics;
 using dblu.Docs.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNet.OData.Routing;
 
 namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
 {
-
+    [Route("ODATA1")]
     /// <summary>
     /// Controller for ODATA integration of History
     /// </summary>
@@ -59,7 +61,9 @@ namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
         /// <returns>
         /// Result set
         /// </returns>
-        public async Task<PageResult<Processi>> Get(ODataQueryOptions opts)
+        [HttpGet]
+        [ODataRoute("GetHistory")]
+        public async Task<PageResult<Processi>> GetHistory(ODataQueryOptions opts)
         {
             Stopwatch sw = Stopwatch.StartNew();
 

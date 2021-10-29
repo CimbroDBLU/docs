@@ -47,83 +47,9 @@
                 </div>
 
                 <div class="col-7" style="align-self: auto;">
-                    @if (IsMoveDialog)
+                    @if (AttachID is not null)
                     {
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>Sposta <b>@AttachSubject</b></div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <AttachMoveInFolder nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nAttach="@Attach" nSourceServer="@MailBox" OnOperationDone="OnDone" OnAbort="OnAbort"></AttachMoveInFolder>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
-                    }
-                    else if (IsLogsDialog)
-                    {
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>Operazioni sul file <b>@AttachSubject</b></div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <AttachLogs nAttach="@Attach" OnAbort="OnAbort"></AttachLogs>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        @*CLIENTE*@
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>@CostumerDesc</div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <AttachCustomer @ref="CustomerComponent" OnLinkedToCostumer="OnLinkCostumer" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
-                        @*FASCICOLI*@
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>@DossierDesc</div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <AttachDossierItems @ref="@DossierItems" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
-
-                        @*ALLEGATI EMAIL*@
-                        @if (@IsAttachVisible)
+                        if (IsMoveDialog)
                         {
                             <div class="row form-group">
                                 <div class="col">
@@ -131,10 +57,10 @@
                                         <AccordionItems>
                                             <AccordionItem Expanded="true">
                                                 <HeaderTemplate>
-                                                    <div>Allegati nel file</div>
+                                                    <div>Sposta <b>@AttachSubject</b></div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <OriginalAttachsTable nAttachID="@AttachID" nAttachments="@SourceAttach" nRecordServer="TipiRecordServer.CartellaFile"></OriginalAttachsTable>
+                                                    <AttachMoveInFolder nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nAttach="@Attach" nSourceServer="@MailBox" OnOperationDone="OnDone" OnAbort="OnAbort"></AttachMoveInFolder>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -142,8 +68,84 @@
                                 </div>
                             </div>
                         }
-                    }
-                    @*PDF VIEWER*@
+                        else if (IsLogsDialog)
+                        {
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                        <AccordionItems>
+                                            <AccordionItem Expanded="true">
+                                                <HeaderTemplate>
+                                                    <div>Operazioni sul file <b>@AttachSubject</b></div>
+                                                </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <AttachLogs nAttach="@Attach" OnAbort="OnAbort"></AttachLogs>
+                                                </ContentTemplate>
+                                            </AccordionItem>
+                                        </AccordionItems>
+                                    </SfAccordion>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            @*CLIENTE*@
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                        <AccordionItems>
+                                            <AccordionItem Expanded="true">
+                                                <HeaderTemplate>
+                                                    <div>@CostumerDesc</div>
+                                                </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <AttachCustomer @ref="CustomerComponent" OnLinkedToCostumer="OnLinkCostumer" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                </ContentTemplate>
+                                            </AccordionItem>
+                                        </AccordionItems>
+                                    </SfAccordion>
+                                </div>
+                            </div>
+                            @*FASCICOLI*@
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                        <AccordionItems>
+                                            <AccordionItem Expanded="true">
+                                                <HeaderTemplate>
+                                                    <div>@DossierDesc</div>
+                                                </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <AttachDossierItems @ref="@DossierItems" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
+                                                </ContentTemplate>
+                                            </AccordionItem>
+                                        </AccordionItems>
+                                    </SfAccordion>
+                                </div>
+                            </div>
+
+                            @*ALLEGATI EMAIL*@
+                            @if (@IsAttachVisible)
+                            {
+                                <div class="row form-group">
+                                    <div class="col">
+                                        <SfAccordion>
+                                            <AccordionItems>
+                                                <AccordionItem Expanded="@IsAttachExpanded">
+                                                    <HeaderTemplate>
+                                                        <div>Allegati nel file</div>
+                                                    </HeaderTemplate>
+                                                    <ContentTemplate>
+                                                        <OriginalAttachsTable nAttachID="@AttachID" nAttachments="@SourceAttach" nRecordServer="TipiRecordServer.CartellaFile"></OriginalAttachsTable>
+                                                    </ContentTemplate>
+                                                </AccordionItem>
+                                            </AccordionItems>
+                                        </SfAccordion>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        @*PDF VIEWER*@
                     <div class="row form-group">
                         <div class="col">
                             <SfAccordion>
@@ -161,6 +163,7 @@
                             </SfAccordion>
                         </div>
                     </div>
+                    }
                 </div>
             </div>
         </CardContent>
@@ -234,6 +237,11 @@
     /// Indicates if Mail attachments panel is visible
     /// </summary>
     private bool IsAttachVisible { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if Mail attachments panel has has to be expanded
+    /// </summary>
+    private bool IsAttachExpanded { get; set; } = false;
 
     /// <summary>
     /// Indicates if Move panel is visible
@@ -375,6 +383,8 @@
         CustomerCode = "";
     }
 
+
+
     /// <summary>
     /// On selection of the email,shows and hide panels properly
     /// </summary>
@@ -385,6 +395,16 @@
         {
             try
             {
+                if (e == null)
+                {
+                    AttachID = null;
+                    DossierID = null;
+                    CustomerCode = null;
+                    PDFSourceId = null;
+                    PDFSourceType = e_SourceType.Attachment;
+                    return;
+                }
+
                 Attach = e;
                 PDFSourceId = e.Id.ToString();
                 PDFSourceType = e_SourceType.Attachment;
@@ -420,6 +440,8 @@
                 SourceAttach.Add(o);
 
             IsAttachVisible = (SourceAttach.Count != 0);
+            IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
+
         }
     }
 

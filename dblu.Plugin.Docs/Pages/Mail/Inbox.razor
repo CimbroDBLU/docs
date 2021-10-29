@@ -45,7 +45,9 @@
                 </div>
 
                 <div class="col-7" style="align-self: auto;">
-                    @if (IsAnswerDialog)
+                @if (AttachID is not null)
+                {
+                    if (IsAnswerDialog)
                     {
                         <div class="row form-group">
                             <div class="col">
@@ -183,7 +185,7 @@
                                 <div class="col">
                                     <SfAccordion>
                                         <AccordionItems>
-                                            <AccordionItem Expanded="true">
+                                            <AccordionItem Expanded="@IsAttachExpanded">
                                                 <HeaderTemplate>
                                                     <div>Allegati in Email</div>
                                                 </HeaderTemplate>
@@ -197,6 +199,7 @@
                             </div>
                         }
                     }
+
                     @*PDF VIEWER*@
                     <div class="row form-group">
                         <div class="col">
@@ -214,6 +217,7 @@
                             </SfAccordion>
                         </div>
                     </div>
+                }
                 </div>
             </div>
         </CardContent>
@@ -281,6 +285,11 @@
     /// Indicates if Mail attachments panel is visible
     /// </summary>
     private bool IsAttachVisible { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if Mail attachments panel has has to be expanded
+    /// </summary>
+    private bool IsAttachExpanded { get; set; } = false;
 
     /// <summary>
     /// Indicates if Answer panel is visible
@@ -456,6 +465,16 @@
         {
             try
             {
+                if(e==null)
+                {
+                    AttachID = null;
+                    DossierID = null;
+                    CustomerCode = null;
+                    PDFSourceId = null;
+                    PDFSourceType = e_SourceType.Attachment;
+                    return;
+                }
+
 
                 Attach = e;
                 PDFSourceId = e.Id.ToString();
@@ -512,7 +531,9 @@
             foreach (OriginalAttachments o in O)
                 SourceAttach.Add(o);
 
+
             IsAttachVisible = (SourceAttach.Count != 0);
+            IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
         }
     }
 
@@ -523,6 +544,7 @@
     public async void OnMailboxChanged(EmailServer e)
     {
         MailBox = e;
+
     }
 
     /// <summary>
