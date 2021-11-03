@@ -80,6 +80,12 @@
     public EventCallback<(string, string)> OnLinkedToItem { get; set; }
 
     /// <summary>
+    /// Fires when the Dossier has be changed
+    /// </summary>
+    [Parameter]
+    public EventCallback<Fascicoli> OnRefresh { get; set; }
+
+    /// <summary>
     /// Current Suorce folder for selected attach
     /// </summary>
     [Parameter]
@@ -129,12 +135,12 @@
         {
             Dossier = _MailService._fasMan.Get(nDossierID);
             LastDossierID = nDossierID;
+            await OnRefresh.InvokeAsync(Dossier);
 
         }
         else if (string.IsNullOrEmpty(nDossierID))
         {
             Dossier = null;
-
         }
     }
 
@@ -143,8 +149,7 @@
     /// </summary>
     public void Refresh()
     {
-        Table.Refresh();
-
+        Table.Refresh()
     }
 
     /// <summary>

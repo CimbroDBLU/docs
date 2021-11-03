@@ -47,51 +47,51 @@
         @code {
 
 
-                /// <summary>
-                /// Costumer code
-                /// </summary>
-                [Parameter]
-                public string nCostumerCode { get; set; }
+            /// <summary>
+            /// Costumer code
+            /// </summary>
+            [Parameter]
+            public string nCostumerCode { get; set; }
 
-                /// <summary>
-                /// Attachment ID
-                /// </summary>
-                [Parameter]
-                public string nAttachID { get; set; }
+            /// <summary>
+            /// Attachment ID
+            /// </summary>
+            [Parameter]
+            public string nAttachID { get; set; }
 
-                /// <summary>
-                /// List of the original attachment coming from the email
-                /// </summary>
-                [Parameter]
-                public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
+            /// <summary>
+            /// List of the original attachment coming from the email
+            /// </summary>
+            [Parameter]
+            public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
 
-                /// <summary>
-                /// Currend PDF document in edit
-                /// </summary>
-                [Parameter]
-                public MemoryStream nCurrentDocument { get; set; }
+            /// <summary>
+            /// Currend PDF document in edit
+            /// </summary>
+            [Parameter]
+            public MemoryStream nCurrentDocument { get; set; }
 
-                /// <summary>
-                /// Fires when a costumer has been selected
-                /// </summary>
-                [Parameter]
-                public EventCallback<ISoggetti> OnLinkedToCostumer { get; set; }
+            /// <summary>
+            /// Fires when a costumer has been selected
+            /// </summary>
+            [Parameter]
+            public EventCallback<ISoggetti> OnLinkedToCostumer { get; set; }
 
-                /// <summary>
-                /// Indicates if is possible to change user/order
-                /// </summary>
-                [Parameter]
-                public bool nReadOnly { get; set; } = false;
+            /// <summary>
+            /// Indicates if is possible to change user/order
+            /// </summary>
+            [Parameter]
+            public bool nReadOnly { get; set; } = false;
 
-                /// <summary>
-                /// Indicates if spinner must be visible
-                /// </summary>
-                private bool IsSpinnerVisible { get; set; } = false;
+            /// <summary>
+            /// Indicates if spinner must be visible
+            /// </summary>
+            private bool IsSpinnerVisible { get; set; } = false;
 
             /// <summary>
             /// Last selected costumer
             /// </summary>
-            public string LastCostumerCode { get; set; }
+            public string LastCostumerCode { get; set; } = "";
 
             /// <summary>
             /// Description of the costumer
@@ -118,6 +118,7 @@
             /// </summary>
             public ISoggetti CurrentCostumer { get; set; } = null;
 
+
             /// <summary>
             /// On  changing user, refresh the component
             /// </summary>
@@ -127,8 +128,9 @@
                 if (args is null) return;
 
                 nCostumerCode = args.Codice;
-                OnParametersSet();
-                await OnLinkedToCostumer.InvokeAsync(args);
+                bool ToSend=await LoadCostumer();
+                if (ToSend)
+                    await OnLinkedToCostumer.InvokeAsync(args);
             }
 
             /// <summary>
@@ -137,42 +139,59 @@
             /// <returns></returns>
             public async Task Search()
             {
-                IsSpinnerVisible = true;
-
-                await Task.Run(async () =>
-                {
-                    Stopwatch SW = Stopwatch.StartNew();
-                    await OnParametersSetAsync();
-                    _Logger.LogInformation($"AttachCostumerSearch.Search: Retreived Costumer from code {nCostumerCode} in {SW.ElapsedMilliseconds} ms");
-                });
+                IsSpinnerVisible = true;          
+                bool ToSend=await LoadCostumer();                
                 IsSpinnerVisible = false;
-
-                await OnLinkedToCostumer.InvokeAsync(CurrentCostumer);
+                if (ToSend)
+                    await OnLinkedToCostumer.InvokeAsync(CurrentCostumer);
             }
 
 
             /// <summary>
-            /// Refresh the component , if necessary
+            /// Load the customer selected and set description on text
             /// </summary>
-            protected override Task OnParametersSetAsync()
+            /// <returns></returns>
+            private async Task<bool> LoadCostumer()
             {
-                return Task.Run(() =>
+
+                if (LastCostumerCode != nCostumerCode && !string.IsNullOrEmpty(nCostumerCode))
                 {
-                    if (LastCostumerCode != nCostumerCode && !string.IsNullOrEmpty(nCostumerCode))
-                    {
-                        CurrentCostumer = _MailService._soggetti.GetSoggetto(nCostumerCode);
-                        Description = CurrentCostumer?.Nome ?? "";
-                    }
-                    else if (string.IsNullOrEmpty(nCostumerCode))
-                    {
-                        CurrentCostumer = null;
-                        Description = "";
-                    }
+                    Stopwatch SW = Stopwatch.StartNew();
+                    CurrentCostumer = _MailService._soggetti.GetSoggetto(nCostumerCode);
+                    _Logger.LogInformation($"AttachCostumerSearch.LoadCostumer: Retreived Costumer from code {nCostumerCode} in {SW.ElapsedMilliseconds} ms");
+                    Description = CurrentCostumer?.Nome ?? "";
                     LastCostumerCode = nCostumerCode;
-                });
+                    return true;
+
+                }
+                else if (string.IsNullOrEmpty(nCostumerCode))
+                {
+                    CurrentCostumer = null;
+                    Description = "";
+                    if (!string.IsNullOrEmpty(LastCostumerCode))
+                    {
+                        LastCostumerCode = nCostumerCode;
+                        return true;
+                    }
+
+                }
+                LastCostumerCode = nCostumerCode;
+                return false;
             }
 
-
+            /// <summary>
+            /// Once component loaded seqarch for the costumet and aventually sent to parent the costumer identified
+            /// </summary>
+            /// <param name="firstRender"></param>
+            /// <returns></returns>
+            protected override  Task OnAfterRenderAsync(bool firstRender)
+            {
+                bool ToSend =  LoadCostumer().Result;
+                nCostumerCode = CurrentCostumer?.Codice ?? "";
+                if (ToSend)
+                    OnLinkedToCostumer.InvokeAsync(CurrentCostumer);
+                return base.OnAfterRenderAsync(firstRender);
+            }
 
             /// <summary>
             /// Display the Undefined component, using dynmic loading
@@ -241,14 +260,14 @@
                     {
                         Name = "nAttachID",
                         Position = 1,
-                        Value = nAttachID
+                        Value = nAttachID??""
                     });
 
                     DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
                     {
                         Name = "nCostumerCode",
                         Position = 2,
-                        Value = nCostumerCode
+                        Value = nCostumerCode??""
                     });
 
                     DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()

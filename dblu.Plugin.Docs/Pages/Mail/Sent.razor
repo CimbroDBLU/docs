@@ -11,7 +11,8 @@
 @using dblu.Portale.Plugin.Docs.Pages.Mail.Shared
 @using dblu.Portale.Plugin.Docs.Classes
 @using Microsoft.AspNetCore.Http
-@using System.IO;
+@using System.IO
+@using dblu.Docs.Interfacce
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject IHttpContextAccessor _HttpContextAccessor
 @inject ILogger<Processed> _Logger
@@ -35,92 +36,16 @@
                     </div>
                     <div class="row ">
                         <div class="col">
-                            <MailTable @ref="@Grid" nType="MailTable.TableType.Sent" nMailBox="@MailBox"  OnSelectAttachment="OnSelectAttach" OnDeleteAttachment="OnDelete" OnForwardAttachment="OnForward" OnShowLogsAttachment="OnShowLogs" nPreselAttach="@nPreselAttach"></MailTable>
+                            <MailTable @ref="@Grid" nType="MailTable.TableType.Sent" nMailBox="@MailBox" OnSelectAttachment="OnSelectAttach" OnDeleteAttachment="OnDelete" OnForwardAttachment="OnForward" OnShowLogsAttachment="OnShowLogs" nPreselAttach="@nPreselAttach"></MailTable>
                         </div>
                     </div>
 
                 </div>
 
                 <div class="col-7" style="align-self: auto;">
-                    @if (AttachID is not null)
+                    @if (!string.IsNullOrEmpty(AttachID))
                     {
-                    @if (IsForwardDialog)
-                    {
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>Inoltra <b>@AttachSubject</b></div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <MailForward nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" nShowCloseCheck="false" OnOperationDone="OnForward"></MailForward>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
-                    }
-                    else if (IsLogsDialog)
-                    {
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>Operazioni sulla mail <b>@AttachSubject</b></div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <MailLogs nAttach="@Attach" OnAbort="OnAbort"></MailLogs>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        @*CLIENTE*@
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>@CostumerDesc</div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <AttachCustomer @ref="CustomerComponent"  nAttachments="@SourceAttach" nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
-                        @*EMAIL PREVIEW*@
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>Struttura di <span style="font-weight:800;color:#114b5a">@Attach?.Oggetto</span></div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <MailHTMLView nShowBack="false" nAttach="@Attach" OnDocumentLoaded="OnDocumentLoaded" nReadAttachments="true" nHeight="300"></MailHTMLView>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
-
-                        @*ALLEGATI EMAIL*@
-                        @if (@IsAttachVisible)
+                        @if (IsForwardDialog)
                         {
                             <div class="row form-group">
                                 <div class="col">
@@ -128,10 +53,10 @@
                                         <AccordionItems>
                                             <AccordionItem Expanded="true">
                                                 <HeaderTemplate>
-                                                    <div>Allegati in Email</div>
+                                                    <div>Inoltra <b>@AttachSubject</b></div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <OriginalAttachsTable nAttachID="@AttachID" nAttachments="@SourceAttach"></OriginalAttachsTable>
+                                                    <MailForward nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" nShowCloseCheck="false" OnOperationDone="OnForward"></MailForward>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -139,7 +64,83 @@
                                 </div>
                             </div>
                         }
-                    }
+                        else if (IsLogsDialog)
+                        {
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                        <AccordionItems>
+                                            <AccordionItem Expanded="true">
+                                                <HeaderTemplate>
+                                                    <div>Operazioni sulla mail <b>@AttachSubject</b></div>
+                                                </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <MailLogs nAttach="@Attach" OnAbort="OnAbort"></MailLogs>
+                                                </ContentTemplate>
+                                            </AccordionItem>
+                                        </AccordionItems>
+                                    </SfAccordion>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            @*CLIENTE*@
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                        <AccordionItems>
+                                            <AccordionItem Expanded="@IsCustomerExpand">
+                                                <HeaderTemplate>
+                                                    <div>@CostumerDesc</div>
+                                                </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <AttachCustomer OnLinkedToCostumer="OnLinkCostumer" nAttachments="@SourceAttach" nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                </ContentTemplate>
+                                            </AccordionItem>
+                                        </AccordionItems>
+                                    </SfAccordion>
+                                </div>
+                            </div>
+                            @*EMAIL PREVIEW*@
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                        <AccordionItems>
+                                            <AccordionItem Expanded="true">
+                                                <HeaderTemplate>
+                                                    <div>Struttura di <span style="font-weight:800;color:#114b5a">@Attach?.Oggetto</span></div>
+                                                </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <MailHTMLView nShowBack="false" nAttach="@Attach" OnDocumentLoaded="OnDocumentLoaded" nReadAttachments="true" nHeight="300"></MailHTMLView>
+                                                </ContentTemplate>
+                                            </AccordionItem>
+                                        </AccordionItems>
+                                    </SfAccordion>
+                                </div>
+                            </div>
+
+                            @*ALLEGATI EMAIL*@
+                            @if (@IsAttachVisible)
+                            {
+                                <div class="row form-group">
+                                    <div class="col">
+                                        <SfAccordion>
+                                            <AccordionItems>
+                                                <AccordionItem Expanded="true">
+                                                    <HeaderTemplate>
+                                                        <div>Allegati in Email</div>
+                                                    </HeaderTemplate>
+                                                    <ContentTemplate>
+                                                        <OriginalAttachsTable nAttachID="@AttachID" nAttachments="@SourceAttach"></OriginalAttachsTable>
+                                                    </ContentTemplate>
+                                                </AccordionItem>
+                                            </AccordionItems>
+                                        </SfAccordion>
+                                    </div>
+                                </div>
+                            }
+                        }
                     }
                 </div>
             </div>
@@ -279,15 +280,14 @@
     private ObservableCollection<OriginalAttachments> SourceAttach { get; set; } = new();
 
     /// <summary>
-    /// Reference to che Customer Component
+    /// Description of the costumer accordion
     /// </summary>
-    private AttachCustomer CustomerComponent { get; set; }
+    private string CostumerDesc { get; set; } = "Cliente non selezionato";
 
     /// <summary>
-    /// Description to show on "Costumer" tab
+    /// Indicateds if costumer block has to be expanded
     /// </summary>
-    private string CostumerDesc => (CustomerComponent?.CurrentCostumer == null) ? "Cliente da selezionare" : $"{CustomerComponent?.CurrentCostumer?.Codice ?? ""} - {CustomerComponent?.CurrentCostumer?.Nome ?? ""}";
-
+    private bool IsCustomerExpand { get; set; } = true;
 
     /// <summary>
     /// On selection of the email,shows and hide panels properly
@@ -296,12 +296,12 @@
     public void OnSelectAttach(AllegatoEmail e)
     {
         Task.Run(() =>
-        {            
+        {
             if (e == null)
             {
-                AttachID = null;
-                DossierID = null;
-                CustomerCode = null;
+                AttachID = "";
+                DossierID = "";
+                CustomerCode = "";
                 return;
             }
             Attach = e;
@@ -314,6 +314,9 @@
 
             if (CustomerCode != e.Chiave3)
                 CustomerCode = e.Chiave3;
+
+            if (string.IsNullOrEmpty(CustomerCode))
+                CostumerDesc = "Cliente non selezionato";
 
             OnAbort();
         });
@@ -464,6 +467,20 @@
         Grid.SelectedRow = 0;
     }
 
+    /// <summary>
+    /// Link the costumer to current Attach
+    /// </summary>
+    /// <param name="Customer">Costumer to link</param>
+    public void OnLinkCostumer(ISoggetti Customer)
+    {
+        CustomerCode = Customer?.Codice ?? "";
+        if (!string.IsNullOrEmpty(CustomerCode))
+            CostumerDesc = $"{Customer?.Codice ?? ""} - {Customer?.Nome ?? ""}";
+        else if (!string.IsNullOrEmpty(Attach.Chiave3) && Customer is null)
+            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";
+        else CostumerDesc = "Cliente non selezionato";
+        IsCustomerExpand = false;
+    }
 
     /// <summary>
     /// Onche a docuemtn has been loaded it displays the list of original attachments

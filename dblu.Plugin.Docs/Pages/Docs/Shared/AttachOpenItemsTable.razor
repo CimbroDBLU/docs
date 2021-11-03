@@ -4,15 +4,16 @@
 
 @using dblu.Docs.Interfacce
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject ILogger<AttachOpenItemsTable> _Logger
 
 @if (nItems.Count != 0)
 {
-<div>
-    <SfSpinner @bind-Visible="IsSpinnerVisible">
-    </SfSpinner>
-    <SfGrid SelectedRowIndex="0" DataSource="@nItems" AllowSorting="true" AllowFiltering="true" AllowTextWrap="false" AllowPaging="true">
-        <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+    <div>
+        <SfSpinner @bind-Visible="IsSpinnerVisible">
+        </SfSpinner>
+        <SfGrid SelectedRowIndex="0" DataSource="@nItems" AllowSorting="true" AllowFiltering="true" AllowTextWrap="false" AllowPaging="true">
+            <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
+            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
             <GridPageSettings PageSize="5"></GridPageSettings>
             <GridColumns>
                 <GridColumn Field=@nameof(ISoggettoElementiAperti.Numero) IsPrimaryKey="true" HeaderText="Numero"></GridColumn>
@@ -20,8 +21,8 @@
                 <GridColumn Field=@nameof(ISoggettoElementiAperti.DataConsegna) Format="d" HeaderText="Consegna"></GridColumn>
                 <GridColumn Field=@nameof(ISoggettoElementiAperti.Stato) HeaderText="Stato"></GridColumn>
             </GridColumns>
-    </SfGrid>
-</div>
+        </SfGrid>
+    </div>
 }
 
 @code {
@@ -30,6 +31,17 @@
     /// </summary>
     [Parameter]
     public string nCustomerCode { get; set; }
+
+    /// <summary>
+    /// Fires when some items opened has been found for this costumer
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> OnOpenItems { get; set; }
+
+    /// <summary>
+    /// Previously Customer code, to avoid reloading same events
+    /// </summary>
+    public string OldCustomerCode { get; set; }
 
     /// <summary>
     /// Indicates if the spinner has to be visible or not
@@ -48,13 +60,29 @@
     {
         if (string.IsNullOrEmpty(nCustomerCode)) { nItems = new(); return; }
 
+        if (OldCustomerCode == nCustomerCode) { return; }
+
         IsSpinnerVisible = true;
-        await Task.Run(async() =>
+        await Task.Run(async () =>
         {
+            Stopwatch SW = Stopwatch.StartNew();
             nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)).OrderByDescending(x => x.DataConsegna));
+            _Logger.LogInformation($"AttachOpenItemsTable.OnParametersSetAsync: Retreived {nItems.Count} related items for {nCustomerCode} in {SW.ElapsedMilliseconds} ms");
+            OldCustomerCode = nCustomerCode;
         });
         IsSpinnerVisible = false;
-
     }
+
+    /// <summary>
+    /// On after render sent the actual number of available items
+    /// </summary>
+    /// <param name="firstRender"></param>
+    /// <returns></returns>
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        OnOpenItems.InvokeAsync(nItems?.Count ?? 0);
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
 
 }

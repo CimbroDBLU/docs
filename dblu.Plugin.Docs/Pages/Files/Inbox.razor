@@ -47,7 +47,7 @@
                 </div>
 
                 <div class="col-7" style="align-self: auto;">
-                    @if (AttachID is not null)
+                    @if (!string.IsNullOrEmpty(AttachID))
                     {
                         if (IsMoveDialog)
                         {
@@ -99,7 +99,7 @@
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachCustomer @ref="CustomerComponent" OnLinkedToCostumer="OnLinkCostumer" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                    <AttachCustomer OnOpenItems="OnOpenItems"  OnLinkedToCostumer="OnLinkCostumer" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -116,7 +116,7 @@
                                                     <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachDossierItems @ref="@DossierItems" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
+                                                    <AttachDossierItems OnRefresh="OnRefreshDossier"  nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -353,21 +353,25 @@
     public string Title => (DocType == TipiDocumentiFile.ZIP) ? "File in arrivo" : "Richieste in arrivo";
 
     /// <summary>
-    /// Reference to che Customer Component
+    /// Last document type selected
     /// </summary>
-    private AttachCustomer CustomerComponent { get; set; }
-
-    /// <summary>
-    /// Description to show on "Costumer" tab
-    /// </summary>
-    private string CostumerDesc => (CustomerComponent?.CurrentCostumer == null) ? "Cliente da selezionare" : $"{CustomerComponent?.CurrentCostumer?.Codice ?? ""} - {CustomerComponent?.CurrentCostumer?.Nome ?? ""}";
-
-    /// <summary>
-    /// Description to show on dossier tab
-    /// </summary>
-    private string DossierDesc => (DossierItems?.CurrentDossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {DossierItems?.CurrentDossier?.Descrizione} [{DossierItems?.CurrentDossier?.Id}]";
-
     private string nLastDocType { get; set; } = "";
+
+    /// <summary>
+    /// Description of the costumer accordion
+    /// </summary>
+    private string CostumerDesc { get; set; } = "Cliente da selezionare";
+
+    /// <summary>
+    /// Description of the dossier accordion
+    /// </summary>
+    private string DossierDesc { get; set; } = "Fascicolo da selezionare";
+
+    /// <summary>
+    /// Indicateds if costumer block has to be expanded
+    /// </summary>
+    private bool IsCustomerExpand { get; set; } = true;
+
     /// <summary>
     /// Re-calculate type, if changed
     /// </summary>
@@ -397,10 +401,10 @@
             {
                 if (e == null)
                 {
-                    AttachID = null;
-                    DossierID = null;
-                    CustomerCode = null;
-                    PDFSourceId = null;
+                    AttachID = "";
+                    DossierID = "";
+                    CustomerCode = "";
+                    PDFSourceId = "";
                     PDFSourceType = e_SourceType.Attachment;
                     return;
                 }
@@ -415,9 +419,11 @@
                 if (DossierID != e.IdFascicolo.ToString())
                     DossierID = e.IdFascicolo.ToString();
 
-
                 if (CustomerCode != e.Chiave3)
                     CustomerCode = e.Chiave3;
+
+                if (string.IsNullOrEmpty(CustomerCode))
+                    CostumerDesc = "Cliente da selezionare";
 
             }
             catch (Exception ex)
@@ -575,6 +581,32 @@
     public async void OnLinkCostumer(ISoggetti Customer)
     {
         CustomerCode = Customer?.Codice ?? "";
+        if (!string.IsNullOrEmpty(CustomerCode))
+            CostumerDesc = $"{Customer?.Codice ?? ""} - {Customer?.Nome ?? ""}";
+        else if (!string.IsNullOrEmpty(Attach.Chiave3) && Customer is null)
+            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";
+        else CostumerDesc = "Cliente da selezionare";
+    }
+
+    /// <summary>
+    /// On Dossier loaded, set the descrition on the accordion
+    /// </summary>
+    /// <param name="Dossier">Fossier currently opened</param>
+    public void OnRefreshDossier(Fascicoli Dossier)
+    {
+        DossierDesc = (Dossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {Dossier?.Descrizione} [{Dossier?.Id}]";
+    }
+
+    /// <summary>
+    /// On getting open items , fires out the number of items detected
+    /// </summary>
+    /// <param name="Items"></param>
+    public void OnOpenItems(int Items)
+    {
+        if (Items == 0 && !string.IsNullOrEmpty(Attach?.Chiave3 ?? ""))
+            IsCustomerExpand = false;
+        else
+            IsCustomerExpand = true;
     }
 
     /// <summary>

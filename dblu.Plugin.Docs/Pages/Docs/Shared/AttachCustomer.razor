@@ -7,14 +7,14 @@
 
 <div class="row">
     <div class="col">
-        <AttachCustomerSearch @ref="@AttachCustomerSearchComponent" nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly"  nAttachID="@nAttachID"  nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument"></AttachCustomerSearch>
+        <AttachCustomerSearch  nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly"  nAttachID="@nAttachID"  nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument"></AttachCustomerSearch>
     </div>
 </div>
 @if (!nReadOnly)
 {
     <div class="row mt-2">
         <div class="col">
-            <AttachOpenItemsTable  nCustomerCode="@nCostumerCode"></AttachOpenItemsTable>
+            <AttachOpenItemsTable  nCustomerCode="@nCostumerCode" OnOpenItems="OnOpenItems"></AttachOpenItemsTable>
         </div>
     </div>
 }
@@ -59,19 +59,10 @@
     public EventCallback<ISoggetti> OnLinkedToCostumer { get; set; }
 
     /// <summary>
-    /// Fires when operation has been done
+    /// Fires the number on open items loded regarding this costumer
     /// </summary>
     [Parameter]
-    public EventCallback OnEmptySet { get; set; }
-
-
-    private AttachCustomerSearch AttachCustomerSearchComponent { get; set; }
-
-    /// <summary>
-    /// Current Selected costumer
-    /// </summary>
-    public ISoggetti CurrentCostumer => AttachCustomerSearchComponent.CurrentCostumer;
-
+    public EventCallback<int> OnOpenItems { get; set; }
 
     /// <summary>
     /// Forward the link event

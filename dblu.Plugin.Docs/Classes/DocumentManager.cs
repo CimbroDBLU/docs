@@ -337,9 +337,9 @@ namespace dblu.Portale.Plugin.Docs.Classes
                 {
                     MemoryStream Optimized = new();
                     PdfLoadedDocument loadedDocument = new PdfLoadedDocument(stream);
-                    foreach (PdfLoadedPage P in loadedDocument.Pages)
-                        foreach (PdfLoadedAnnotation A in P.Annotations)
-                            A.Flatten = true;
+                    //foreach (PdfLoadedPage P in loadedDocument.Pages)
+                    //    foreach (PdfLoadedAnnotation A in P.Annotations)
+                    //        A.Flatten = true;
                    
                     loadedDocument.Save(Optimized);
                     if (!Doc.IsTransformation)
