@@ -18,7 +18,7 @@
                 </SfSpinner>
 
                 <div class="col-2">
-                    <SfTextBox Placeholder="Codice Cliente" @onchange="Search" @bind-Value="@nCostumerCode"></SfTextBox>
+                    <SfTextBox Readonly="@nReadOnly" Placeholder="Codice Cliente" @onchange="Search" @bind-Value="@nCostumerCode"></SfTextBox>
                 </div>
 
                 @if (!nReadOnly)
@@ -91,7 +91,7 @@
             /// <summary>
             /// Last selected costumer
             /// </summary>
-            public string LastCostumerCode { get; set; } = "";
+            public string LastCostumerCode { get; set; } = "-1";
 
             /// <summary>
             /// Description of the costumer
