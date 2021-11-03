@@ -61,6 +61,7 @@
         if (string.IsNullOrEmpty(nCustomerCode)) { nItems = new(); return; }
 
         if (OldCustomerCode == nCustomerCode) { return; }
+        OldCustomerCode = nCustomerCode;
 
         IsSpinnerVisible = true;
         await Task.Run(async () =>
@@ -68,7 +69,7 @@
             Stopwatch SW = Stopwatch.StartNew();
             nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)).OrderByDescending(x => x.DataConsegna));
             _Logger.LogInformation($"AttachOpenItemsTable.OnParametersSetAsync: Retreived {nItems.Count} related items for {nCustomerCode} in {SW.ElapsedMilliseconds} ms");
-            OldCustomerCode = nCustomerCode;
+
         });
         IsSpinnerVisible = false;
     }

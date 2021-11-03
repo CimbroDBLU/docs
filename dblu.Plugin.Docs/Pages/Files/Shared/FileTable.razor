@@ -102,7 +102,7 @@
     /// <summary>
     /// Url to use to retreive paginated data
     /// </summary>
-    private string DataUrl => $"/ODATA/Files(Doc='{nDocumentType.ToString()}',Type='{nType.ToString()}',Folder='{nFolder.Cartella}')";
+    private string DataUrl => $"/ODATA/Files(Doc='{nDocumentType.ToString()}',Type='{nType.ToString()}',Folder='{nFolder?.Cartella}')";
 
     /// <summary>
     ///Type of mail that we need to show
