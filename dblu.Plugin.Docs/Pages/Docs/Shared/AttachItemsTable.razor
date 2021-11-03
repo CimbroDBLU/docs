@@ -421,7 +421,7 @@ else
     protected override void OnAfterRender(bool firstRender)
     {
         if (string.IsNullOrEmpty(ActionSelected))
-            ActionSelected = ActionsCombo.ActionsList.FirstOrDefault()?.Item ?? "";
+            ActionSelected = ActionsCombo?.ActionsList?.FirstOrDefault()?.Item ?? "";
         base.OnAfterRender(firstRender);
     }
 
