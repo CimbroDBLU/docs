@@ -944,6 +944,12 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 }
                             }
 
+                            else if (nn is PdfLoadedPopupAnnotation)
+                            {
+                                //nn.Flatten = true;
+                                flNoteManuali = true;
+                            }
+
                             else if (nn is PdfLoadedTextMarkupAnnotation)
                             {
                                 nn.Flatten = true;
