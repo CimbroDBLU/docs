@@ -2315,11 +2315,16 @@ namespace dblu.Portale.Plugin.Docs.Services
                 {
                     EmailServer srv = null;
                     //srv = _context.EmailServer.Where(s => s.Attivo == true && s.InUscita == true).FirstOrDefault();
-                    using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                    using SqlConnection cn = new SqlConnection(_context.Connessione);
+                    if (string.IsNullOrEmpty(NomeServer))
                     {
                         srv = cn.QueryFirstOrDefault<EmailServer>("select Top 1 * from EmailServer where Attivo=1 and InUscita=1");
                     }
-#if (DEBUG)
+                    else
+                    {
+                        srv = cn.QueryFirstOrDefault<EmailServer>($"select * from EmailServer where Nome=(select NomeServerInUscita from  EmailServer where Nome='{NomeServer}')");
+                    }
+#if (DEBUG_)
                     srv = new();
                     srv.Email = "jobaid@dblu.it";
                     srv.Server = "mail.dblu.it";
@@ -2329,7 +2334,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                     srv.Password = "j0b41d!";
 
 #endif
-
                     if (srv == null)
                     {
                         res.Successo = false;
