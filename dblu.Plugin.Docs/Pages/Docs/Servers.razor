@@ -12,20 +12,6 @@
 @inject ServerMailService  _ServiceMailServer
 @inject NavigationManager  _NavigationManager
 
-<style>
-    .e-up:before {
-        content: '\e840';
-    }
-
-    .e-down:before {
-        content: '\e83f';
-    }
-
-    .e-apply:before {
-        content: '\e737';
-    }
-</style>
-
 <PageTitle nTitle="Lista Servers" />
 
 <section class="content">
@@ -51,9 +37,9 @@
                                     </SfDropDownList>
                                 </Template>
                             </ToolbarItem>
-                            <ToolbarItem OnClick="OnUp" Text="Sù" Id="Up" TooltipText="Sposta in sù" PrefixIcon="e-up"></ToolbarItem>
-                            <ToolbarItem OnClick="OnDown" Text="Giù" Id="Down" TooltipText="Sposta in giù" PrefixIcon="e-down"></ToolbarItem>
-                            <ToolbarItem OnClick="OnApply" Text="Applica posizione" Id="Apply" TooltipText="Applica posizionamento corrente" PrefixIcon="e-apply"></ToolbarItem>
+                            <ToolbarItem OnClick="OnUp" Text="Sù" Id="Up" TooltipText="Sposta in sù" PrefixIcon="e-icons e-arrow-up"></ToolbarItem>
+                            <ToolbarItem OnClick="OnDown" Text="Giù" Id="Down" TooltipText="Sposta in giù" PrefixIcon="e-icons e-arrow-down"></ToolbarItem>
+                            <ToolbarItem OnClick="OnApply" Text="Applica posizione" Id="Apply" TooltipText="Applica posizionamento corrente" PrefixIcon="e-icons e-reapply"></ToolbarItem>
                         </ToolbarItems>
                     </SfToolbar>
                             <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick"  TValue="EmailServer"></GridEvents>

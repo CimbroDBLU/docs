@@ -273,11 +273,11 @@ namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
                 switch (Type.ToUpper())
                 {
                     case "PROCESSED":
-                        results = _doc._allMan.GetZipInArrivo(Doc, Folder).AsQueryable();
+                        results = _doc._allMan.GetEmailProcessate(Doc, Folder).AsQueryable();
                         break;
                     case "INBOX":
                     default:
-                        results = _doc._allMan.GetEmailProcessate(Doc, Folder).AsQueryable();
+                        results = _doc._allMan.GetZipInArrivo(Doc, Folder).AsQueryable();
                         break;
                 }
 

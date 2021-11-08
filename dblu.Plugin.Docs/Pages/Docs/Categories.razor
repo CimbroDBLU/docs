@@ -10,12 +10,7 @@
 @inject NavigationManager  _NavigationManager
 
 <PageTitle nTitle="Lista Categorie" />
-<style>
 
-    .e-duplicate:before {
-        content: '\e70a';
-    }
-</style>
 <section class="content">
 
     <SfSpinner @bind-Visible="IsSpinnerVisible">
@@ -83,7 +78,7 @@
             new ItemModel(){ Id="New",Text="Nuovo", TooltipText="Nuovo", PrefixIcon="e-add" } ,
             new ItemModel(){ Id="Edit",Text="Modifica", TooltipText="Modifica", PrefixIcon="e-edit" } ,
             new ItemModel(){ Id="Delete",Text="Elimina", TooltipText="Elimina", PrefixIcon="e-delete" },
-            new ItemModel(){ Id="Duplicate",Text="Duplica", TooltipText="Duplica", PrefixIcon="e-duplicate" }
+            new ItemModel(){ Id="Duplicate",Text="Duplica", TooltipText="Duplica", PrefixIcon="e-icons e-copy" }
         };
 
     /// <summary>

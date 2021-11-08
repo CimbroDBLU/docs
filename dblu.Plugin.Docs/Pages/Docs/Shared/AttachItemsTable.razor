@@ -30,23 +30,6 @@
         width: 50px;
     }
 
-    .e-duplicate:before {
-        content: '\e70a';
-    }
-
-    .e-open:before {
-        content: '\ebdd';
-    }
-
-    .e-print:before {
-        content: '\e7df';
-    }
-
-    .e-input-search:before {
-        content: "\ebe6";
-        font-family: e-icons;
-    }
-
     .e-toolbar .e-dblu .e-icons {
         background-color: Highlight;
         color: white;
@@ -82,10 +65,10 @@
         <SfToolbar>
             <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
             <ToolbarItems>
-                <ToolbarItem Id="Open" PrefixIcon="e-open" TooltipText="Apri"></ToolbarItem>
+                <ToolbarItem Id="Open" PrefixIcon="e-icons e-folder-open" TooltipText="Apri"></ToolbarItem>
                 <ToolbarItem Id="Add" PrefixIcon="e-add" TooltipText="Aggiungi"></ToolbarItem>
-                <ToolbarItem Id="Duplicate" PrefixIcon="e-duplicate" TooltipText="Duplica"></ToolbarItem>
-                <ToolbarItem Id="Print" CssClass="e-dblu" PrefixIcon="e-print" Disabled="@IsSummaryActive"></ToolbarItem>
+                <ToolbarItem Id="Duplicate" PrefixIcon="e-icons e-copy" TooltipText="Duplica"></ToolbarItem>
+                <ToolbarItem Id="Print" CssClass="e-dblu" PrefixIcon="e-icons e-print" Disabled="@IsSummaryActive"></ToolbarItem>
 
                 <ToolbarItem Id="Delete" PrefixIcon="e-delete" TooltipText="Elimina"></ToolbarItem>
                 <ToolbarItem Align=ItemAlign.Right Id="SearchItem" Type="ItemType.Input">
@@ -664,7 +647,7 @@ else
     /// </summary>
     public void OnSearchCreated()
     {
-        this.SearchText.AddIcon("append", "e-input-search");
+        this.SearchText.AddIcon("append", "e-icons e-search");
     }
 
     /// <summary>

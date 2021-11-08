@@ -16,17 +16,13 @@
 @inject ILogger<MailTable> _Logger
 
 <style>
-    .e-answer:before {
-        content: "\ebed"
-    }
+
 
     .e-move:before {
         content: "\e60b"
     }
 
-    .e-forward:before {
-        content: "\ebfa"
-    }
+
 
     .e-show:before {
         content: "\eb64"
@@ -215,24 +211,24 @@
             if(nType== TableType.Inbox)
                 return new List<Object>()
                 {
-                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-answer" },
-                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
+                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-icons e-undo" },
+                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-icons e-redo" } ,
                 new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
-                new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-move" } ,
+                new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-folder" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "ShowHTML",Text = "", TooltipText = "Mostra", PrefixIcon = "e-show" },
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
+                new ItemModel() { Id = "ShowHTML",Text = "", TooltipText = "Mostra", PrefixIcon = "e-image" },
+                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
                 new string ("Search")
                 };
             if (nType == TableType.Processed)
                 return new List<Object>()
                 {
-                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-answer" },
-                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
+                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-icons e-undo" },
+                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-icons e-redo" } ,
                 new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
-                new ItemModel() { Id = "ReOpen",Text = "", TooltipText = "Riapri", PrefixIcon = "e-reopen" } ,
+                new ItemModel() { Id = "ReOpen",Text = "", TooltipText = "Riapri", PrefixIcon = "e-comment-reopen" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
+                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
                 new string ("Search")
                 };
             if (nType == TableType.Sent)
@@ -241,18 +237,18 @@
                 new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
                 new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
+                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
                 new string ("Search")
                 };
             if (nType == TableType.Sorting)
                 return new List<Object>()
                 {
-                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-answer" },
-                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
+                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-icons e-undo" },
+                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-icons e-red" } ,
                 new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
-                new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-move" } ,
+                new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-folder" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
+                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
                 new string ("Search")
                 };
             return new List<Object>();

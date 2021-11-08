@@ -15,37 +15,6 @@
 @inject IHttpContextAccessor _HttpContextAccessor
 @inject ILogger<FileTable> _Logger
 
-<style>
-    .e-answer:before {
-        content: "\ebed"
-    }
-
-    .e-move:before {
-        content: "\e60b"
-    }
-
-    .e-forward:before {
-        content: "\ebfa"
-    }
-
-    .e-show:before {
-        content: "\eb64"
-    }
-
-    .e-reopen:before {
-        content: "\e818"
-    }
-
-    .e-logs:before {
-        content: "\eb67"
-    }
-
-    .e-refresh:before {
-        content: "\e218"
-    }
-</style>
-
-
 
 <SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
     <SfDataManager Url="@DataUrl" CrossDomain="true" Adaptor=" Syncfusion.Blazor.Adaptors.ODataV4Adaptor"></SfDataManager>
@@ -227,18 +196,18 @@
                 return new List<Object>()
                 {
                 new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
-                new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-move" } ,
+                new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-folder" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
+                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
                 new string ("Search")
                 };
             if (nType == TableType.Processed)
                 return new List<Object>()
                 {
                 new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
-                new ItemModel() { Id = "ReOpen",Text = "", TooltipText = "Riapri", PrefixIcon = "e-reopen" } ,
+                new ItemModel() { Id = "ReOpen",Text = "", TooltipText = "Riapri", PrefixIcon = "e-comment-reopen" } ,
                 new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-logs" },
+                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
                 new string ("Search")
                 };
 

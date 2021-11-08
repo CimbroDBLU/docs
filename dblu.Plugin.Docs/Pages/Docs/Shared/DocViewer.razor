@@ -17,34 +17,6 @@
 
 <style>
 
-    .e-rotatesx:before {
-            content: '\ebed';
-        }
-
-    .e-rotatedx:before {
-            content: '\ebfa';
-        }
-
-    .e-reload:before {
-            content: '\e218';
-        }
-
-    .e-delete:before {
-            content: '\e204';
-        }
-
-    .e-save:before {
-            content: '\e954';
-        }
-
-    .e-expand:before {
-            content: '\e342';
-        }
-
-    .e-reduce:before {
-        content: '\e337';
-    }
-
     .fullscreen {
         z-index: 3333;
         position: fixed;
@@ -106,17 +78,17 @@
 
         <SfToolbar>
             <ToolbarItems>
-                <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-exit-full-screen e-icons":"e-full-screen e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
                 @if (nAllowEdit)
                 {
-                    <ToolbarItem PrefixIcon="e-rotatesx e-icons" TooltipText="Ruota a sx" OnClick="() => OnRotate(true)"></ToolbarItem>
-                    <ToolbarItem PrefixIcon="e-rotatedx e-icons" TooltipText="Ruota a dx" OnClick="() => OnRotate(false)"></ToolbarItem>
-                    <ToolbarItem PrefixIcon="e-delete e-icons" TooltipText="Cancella" OnClick="OnRemovePage"></ToolbarItem>
+                    <ToolbarItem PrefixIcon="e-undo e-icons" TooltipText="Ruota a sx" OnClick="() => OnRotate(true)"></ToolbarItem>
+                    <ToolbarItem PrefixIcon="e-redo e-icons" TooltipText="Ruota a dx" OnClick="() => OnRotate(false)"></ToolbarItem>
+                    <ToolbarItem PrefixIcon="e-changes-reject e-icons" TooltipText="Cancella" OnClick="OnRemovePage"></ToolbarItem>
                 }
                 @if (nAllowNote || nAllowEdit)
                 {
-                    <ToolbarItem PrefixIcon="e-reload e-icons" TooltipText="Ricarica" OnClick="LoadDocument"></ToolbarItem>
-                    <ToolbarItem PrefixIcon="e-save" TooltipText="Salva" OnClick="OnSave"></ToolbarItem>
+                    <ToolbarItem PrefixIcon="e-refresh e-icons" TooltipText="Ricarica" OnClick="LoadDocument"></ToolbarItem>
+                    <ToolbarItem PrefixIcon="e-save e-icons" TooltipText="Salva" OnClick="OnSave"></ToolbarItem>
                 }
             </ToolbarItems>
         </SfToolbar>
@@ -140,7 +112,7 @@
             <CardContent>
                 <SfToolbar>
                     <ToolbarItems>
-                        <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                        <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-exit-full-screen e-icons":"e-full-screen e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
                     </ToolbarItems>
                 </SfToolbar>
                 <div class="mt-2 mb-2">
@@ -155,7 +127,7 @@
             <CardContent>
                 <SfToolbar>
                     <ToolbarItems>
-                        <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                        <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-exit-full-screen e-icons":"e-full-screen e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
                     </ToolbarItems>
                 </SfToolbar>
                 @if (!string.IsNullOrEmpty(Doc.AsEmail().Item1))
@@ -175,7 +147,7 @@
             <CardContent>
                 <SfToolbar>
                     <ToolbarItems>
-                        <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-reduce e-icons":"e-expand e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                        <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-exit-full-screen e-icons":"e-full-screen e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
                     </ToolbarItems>
                 </SfToolbar>
                 <div class="mt-2 mb-2" style=" text-align: center; "><h3>Preview non supportata per il documento @Doc.FileName</h3></div>
@@ -356,7 +328,7 @@
     private async void OnSave()
     {
      
-     //   if (Viewer.IsDocumentEdited)
+     //  if (Viewer.IsDocumentEdited)
 
         Doc = await DocManager.Save(new MemoryStream(await Viewer.GetDocument()));
        // else
