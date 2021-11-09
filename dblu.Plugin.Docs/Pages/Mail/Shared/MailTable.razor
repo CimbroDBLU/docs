@@ -9,46 +9,71 @@
 @using dblu.Portale.Core.Infrastructure.Identity.Services
 @using Microsoft.AspNetCore.Http
 @using System.Security.Claims
-@using Syncfusion.Blazor.Data  
+@using Syncfusion.Blazor.Data
+@using System.Timers
+@implements IDisposable
+
 
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject IHttpContextAccessor _HttpContextAccessor
 @inject ILogger<MailTable> _Logger
-
-<style>
-
-
-    .e-move:before {
-        content: "\e60b"
-    }
+@inject IConfiguration _Conf
 
 
-
-    .e-show:before {
-        content: "\eb64"
-    }
-    .e-reopen:before {
-        content: "\e818"
-    }
-    
-    .e-logs:before {
-        content: "\eb67"
-    }
-
-    .e-refresh:before {
-        content: "\e218"
-    }
-</style>
-
-
-
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" AllowGrouping="false" TValue="AllegatoEmail"  AllowTextWrap="true" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" AllowGrouping="false" TValue="AllegatoEmail" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
     <SfDataManager Url="@DataUrl" CrossDomain="true" Adaptor=" Syncfusion.Blazor.Adaptors.ODataV4Adaptor"></SfDataManager>
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSize="10"></GridPageSettings>
     <GridEvents TValue="AllegatoEmail" OnDataBound="OnDataBoundHandler" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
+
+    <SfToolbar>
+        <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
+        <ToolbarItems>
+            @if (nType == TableType.Inbox || nType == TableType.Processed)
+            {
+                <ToolbarItem Id="Answer" PrefixIcon="e-icons e-undo" TooltipText="Rispondi"></ToolbarItem>
+                <ToolbarItem Id="Forward" PrefixIcon="e-icons e-redo" TooltipText="Inoltra"></ToolbarItem>
+            }
+            <ToolbarItem Id="Refresh" TooltipText="Aggiorna">
+                <Template>
+                    <div style="position:relative">
+                        <button type="button" tabindex="-1" style="width:auto" aria-label="Aggiorna" class="e-control e-btn e-lib e-tbar-btn e-icon-btn e-icon-btn">
+                            <span class="e-refresh e-icons e-btn-icon">
+                                @if (NewItems != 0)
+                                {
+                                    <span style="padding: 0.2rem;font-family:Verdana;line-height:8px;font-size: 10px; border-radius: 5px; background: Tomato; right: 0px; top: 2px; position: absolute;">@NewItems</span>
+                                }
+                            </span>
+                        </button>
+                    </div>
+                </Template>
+            </ToolbarItem>
+
+            @if (nType == TableType.Inbox || nType == TableType.Sorting)
+            {
+                <ToolbarItem Id="Move" PrefixIcon="e-icons e-folder" TooltipText="Sposta"></ToolbarItem>
+            }
+
+            @if (nType == TableType.Processed)
+            {
+                <ToolbarItem Id="ReOpen" PrefixIcon="e-comment-reopen" TooltipText="Riapri"></ToolbarItem>
+            }
+
+            <ToolbarItem Id="Delete" PrefixIcon="e-icons e-delete" TooltipText="Cancella"></ToolbarItem>
+            @if (nType == TableType.Inbox)
+            {
+                <ToolbarItem Id="ShowHTML" PrefixIcon="e-icons e-image" TooltipText="Mostra"></ToolbarItem>
+            }
+            <ToolbarItem Id="Log" PrefixIcon="e-icons e-justify" TooltipText="Visualizza logs"></ToolbarItem>
+            <ToolbarItem Align=ItemAlign.Right Id="SearchItem" Type="ItemType.Input">
+                <Template>
+                    <SfTextBox @ref="@SearchText" ID="SearchItemText" EnablePersistence="false" Autocomplete="AutoComplete.On" @bind-Value="@SearchKey" @onchange="OnSearch" Placeholder="Ricerca" Created="@OnSearchCreated"></SfTextBox>
+                </Template>
+            </ToolbarItem>
+        </ToolbarItems>
+    </SfToolbar>
 
     <GridColumns>
         <GridColumn IsPrimaryKey="true" Visible="false" Field=@nameof(AllegatoEmail.Id)></GridColumn>
@@ -85,7 +110,7 @@
     /// <summary>
     /// Url to use to retreive paginated data
     /// </summary>
-    private string DataUrl=> $"/ODATA/Mails(Type='{nType.ToString()}',MailBox='{nMailBox.Nome}')";
+    private string DataUrl => $"/ODATA/Mails(Type='{nType.ToString()}',MailBox='{nMailBox.Nome}')";
 
     /// <summary>
     ///Type of mail that we need to show
@@ -202,57 +227,82 @@
     public double SelectedRow { get => Grid.SelectedRowIndex; set { Grid.SelectRowAsync(value); } }
 
     /// <summary>
-    ///  Tollbar definition
+    /// Text box for seaching
     /// </summary>
-    private List<Object> Tool
+    private SfTextBox SearchText { get; set; }
+
+    /// <summary>
+    /// The key text type inside search box
+    /// </summary>
+    private string SearchKey { get; set; } = "";
+
+    /// <summary>
+    /// New Items identifies in last check
+    /// </summary>
+    private int NewItems { get; set; } = 0;
+
+    /// <summary>
+    /// Timer for periodically check for new emails
+    /// </summary>
+    private Timer InTimer { get; set; }
+
+    /// <summary>
+    /// Last emails arrived and visualized in current folder
+    /// </summary>
+    private DateTime LastEmailTime { get; set; }
+
+    /// <summary>
+    /// On init , if necessary, start the timer
+    /// </summary>
+    protected override async void OnInitialized()
     {
-        get
+        int.TryParse(_Conf["Docs:AutoRefresh"], out int Time);
+        if (Time != 0)
         {
-            if(nType== TableType.Inbox)
-                return new List<Object>()
-                {
-                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-icons e-undo" },
-                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-icons e-redo" } ,
-                new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
-                new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-folder" } ,
-                new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "ShowHTML",Text = "", TooltipText = "Mostra", PrefixIcon = "e-image" },
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
-                new string ("Search")
-                };
-            if (nType == TableType.Processed)
-                return new List<Object>()
-                {
-                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-icons e-undo" },
-                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-icons e-redo" } ,
-                new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
-                new ItemModel() { Id = "ReOpen",Text = "", TooltipText = "Riapri", PrefixIcon = "e-comment-reopen" } ,
-                new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
-                new string ("Search")
-                };
-            if (nType == TableType.Sent)
-                return new List<Object>()
-                {
-                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-forward" } ,
-                new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
-                new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
-                new string ("Search")
-                };
-            if (nType == TableType.Sorting)
-                return new List<Object>()
-                {
-                new ItemModel() { Id = "Answer",Text = "", TooltipText = "Rispondi", PrefixIcon = "e-icons e-undo" },
-                new ItemModel() { Id = "Forward",Text = "", TooltipText = "Inoltra", PrefixIcon = "e-icons e-red" } ,
-                new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
-                new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-folder" } ,
-                new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
-                new string ("Search")
-                };
-            return new List<Object>();
+            Time = Time * (60 * 1000);
+            InTimer = new Timer();
+            InTimer.Elapsed += NotifyTimerElapsed;
+            InTimer.AutoReset = true;
+            InTimer.Interval = Time;
+            InTimer.Enabled = true;
+            _Logger.LogInformation($"MailTable.OnInitialized: Autorefresh set every {Time} ms");
         }
+       else _Logger.LogWarning($"MailTable.OnInitialized: Autorefresh NOT set");
+    }
+
+    public void Dispose() => InTimer?.Dispose();
+
+    /// <summary>
+    /// Add the search icon to the text box
+    /// </summary>
+    public void OnSearchCreated()
+    {
+        this.SearchText.AddIcon("append", "e-icons e-search");
+    }
+
+    /// <summary>
+    /// Apply the search
+    /// </summary>
+    public void OnSearch()
+    {
+        Grid.SearchAsync(SearchKey);
+    }
+
+    /// <summary>
+    /// Once the time fire, check for incoming emails
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="e"></param>
+    private void NotifyTimerElapsed(object source, ElapsedEventArgs e)
+    {
+
+        switch (nType)
+        {
+            case TableType.Inbox: NewItems = _MailService._allMan.GetNewInboxEmail("EMAIL", nMailBox.Nome, LastEmailTime); break;
+            case TableType.Sorting: NewItems = _MailService._allMan.GetNewSortingEmail("EMAIL", nMailBox.Nome, LastEmailTime); break;
+        }
+
+
     }
 
     /// <summary>
@@ -285,7 +335,7 @@
     /// <param name="args"></param>
     public async void RowDeselected(RowDeselectEventArgs<AllegatoEmail> args)
     {
-        if((await Grid.GetSelectedRecordsAsync()).Count==0)
+        if ((await Grid.GetSelectedRecordsAsync()).Count == 0)
             await OnSelectAttachment.InvokeAsync(null);
     }
 
@@ -317,13 +367,19 @@
             await OnReOpenAttachment.InvokeAsync(Attach);
     }
 
+
     /// <summary>
-    /// Reload the list fo the email
+    /// Reload the list fo the email and get last email for this folder
     /// </summary>
     public async void Refresh()
     {
         nMailBoxOld = nMailBox;
         Grid.DataManager.Url = DataUrl;
+        switch (nType)
+        {
+            case TableType.Inbox: LastEmailTime = _MailService._allMan.GetLastInboxEmailTime("EMAIL", nMailBox.Nome); break;
+            case TableType.Sorting: LastEmailTime = _MailService._allMan.GetLastSortingEmailTime("EMAIL", nMailBox.Nome); break;
+        }
         Grid.Refresh();
     }
 
@@ -350,7 +406,7 @@
             await OnSelectAttachment.InvokeAsync(null);
         else
         {
-            AllegatoEmail e =(Grid.CurrentViewData).FirstOrDefault() as AllegatoEmail;
+            AllegatoEmail e = (Grid.CurrentViewData).FirstOrDefault() as AllegatoEmail;
             var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(e.Id);
             await this.Grid.SelectRow(PrimayIndex);
             OnSelectAttachment.InvokeAsync(e);
