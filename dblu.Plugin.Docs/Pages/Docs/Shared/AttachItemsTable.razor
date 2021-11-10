@@ -708,7 +708,7 @@ else
     {
         try
         {
-            string component = _SubjectService.UrlServizioRicercaElementi();
+            string component = _SubjectService.UrlServizioRicercaElementi(_NavigationManager.Uri);
             DynamicAttributes.Clear();
 
             IsShowDialog = true;

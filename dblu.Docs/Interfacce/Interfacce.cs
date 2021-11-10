@@ -45,9 +45,9 @@ namespace dblu.Docs.Interfacce
 
         ISoggetti GetSoggetto(string Codice);
 
-        string UrlServizio();
+        string UrlServizio(string Caller="");
 
-        string UrlServizioRicercaElementi();
+        string UrlServizioRicercaElementi(string Caller = "");
 
         Task<List<ISoggettoElementiAperti>> GetElementiAperti(string Codice);
 

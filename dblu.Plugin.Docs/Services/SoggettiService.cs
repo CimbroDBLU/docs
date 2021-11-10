@@ -21,13 +21,19 @@ namespace dblu.Portale.Plugin.Docs.Services
         private readonly IToastNotification _toastNotification;
         public IConfiguration _config { get; }
 
-        public string UrlServizio() {
-            return string.IsNullOrEmpty(_config["Beta"]) ? "/Docs/CercaSoggetti" : "dblu.Portale.Plugin.Docs.Pages.Custom.CustomCustomerPopUp";
+        public string UrlServizio(string Caller = "") {
+            if (Caller.Contains(@"/Mail/") || Caller.Contains(@"/Files/"))
+                return "dblu.Portale.Plugin.Docs.Pages.Custom.CustomCustomerPopUp";
+            else
+                return  "/Docs/CercaSoggetti" ;
         }
 
-        public string UrlServizioRicercaElementi()
+        public string UrlServizioRicercaElementi(string Caller = "")
         {
-            return string.IsNullOrEmpty(_config["Beta"]) ? "/Fascicolo/CercaElementiSoggetto" : "dblu.Portale.Plugin.Docs.Pages.Custom.CustomDossierItemsTablePopUp";
+            if (Caller.Contains(@"/Mail/") || Caller.Contains(@"/Files/"))
+                return "dblu.Portale.Plugin.Docs.Pages.Custom.CustomDossierItemsTablePopUp";
+            else
+                return "/Fascicolo/CercaElementiSoggetto";
         }
 
         private readonly SoggettiManager _sggMan;
