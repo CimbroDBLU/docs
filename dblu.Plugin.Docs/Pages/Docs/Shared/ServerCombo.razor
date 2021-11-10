@@ -94,6 +94,8 @@
     /// </summary>
     protected override async void OnParametersSet()
     {
+        if (_HttpContextAccessor.HttpContext is null) return;
+
         List<string> Roles = new();
         if (nRecordServer == TipiRecordServer.CartellaMail)
         {
@@ -129,7 +131,7 @@
     /// <param name="args"></param>
     private  async void OnValueChange(Syncfusion.Blazor.DropDowns.SelectEventArgs<TranslationServer> args)
     {
-        var tServer = args.ItemData as TranslationServer;       
+        var tServer = args.ItemData as TranslationServer;
         await nServerChanged.InvokeAsync(Servers.FirstOrDefault(x=>x.Nome==tServer.Code));
     }
 }

@@ -11,18 +11,62 @@
 @using System.Security.Claims
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
 @using Syncfusion.Blazor.Data
+@using System.Timers
+@implements IDisposable
+
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
 @inject IHttpContextAccessor _HttpContextAccessor
 @inject ILogger<FileTable> _Logger
+@inject IConfiguration _Conf
 
 
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
     <SfDataManager Url="@DataUrl" CrossDomain="true" Adaptor=" Syncfusion.Blazor.Adaptors.ODataV4Adaptor"></SfDataManager>
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSize="10"></GridPageSettings>
     <GridEvents TValue="Allegati" OnDataBound="OnDataBoundHandler" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
+
+    <SfToolbar>
+        <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
+        <ToolbarItems>
+
+            <ToolbarItem Id="Refresh" TooltipText="Aggiorna">
+                <Template>
+                    <div style="position:relative">
+                        <button type="button" tabindex="-1" style="width:auto" aria-label="Aggiorna" class="e-control e-btn e-lib e-tbar-btn e-icon-btn e-icon-btn">
+                            <span class="e-refresh e-icons e-btn-icon">
+                                @if (NewItems != 0)
+                                {
+                                    <span style="padding: 0.2rem;font-family:Verdana;line-height:8px;font-size: 10px; border-radius: 5px; background: Tomato; right: 0px; top: 2px; position: absolute;">@NewItems</span>
+                                }
+                            </span>
+                        </button>
+                    </div>
+                </Template>
+            </ToolbarItem>
+
+            @if (nType == TableType.Inbox)
+            {
+                <ToolbarItem Id="Move" PrefixIcon="e-icons e-folder" TooltipText="Sposta"></ToolbarItem>
+            }
+
+            @if (nType == TableType.Processed)
+            {
+                <ToolbarItem Id="ReOpen" PrefixIcon="e-comment-reopen" TooltipText="Riapri"></ToolbarItem>
+            }
+
+            <ToolbarItem Id="Delete" PrefixIcon="e-icons e-delete" TooltipText="Cancella"></ToolbarItem>
+            <ToolbarItem Id="Log" PrefixIcon="e-icons e-justify" TooltipText="Visualizza logs"></ToolbarItem>
+            <ToolbarItem Align=ItemAlign.Right Id="SearchItem" Type="ItemType.Input">
+                <Template>
+                    <SfTextBox @ref="@SearchText" ID="SearchItemText" EnablePersistence="false" Autocomplete="AutoComplete.On" @bind-Value="@SearchKey" @onchange="OnSearch" Placeholder="Ricerca" Created="@OnSearchCreated"></SfTextBox>
+                </Template>
+            </ToolbarItem>
+        </ToolbarItems>
+    </SfToolbar>
+
 
     <GridColumns>
         <GridColumn IsPrimaryKey="true" Visible="false" Field=@nameof(Allegati.Id)></GridColumn>
@@ -186,33 +230,91 @@
     public double SelectedRow { get => Grid.SelectedRowIndex; set { Grid.SelectRowAsync(value); } }
 
     /// <summary>
-    ///  Tollbar definition
+    /// Text box for seaching
     /// </summary>
-    private List<Object> Tool
-    {
-        get
-        {
-            if (nType == TableType.Inbox)
-                return new List<Object>()
-                {
-                new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
-                new ItemModel() { Id = "Move",Text = "", TooltipText = "Sposta", PrefixIcon = "e-folder" } ,
-                new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
-                new string ("Search")
-                };
-            if (nType == TableType.Processed)
-                return new List<Object>()
-                {
-                new ItemModel() { Id = "Refresh",Text = "", TooltipText = "Aggiorna", PrefixIcon = "e-refresh" } ,
-                new ItemModel() { Id = "ReOpen",Text = "", TooltipText = "Riapri", PrefixIcon = "e-comment-reopen" } ,
-                new ItemModel() { Id = "Delete",Text = "", TooltipText = "Cancella", PrefixIcon = "e-delete" } ,
-                new ItemModel() { Id = "Log",Text = "", TooltipText = "Visualizza logs", PrefixIcon = "e-justify" },
-                new string ("Search")
-                };
+    private SfTextBox SearchText { get; set; }
 
-            return new List<Object>();
+    /// <summary>
+    /// The key text type inside search box
+    /// </summary>
+    private string SearchKey { get; set; } = "";
+
+    /// <summary>
+    /// New Items identifies in last check
+    /// </summary>
+    private int NewItems { get; set; } = 0;
+
+    /// <summary>
+    /// Timer for periodically check for new emails
+    /// </summary>
+    private Timer InTimer { get; set; }
+
+    /// <summary>
+    /// Last emails arrived and visualized in current folder
+    /// </summary>
+    private DateTime LastFileTime { get; set; }
+
+    /// <summary>
+    /// On init , if necessary, start the timer
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+
+        int.TryParse(_Conf["Docs:AutoRefresh"], out int Time);
+        if (Time != 0)
+        {
+            Time = Time * (60 * 1000);
+            InTimer = new Timer();
+            InTimer.Elapsed += NotifyTimerElapsed;
+            InTimer.AutoReset = true;
+            InTimer.Interval = Time;
+            InTimer.Enabled = true;
+            _Logger.LogInformation($"FileTable.OnInitialized: Autorefresh set every {Time} ms");
         }
+        else _Logger.LogDebug($"FileTable.OnInitialized: Autorefresh NOT set");
+    }
+
+    /// <summary>
+    /// Close the timer on dispose
+    /// </summary>
+    public void Dispose() => InTimer?.Dispose();
+
+    /// <summary>
+    /// Add the search icon to the text box
+    /// </summary>
+    public void OnSearchCreated()
+    {
+        this.SearchText.AddIcon("append", "e-icons e-search");
+
+    }
+
+    /// <summary>
+    /// Apply the search
+    /// </summary>
+    public void OnSearch()
+    {
+        Grid.SearchAsync(SearchKey);
+    }
+
+    /// <summary>
+    /// Once the time fire, check for incoming emails
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="e"></param>
+    private void NotifyTimerElapsed(object source, ElapsedEventArgs e)
+    {
+        int tmp = NewItems;
+        switch (nType)
+        {
+            case TableType.Inbox:
+                NewItems = _ZipService._allMan.GetNewInboxFiles (nDocumentType.ToString(), nFolder?.Nome??"", LastFileTime);
+                break;
+        }
+        if(tmp!=NewItems)
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
     }
 
     /// <summary>
@@ -283,6 +385,11 @@
     {
         nFolderOld = nFolder;
         Grid.DataManager.Url = DataUrl;
+        switch (nType)
+        {
+            case TableType.Inbox: LastFileTime = _ZipService._allMan.GetLastInboxFileTime(nDocumentType.ToString(), nFolder.Nome); break;
+        }
+        NewItems = 0;
         Grid.Refresh();
     }
 
@@ -292,6 +399,7 @@
     /// <param name="args"></param>
     public async void OnDataBoundHandler(BeforeDataBoundArgs<Allegati> args)
     {
+        SearchKey = Grid.SearchSettings.Key;
         if (!string.IsNullOrEmpty(nPreselAttach))
         {
             await Task.Delay(200);

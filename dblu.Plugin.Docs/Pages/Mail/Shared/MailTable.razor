@@ -256,6 +256,7 @@
     /// </summary>
     protected override async void OnInitialized()
     {
+
         int.TryParse(_Conf["Docs:AutoRefresh"], out int Time);
         if (Time != 0)
         {
@@ -267,9 +268,12 @@
             InTimer.Enabled = true;
             _Logger.LogInformation($"MailTable.OnInitialized: Autorefresh set every {Time} ms");
         }
-       else _Logger.LogWarning($"MailTable.OnInitialized: Autorefresh NOT set");
+        else _Logger.LogDebug($"MailTable.OnInitialized: Autorefresh NOT set");
     }
 
+    /// <summary>
+    /// Close the timer on dispose
+    /// </summary>
     public void Dispose() => InTimer?.Dispose();
 
     /// <summary>
@@ -278,6 +282,7 @@
     public void OnSearchCreated()
     {
         this.SearchText.AddIcon("append", "e-icons e-search");
+
     }
 
     /// <summary>
@@ -295,14 +300,18 @@
     /// <param name="e"></param>
     private void NotifyTimerElapsed(object source, ElapsedEventArgs e)
     {
-
+        int tmp = NewItems;
         switch (nType)
         {
             case TableType.Inbox: NewItems = _MailService._allMan.GetNewInboxEmail("EMAIL", nMailBox.Nome, LastEmailTime); break;
             case TableType.Sorting: NewItems = _MailService._allMan.GetNewSortingEmail("EMAIL", nMailBox.Nome, LastEmailTime); break;
         }
 
-
+        if (tmp != NewItems)
+            InvokeAsync(() =>
+            {
+                StateHasChanged();
+            });
     }
 
     /// <summary>
@@ -318,6 +327,7 @@
             }
         }
         else nEmails = new();
+
     }
 
     /// <summary>
@@ -380,6 +390,7 @@
             case TableType.Inbox: LastEmailTime = _MailService._allMan.GetLastInboxEmailTime("EMAIL", nMailBox.Nome); break;
             case TableType.Sorting: LastEmailTime = _MailService._allMan.GetLastSortingEmailTime("EMAIL", nMailBox.Nome); break;
         }
+        NewItems = 0;
         Grid.Refresh();
     }
 
@@ -389,6 +400,7 @@
     /// <param name="args"></param>
     public async void OnDataBoundHandler(BeforeDataBoundArgs<AllegatoEmail> args)
     {
+        SearchKey = Grid.SearchSettings.Key;
         if (!string.IsNullOrEmpty(nPreselAttach))
         {
             await Task.Delay(200);

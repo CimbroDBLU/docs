@@ -645,7 +645,7 @@ namespace dblu.Docs.Classi
                 {
                     if(LastRead==DateTime.MinValue)
                         Count=cn.ExecuteScalar<int>($"SELECT COUNT(*) FROM Allegati A WHERE Tipo=@Tipo and Stato < @Stato and Stato >=0 and Origine = @origine", new { Tipo = Tipo, Stato = StatoAllegato.Chiuso, origine = NomeServer });
-                    Count= cn.ExecuteScalar<int>($"SELECT COUNT(*) FROM Allegati A WHERE Tipo=@Tipo and Stato < @Stato and Stato >=0 and Origine = @origine and DataC > @LastRead", new { Tipo = Tipo, Stato = StatoAllegato.Chiuso, origine = NomeServer, LastRead });
+                    else Count= cn.ExecuteScalar<int>($"SELECT COUNT(*) FROM Allegati A WHERE Tipo=@Tipo and Stato < @Stato and Stato >=0 and Origine = @origine and DataC > @LastRead", new { Tipo = Tipo, Stato = StatoAllegato.Chiuso, origine = NomeServer, LastRead });
                  _logger.LogInformation($"AttachsManager.GetNewInboxEmail: New {Count} emails for Inbox[{Tipo},{NomeServer}] detected in {sw.ElapsedMilliseconds} ms");
                     return Count;
                 }
@@ -656,7 +656,6 @@ namespace dblu.Docs.Classi
                 return 0;
             }
         }
-
 
         public DateTime GetLastSortingEmailTime(string Tipo, string NomeServer)
         {
@@ -686,7 +685,7 @@ namespace dblu.Docs.Classi
                 {
                     if (LastRead == DateTime.MinValue)
                         Count = cn.ExecuteScalar<int>($"SELECT COUNT(*) FROM Allegati A WHERE Tipo=@Tipo and Stato = @Stato and Origine = @origine", new { Tipo = Tipo, Stato = StatoAllegato.DaSmistare, origine = NomeServer });
-                    Count = cn.ExecuteScalar<int>($"SELECT COUNT(*) FROM Allegati A WHERE Tipo=@Tipo andStato = @Stato and Origine = @origine and DataC > @LastRead", new { Tipo = Tipo, Stato = StatoAllegato.DaSmistare, origine = NomeServer, LastRead });
+                    else Count = cn.ExecuteScalar<int>($"SELECT COUNT(*) FROM Allegati A WHERE Tipo=@Tipo andStato = @Stato and Origine = @origine and DataC > @LastRead", new { Tipo = Tipo, Stato = StatoAllegato.DaSmistare, origine = NomeServer, LastRead });
                     _logger.LogInformation($"AttachsManager.GetNewSortingEmail: New {Count} emails for Sorting[{Tipo},{NomeServer}] detected in {sw.ElapsedMilliseconds} ms");
                     return Count;
                 }
@@ -698,6 +697,46 @@ namespace dblu.Docs.Classi
             }
         }
 
+
+        public DateTime GetLastInboxFileTime(string Tipo, string NomeServer)
+        {
+            try
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+                DateTime dt;
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                    dt = cn.ExecuteScalar<DateTime>($"SELECT top 1 DataC FROM Allegati A WHERE Tipo=@Tipo and Stato in (1,2,3) and Origine = @origine order by dataC desc", new { Tipo = Tipo, origine = NomeServer });
+                _logger.LogInformation($"AttachsManager.GetLastInboxFileTime: Last Inbox[{Tipo},{NomeServer}] file has been arrived @ {dt}, check takes {sw.ElapsedMilliseconds} ms");
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"AttachsManager.GetLastInboxFileTime: {ex.Message}");
+                return DateTime.MinValue;
+            }
+        }
+
+        public int GetNewInboxFiles(string Tipo, string NomeServer, DateTime LastRead)
+        {
+            try
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+                int Count = 0;
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    if (LastRead == DateTime.MinValue)
+                        Count = cn.ExecuteScalar<int>($"SELECT COUNT(*) FROM Allegati A WHERE Tipo=@Tipo and Stato in (1,2,3) and Origine = @origine ", new { Tipo = Tipo, origine = NomeServer });
+                    else Count = cn.ExecuteScalar<int>($"SELECT COUNT(*) FROM Allegati A WHERE Tipo=@Tipo and Stato in (1,2,3) and Origine = @origine and DataC > @LastRead", new { Tipo = Tipo, origine = NomeServer, LastRead });
+                    _logger.LogInformation($"AttachsManager.GetNewInboxFiles: New {Count} files for Inbox[{Tipo},{NomeServer}] detected in {sw.ElapsedMilliseconds} ms");
+                    return Count;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"AttachsManager.GetNewInboxFiles: {ex.Message}");
+                return 0;
+            }
+        }
 
 
         public List<AllegatoEmail> GetEmailInArrivo(string Tipo, string NomeServer)
