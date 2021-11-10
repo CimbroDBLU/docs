@@ -425,6 +425,8 @@
                 if (string.IsNullOrEmpty(CustomerCode))
                     CostumerDesc = "Cliente da selezionare";
 
+                OnAbort();
+
             }
             catch (Exception ex)
             {
