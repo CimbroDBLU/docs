@@ -395,44 +395,42 @@
     /// <param name="e"></param>
     public void OnSelectAttach(Allegati e)
     {
-        Task.Run(() =>
+        try
         {
-            try
+            if (e == null)
             {
-                if (e == null)
-                {
-                    AttachID = "";
-                    DossierID = "";
-                    CustomerCode = "";
-                    PDFSourceId = "";
-                    PDFSourceType = e_SourceType.Attachment;
-                    return;
-                }
-
-                Attach = e;
-                PDFSourceId = e.Id.ToString();
+                 _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: DeSelecting attach");
+                AttachID = "";
+                DossierID = "";
+                CustomerCode = "";
+                PDFSourceId = "";
                 PDFSourceType = e_SourceType.Attachment;
-
-                if (AttachID != e.Id.ToString())
-                    AttachID = e.Id.ToString();
-
-                if (DossierID != e.IdFascicolo.ToString())
-                    DossierID = e.IdFascicolo.ToString();
-
-                if (CustomerCode != e.Chiave3)
-                    CustomerCode = e.Chiave3;
-
-                if (string.IsNullOrEmpty(CustomerCode))
-                    CostumerDesc = "Cliente da selezionare";
-
-                OnAbort();
-
+                return;
             }
-            catch (Exception ex)
-            {
-                _Logger.LogError($"Inbox[FILE,{nDocType}].OnSelectAttach: Unexpected errro on selecting attach {ex}");
-            }
-        });
+            _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: Selecting attach {e.Id}");
+            Attach = e;
+            PDFSourceId = e.Id.ToString();
+            PDFSourceType = e_SourceType.Attachment;
+
+            if (AttachID != e.Id.ToString())
+                AttachID = e.Id.ToString();
+
+            if (DossierID != e.IdFascicolo.ToString())
+                DossierID = e.IdFascicolo.ToString();
+
+            if (CustomerCode != e.Chiave3)
+                CustomerCode = e.Chiave3;
+
+            if (string.IsNullOrEmpty(CustomerCode))
+                CostumerDesc = "Cliente da selezionare";
+
+            OnAbort();
+
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"Inbox[FILE,{nDocType}].OnSelectAttach: Unexpected errro on selecting attach {ex}");
+        }
     }
 
     /// <summary>

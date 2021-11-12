@@ -339,36 +339,30 @@
     /// <param name="e"></param>
     public void OnSelectAttach(AllegatoEmail e)
     {
-        Task.Run(() =>
+        if (e == null)
         {
-            if (e == null)
-            {
-                AttachID = null;
-                DossierID = null;
-                CustomerCode = null;
-                return;
-            }
+             _Logger.LogDebug($"Processed[MAIL].OnSelectAttach: DeSelecting attach");
+            AttachID = null;
+            DossierID = null;
+            CustomerCode = null;
+            return;
+        }
 
+        Attach = e;
+        _Logger.LogDebug($"Processed[MAIL].OnSelectAttach: Selecting attach {e.Id}");
+        if (AttachID != e.Id.ToString())
+            AttachID = e.Id.ToString();
 
-            Attach = e;
+        if (DossierID != e.IdFascicolo.ToString())
+            DossierID = e.IdFascicolo.ToString();
 
-            if (AttachID != e.Id.ToString())
-                AttachID = e.Id.ToString();
+        if (CustomerCode != e.Chiave3)
+            CustomerCode = e.Chiave3;
 
-            if (DossierID != e.IdFascicolo.ToString())
-                DossierID = e.IdFascicolo.ToString();
+        OnAbort();
 
-            if (CustomerCode != e.Chiave3)
-                CustomerCode = e.Chiave3;
-
-            OnAbort();
-
-            if (string.IsNullOrEmpty(CustomerCode))
-                CostumerDesc = "Cliente non selezionato";
-
-
-        });
-
+        if (string.IsNullOrEmpty(CustomerCode))
+            CostumerDesc = "Cliente non selezionato";
     }
 
 

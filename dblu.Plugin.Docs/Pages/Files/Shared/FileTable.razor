@@ -339,6 +339,7 @@
     public void RowSelected(RowSelectEventArgs<Allegati> args)
     {
         OnSelectAttachment.InvokeAsync(args.Data);
+        _Logger.LogDebug($"FileTable.RowSelected: Selected attach {args.Data.Id}");
     }
 
     /// <summary>
@@ -348,7 +349,10 @@
     public async void RowDeselected(RowDeselectEventArgs<Allegati> args)
     {
         if ((await Grid.GetSelectedRecordsAsync()).Count == 0)
+        {
+            _Logger.LogDebug($"FileTable.RowDeselected: Deselected attach {args.Data.Id}");
             await OnSelectAttachment.InvokeAsync(null);
+        }        
     }
     /// <summary>
     /// Forward the events on toolbar button press
@@ -391,6 +395,7 @@
         }
         NewItems = 0;
         Grid.Refresh();
+        Grid.ClearSelectionAsync();
     }
 
     /// <summary>
@@ -400,12 +405,6 @@
     public async void OnDataBoundHandler(BeforeDataBoundArgs<Allegati> args)
     {
         SearchKey = Grid.SearchSettings.Key;
-        if (!string.IsNullOrEmpty(nPreselAttach))
-        {
-            await Task.Delay(200);
-            var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(Guid.Parse(nPreselAttach));
-            await this.Grid.SelectRow(PrimayIndex);
-        }
     }
 
     /// <summary>
@@ -413,14 +412,42 @@
     /// </summary>
     public async void DataBoundHandler()
     {
-        if (Grid.CurrentViewData.Count() == 0)
-            await OnSelectAttachment.InvokeAsync(null);
-        else
+        try
         {
-            Allegati e = (Grid.CurrentViewData).FirstOrDefault() as Allegati;
-            var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(e.Id);
-            await this.Grid.SelectRow(PrimayIndex);
-            OnSelectAttachment.InvokeAsync(e);
+             if ((await Grid.GetSelectedRecordsAsync()).Count != 0)
+                return;
+
+            _Logger.LogDebug("FileTable.DataBoundHandler: Selection empty -> AutoSelection needed");
+
+
+            if (Grid.CurrentViewData.Count() == 0)
+                {
+                await OnSelectAttachment.InvokeAsync(null);
+                _Logger.LogDebug("FileTable.DataBoundHandler: Auto Deselect");
+                }
+            else
+            {
+                if (!string.IsNullOrEmpty(nPreselAttach))
+                {
+                    Allegati e = Grid.CurrentViewData.Where(x => (x as Allegati).Id == Guid.Parse(nPreselAttach)).FirstOrDefault() as Allegati;
+                    var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(Guid.Parse(nPreselAttach));
+                    await this.Grid.SelectRow(PrimayIndex);
+                    OnSelectAttachment.InvokeAsync(e);
+                    _Logger.LogDebug("FileTable.DataBoundHandler: Select presel");
+                }
+                else
+                {
+                    Allegati e = (Grid.CurrentViewData).FirstOrDefault() as Allegati;
+                    var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(e.Id);
+                    await this.Grid.SelectRow(PrimayIndex);
+                    OnSelectAttachment.InvokeAsync(e);
+                    _Logger.LogDebug("FileTable.DataBoundHandler: Select first");
+                }
+            }
+        }
+        catch (Exception)
+        {
+            _Logger.LogWarning("FileTable.DataBoundHandler: Items changed during loading...");
         }
     }
 }
