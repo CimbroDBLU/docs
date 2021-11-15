@@ -3,21 +3,36 @@
 *@
 @using System.IO
 @using dblu.Portale.Plugin.Docs.Services
+@using dblu.Portale.Plugin.Docs.Pages.Mail.Shared
 @using dblu.Docs.Interfacce
+@inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
+@inject ILogger<AttachCustomer> _Logger
 
-<div class="row">
-    <div class="col">
-        <AttachCustomerSearch  nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly"  nAttachID="@nAttachID"  nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument"></AttachCustomerSearch>
-    </div>
-</div>
-@if (!nReadOnly)
+@if (ShowCostumerSel)
 {
-    <div class="row mt-2">
+    <div class="row">
         <div class="col">
-            <AttachOpenItemsTable  nCustomerCode="@nCostumerCode" OnOpenItems="OnOpenItems"></AttachOpenItemsTable>
+            <MailCostumerSelectionPopUp @ref="@CustomerSelector" nCostumers="@nCostumers" OnExitPressed="@(()=>OnSelectedCostumer())" OnClose="@(()=>OnSelectedCostumer())" OnSelectPressed="@(()=> OnSelectedCostumer(true))"></MailCostumerSelectionPopUp>
         </div>
     </div>
 }
+else
+{
+    <div class="row">
+        <div class="col">
+            <AttachCustomerSearch nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly" nAttachID="@nAttachID" ></AttachCustomerSearch>
+        </div>
+    </div>
+    @if (!nReadOnly)
+    {
+        <div class="row mt-2">
+            <div class="col">
+                <AttachOpenItemsTable nCustomerCode="@nCostumerCode" OnOpenItems="OnOpenItems"></AttachOpenItemsTable>
+            </div>
+        </div>
+    }
+}
+
 
 
 @code {
@@ -27,24 +42,6 @@
     /// </summary>
     [Parameter]
     public string nCostumerCode { get; set; }
-
-    /// <summary>
-    /// Attachment ID
-    /// </summary>
-    [Parameter]
-    public string nAttachID { get; set; }
-
-    /// <summary>
-    /// List of the original attachment coming from the email
-    /// </summary>
-    [Parameter]
-    public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
-
-    /// <summary>
-    /// Currend PDF document in edit
-    /// </summary>
-    [Parameter]
-    public MemoryStream nCurrentDocument { get; set; }
 
     /// <summary>
     /// Indicates if is possible to change user/order
@@ -65,11 +62,70 @@
     public EventCallback<int> OnOpenItems { get; set; }
 
     /// <summary>
+    /// Attachment ID
+    /// </summary>
+    [Parameter]
+    public string nAttachID { get; set; }
+
+
+    private ObservableCollection<ISoggetti> nCostumers { get; set; }
+
+    private bool  ShowCostumerSel { get; set; } = false;
+
+    [Parameter]
+    public string Sender { get; set; }
+
+    /// <summary>
+    /// Dialog for selecting the costumer from email
+    /// </summary>
+    private MailCostumerSelectionPopUp CustomerSelector { get; set; }
+
+
+    public string PrevMittente { get; set; } = "";
+
+
+    protected async override void OnParametersSet()
+    {
+        if (string.IsNullOrEmpty(nCostumerCode))
+        {
+            if (Sender != PrevMittente)
+            {
+                List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Sender);
+                _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: {Costumers.Count} costumers retrived for {Sender}");
+                if (Costumers.Count > 1)
+                {
+                    ShowCostumerSel = true;
+                    nCostumers = new ObservableCollection<ISoggetti>(_SubjectService.GetSoggettiByMail(Sender));
+                }
+                else
+                {
+                    OnLinkCostumer(Costumers?.FirstOrDefault());
+                    ShowCostumerSel = false;
+                }
+                PrevMittente = Sender;
+            }
+        }
+        else
+        { ShowCostumerSel = false; PrevMittente = Sender; }
+    }
+
+    /// <summary>
     /// Forward the link event
     /// </summary>
     /// <param name="data"></param>
     public async void OnLinkCostumer(ISoggetti Costumer)
     {
         await OnLinkedToCostumer.InvokeAsync(Costumer);
+    }
+    /// <summary>
+    /// On closing dialog, change the visible value and  evnetually link the customer
+    /// </summary>
+    /// <param name="Save">True id the customer must be linked to</param>
+    public async void OnSelectedCostumer(bool Save = false)
+    {
+        ShowCostumerSel = false;
+        if (Save && CustomerSelector.SelectedCostumer != null)
+            OnLinkCostumer(CustomerSelector.SelectedCostumer);
+
     }
 }

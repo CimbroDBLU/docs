@@ -56,7 +56,7 @@
                                                     <div>Inoltra <b>@AttachSubject</b></div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <MailForward nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" nShowCloseCheck="false" OnOperationDone="OnForward"></MailForward>
+                                                    <MailForwardAnswer nAttach="@Attach" nSourceServer="@MailBox" IsAnswerDialog="false" OnAbort="OnAbort" OnOperationDone="OnForward"></MailForwardAnswer> 
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>

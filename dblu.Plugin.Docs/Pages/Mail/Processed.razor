@@ -45,7 +45,7 @@
                 <div class="col-7" style="align-self: auto;">
                     @if (!string.IsNullOrEmpty(AttachID))
                     {
-                        if (IsAnswerDialog)
+                        if (IsAnswerDialog || IsForwardDialog)
                         {
                             <div class="row form-group">
                                 <div class="col">
@@ -53,29 +53,14 @@
                                         <AccordionItems>
                                             <AccordionItem Expanded="true">
                                                 <HeaderTemplate>
-                                                    <div>Rispondi a <b>@AttachSubject</b></div>
+                                                    @{
+                                                        string caption = "Rispondi a ";
+                                                        if (IsForwardDialog) caption = "Inoltra ";
+                                                        <div>@caption<b>@AttachSubject</b></div>
+                                                    }
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <MailAnswer nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" OnOperationDone="OnAnswer"></MailAnswer>
-                                                </ContentTemplate>
-                                            </AccordionItem>
-                                        </AccordionItems>
-                                    </SfAccordion>
-                                </div>
-                            </div>
-                        }
-                        else if (IsForwardDialog)
-                        {
-                            <div class="row form-group">
-                                <div class="col">
-                                    <SfAccordion>
-                                        <AccordionItems>
-                                            <AccordionItem Expanded="true">
-                                                <HeaderTemplate>
-                                                    <div>Inoltra <b>@AttachSubject</b></div>
-                                                </HeaderTemplate>
-                                                <ContentTemplate>
-                                                    <MailForward nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" nShowCloseCheck="false" OnOperationDone="OnForward"></MailForward>
+                                                   <MailForwardAnswer nAttach="@Attach" nSourceServer="@MailBox" IsAnswerDialog="@IsAnswerDialog" OnAbort="OnAbort" OnOperationDone="OnSend"></MailForwardAnswer> 
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -114,7 +99,7 @@
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachCustomer OnLinkedToCostumer="OnLinkCostumer" nAttachments="@SourceAttach" nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                    <AttachCustomer OnLinkedToCostumer="OnLinkCostumer" nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -479,29 +464,22 @@
         }
     }
 
-
     /// <summary>
-    /// Once forward has done, show the proper toast
+    /// Once forward or aswer is done, show the proper toast
     /// </summary>
     /// <param name="RA"></param>
-    private async void OnForward(Models.RisultatoAzione RA)
+    private async void OnSend(Models.RisultatoAzione RA)
     {
-        if (RA.Successo)
-            ToastForwardOK.Show();
-        else ToastForwardKO.Show();
-        Grid.Refresh();
-        OnAbort();
-    }
-
-    /// <summary>
-    /// Once forward has done, show the proper toast
-    /// </summary>
-    /// <param name="RA"></param>
-    private async void OnAnswer(Models.RisultatoAzione RA)
-    {
-        if (RA.Successo)
-            ToastAnswerOK.Show();
-        else ToastAnswerKO.Show();
+        if (IsForwardDialog)
+        {
+            if (RA.Successo) ToastForwardOK.Show();
+            else ToastForwardKO.Show();
+        }
+        else
+        {
+            if (RA.Successo) ToastAnswerOK.Show();
+            else ToastAnswerKO.Show();
+        }
         Grid.Refresh();
         OnAbort();
     }

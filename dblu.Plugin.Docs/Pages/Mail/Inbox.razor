@@ -2,7 +2,7 @@
     Page that manage the inbox and its interaction with Dossiers and Items
 *@
 
-@page  "/Mail/Inbox"
+@page "/Mail/Inbox"
 @page "/Mail/Inbox/{nPreselAttach}"
 @page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}"
 @using dblu.Docs.Models
@@ -18,7 +18,6 @@
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject IHttpContextAccessor _HttpContextAccessor
 @inject ILogger<Inbox> _Logger
-
 
 <PageTitle nTitle="Inbox" />
 
@@ -48,7 +47,7 @@
                 <div class="col-7" style="align-self: auto;">
                     @if (!string.IsNullOrEmpty(AttachID))
                     {
-                        if (IsAnswerDialog)
+                        if (IsAnswerDialog || IsForwardDialog)
                         {
                             <div class="row form-group">
                                 <div class="col">
@@ -56,29 +55,14 @@
                                         <AccordionItems>
                                             <AccordionItem Expanded="true">
                                                 <HeaderTemplate>
-                                                    <div>Rispondi a <b>@AttachSubject</b></div>
+                                                    @{
+                                                        string caption = "Rispondi a ";
+                                                        if (IsForwardDialog) caption = "Inoltra ";
+                                                        <div>@caption<b>@AttachSubject</b></div>
+                                                    }
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <MailAnswer nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" OnOperationDone="OnAnswer"></MailAnswer>
-                                                </ContentTemplate>
-                                            </AccordionItem>
-                                        </AccordionItems>
-                                    </SfAccordion>
-                                </div>
-                            </div>
-                        }
-                        else if (IsForwardDialog)
-                        {
-                            <div class="row form-group">
-                                <div class="col">
-                                    <SfAccordion>
-                                        <AccordionItems>
-                                            <AccordionItem Expanded="true">
-                                                <HeaderTemplate>
-                                                    <div>Inoltra <b>@AttachSubject</b></div>
-                                                </HeaderTemplate>
-                                                <ContentTemplate>
-                                                    <MailForward nAttach="@Attach" nSourceServer="@MailBox" OnAbort="OnAbort" OnOperationDone="OnForward"></MailForward>
+                                                    <MailForwardAnswer nAttach="@Attach" nSourceServer="@MailBox" IsAnswerDialog="@IsAnswerDialog" OnAbort="OnAbort" OnOperationDone="OnSend"></MailForwardAnswer> 
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -155,8 +139,9 @@
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachCustomer OnLinkedToCostumer="OnLinkCostumer" OnOpenItems="OnOpenItems" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                    <AttachCustomer  Sender="@(Attach?.Mittente??"")"  OnLinkedToCostumer="OnLinkCostumer" OnOpenItems="OnOpenItems" nAttachID="@AttachID" nCostumerCode="@CustomerCode" ></AttachCustomer>
                                                 </ContentTemplate>
+
                                             </AccordionItem>
                                         </AccordionItems>
                                     </SfAccordion>
@@ -244,8 +229,6 @@
 
     <Toast @ref="ToastAnswerOK" nToastType="Toast.e_ToastType.OK" nTitle="Rispondi a email" nContent="Email inviata correttamente"></Toast>
     <Toast @ref="ToastAnswerKO" nToastType="Toast.e_ToastType.Fail" nTitle="Rispondi a email" nContent="Invio NON riuscito"></Toast>
-
-    <MailCostumerSelectionPopUp @ref="@CustomerSelector" nCostumers="@CostumerToAssing" OnExitPressed="@(()=>OnSelectedCostumer())" OnClose="@(()=>OnSelectedCostumer())" OnSelectPressed="@(()=> OnSelectedCostumer(true))" nShowDialog="@ShowCostumerSelection"></MailCostumerSelectionPopUp>
 </section>
 
 @code
@@ -407,11 +390,6 @@
     private ObservableCollection<OriginalAttachments> SourceAttach { get; set; } = new();
 
     /// <summary>
-    /// List of available users for the current attachment email
-    /// </summary>
-    private ObservableCollection<ISoggetti> CostumerToAssing { get; set; } = new();
-
-    /// <summary>
     /// Current Document as memory stream
     /// </summary>
     public MemoryStream Document => Viewer?.Doc?.Payload ?? new();
@@ -485,22 +463,7 @@
 
             if (CustomerCode != e.Chiave3)
                 CustomerCode = e.Chiave3;
-
-            if (string.IsNullOrEmpty(CustomerCode))
-            {
-                List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Attach.Mittente);
-                _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: {Costumers.Count} costumers retrived for {Attach.Mittente}");
-                if (Costumers.Count > 1)
-                {
-                    CostumerToAssing = new ObservableCollection<ISoggetti>(_SubjectService.GetSoggettiByMail(Attach.Mittente));
-                    ShowCostumerSelection = true;
-                }
-                else
-                {
-                    if (Costumers.FirstOrDefault() != null)
-                        OnLinkCostumer(Costumers.FirstOrDefault());
-                }                    
-            }
+              
             if (string.IsNullOrEmpty(CustomerCode))
                 CostumerDesc="Cliente da selezionare";
 
@@ -651,13 +614,13 @@
                 all.Stato = StatoAllegato.Annullato;
                 _MailService._allMan.Salva(all, false);
                 LogDoc log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = all.Id,
-                    TipoOggetto = TipiOggetto.ALLEGATO,
-                    Utente = User.Identity.Name,
-                    Operazione = TipoOperazione.Cancellato
-                };
+                    {
+                        Data = DateTime.Now,
+                        IdOggetto = all.Id,
+                        TipoOggetto = TipiOggetto.ALLEGATO,
+                        Utente = User.Identity.Name,
+                        Operazione = TipoOperazione.Cancellato
+                    };
                 _MailService._logMan.Salva(log, true);
                 ToastOK.Show();
             }
@@ -686,30 +649,25 @@
     }
 
     /// <summary>
-    /// Once forward has done, show the proper toast
+    /// Once forward or aswer is done, show the proper toast
     /// </summary>
     /// <param name="RA"></param>
-    private async void OnForward(Models.RisultatoAzione RA)
+    private async void OnSend(Models.RisultatoAzione RA)
     {
-        if (RA.Successo)
-            ToastForwardOK.Show();
-        else ToastForwardKO.Show();
+        if (IsForwardDialog)
+        {
+            if (RA.Successo) ToastForwardOK.Show();
+            else ToastForwardKO.Show();
+        }
+        else
+        {
+            if (RA.Successo) ToastAnswerOK.Show();
+            else ToastAnswerKO.Show();
+        }
         Grid.Refresh();
         OnAbort();
     }
 
-    /// <summary>
-    /// Once forward has done, show the proper toast
-    /// </summary>
-    /// <param name="RA"></param>
-    private async void OnAnswer(Models.RisultatoAzione RA)
-    {
-        if (RA.Successo)
-            ToastAnswerOK.Show();
-        else ToastAnswerKO.Show();
-        Grid.Refresh();
-        OnAbort();
-    }
 
     /// <summary>
     /// Close all dialog panels
@@ -739,7 +697,7 @@
         CustomerCode = Customer?.Codice ?? "";
         if (!string.IsNullOrEmpty(CustomerCode))
             CostumerDesc = $"{Customer?.Codice ?? ""} - {Customer?.Nome ?? ""}";
-        else if(!string.IsNullOrEmpty(Attach.Chiave3) && Customer is null)
+        else if (!string.IsNullOrEmpty(Attach.Chiave3) && Customer is null)
             CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";
         else CostumerDesc = "Cliente da selezionare";
     }
@@ -751,7 +709,7 @@
 
     public void OnOpenItems(int Items)
     {
-        if(Items==0 && !string.IsNullOrEmpty(Attach?.Chiave3??""))
+        if (Items == 0 && !string.IsNullOrEmpty(Attach?.Chiave3 ?? ""))
             IsCustomerExpand = false;
         else
             IsCustomerExpand = true;
@@ -776,16 +734,15 @@
         Grid.SelectedRow = 0;
     }
 
-    /// <summary>
-    /// On closing dialog, change the visible value and  evnetually link the customer
-    /// </summary>
-    /// <param name="Save">True id the customer must be linked to</param>
-    public async void OnSelectedCostumer(bool Save = false)
-    {
-        ShowCostumerSelection = false;
-        if (Save && CustomerSelector.SelectedCostumer != null)
-            OnLinkCostumer(CustomerSelector.SelectedCostumer);
-    }
+    ///// <summary>
+    ///// On closing dialog, change the visible value and  evnetually link the customer
+    ///// </summary>
+    ///// <param name="Save">True id the customer must be linked to</param>
+    //public async void OnSelectedCostumer(bool Save = false)
+    //{
+    //    ShowCostumerSelection = false;
+    //    if (Save && CustomerSelector.SelectedCostumer != null){OnLinkCostumer(CustomerSelector.SelectedCostumer);}  
+    //}
 
     /// <summary>
     /// On selected Item, Reload the PDF from the item
