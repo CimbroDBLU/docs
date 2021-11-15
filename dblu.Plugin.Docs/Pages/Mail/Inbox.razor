@@ -56,9 +56,14 @@
                                             <AccordionItem Expanded="true">
                                                 <HeaderTemplate>
                                                     @{
+                                                        string sub = Attach?.Mittente ?? "";
                                                         string caption = "Rispondi a ";
-                                                        if (IsForwardDialog) caption = "Inoltra ";
-                                                        <div>@caption<b>@AttachSubject</b></div>
+                                                        if (IsForwardDialog)
+                                                        {
+                                                            caption = "Inoltra ";
+                                                            sub = @AttachSubject;
+                                                        } 
+                                                        <div>@caption<b>@sub</b></div>
                                                     }
                                                 </HeaderTemplate>
                                                 <ContentTemplate>

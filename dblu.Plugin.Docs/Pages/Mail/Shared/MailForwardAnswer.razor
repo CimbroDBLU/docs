@@ -149,13 +149,21 @@
     /// </summary>
     protected override void OnInitialized()
     {
-        CC = new string[] { };
+    }
+
+    /// <summary>
+    /// On Parameter Set
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+               CC = new string[] { };
         if (IsAnswerDialog)
         {
             To = nAttach.Mittente;
             Subject = "R:" + nAttach.Oggetto;
         }else Subject = "FWD:" + nAttach.Oggetto;
     }
+
 
     /// <summary>
     /// Send the reply
