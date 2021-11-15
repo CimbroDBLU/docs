@@ -19,7 +19,17 @@
         <label>A:</label>
     </div>
     <div class="col-10">
-        <SfTextBox @bind-Value="@To" Placeholder="Destinatario"></SfTextBox>
+        <SfAutoComplete TValue="string" TItem="ApplicationUser" Placeholder="Destinatario" DataSource="@Mails" @bind-Value="@To">
+            <AutoCompleteTemplates TItem="ApplicationUser">
+                <ItemTemplate>
+                    @{
+                        var User = context as ApplicationUser;
+                        @($"{User.Name} {User.LastName} [{User.Email}]")
+                    }
+                </ItemTemplate>
+            </AutoCompleteTemplates>
+            <AutoCompleteFieldSettings Value="Email"></AutoCompleteFieldSettings>
+        </SfAutoComplete>
     </div>
 </div>
 <div class="row form-group">
@@ -128,6 +138,10 @@
     /// Indicates if Sources has to be included
     /// </summary>
     public bool IncludeSource { get; set; } = true;
+    /// <summary>
+    /// List of all available emails
+    /// </summary>
+    private ObservableCollection<ApplicationUser> Mails { get; set; }
 
     /// <summary>
     /// Close the mail
@@ -149,6 +163,7 @@
     /// </summary>
     protected override void OnInitialized()
     {
+       Mails = new ObservableCollection<ApplicationUser>(_ApplicationUsersManager.GetUsers().Where(e => !string.IsNullOrEmpty(e.Email)));
     }
 
     /// <summary>
