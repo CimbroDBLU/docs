@@ -237,7 +237,10 @@ namespace dblu.Portale.Plugin.Docs.Classes
                 switch (SourceType)
                 {
                     case e_SourceType.Item:
-                        Allegati A = AttachmentService.GetAllegatiElemento(Guid.Parse(DocIdentifier)).FirstOrDefault(x => x.Tipo == "FILE");
+                        List<Allegati> All = AttachmentService.GetAllegatiElemento(Guid.Parse(DocIdentifier));
+                        Allegati A = All.Where(x => x.Tipo == "FILE" && Guid.TryParse(Path.GetFileNameWithoutExtension(x.NomeFile), out Guid guidOutput) && x.NomeFile.EndsWith("pdf")).OrderByDescending(c => c.DataC).FirstOrDefault();                        
+                        if(A == null)
+                            A = All.FirstOrDefault(x => x.Tipo == "FILE");
                         if (A is not null)
                         {
                             AttachId = A.Id.ToString();
