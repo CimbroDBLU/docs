@@ -5,6 +5,7 @@
 @page "/Mail/Inbox"
 @page "/Mail/Inbox/{nPreselAttach}"
 @page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}"
+@page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}/{nPreselItem}"
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.Services
@@ -162,7 +163,7 @@
                                                     <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachDossierItems OnRefresh="OnRefreshDossier" nCurrentDocument="@Document" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
+                                                    <AttachDossierItems nSelectedItem="@nPreselItem" OnRefresh="OnRefreshDossier" nCurrentDocument="@Document" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -251,6 +252,12 @@
     public string nPreselFolder { get; set; } = "";
 
     /// <summary>
+    /// Item that has to be preselected
+    /// </summary>
+    [Parameter]
+    public string nPreselItem { get; set; } = "";
+
+    /// <summary>
     /// Document viewer
     /// </summary>
     private DocViewer Viewer { get; set; }
@@ -259,11 +266,6 @@
     /// Reference to the Mail grid
     /// </summary>
     private MailTable Grid { get; set; }
-
-    /// <summary>
-    /// Reference to the Dossier component
-    /// </summary>
-    private AttachDossierItems DossierItems { get; set; }
 
     /// <summary>
     /// Indicates if the spinner has to be showed
@@ -400,11 +402,6 @@
     public MemoryStream Document => Viewer?.Doc?.Payload ?? new();
 
     /// <summary>
-    /// Dialog for selecting the costumer from email
-    /// </summary>
-    private MailCostumerSelectionPopUp CustomerSelector { get; set; }
-
-    /// <summary>
     /// Show/Hide the dialog for the current selection
     /// </summary>
     private bool ShowCostumerSelection { get; set; } = false;
@@ -434,13 +431,14 @@
     /// </summary>
     private bool IsCustomerExpand { get; set; } = true;
 
+
     /// <summary>
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
     public void OnSelectAttach(AllegatoEmail e)
     {
-    try
+        try
         {
             IsCustomerExpand = true;
 
@@ -468,13 +466,13 @@
 
             if (CustomerCode != e.Chiave3)
                 CustomerCode = e.Chiave3;
-              
+
             if (string.IsNullOrEmpty(CustomerCode))
                 CostumerDesc="Cliente da selezionare";
 
             OnAbort();
         }
-    catch (Exception ex)
+        catch (Exception ex)
         {
             _Logger.LogError($"Inbox[MAIL].OnSelectAttach: Unexpected errro on selecting attach {ex}");
         }
@@ -727,6 +725,7 @@
     public void OnRefreshDossier(Fascicoli Dossier)
     {
         DossierDesc = (Dossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {Dossier?.Descrizione} [{Dossier?.Id}]";
+
     }
 
     /// <summary>

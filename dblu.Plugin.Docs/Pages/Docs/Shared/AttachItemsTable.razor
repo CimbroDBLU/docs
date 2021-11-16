@@ -368,6 +368,12 @@ else
     public EventCallback OnComplete { get; set; }
 
     /// <summary>
+    /// Pre-selected Item
+    /// </summary>
+    [Parameter]
+    public string nSelectedItem{  get;  set; }
+
+    /// <summary>
     /// On initialize load all data
     /// </summary>
     protected override async void OnInitialized()
@@ -405,6 +411,12 @@ else
     {
         if (string.IsNullOrEmpty(ActionSelected))
             ActionSelected = ActionsCombo?.ActionsList?.FirstOrDefault()?.Item ?? "";
+        if(firstRender)
+            if(!string.IsNullOrEmpty(nSelectedItem))
+                {
+                int Index = nItems.ToList().FindIndex(d => d.Id == nSelectedItem);
+                Grid.SelectRowAsync((double)Index);
+                }
         base.OnAfterRender(firstRender);
     }
 
@@ -417,6 +429,8 @@ else
         OnParametersSet();
         Grid.Refresh();
     }
+
+
 
     /// <summary>
     /// On record select forward the selection
