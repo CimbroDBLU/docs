@@ -5,6 +5,7 @@
 @page "/Files/{nDocType}/Inbox"
 @page "/Files/{nDocType}/Inbox/{nPreselAttach}"
 @page "/Files/{nDocType}/Inbox/{nPreselFolder}/{nPreselAttach}"
+@page "/Files/{nDocType}/Inbox/{nPreselFolder}/{nPreselAttach}/{nPreselItem}"
 
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
@@ -116,7 +117,7 @@
                                                     <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachDossierItems OnRefresh="OnRefreshDossier"  nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
+                                                    <AttachDossierItems OnRefresh="OnRefreshDossier" nSelectedItem="@nPreselItem" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -201,6 +202,12 @@
     /// </summary>
     [Parameter]
     public string nPreselAttach { get; set; } = "";
+    
+    /// <summary>
+    /// Item that has to be preselected
+    /// </summary>
+    [Parameter]
+    public string nPreselItem { get; set; } = "";
 
     /// <summary>
     /// Type of document we need to manage (ZIP,REQ...)
@@ -222,11 +229,6 @@
     /// Reference to the Mail grid
     /// </summary>
     private FileTable Grid { get; set; }
-
-    /// <summary>
-    /// Reference to the Dossier component
-    /// </summary>
-    private AttachDossierItems DossierItems { get; set; }
 
     /// <summary>
     /// Indicates if the spinner has to be showed
