@@ -616,7 +616,23 @@ namespace dblu.Docs.Classi
             }
             return l;
         }
+        public List<Allegati> GetAllegati(string Tipo)
+        {
+            List<Allegati> l = new List<Allegati>();
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    l = cn.Query<Allegati>($"Select * FROM Allegati A where Tipo=@Tipo ", new { Tipo = Tipo}).ToList();
+                }
 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetAllegati: {ex.Message}");
+            }
+            return l;
+        }
         public DateTime GetLastInboxEmailTime(string Tipo, string NomeServer)
         {
             try

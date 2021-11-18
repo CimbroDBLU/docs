@@ -131,6 +131,24 @@ namespace dblu.Docs.Classi
             }
         }
 
+        public bool TruncateTable()
+        {
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+
+                    cn.Execute("truncate table EmailSoggetti");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"SoggettiManager.TruncateTable: Unexpected Error {ex.Message}");
+                return false;
+            }
+        }
+
         public bool Salva(Soggetti soggetto, bool isNew)
         {
             var bres = false;
