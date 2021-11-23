@@ -34,7 +34,7 @@ namespace dblu.Portale.Plugin.Docs.Actions
         /// <param name="serviceProvider">Service provider of the service</param>
         public void Execute(IServiceCollection services, IServiceProvider serviceProvider)
         {
-            services.AddScoped<dbluDocsContext>();
+            services.AddDbContext<dbluDocsContext>();
             services.AddTransient<ISoggettiService, SoggettiService>();
             services.AddScoped<AllegatiService>();
             services.AddScoped<MailService>();

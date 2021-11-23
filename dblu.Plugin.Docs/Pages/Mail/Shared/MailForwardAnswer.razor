@@ -57,12 +57,15 @@
     </div>
 </div>
 <div class="row form-group">
+    @if (IsAnswerDialog){
     <div class="col-2">
         <label>Allega Originale</label>
     </div>
     <div class="col-2">
         <SfSwitch @bind-Checked="@IncludeSource"></SfSwitch>
     </div>
+    }
+
     <div class="col-2">
         <label>Chiudi email</label>
     </div>
@@ -163,7 +166,7 @@
     /// </summary>
     protected override void OnInitialized()
     {
-       Mails = new ObservableCollection<ApplicationUser>(_ApplicationUsersManager.GetUsers().Where(e => !string.IsNullOrEmpty(e.Email)));
+        Mails = new ObservableCollection<ApplicationUser>(_ApplicationUsersManager.GetUsers().Where(e => !string.IsNullOrEmpty(e.Email)));
     }
 
     /// <summary>
@@ -171,7 +174,7 @@
     /// </summary>
     protected override void OnParametersSet()
     {
-               CC = new string[] { };
+        CC = new string[] { };
         if (IsAnswerDialog)
         {
             To = nAttach.Mittente;
@@ -188,7 +191,13 @@
         IsSpinnerVisible = true;
         var User = _HttpContextAccessor.HttpContext.User;
         if (IncludeSign) AddSignatureToBody(User);
-        Models.RisultatoAzione RA = await _MailService.RispondiEmail(nAttach.Id.ToString(), nSourceServer.Nome, To, string.Join(";", CC), Subject, Body, IncludeSource, CloseEmail, User);
+
+        Models.RisultatoAzione RA=new();
+        if (IsAnswerDialog)
+           RA= await _MailService.RispondiEmail(nAttach.Id.ToString(), nSourceServer.Nome, To, string.Join(";", CC), Subject, Body, IncludeSource, CloseEmail, User);
+        else
+            RA= await _MailService.InoltraEmail( nAttach.Id.ToString(), To, string.Join(";", CC), Subject, Body, CloseEmail, User , nSourceServer.Nome);
+        
         OnOperationDone.InvokeAsync(RA);
         _Logger.LogInformation($"MailAnswer.OnSend: Mail {nAttach.Id} sent to {To},{string.Join(";", CC)} ");
         IsSpinnerVisible = false;

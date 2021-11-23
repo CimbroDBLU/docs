@@ -69,7 +69,7 @@
     /// </summary>
     protected override async void OnInitialized()
     {
-        LogDocManager LM = new LogDocManager(_DbContext.Connessione, _Logger);
+        LogDocManager LM = new LogDocManager(_DbContext, _Logger);
         nLogs = new ObservableCollection<LogDoc>(LM.GetLogOggetto(nAttach.Id, dblu.Docs.Classi.TipiOggetto.ALLEGATO));
         Users = _ApplicationUsersManager.GetUsers().ToList();
     }

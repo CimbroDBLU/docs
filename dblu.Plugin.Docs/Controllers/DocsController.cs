@@ -58,7 +58,7 @@ namespace dblu.Portale.Controllers
             _eleMan = new ElementiManager(_context.Connessione, _logger);
             _allMan = new AllegatiManager(_context.Connessione, _logger);
             _serMan = new ServerEmailManager(_context.Connessione, _logger);
-            _logMan = new LogDocManager(_context.Connessione, _logger);
+            _logMan = new LogDocManager(_context, _logger);
             _serverMailService = serverMailService;
             
         }

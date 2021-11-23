@@ -1,32 +1,55 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Dapper;
+using dblu.Docs.Extensions;
+using Microsoft.Extensions.Configuration;
 using System;
-//using Microsoft.EntityFrameworkCore;
-//using Microsoft.EntityFrameworkCore.Metadata;
+
+#if Framework48
+
+#else
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Innofactor.EfCoreJsonValueConverter;
+
+#endif
+
 
 namespace dblu.Docs.Models
 {
-    public partial class dbluDocsContext //: DbContext
+#if Framework48
+    public partial class dbluDocsContext 
+
+
+
+#else
+    public partial class dbluDocsContext : DbContext
+
+#endif
     {
-        public string Connessione { get; set; } 
+        public string Connessione { get; set; }
+
+
+#if Framework48
+
+        public dbluDocsContext(IConfiguration config)
+        {
+            Connessione = config.GetConnectionString("dblu.Docs");
+            SqlMapper.AddTypeHandler(typeof(ExtAttributesTypeHandler), new ExtAttributesTypeHandler());
+        }
+
+#else
+
         public dbluDocsContext(IConfiguration config)
         {
             Connessione = config.GetConnectionString("dblu.Docs");
         }
 
-        //string connessione = "Server=192.168.44.120\\sql2017;uid=sa;pwd=sa;Database=dbluDocs;";
-        //        public dbluDocsContext()
-        //        {
-        //            Connessione = "";
-        //        }
-        //        public dbluDocsContext(string Conn)
-        //        {
-        //            Connessione = Conn;
-        //        }
-        //        public dbluDocsContext(DbContextOptions<dbluDocsContext> options)
-        //            : base(options)
-        //        {
-        //            Connessione = this.Database.GetDbConnection().ConnectionString;
-        //        }
+        //public dbluDocsContext(DbContextOptions<dbluDocsContext> options)
+        //    : base(options)
+        //{
+        //    Connessione = this.Database.GetDbConnection().ConnectionString;
+        //}
+        public virtual DbSet<LogDoc> LogDoc { get; set; }
 
         //        public virtual DbSet<Soggetti> Soggetti { get; set; }
         //        public virtual DbSet<Allegati> Allegati { get; set; }
@@ -41,18 +64,21 @@ namespace dblu.Docs.Models
 
         //        // Unable to generate entity type for table 'dbo.emailFT'. Please see the warning messages.
 
-        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //        {
-        //            if (!optionsBuilder.IsConfigured)
-        //            {
-        //                //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-        //                //                optionsBuilder.UseSqlServer("Server=.\\sql17;Database=dbluDocs;uid=sa;pwd=as;");
-        //                 optionsBuilder.UseSqlServer(Connessione);
-        //            }
-        //        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                 optionsBuilder.UseSqlServer(Connessione);
+            }
+        }
 
-        //        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        //        {
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<LogDoc>().HasKey(l => new { l.IdOggetto, l.Data });
+            modelBuilder.Entity<LogDoc>().Property(p => p.JAttributi).HasJsonValueConversion();
+
+            modelBuilder.AddJsonFields();
+        }
 
         //             modelBuilder.Entity<Allegati>(entity =>
         //            {
@@ -419,7 +445,7 @@ namespace dblu.Docs.Models
         //                    .IsRequired()
         //                    .HasColumnName("ListaAttributi")
         //                    .HasDefaultValueSql("('')");
-                
+
         //                entity.Property(e => e.ViewAttributi).HasMaxLength(255)
         //                      .HasDefaultValueSql("('')");
         //            });
@@ -498,7 +524,7 @@ namespace dblu.Docs.Models
         //                entity.Property(e => e.PathLocator)
         //                    .HasColumnName("path_locator")
         //                    .HasMaxLength(4000);
-                
+
         //                entity.Property(e => e.StreamId).HasColumnName("stream_id");
         //            });
 
@@ -527,7 +553,7 @@ namespace dblu.Docs.Models
         //                entity.Property(e => e.Indirizzo)
         //                    .HasMaxLength(255)
         //                    .HasDefaultValueSql("('')");
-                
+
         //                entity.Property(e => e.CAP)
         //                    .HasMaxLength(20)
         //                    .HasDefaultValueSql("('')");
@@ -582,5 +608,7 @@ namespace dblu.Docs.Models
         //        }
 
         //        partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+  
+#endif
     }
 }

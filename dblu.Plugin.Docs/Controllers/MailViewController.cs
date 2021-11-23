@@ -662,7 +662,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         [HasPermission("50.1.3")]
         public async Task<ActionResult<RisultatoAzione>> InArrivo_Inoltra(
             string IdAllegato,
-            string email,
+            string email,  
             bool chiudi)
         {
             RisultatoAzione r = new RisultatoAzione();
@@ -670,7 +670,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             {
                 r = await _mailService.InoltraEmail(
                     IdAllegato,
-                    email,
+                    email, "", "" , "" ,
                     chiudi ,
                     User);
 

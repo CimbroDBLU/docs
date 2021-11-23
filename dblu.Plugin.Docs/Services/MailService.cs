@@ -110,7 +110,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             _fasMan = new FascicoliManager(_context.Connessione, _logger);
             _elmMan = new ElementiManager(_context.Connessione, _logger);
             _serMan = new ServerEmailManager(_context.Connessione, _logger);
-            _logMan = new LogDocManager(_context.Connessione, _logger);
+            _logMan = new LogDocManager(_context, _logger);
             _TranformationService = documentTransformation;
             //            _sggMan = new SoggettiManager(_context, _logger);
             _config = config;
@@ -2294,7 +2294,15 @@ namespace dblu.Portale.Plugin.Docs.Services
             return AvviaProcesso(Info, el, null);
         }
 
-        public async Task<RisultatoAzione> InoltraEmail(string IdAllegato, string Indirizzi, bool chiudi, ClaimsPrincipal User, string NomeServer = "")
+        public async Task<RisultatoAzione> InoltraEmail(
+            string IdAllegato, 
+            string Indirizzi,
+            string cc,
+            string Oggetto,
+            string Testo,       
+            bool chiudi,
+            ClaimsPrincipal User, 
+            string NomeServer = "")
         {
             RisultatoAzione res = new RisultatoAzione();
             try
@@ -2324,7 +2332,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     {
                         srv = cn.QueryFirstOrDefault<EmailServer>($"select * from EmailServer where Nome=(select NomeServerInUscita from  EmailServer where Nome='{NomeServer}')");
                     }
-#if (DEBUG_)
+#if (DEBUG)
                     srv = new();
                     srv.Email = "jobaid@dblu.it";
                     srv.Server = "mail.dblu.it";
@@ -2359,44 +2367,30 @@ namespace dblu.Portale.Plugin.Docs.Services
                             {
                                 listind.Add(new MailboxAddress(ind));
                             }
-                            //message.To.AddRange(listind);
-                            //if (al.Stato >= StatoAllegato.Chiuso)
-                            //{
-                            //    var sender = new MailboxAddress(srv.Nome, srv.Email);
-                            //    await client.SendAsync(message, sender, listind.Mailboxes, c);
-                            //}
-                            //else
-                            //{
-                            //    await client.SendAsync(message, c);
-                            //}
 
-                            //// clear the Resent-* headers in case this message has already been Resent...
-                            //message.ResentSender = null;
-                            //message.ResentFrom.Clear();
-                            //message.ResentReplyTo.Clear();
-                            //message.ResentTo.Clear();
-                            //message.ResentCc.Clear();
-                            //message.ResentBcc.Clear();
-
-                            //// now add our own Resent-* headers...
-                            //message.ResentFrom.Add(new MailboxAddress(srv.Nome, srv.Email));
-                            //message.ResentReplyTo.Add(new MailboxAddress(srv.Nome, srv.Email));
-                            ////message.ResentTo.AddRange(listind);
-                            //message.ResentMessageId = MimeUtils.GenerateMessageId();
-                            //message.ResentDate = DateTimeOffset.Now;
                             var newmessage = new MimeMessage();
                             newmessage.From.Add(new MailboxAddress(srv.Nome, srv.Email));
                             newmessage.ReplyTo.Add(new MailboxAddress(srv.Nome, srv.Email));
                             newmessage.To.AddRange(listind);
-                            newmessage.Subject = "FWD: " + message.Subject;
+                            if(string.IsNullOrEmpty(Oggetto))
+                                Oggetto = "FWD: " + message.Subject;
+                            newmessage.Subject = Oggetto; 
+
+                            listind.Clear();
+                            if (!string.IsNullOrEmpty(cc))
+                                foreach (string ind in cc.Replace(";", ",").Split(","))
+                                {
+                                    listind.Add(new MailboxAddress("", ind));
+                                }
+                            if (listind.Count > 0)
+                            {
+                                newmessage.Cc.AddRange(listind);
+                            }
 
                             // now to create our body...
                             var builder = new BodyBuilder();
-                            var htxt = "";
+                            var htxt ="";
                             var ttxt = "";
-
-                            if (!htxt.Contains("<body>"))
-                                htxt = $"<body>{htxt}</body>";
 
                             htxt = message.HtmlBody;
                             string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
@@ -2404,12 +2398,11 @@ namespace dblu.Portale.Plugin.Docs.Services
                             if (!string.IsNullOrEmpty(htxt) && !htxt.Contains("<body>"))
                                 htxt = $"<body>{htxt}</body>";
 
-                            ttxt = $"Da : {message.From}\nA : {message.To}\nInviato : {message.Date.DateTime}\nOggetto: {message.Subject}\n\n{message.TextBody}";
-                            htxt = htxt?.Replace("<body>", $"<body><p><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></p><br>");
+                            ttxt = $"{Testo}\n\n\n\nDa : {message.From}\nA : {message.To}\nInviato : {message.Date.DateTime}\nOggetto: {message.Subject}\n\n{message.TextBody}";
+                            htxt = htxt?.Replace("<body>", $"<body><p>{Testo}</p><p><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></p><br>");
 
                             builder.TextBody = ttxt;
                             builder.HtmlBody = htxt;
-
 
                             foreach (MimeEntity att in message.Allegati())
                             {
@@ -2425,8 +2418,11 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 IdOggetto = al.Id,
                                 TipoOggetto = TipiOggetto.ALLEGATO,
                                 Operazione = TipoOperazione.Inoltrato,
-                                Utente = User.Identity.Name
+                                Utente = User.Identity.Name,
+                                Descrizione = Oggetto
                             };
+                            log.JAttributi.Add("destinatari", Indirizzi);
+                            log.JAttributi.Add("cc", cc);
                             _logMan.Salva(log, true);
                             //-------- Memorizzo l'operazione----------------------
 

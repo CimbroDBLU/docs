@@ -1,4 +1,9 @@
-﻿using Dapper.Contrib.Extensions;
+﻿#if Framework48
+using dblu.Docs.Extensions;
+#else
+using dbluTools.Extensions;
+#endif
+using Dapper.Contrib.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -71,6 +76,18 @@ namespace dblu.Docs.Models
         /// Id of the process that is owning this task
         /// </summary>
         public string IdProcesso { get; set; }
+
+
+        public string IdElemento { get; set; }
+        public string IdAllegato { get; set; }
+
+        /// <summary>
+        /// A json field with all log attributes
+        /// </summary>
+        public ExtAttributes JAttributi
+        {
+            get; set;
+        } = new ExtAttributes();
 
     }
 

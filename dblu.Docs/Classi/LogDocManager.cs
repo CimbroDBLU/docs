@@ -1,8 +1,15 @@
-﻿using Dapper;
+﻿#if Framework48
+
+using Dapper;
 using Dapper.Contrib.Extensions;
+
+#else
+
+using Microsoft.EntityFrameworkCore;
+
+#endif
 using dblu.Docs.Models;
 using Microsoft.Data.SqlClient;
-//using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -17,17 +24,30 @@ namespace dblu.Docs.Classi
 {
     public class LogDocManager 
     {
-        //private dbluDocsContext _context;
-        private string StringaConnessione ;
+
         private readonly ILogger _logger;
 
-        //public AllegatiManager(dbluDocsContext context, ILogger logger) {
+#if Framework48 
+        private string StringaConnessione ;
+
         public LogDocManager(string connessione, ILogger logger)
-            {
-            //   _context = context;
+        {
             StringaConnessione = connessione;
             _logger = logger;
         }
+
+#else
+        private dbluDocsContext _context;
+        public LogDocManager(dbluDocsContext context, ILogger logger)
+            {
+            _context = context;
+            //StringaConnessione = connessione;
+            _logger = logger;
+        }
+
+#endif        
+
+
 
 
         //public LogDoc Get(string id)
@@ -51,12 +71,15 @@ namespace dblu.Docs.Classi
 
             try
             {
-                //l = _context.EmailServer
-                //    .ToList<EmailServer>();
+
+#if Framework48 
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
                     l = cn.GetAll<LogDoc>().ToList();
                 }
+#else
+                l = _context.LogDoc.ToList();
+#endif
             }
             catch (Exception ex)
             {
@@ -89,18 +112,24 @@ namespace dblu.Docs.Classi
             var bres = false;
             try
             {
-                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+#if Framework48
+            using (SqlConnection cn = new SqlConnection(StringaConnessione))
+            {
+                if (isNew)
                 {
-                    if (isNew)
-                    {
-                        var r = cn.Insert<LogDoc>(log);
-                    }
-                    else
-                    {
-                        var r = cn.Update<LogDoc>(log);
-                    }
+                    var r = cn.Insert<LogDoc>(log);
                 }
-                bres = true;
+                else
+                {
+                    var r = cn.Update<LogDoc>(log);
+                }
+            }
+            bres = true;
+
+#else
+                _context.LogDoc.Add(log);
+                _context.SaveChanges();
+#endif
 
             }
             catch (Exception ex)
@@ -110,20 +139,21 @@ namespace dblu.Docs.Classi
             }
             return bres;
         }
-
-
       
         public List<LogDoc> GetLogOggetto(Guid IdOggetto, TipiOggetto Tipo)
         {
-
             List<LogDoc > log = null;
             try
             {
+ #if Framework48                
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
                     log = cn.Query<LogDoc>("SELECT * FROM LogDoc WHERE IdOggetto = @Id and TipoOggetto = @Tipo ORDER BY data DESC ",
                         new { Id = IdOggetto.ToString() , Tipo = Tipo }).ToList();
                 }
+#else
+               log = _context.LogDoc.Where(l => l.IdOggetto == IdOggetto).OrderByDescending(l => l.Data) .ToList();
+#endif
             }
             catch (Exception ex)
             {
@@ -131,24 +161,28 @@ namespace dblu.Docs.Classi
 
             }
             return log;
-
-
         }
-        public Boolean IsStato(string IdOggetto, TipiOggetto Tipo, TipoOperazione Stato)
+
+        public bool IsStato(string IdOggetto, TipiOggetto Tipo, TipoOperazione Stato)
         {
             try
             {
+#if Framework48
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
                     if (cn.QueryFirstOrDefault<LogDoc>("SELECT * FROM LogDoc WHERE IdOggetto = @Id and TipoOggetto = @Tipo and Operazione =@Stato",
                         new { Id = IdOggetto, Tipo = Tipo, Stato = Stato }) != null)
                         return true;
                 }
+
+#else
+                return _context.LogDoc.Any(l => l.IdOggetto == Guid.Parse(IdOggetto) && l.TipoOggetto==Tipo &&  l.Operazione == Stato);
+#endif
+
             }
             catch (Exception ex)
             {
                 _logger.LogError($"IsStato: {ex.Message}");
-
             }
             return false;
 
