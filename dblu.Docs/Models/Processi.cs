@@ -1,4 +1,5 @@
 ﻿using Dapper.Contrib.Extensions;
+using dbluTools.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -101,6 +102,30 @@ namespace dblu.Docs.Models
         /// </summary>
         [Computed]
         public string Processes => $"Processi";
+
+        /// <summary>
+        /// Duration of the process
+        /// </summary>
+        [Computed]
+        public TimeSpan? Durata => (Avvio != null && Fine != null) ? Fine - Avvio:null;
+
+        /// <summary>
+        /// Id of Item used if any
+        /// </summary>
+        public string IdElemento { get; set; }
+
+        /// <summary>
+        /// Id of attachment used if any
+        /// </summary>
+        public string IdAllegato { get; set; }
+
+        /// <summary>
+        /// A json field with any attributes needed
+        /// </summary>
+        public ExtAttributes JAttributi
+        {
+            get; set;
+        } = new ExtAttributes();
     }
     
 }

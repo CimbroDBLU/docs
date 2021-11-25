@@ -7,6 +7,7 @@
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject NavigationManager  _NavigationManager
 @inject ProtectedSessionStorage _SessionStore
 @inject AuthenticationStateProvider _AuthenticationStateProvider
@@ -218,9 +219,20 @@
     /// </summary>
     /// <param name="Id"></param>
     private async void OnEditItem(Guid Id)
-    {
+    {        
+        Elementi item = _AttachService._elmMan.Get(Id.ToString(),0);
+        string Url=_AttachService._elmMan.GetTipoElemento(item.Tipo).ViewAttributi;
+        if (Url.StartsWith("blz:/"))
+        {
+           await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
+           Url = $"{Url.Replace("blz:/", "")}/{item.Id}/REVIEW";
+           _NavigationManager.NavigateTo(Url);
+        }
+        else
+        {
         await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
         _NavigationManager.NavigateTo($"/Docs/Item/{Id.ToString()}");
+                }
     }
 
     /// <summary>
@@ -236,7 +248,7 @@
     private async void OnEditAttach(Guid Id)
     {
         await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
-        _NavigationManager.NavigateTo($"/Docs/Attachment/{Id.ToString()}");
+       _NavigationManager.NavigateTo($"/Docs/Attachment/{Id.ToString()}");
     }
 
     /// <summary>
