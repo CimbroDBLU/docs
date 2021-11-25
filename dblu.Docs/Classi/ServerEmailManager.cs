@@ -88,6 +88,24 @@ namespace dblu.Docs.Classi
             return l;
         }
 
+        public List<EmailServer> GetCartelleInIngresso()
+        {
+            List<EmailServer> l = new List<EmailServer>();
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    string sql = $"Select * FROM [EmailServer] where TipoRecord = {(int)TipiRecordServer.CartellaFile} ";
+                    l = cn.Query<EmailServer>(sql).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetServerEmailInIngresso: {ex.Message}");
+            }
+            return l;
+        }
+
 
         public List<EmailServer> GetServerEmailInUscita()
         {

@@ -49,7 +49,8 @@
 
     var ListaServer = _zipservice._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaFile);
 
-    //var ListaServerIngresso = _mailservice._serMan.GetServerEmailInIngresso();
+    var ListaServerIngresso = _zipservice._serMan.GetCartelleInIngresso();
+
     if (ListaServer != null && ListaServer.Count > 0)
     {
         //var ListaRuoliServ = _mailservice.getRuoli(Context.User.Claims, ListaServer.ElementAt(0).Nome);
@@ -60,7 +61,7 @@
     {
         ListaTipiElementi = _zipservice._elmMan.GetAllTipiElementi(ListaRuoli);
     }
-    bool mostraSposta = ListaServer.Count > 1;
+    bool mostraSposta = ListaServerIngresso.Count > 1;
 
     string IsPrintedLocally = "true";
     string Printer = "";
@@ -726,7 +727,7 @@
                             //.Placeholder("Seleziona cartella...")
                             .DataTextField("Nome")
                             .DataValueField("Cartella")
-                            .BindTo(ListaServer)
+                            .BindTo(ListaServerIngresso)
                             //.Suggest(true)
                             .HtmlAttributes(new { style = "width:100%;" })
                         )
