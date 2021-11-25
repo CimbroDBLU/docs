@@ -11,7 +11,7 @@
 
 <div class="row form-group">
     <div class="col-12">
-        <ServerCombo nRecordServer="@nRecordServer" @bind-nServer="@Destination" nDocumentType="@nDocumentType" nExcludedServers="@(new List<string>() { nSourceServer.Nome })" nLabel="Sposta in"></ServerCombo>
+        <ServerCombo nRecordServer="@nRecordServer" @bind-nServer="@Destination" nShowAll="true" nDocumentType="@nDocumentType" nExcludedServers="@(new List<string>() { nSourceServer.Nome })" nLabel="Sposta in"></ServerCombo>
     </div>
 </div>
 <div class="row">
