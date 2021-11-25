@@ -1,0 +1,122 @@
+﻿@*
+    Component for showing a Process with their own activities
+*@
+@using dblu.Docs.Models
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+
+@inject IApplicationUsersManager  _ApplicationUsersManager
+
+<div class="row">
+    <div class="col-10">
+        <label>Descrizione :</label> @(nProcess?.Descrizione??"")
+    </div>
+                    @{
+                string s = "";
+                var Color = "#FFFFFF";
+                switch(nProcess?.Stato.ToUpper()??"")
+                {
+                    case "COMPLETED": s = "Completato"; Color = "#66bb6a";break;
+                    case "ACTIVE": s = "Attivo";Color = "#fdd835";break;
+                    case "EXTERNALLY_TERMINATED": s = "Terminato"; Color = "#ef5350";break;
+                }
+                
+            }
+    <div style="height: 30px;display: flex;justify-content: center;align-items: center; font-weight: bold;color:black;background-color:@Color" class="col-2">
+        <label>Stato: </label> @s
+    </div>
+</div>
+<div class="mt-2">
+        <SfGrid ID="Activities" SelectedRowIndex="0" DataSource="@nProcess.Attivita" AllowTextWrap="true" AllowPaging="false" AllowFiltering="true" AllowSorting="true" > 
+        <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Normal"></GridEditSettings>
+        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+            <GridEvents QueryCellInfo="CustomizeCell" TValue="Attivita"></GridEvents>
+        <GridColumns>
+            <GridColumn Field=@nameof(Attivita.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
+            <GridColumn Width="150" Field=@nameof(Attivita.Nome) HeaderText="Nome" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true"></GridColumn>
+            <GridColumn Width="250" Field=@nameof(Attivita.Descrizione) HeaderText="Descrizione" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true"></GridColumn>
+            <GridColumn Width="100" Field=@nameof(Attivita.Assegnatario) HeaderText="In carico a" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true">
+                    <Template>
+                        @{
+                        var ID = (context as Attivita).Assegnatario;
+                        var sign = Users.FirstOrDefault(d => d.UserId == ID);
+                        var singtxt = $"{sign?.Name} {sign?.LastName}";
+                        @singtxt
+
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Width="100" Field=@nameof(Attivita.Avvio ) HeaderText="Avvio"  AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true"></GridColumn>
+            <GridColumn Width="100" Field=@nameof(Attivita.Fine) HeaderText="Fine" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true"></GridColumn>
+
+            <GridColumn Width="100" Field=@nameof(Attivita.Stato) HeaderText="Stato" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true">
+                <Template>
+                    @{
+                        var State = (context as Attivita).Stato;
+                        var S = "";
+                        switch(State)
+                        {
+                            case "completed":S = "Completato";break;
+                            case "deleted":S = "Rimosso";break;
+                            default:S = State?.ToUpper();break;
+                        }
+                        @S
+                    }
+                </Template>
+            </GridColumn>
+                    <GridColumn Width="100" TextAlign=TextAlign.Right Field=@nameof(Attivita.Durata) HeaderText="Durata (d.HH:MM:SS)" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true">
+                <Template>
+                        @{
+                        var State = (context as Attivita).Durata;
+                        @State?.ToString(@"dd\.hh\:mm\:ss");
+                        }
+                </Template>
+            </GridColumn>
+        </GridColumns>
+        </SfGrid>
+</div>
+
+@code {
+
+
+    /// <summary>
+    /// Process that we are showing
+    /// </summary>
+    [Parameter]
+    public Processi nProcess { get; set; }
+
+    /// <summary>
+    /// Listo fo users, for showing anems instead of userId
+    /// </summary>
+    private List<ApplicationUser> Users { get; set; } = null;
+
+    /// <summary>
+    /// On initialized, load the users
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        Users=_ApplicationUsersManager.GetUsers().ToList();
+    }
+
+    /// <summary>
+    /// Set the proper color of the status cell
+    /// </summary>
+    /// <param name="args"></param>
+    private void CustomizeCell(QueryCellInfoEventArgs<Attivita> args)
+    {
+        if (args.Column.Field == "Stato")
+        {
+
+            string State = (args.Data as Attivita).Stato;
+            switch(State)
+            {
+                case "completed":args.Cell.AddStyle(new string[] { "background-color:#66bb6a" });break;
+                case "deleted":args.Cell.AddStyle(new string[] { "background-color:#ef5350" });break;
+                case null:break;
+                default:args.Cell.AddStyle(new string[] { "background-color:#ffc107" });break;
+            }
+        }   
+    }
+
+
+}
