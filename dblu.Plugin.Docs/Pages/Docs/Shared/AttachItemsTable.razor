@@ -502,7 +502,7 @@ else
             prev = prev.Substring(0, prev.IndexOf("Inbox")+5);
 
         await _SessionStore.SetAsync("Referrer", $"/{prev}/{nSourceFolder}/{nAttachID}");
-        string Url = $"{ComponentName.Replace("blz:/", "")}/{Elem.Id}";
+        string Url = $"{ComponentName.Replace("blz:/", "")}/{Elem.Id}/REVIEW";
         _NavigationManager.NavigateTo(Url);
     }
 
