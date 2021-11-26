@@ -18,7 +18,6 @@ namespace dblu.Docs.Models
         Annullato = 9
     }
 
-
     [Table("Soggetti")]
     public partial class Soggetti : ISoggetti
     {
