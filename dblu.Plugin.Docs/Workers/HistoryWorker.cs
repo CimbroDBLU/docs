@@ -100,7 +100,7 @@ namespace dblu.Portale.Plugin.Docs.Workers
                 LastImport = DateTime.MinValue;
 
             using CAMContext dbCAM = new CAMContext(conf["ConnectionStrings:CamundaDbConnection"]);
-            List<CAMHiProcess> nProcesses = dbCAM.HistoryProcesses.Include(c => c.Definition).Include(t => t.Tasks).Where(x=>x.START_TIME_>LastImport || x.END_TIME_> LastImport).AsNoTracking().ToList();
+            List<CAMHiProcess> nProcesses = dbCAM.HistoryProcesses.Include(c => c.Definition).Include(t => t.Tasks).Include(v=>v.Variables).Where(x=>x.START_TIME_>LastImport || x.END_TIME_> LastImport).AsNoTracking().ToList();
 
             if (nProcesses.Count == 0)
                 log.LogInformation($"HistoryWorker.Syncronizze: No changes detected in {sw.ElapsedMilliseconds} ms");
@@ -123,6 +123,10 @@ namespace dblu.Portale.Plugin.Docs.Workers
                     P.Fine = CP.END_TIME_;
                     if (P.DataC is null) P.DataC = DateTime.Now;
                     P.DataUM = DateTime.Now;
+
+                    P.IdAllegato = CP.Variables.Where(x => x.NAME_.ToUpper().Contains("IDALLEGATO"))?.FirstOrDefault()?.TEXT_??"";
+                    P.IdElemento = CP.Variables.Where(x => x.NAME_.ToUpper().Contains("IDELEMENTO"))?.FirstOrDefault()?.TEXT_ ?? "";
+
                     History.Save(P);
 
                     log.LogInformation($"HistoryWorker.Syncronizze: Updated process {P.Id}");

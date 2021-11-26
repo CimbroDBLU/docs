@@ -19,6 +19,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using dbluTools.Extensions;
 
 namespace dblu.Docs.Classi
 {
@@ -107,6 +108,38 @@ namespace dblu.Docs.Classi
         //    return all;
         //}
 
+        public void  PostLog(Guid nId, TipiOggetto nType, TipoOperazione nOperation,string nUser,string nDescription,ExtAttributes Att=null)
+        {
+            LogDoc log = new()
+            {
+                Data = DateTime.Now,
+                IdOggetto = nId,
+                TipoOggetto = nType,
+                Operazione = nOperation,
+                Utente = nUser,
+                Descrizione=nDescription,
+                JAttributi= null,
+
+            };
+            Task.Run(() =>this.Salva(log, true));
+        }
+
+        public void PostLog(string nId, TipiOggetto nType, TipoOperazione nOperation, string nUser, string nDescription, ExtAttributes Att = null)
+        {
+            LogDoc log = new()
+            {
+                Data = DateTime.Now,
+                IdOggetto = Guid.Parse(nId),
+                TipoOggetto = nType,
+                Operazione = nOperation,
+                Utente = nUser,
+                Descrizione = nDescription,
+                JAttributi = null,
+
+            };
+            Task.Run(() => this.Salva(log, true));
+        }
+
         public bool Salva(LogDoc log, bool isNew)
         {
             var bres = false;
@@ -134,7 +167,7 @@ namespace dblu.Docs.Classi
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Salva log: {ex.Message}");
+                _logger.LogError($"LogDocManager.Salva: Unexpected exception {ex.Message}");
 
             }
             return bres;

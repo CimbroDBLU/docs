@@ -100,7 +100,7 @@
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachCustomer OnOpenItems="OnOpenItems"  OnLinkedToCostumer="OnLinkCostumer" nAttachments="@SourceAttach" nCurrentDocument="@Document" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                    <AttachCustomer OnOpenItems="OnOpenItems"  OnLinkedToCostumer="OnLinkCostumer"  nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -202,7 +202,7 @@
     /// </summary>
     [Parameter]
     public string nPreselAttach { get; set; } = "";
-    
+
     /// <summary>
     /// Item that has to be preselected
     /// </summary>
@@ -401,7 +401,7 @@
         {
             if (e == null)
             {
-                 _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: DeSelecting attach");
+                _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: DeSelecting attach");
                 AttachID = "";
                 DossierID = "";
                 CustomerCode = "";
@@ -521,15 +521,7 @@
             {
                 all.Stato = StatoAllegato.Annullato;
                 _MailService._allMan.Salva(all, false);
-                LogDoc log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = all.Id,
-                    TipoOggetto = TipiOggetto.ALLEGATO,
-                    Utente = User.Identity.Name,
-                    Operazione = TipoOperazione.Cancellato
-                };
-                _MailService._logMan.Salva(log, true);
+                _MailService._logMan.PostLog(all.Id, TipiOggetto.ALLEGATO, TipoOperazione.Cancellato, User.Identity.Name, $"Allegato [{all.Descrizione}] rimosso",new(){ {"1",all.Chiave1},{"2",all.Chiave2},{"3",all.Chiave3},{"4",all.Chiave4},{"5",all.Chiave5} });                  
                 ToastOK.Show();
             }
 

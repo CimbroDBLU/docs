@@ -115,7 +115,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             return doc;
         }
 
-        internal List<viewAllegati> GetvAllegatiElemento(Guid IdElemento)
+        public List<viewAllegati> GetvAllegatiElemento(Guid IdElemento)
         {
 
             //var doc = _context.Allegati.Where(x => x.IdElemento == elemento && x.Tipo=="FILE");

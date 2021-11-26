@@ -1,0 +1,54 @@
+﻿@*
+    Component for showing a List of processes related to an item
+*@
+
+@using dblu.Docs.Classi
+@using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Pages.Task
+
+@inject IConfiguration _conf
+@inject ILogger<ItemProcesses> _Logger
+
+@foreach(Processi P in Processes )
+{
+     <SfAccordion>
+        <AccordionItems>
+            <AccordionItem Expanded="true">
+                <HeaderTemplate>
+                    <div>Processo : @(P?.Nome??"")</div>
+                </HeaderTemplate>
+                <ContentTemplate>
+                    <ProcessView nProcess=@P></ProcessView>
+                </ContentTemplate>
+            </AccordionItem>
+        </AccordionItems>
+    </SfAccordion>
+}
+@if(Processes.Count==0)
+{
+    <div class="mt-2">Nessuna processo o attività eseguita per l'elemento</div>
+}
+
+@code 
+{
+    /// <summary>
+    /// Item for witch we are investing on processes
+    /// </summary>
+    [Parameter]
+    public string nItemId { get; set; }
+
+    /// <summary>
+    /// Lista of the processes
+    /// </summary>
+    private ObservableCollection<Processi> Processes { get; set; } = null;
+
+    /// <summary>
+    /// On init load the processes
+    /// </summary>
+    /// <returns></returns>
+    protected async override Task OnInitializedAsync()
+    {
+        HistoryManager HM = new HistoryManager(_conf["ConnectionStrings:dblu.Docs"], _Logger);
+        Processes= new ObservableCollection<Processi>((await HM.GetAllByElementID(nItemId)));
+    }
+}

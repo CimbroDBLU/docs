@@ -7,7 +7,10 @@ using FluentMigrator;
 
 namespace dblu.Portale.Plugin.Docs.DataLayer.Migrations
 {
-
+    /// <summary>
+    /// Migration:
+    ///     -> Add Fields on Attivita and Logs
+    /// </summary>
     [Migration(20211119)]
     public class Docs_logs : Migration
     {

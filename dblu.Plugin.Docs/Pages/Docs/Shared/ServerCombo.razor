@@ -55,6 +55,12 @@
     public EventCallback<EmailServer> nServerChanged { get; set; }
 
     /// <summary>
+    /// Show all input server/folder (not limited to user profiles)
+    /// </summary>
+    [Parameter]
+    public bool nShowAll { get; set; } = false;
+
+    /// <summary>
     /// List of servers that need to be excluded (used for making the move function)
     /// </summary>
     [Parameter]
@@ -99,16 +105,27 @@
         List<string> Roles = new();
         if (nRecordServer == TipiRecordServer.CartellaMail)
         {
-            Roles = _MailService.getRuoli(_HttpContextAccessor.HttpContext.User.Claims, "");
-            Servers = _MailService._serMan.GetServersEmailinRoles(Roles, nRecordServer).OrderBy(y=>y.Posizione).ToList();
+            if (nShowAll)
+                Servers = _MailService._serMan.GetServerEmailInIngresso().OrderBy(y => y.Posizione).ToList();
+            else
+            {
+                Roles = _MailService.getRuoli(_HttpContextAccessor.HttpContext.User.Claims, "");
+                Servers = _MailService._serMan.GetServersEmailinRoles(Roles, nRecordServer).OrderBy(y => y.Posizione).ToList();
+            }
         }
         else
         {
+
             string s = "ZIP";
             if (nDocumentType == TipiDocumentiFile.REQ)
                 s = "REQ";
-            Roles = _ZipService.GetRuoliTipoAll(_HttpContextAccessor.HttpContext.User.Claims, s);
-            Servers = _ZipService._serMan.GetServersEmailinRoles(Roles, nRecordServer).OrderBy(y=>y.Posizione).ToList();
+            if (nShowAll)
+                Servers = _MailService._serMan.GetCartelleInIngresso().OrderBy(y => y.Posizione).ToList();
+            else
+            {
+                Roles = _ZipService.GetRuoliTipoAll(_HttpContextAccessor.HttpContext.User.Claims, s);
+                Servers = _ZipService._serMan.GetServersEmailinRoles(Roles, nRecordServer).OrderBy(y => y.Posizione).ToList();
+            }
         }
 
         if (nExcludedServers != null)

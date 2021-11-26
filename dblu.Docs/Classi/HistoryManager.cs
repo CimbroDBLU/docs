@@ -87,6 +87,48 @@ namespace dblu.Docs.Classi
         }
 
         /// <summary>
+        /// Gett all process by element ID
+        /// </summary>
+        /// <param name="id">Id of the element/param>
+        /// <returns>
+        /// List of projects related to this element
+        /// </returns>
+        public async Task<List<Processi>> GetAllByElementID(string id)
+        {
+            List<Processi> Processes = new List<Processi>();
+            try
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+                var query = "SELECT * FROM Processi LEFT OUTER JOIN Attivita ON Attivita.IdProcesso = Processi.Id where Processi.IdElemento=@IdElemento order by Attivita.Avvio";
+                using (SqlConnection cn = new SqlConnection(ConnectionString))
+                {
+                    cn.Query<Processi, Attivita, Processi>(query, (z, m) =>
+                    {
+                        Processi Z = Processes.FirstOrDefault(d => d.Id == z.Id);
+                        if (Z == null)
+                        {
+                            Processes.Add(z);
+                            Z = Processes[Processes.Count - 1];
+                        }
+                        if (m != null)
+                            Z.Attivita.Add(m);
+                        return Z;
+                    }, new { IdElemento = id });
+                }
+
+                foreach (Processi P in Processes)
+                    P.Stars = nWeightProcess + nWeightTask * P.Attivita.Count;
+                _logger.LogInformation($"HistoryManager.GetAllByElementID: Retreived {Processes.Count} Proceses in {sw.ElapsedMilliseconds} ms");
+                return Processes;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"HistoryManager.GetAllByElementID: Unexpected exception {ex.Message}");
+                return Processes;
+            }
+        }
+
+        /// <summary>
         /// Get the process of specified ID
         /// </summary>
         /// <param name="id"></param>

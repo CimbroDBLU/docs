@@ -77,12 +77,24 @@ namespace dblu.Docs.Models
         /// </summary>
         public string IdProcesso { get; set; }
 
-
+        /// <summary>
+        /// Id of Item used if any
+        /// </summary>
         public string IdElemento { get; set; }
+
+        /// <summary>
+        /// Id of attachment used if any
+        /// </summary>
         public string IdAllegato { get; set; }
 
         /// <summary>
-        /// A json field with all log attributes
+        /// Duration of the attachs
+        /// </summary>
+        [Computed]
+        public TimeSpan? Durata => (Avvio != null && Fine != null) ? Fine - Avvio : null;
+
+        /// <summary>
+        /// A json field with any attributes needed
         /// </summary>
         public ExtAttributes JAttributi
         {
