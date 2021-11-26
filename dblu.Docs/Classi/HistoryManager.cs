@@ -256,12 +256,35 @@ namespace dblu.Docs.Classi
                     var c = cn.Get<Processi>(obj.Id);
                     if (c == null)
                     {
-                        bres = cn.Insert<Processi>(obj) > 0;
+                        //bres = cn.Insert<Processi>(obj) > 0;
+                        string sql = @" INSERT INTO dbo.Processi 
+    (Id, Nome, Descrizione, Avvio, Fine, UtenteAvvio, Stato, Diagramma, Versione, DataC, UtenteC, DataUM, UtenteUM, IdElemento, IdAllegato, JAttributi )
+    VALUES( @Id, @Nome  , @Descrizione, @Avvio, @Fine, @UtenteAvvio, @Stato, @Diagramma,  @Versione, @DataC, @UtenteC, @DataUM, @UtenteUM, @IdElemento, @IdAllegato, @JAttributi) ";
+                        cn.Execute(sql, obj);
+
                         _logger.LogInformation($"HistoryManager.Save: Create process {obj.Id} in {sw.ElapsedMilliseconds} ms");
                     }
                     else
                     {
-                        cn.Update<Processi>(obj);
+                        // cn.Update<Processi>(obj);
+                        string sql = @"UPDATE dbo.Processi
+   SET Nome = @Nome
+      ,Descrizione = @Descrizione
+      ,Avvio = @Avvio
+      ,Fine = @Fine
+      ,UtenteAvvio = @UtenteAvvio
+      ,Stato = @Stato
+      ,Diagramma = @Diagramma
+      ,Versione = @Versione
+      ,DataC = @DataC
+      ,UtenteC = @UtenteC
+      ,DataUM = @DataUM
+      ,UtenteUM = @UtenteUM
+      ,IdElemento = @IdElemento
+      ,IdAllegato = @IdAllegato
+      ,JAttributi = @JAttributi
+ WHERE  Id = @Id ";
+                        cn.Execute(sql, obj);
                         _logger.LogInformation($"HistoryManager.Save: Update process {obj.Id} in {sw.ElapsedMilliseconds} ms");
                     }
                     bres = true;
@@ -292,12 +315,34 @@ namespace dblu.Docs.Classi
                     var c = cn.Get<Attivita>(obj.Id);
                     if (c == null)
                     {
-                        bres = cn.Insert<Attivita>(obj) > 0;
+
+                        // bres = cn.Insert<Attivita>(obj) > 0;
+                        string sql = @" INSERT INTO dbo.Attivita 
+    (Id, Nome, Descrizione, Avvio, Fine, Assegnatario, Stato, DataC, UtenteC, DataUM, UtenteUM, IdProcesso, IdElemento, IdAllegato, JAttributi )
+    VALUES( @Id, @Nome  , @Descrizione, @Avvio, @Fine, @UtenteAvvio, @Stato, @Diagramma,  @Versione, @DataC, @UtenteC, @DataUM, @UtenteUM, @IdElemento, @IdAllegato, @JAttributi) ";
+                        cn.Execute(sql, obj);
                         _logger.LogInformation($"HistoryManager.SaveActivity: Create activity {obj.Id} in {sw.ElapsedMilliseconds} ms");
                     }
                     else
                     {
-                        cn.Update<Attivita>(obj);
+                        // cn.Update<Attivita>(obj);
+                        string sql = @"UPDATE dbo.Attivita 
+    SET Nome = @Nome
+    ,Descrizione = @Descrizione
+    ,Avvio = @Avvio
+    ,Fine = @Fine
+    ,Assegnatario = @Assegnatario
+    ,Stato = @Stato
+    ,DataC = @DataC
+    ,UtenteC = @UtenteC
+    ,DataUM = @DataUM
+    ,UtenteUM = @UtenteUM
+    ,IdProcesso = @IdProcesso
+    ,IdElemento = @IdElemento
+    ,IdAllegato = @IdAllegato
+    ,JAttributi = @JAttributi 
+    WHERE  Id = @Id ";
+                        cn.Execute(sql, obj); 
                         _logger.LogInformation($"HistoryManager.SaveActivity: Update activity {obj.Id} in {sw.ElapsedMilliseconds} ms");
                     }
                     bres = true;
