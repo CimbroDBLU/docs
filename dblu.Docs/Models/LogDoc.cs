@@ -41,9 +41,12 @@ namespace dblu.Docs.Models
         //public Guid ID { get; set; }
         public DateTime Data { get; set; }
         public string Utente { get; set; }
+        [Column(TypeName = "smallint")]
         public TipiOggetto TipoOggetto { get; set; }
 
         public Guid IdOggetto { get; set; }
+
+        [Column(TypeName = "smallint")]
         public TipoOperazione Operazione { get; set; }
         public string Descrizione { get; set; }
 
