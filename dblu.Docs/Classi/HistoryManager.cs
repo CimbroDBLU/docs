@@ -1,4 +1,9 @@
-﻿using Dapper;
+﻿#if Framework48
+    using dblu.Docs.Extensions;
+#else
+    using dbluTools.Extensions;
+#endif
+using Dapper;
 using Dapper.Contrib.Extensions;
 using dblu.Docs.Models;
 using Microsoft.Data.SqlClient;
@@ -46,6 +51,7 @@ namespace dblu.Docs.Classi
         {
             ConnectionString = nConnectionString;
             _logger = logger;
+            SqlMapper.AddTypeHandler(typeof(ExtAttributesTypeHandler), new ExtAttributesTypeHandler());
         }
 
         /// <summary>
@@ -140,9 +146,10 @@ namespace dblu.Docs.Classi
             {
             Processi all = null;
             Stopwatch sw = Stopwatch.StartNew();
-            
-            using (SqlConnection cn = new SqlConnection(ConnectionString))           
-                all = cn.Get<Processi>(id);
+
+                using (SqlConnection cn = new SqlConnection(ConnectionString))
+                     all = cn.QueryFirstOrDefault<Processi>("Select Id, Nome, Descrizione, Avvio, Fine, UtenteAvvio, Stato, Diagramma, Versione, DataC, UtenteC, DataUM, UtenteUM, IdElemento, IdAllegato, JAttributi  as sAttributi from Processi where Id=@Id ", new { Id = id });
+                //all = cn.Get<Processi>(id);
 
                 if (all != null)
                 {
@@ -172,10 +179,11 @@ namespace dblu.Docs.Classi
 
             try
             {
-               
                 using (SqlConnection cn = new SqlConnection(ConnectionString))
-                    Act = cn.Get<Attivita>(id);
-                if(Act!=null)
+                    Act =  cn.QueryFirstOrDefault<Attivita>("Select Id, Nome, Descrizione, Avvio, Fine, Assegnatario, Stato, DataC, UtenteC, DataUM, UtenteUM, IdProcesso, IdElemento, IdAllegato, JAttributi as sAttributi from Attivita where Id=@Id ", new { Id = id });
+                    //                   Act = cn.Get<Attivita>(id);
+
+                if (Act!=null)
                     _logger.LogInformation($"HistoryManager.GetActivity: Retreived activity {Act.Id} in {sw.ElapsedMilliseconds} ms");
             }              
             catch (Exception ex)
@@ -253,13 +261,14 @@ namespace dblu.Docs.Classi
                 Stopwatch sw = Stopwatch.StartNew();
                 using (SqlConnection cn = new SqlConnection(ConnectionString))
                 {
-                    var c = cn.Get<Processi>(obj.Id);
+                    //var c = cn.Get<Processi>(obj.Id);
+                    var c = cn.QueryFirstOrDefault<Processi>("Select Id, Nome, Descrizione, Avvio, Fine, UtenteAvvio, Stato, Diagramma, Versione, DataC, UtenteC, DataUM, UtenteUM, IdElemento, IdAllegato, JAttributi  as sAttributi from Processi where Id=@Id ", new { Id = obj.Id});
                     if (c == null)
                     {
                         //bres = cn.Insert<Processi>(obj) > 0;
                         string sql = @" INSERT INTO dbo.Processi 
     (Id, Nome, Descrizione, Avvio, Fine, UtenteAvvio, Stato, Diagramma, Versione, DataC, UtenteC, DataUM, UtenteUM, IdElemento, IdAllegato, JAttributi )
-    VALUES( @Id, @Nome  , @Descrizione, @Avvio, @Fine, @UtenteAvvio, @Stato, @Diagramma,  @Versione, @DataC, @UtenteC, @DataUM, @UtenteUM, @IdElemento, @IdAllegato, @JAttributi) ";
+    VALUES( @Id, @Nome  , @Descrizione, @Avvio, @Fine, @UtenteAvvio, @Stato, @Diagramma,  @Versione, @DataC, @UtenteC, @DataUM, @UtenteUM, @IdElemento, @IdAllegato, @sAttributi) ";
                         cn.Execute(sql, obj);
 
                         _logger.LogInformation($"HistoryManager.Save: Create process {obj.Id} in {sw.ElapsedMilliseconds} ms");
@@ -282,7 +291,7 @@ namespace dblu.Docs.Classi
       ,UtenteUM = @UtenteUM
       ,IdElemento = @IdElemento
       ,IdAllegato = @IdAllegato
-      ,JAttributi = @JAttributi
+      ,JAttributi = @sAttributi
  WHERE  Id = @Id ";
                         cn.Execute(sql, obj);
                         _logger.LogInformation($"HistoryManager.Save: Update process {obj.Id} in {sw.ElapsedMilliseconds} ms");
@@ -312,14 +321,15 @@ namespace dblu.Docs.Classi
                 Stopwatch sw = Stopwatch.StartNew();
                 using (SqlConnection cn = new SqlConnection(ConnectionString))
                 {
-                    var c = cn.Get<Attivita>(obj.Id);
+                    //var c = cn.Get<Attivita>(obj.Id);
+                    var c = cn.QueryFirstOrDefault<Attivita>("Select Id, Nome, Descrizione, Avvio, Fine, Assegnatario, Stato, DataC, UtenteC, DataUM, UtenteUM, IdProcesso, IdElemento, IdAllegato, JAttributi as sAttributi from Attivita where Id=@Id ", new { Id = obj.Id });
                     if (c == null)
                     {
 
                         // bres = cn.Insert<Attivita>(obj) > 0;
                         string sql = @" INSERT INTO dbo.Attivita 
     (Id, Nome, Descrizione, Avvio, Fine, Assegnatario, Stato, DataC, UtenteC, DataUM, UtenteUM, IdProcesso, IdElemento, IdAllegato, JAttributi )
-    VALUES( @Id, @Nome  , @Descrizione, @Avvio, @Fine, @UtenteAvvio, @Stato, @Diagramma,  @Versione, @DataC, @UtenteC, @DataUM, @UtenteUM, @IdElemento, @IdAllegato, @JAttributi) ";
+    VALUES( @Id, @Nome  , @Descrizione, @Avvio, @Fine, @Assegnatario, @Stato, @DataC, @UtenteC, @DataUM, @UtenteUM, @IdProcesso, @IdElemento, @IdAllegato, @sAttributi) ";
                         cn.Execute(sql, obj);
                         _logger.LogInformation($"HistoryManager.SaveActivity: Create activity {obj.Id} in {sw.ElapsedMilliseconds} ms");
                     }
@@ -340,7 +350,7 @@ namespace dblu.Docs.Classi
     ,IdProcesso = @IdProcesso
     ,IdElemento = @IdElemento
     ,IdAllegato = @IdAllegato
-    ,JAttributi = @JAttributi 
+    ,JAttributi = @sAttributi 
     WHERE  Id = @Id ";
                         cn.Execute(sql, obj); 
                         _logger.LogInformation($"HistoryManager.SaveActivity: Update activity {obj.Id} in {sw.ElapsedMilliseconds} ms");

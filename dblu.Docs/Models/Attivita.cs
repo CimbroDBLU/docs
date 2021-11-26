@@ -7,6 +7,7 @@ using Dapper.Contrib.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace dblu.Docs.Models
 {
@@ -96,11 +97,17 @@ namespace dblu.Docs.Models
         /// <summary>
         /// A json field with any attributes needed
         /// </summary>
+        [Computed]
         public ExtAttributes JAttributi
         {
             get; set;
         } = new ExtAttributes();
 
+        public string sAttributi
+        { 
+            get { return JsonConvert.SerializeObject(JAttributi);  }
+            set { JAttributi = JsonConvert.DeserializeObject<ExtAttributes>(value); }
+        }
     }
 
 }

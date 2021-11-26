@@ -2,10 +2,12 @@
 
 using Dapper;
 using Dapper.Contrib.Extensions;
+using dblu.Docs.Extensions;
 
 #else
 
 using Microsoft.EntityFrameworkCore;
+using dbluTools.Extensions;
 
 #endif
 using dblu.Docs.Models;
@@ -19,7 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using dbluTools.Extensions;
+
 
 namespace dblu.Docs.Classi
 {
@@ -108,9 +110,9 @@ namespace dblu.Docs.Classi
         //    return all;
         //}
 
-        public void  PostLog(Guid nId, TipiOggetto nType, TipoOperazione nOperation,string nUser,string nDescription,ExtAttributes Att=null)
+        public void  PostLog(Guid nId, TipiOggetto nType, TipoOperazione nOperation,string nUser,string nDescription, ExtAttributes Att=null)
         {
-            LogDoc log = new()
+            LogDoc log = new LogDoc()
             {
                 Data = DateTime.Now,
                 IdOggetto = nId,
@@ -126,7 +128,7 @@ namespace dblu.Docs.Classi
 
         public void PostLog(string nId, TipiOggetto nType, TipoOperazione nOperation, string nUser, string nDescription, ExtAttributes Att = null)
         {
-            LogDoc log = new()
+            LogDoc log = new LogDoc()
             {
                 Data = DateTime.Now,
                 IdOggetto = Guid.Parse(nId),
