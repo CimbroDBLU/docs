@@ -474,33 +474,12 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                         all = await _allMan.SalvaAsync(all, m, true);
 
-                        //-------- Memorizzo l'operazione----------------------
-                        log = new LogDoc()
-                        {
-                            IdOggetto = all.Id,
-                            TipoOggetto = TipiOggetto.ALLEGATO,
-                            Operazione = TipoOperazione.Creato,
-                            Utente = User.Identity.Name
-                        };
-                        _logMan.Salva(log, true);
-                        //-------- Memorizzo l'operazione----------------------
+                        _logMan.PostLog(all.Id, TipiOggetto.ALLEGATO, TipoOperazione.Creato, User.Identity.Name, $"Allegato creato");
                     }
                 }
 
-                //var i = await _context.SaveChangesAsync();
                 _elmMan.Salva(elemento, true);
-
-                //-------- Memorizzo l'operazione----------------------
-                log = new LogDoc()
-                {
-                    IdOggetto = elemento.Id,
-                    TipoOggetto = TipiOggetto.ELEMENTO,
-                    Operazione = TipoOperazione.Creato,
-                    Utente = User.Identity.Name
-                };
-                _logMan.Salva(log, true);
-                //-------- Memorizzo l'operazione----------------------
-
+                _logMan.PostLog(elemento.Id, TipiOggetto.ELEMENTO, TipoOperazione.Creato, User.Identity.Name, $"Elemento creato");
                 return elemento;
             }
             catch (Exception ex)
@@ -1556,19 +1535,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                 f.SetAttributo("NomeSoggetto", NomeSoggetto);
                 if (_fasMan.Salva(f, isNew) == false) return null;
 
-
-                //-------- Memorizzo l'operazione----------------------
-                LogDoc log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = f.Id,
-                    TipoOggetto = TipiOggetto.FASCICOLO,
-                    Utente = User.Identity.Name
-                };
-                if (isNew) log.Operazione = TipoOperazione.Creato; else log.Operazione = TipoOperazione.Modificato;
-                _logMan.Salva(log, true);
-                //-------- Memorizzo l'operazione----------------------
-
+                _logMan.PostLog(f.Id, TipiOggetto.FASCICOLO, (isNew) ? TipoOperazione.Creato : TipoOperazione.Modificato, User.Identity.Name, $"Fascicolo "+ ((isNew)?"creato":"modificato"));
+                
                 //if (Allegato.IdElemento == null)
                 //{
                 //crea nuovo elemento e e assegna alla mail ?
@@ -1613,34 +1581,13 @@ namespace dblu.Portale.Plugin.Docs.Services
                 e.SetAttributo("DataRichiesta", e.GetAttributo("Data"));
                 if (_elmMan.Salva(e, isNew) == false) return null;
 
-                //-------- Memorizzo l'operazione----------------------
-                log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = e.Id,
-                    TipoOggetto = TipiOggetto.ELEMENTO,
-                    Operazione = TipoOperazione.Creato,
-                    Utente = User.Identity.Name
-                };
-                _logMan.Salva(log, true);
-                //-------- Memorizzo l'operazione----------------------
-
+                _logMan.PostLog(e.Id, TipiOggetto.ELEMENTO,  TipoOperazione.Creato, User.Identity.Name, $"Elemento creato");
 
                 //var i = await _context.SaveChangesAsync(cancel);
                 Allegato.Stato = StatoAllegato.Elaborato;
                 if (_allMan.Salva(Allegato, false) == false) return null;
 
-                //-------- Memorizzo l'operazione----------------------
-                log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = Allegato.Id,
-                    TipoOggetto = TipiOggetto.ALLEGATO,
-                    Operazione = TipoOperazione.Elaborato,
-                    Utente = User.Identity.Name
-                };
-                _logMan.Salva(log, true);
-                //-------- Memorizzo l'operazione----------------------
+                _logMan.PostLog(Allegato.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato elaborato");
 
                 //estrae i file dalla mail presenti in lista e li assegna all'elemento
                 var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, User.Identity.Name, cancel);
@@ -1702,18 +1649,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 //var i = await _context.SaveChangesAsync(cancel);
                 var i = _elmMan.Salva(e, true);
 
-
-                //-------- Memorizzo l'operazione----------------------
-                LogDoc log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = e.Id,
-                    TipoOggetto = TipiOggetto.ELEMENTO,
-                    Operazione = TipoOperazione.Creato,
-                    Utente = User.Identity.Name
-                };
-                _logMan.Salva(log, true);
-                //-------- Memorizzo l'operazione----------------------
+                _logMan.PostLog(e.Id, TipiOggetto.ELEMENTO, TipoOperazione.Creato, User.Identity.Name, $"Elemento creato");
 
 
                 var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, User.Identity.Name, cancel);
@@ -1779,18 +1715,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 f.SetAttributo("NomeSoggetto", NomeSoggetto);
                 if (_fasMan.Salva(f, isNew) == false) return null;
 
-
-                //-------- Memorizzo l'operazione----------------------
-                LogDoc log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = f.Id,
-                    TipoOggetto = TipiOggetto.FASCICOLO,
-                    Utente = utente
-                };
-                if (isNew) log.Operazione = TipoOperazione.Creato; else log.Operazione = TipoOperazione.Modificato;
-                _logMan.Salva(log, true);
-                //-------- Memorizzo l'operazione----------------------
+                _logMan.PostLog(f.Id, TipiOggetto.FASCICOLO, (isNew) ? TipoOperazione.Creato : TipoOperazione.Modificato, User.Identity.Name, $"Fascicolo " + ((isNew) ? "creato" : "modificato"));
 
                 var e = new Elementi();
                 e.Tipo = TipoElemento;
@@ -1830,34 +1755,15 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 if (_elmMan.Salva(e, isNew) == false) return null;
 
-                //-------- Memorizzo l'operazione----------------------
-                log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = e.Id,
-                    TipoOggetto = TipiOggetto.ELEMENTO,
-                    Operazione = TipoOperazione.Creato,
-                    Utente = utente
-                };
-                _logMan.Salva(log, true);
-                //-------- Memorizzo l'operazione----------------------
+                _logMan.PostLog(e.Id, TipiOggetto.ELEMENTO, TipoOperazione.Creato, User.Identity.Name, $"Elemento creato");
 
 
                 //var i = await _context.SaveChangesAsync(cancel);
                 Allegato.Stato = StatoAllegato.Elaborato;
                 if (_allMan.Salva(Allegato, false) == false) return null;
 
-                //-------- Memorizzo l'operazione----------------------
-                log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = Allegato.Id,
-                    TipoOggetto = TipiOggetto.ALLEGATO,
-                    Operazione = TipoOperazione.Elaborato,
-                    Utente = utente
-                };
-                _logMan.Salva(log, true);
-                //-------- Memorizzo l'operazione----------------------
+                _logMan.PostLog(Allegato.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato elaborato");
+
 
                 //estrae i file dalla mail presenti in lista e li assegna all'elemento
                 var estrai = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, false, utente, cancel);
@@ -1907,17 +1813,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     Allegato.Stato = StatoAllegato.Elaborato;
                     var i = _allMan.Salva(Allegato, false);
 
-                    //-------- Memorizzo l'operazione----------------------
-                    LogDoc log = new LogDoc()
-                    {
-                        Data = DateTime.Now,
-                        IdOggetto = Allegato.Id,
-                        TipoOggetto = TipiOggetto.ALLEGATO,
-                        Operazione = TipoOperazione.Elaborato,
-                        Utente = User.Identity.Name
-                    };
-                    _logMan.Salva(log, true);
-                    //-------- Memorizzo l'operazione----------------------
+                    _logMan.PostLog(Allegato.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato elaborato");
 
                     //estrae i file dalla mail presenti in lista e li assegna all'elemento
                     Allegati all = await EstraiAllegatiEmail(Allegato, ElencoFile, AllegaEmail, Descrizione, tipoAll, true, User.Identity.Name, cancel);
@@ -2411,20 +2307,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                             newmessage.Body = builder.ToMessageBody();
                             await client.SendAsync(newmessage, c);
 
-                            //-------- Memorizzo l'operazione----------------------
-                            LogDoc log = new LogDoc()
-                            {
-                                Data = DateTime.Now,
-                                IdOggetto = al.Id,
-                                TipoOggetto = TipiOggetto.ALLEGATO,
-                                Operazione = TipoOperazione.Inoltrato,
-                                Utente = User.Identity.Name,
-                                Descrizione = Oggetto
-                            };
-                            log.JAttributi.Add("destinatari", Indirizzi);
-                            log.JAttributi.Add("cc", cc);
-                            _logMan.Salva(log, true);
-                            //-------- Memorizzo l'operazione----------------------
+                            _logMan.PostLog(al.Id, TipiOggetto.ALLEGATO, TipoOperazione.Inoltrato, User.Identity.Name,$"Inoltrata email {Oggetto}",new dbluTools.Extensions.ExtAttributes() { { "to", Indirizzi }, { "cc", cc } });
 
                             Allegati newall = new Allegati()
                             {
@@ -2458,17 +2341,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 al.Stato = StatoAllegato.Chiuso;
                                 //await _context.SaveChangesAsync();
                                 _allMan.Salva(al, false);
-                                //-------- Memorizzo l'operazione----------------------
-                                log = new LogDoc()
-                                {
-                                    Data = DateTime.Now,
-                                    IdOggetto = al.Id,
-                                    TipoOggetto = TipiOggetto.ALLEGATO,
-                                    Operazione = TipoOperazione.Chiuso,
-                                    Utente = User.Identity.Name
-                                };
-                                _logMan.Salva(log, true);
-                                //-------- Memorizzo l'operazione----------------------
+                                _logMan.PostLog(al.Id, TipiOggetto.ALLEGATO, TipoOperazione.Chiuso, User.Identity.Name, $"Allegato chiuso");
 
                             }
                         }
@@ -2621,16 +2494,8 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             newmessage.Body = builder.ToMessageBody();
                             await client.SendAsync(newmessage, c);
-                            //-------- Memorizzo l'operazione----------------------
-                            LogDoc log = new LogDoc()
-                            {
-                                Data = DateTime.Now,
-                                IdOggetto = al.Id,
-                                TipoOggetto = TipiOggetto.ALLEGATO,
-                                Operazione = TipoOperazione.Risposto,
-                                Utente = User.Identity.Name
-                            };
-                            _logMan.Salva(log, true);
+
+                            _logMan.PostLog(al.Id, TipiOggetto.ALLEGATO, TipoOperazione.Risposto, User.Identity.Name, $"Risposto ad email {Oggetto}", new dbluTools.Extensions.ExtAttributes() { { "to", to }, { "cc", cc } });
 
 
                             Allegati newall = new Allegati()
@@ -2673,6 +2538,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                         Utente = User.Identity.Name
                                     };
                                     _logMan.Salva(logC, true);
+                                    _logMan.PostLog(al.Id, TipiOggetto.ALLEGATO, TipoOperazione.Chiuso, User.Identity.Name, $"Allegato chiuso");
                                 }
 
                             }
@@ -2707,12 +2573,15 @@ namespace dblu.Portale.Plugin.Docs.Services
             RisultatoAzione res = new RisultatoAzione();
             try
             {
+                Allegati all;
+                string OldSource = "";
                 using (SqlConnection cn = new SqlConnection(_context.Connessione))
                 {
                     //2021 06 30  aggiunto cambio stato da smistamento a attivo
                     //var n = cn.Execute("UPDATE allegati SET Origine=@Origine WHERE Id=@Id ",
                     //    new { Origine = NomeServer, Id = IdAllegato });
-                    Allegati all = _allMan.Get(IdAllegato);
+                    all = _allMan.Get(IdAllegato);
+                    OldSource = all.Origine;
                     all.Origine = NomeServer;
                     if (all.Stato == StatoAllegato.DaSmistare)
                     {
@@ -2731,16 +2600,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                     }
                 }
 
-                //-------- Memorizzo l'operazione----------------------
-                LogDoc log = new LogDoc()
-                {
-                    IdOggetto = Guid.Parse(IdAllegato),
-                    TipoOggetto = TipiOggetto.ALLEGATO,
-                    Operazione = TipoOperazione.Spostato,
-                    Utente = User.Identity.Name
-                };
-                _logMan.Salva(log, true);
-                //-------- Memorizzo l'operazione----------------------
+                _logMan.PostLog(Guid.Parse(IdAllegato), TipiOggetto.ALLEGATO, TipoOperazione.Spostato, User.Identity.Name, $"Allegato spostato da {OldSource} a {all.Origine}", new dbluTools.Extensions.ExtAttributes() { { "PrevSource", OldSource }, { "Source", all.Origine } });
+
             }
             catch (Exception ex)
             {
@@ -3072,18 +2933,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     al.Stato = StatoAllegato.Elaborato;
                 }
                 res.Successo = _allMan.Salva(al, false);
-
-                //-------- Memorizzo l'operazione----------------------
-                LogDoc log = new LogDoc()
-                {
-                    IdOggetto = Guid.Parse(IdAllegato),
-                    TipoOggetto = TipiOggetto.ALLEGATO,
-                    Utente = User.Identity.Name
-                };
-                log.Operazione = TipoOperazione.Riaperto;
-                _logMan.Salva(log, true);
-                //-------- Memorizzo l'operazione----------------------
-
+                _logMan.PostLog(Guid.Parse(IdAllegato), TipiOggetto.ALLEGATO, TipoOperazione.Riaperto, User.Identity.Name, $"Allegato riaperto");
             }
             catch (Exception ex)
             {
@@ -3100,10 +2950,10 @@ namespace dblu.Portale.Plugin.Docs.Services
             RisultatoAzione res = new RisultatoAzione();
             try
             {
-
+                Allegati al = _allMan.Get(IdAllegato);
                 if (EliminaDaServer)
                 {
-                    Allegati al = _allMan.Get(IdAllegato);
+              
 
                     MemoryStream eml = new MemoryStream();
                     eml = await _allMan.GetFileAsync(al.Id.ToString());
@@ -3172,15 +3022,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (_allMan.Cancella(IdAllegato))
                 {
                     res.Successo = true;
-                    //-------- Memorizzo l'operazione----------------------
-                    _logMan.Salva(new LogDoc
-                    {
-                        IdOggetto = Guid.Parse(IdAllegato),
-                        TipoOggetto = TipiOggetto.ALLEGATO,
-                        Operazione = TipoOperazione.Cancellato,
-                        Utente = User.Identity.Name
-                    }, true);
-                    //-------- Memorizzo l'operazione----------------------
+                    _logMan.PostLog(al.Id, TipiOggetto.ALLEGATO, TipoOperazione.Cancellato, User.Identity.Name, $"Allegato [{al.Descrizione}] rimosso", new() { { "1", al.Chiave1 }, { "2", al.Chiave2 }, { "3", al.Chiave3 }, { "4", al.Chiave4 }, { "5", al.Chiave5 } });
                 }
 
             }
@@ -3201,18 +3043,11 @@ namespace dblu.Portale.Plugin.Docs.Services
                 res.Successo = true;
                 using (SqlConnection cn = new SqlConnection(_context.Connessione))
                 {
-
+                    Elementi el = _elmMan.Get(IdElemento, Revisione);
                     if (_elmMan.Cancella(IdElemento, Revisione))
                     {
                         res.Successo = true;
-
-                        _logMan.Salva(new LogDoc
-                        {
-                            IdOggetto = Guid.Parse(IdElemento),
-                            TipoOggetto = TipiOggetto.ELEMENTO,
-                            Operazione = TipoOperazione.Cancellato,
-                            Utente = User.Identity.Name
-                        }, true);
+                        _logMan.PostLog(IdElemento, TipiOggetto.ELEMENTO, TipoOperazione.Cancellato, User.Identity.Name, $"Elemento [{el.Descrizione}] rimosso", new() { { "1", el.Chiave1 }, { "2", el.Chiave2 }, { "3", el.Chiave3 }, { "4", el.Chiave4 }, { "5", el.Chiave5 } });
                     }
                 }
             }
@@ -3415,16 +3250,9 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (_fasMan.Salva(f, isNew) == false) return null;
 
                 _logger.LogDebug($"MailService.CreateItemDossier : stage 2 incremental {sw.ElapsedMilliseconds} ms");
+
                 ///2) LOGGO
-                LogDoc log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = f.Id,
-                    TipoOggetto = TipiOggetto.FASCICOLO,
-                    Utente = User.Identity.Name
-                };
-                if (isNew) log.Operazione = TipoOperazione.Creato; else log.Operazione = TipoOperazione.Modificato;
-                _logMan.Salva(log, true);
+                _logMan.PostLog(f.Id, TipiOggetto.FASCICOLO, (isNew) ? TipoOperazione.Creato : TipoOperazione.Modificato, User.Identity.Name, $"Fascicolo " + ((isNew) ? "creato" : "modificato"));
 
                 _logger.LogDebug($"MailService.CreateItemDossier : stage 3 incremental {sw.ElapsedMilliseconds} ms");
                 ///3) ELEMENTO
@@ -3459,16 +3287,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 ///4) LOGGO
                 _logger.LogDebug($"MailService.CreateItemDossier : stage 4 incremental {sw.ElapsedMilliseconds} ms");
-                log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = e.Id,
-                    TipoOggetto = TipiOggetto.ELEMENTO,
-                    Operazione = TipoOperazione.Creato,
-                    Utente = User.Identity.Name
-                };
-                _logMan.Salva(log, true);
-
+                _logMan.PostLog(e.Id, TipiOggetto.ELEMENTO, TipoOperazione.Cancellato, User.Identity.Name, $"Elemento creato");
 
                 ///5) SALVO ALLEGATO COME ELABORATO
                 _logger.LogDebug($"MailService.CreateItemDossier : stage 5 incremental {sw.ElapsedMilliseconds} ms");
@@ -3477,15 +3296,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 ///6) LOGGO
                 _logger.LogDebug($"MailService.CreateItemDossier : stage 6 incremental {sw.ElapsedMilliseconds} ms");
-                log = new LogDoc()
-                {
-                    Data = DateTime.Now,
-                    IdOggetto = Allegato.Id,
-                    TipoOggetto = TipiOggetto.ALLEGATO,
-                    Operazione = TipoOperazione.Elaborato,
-                    Utente = User.Identity.Name
-                };
-                _logMan.Salva(log, true);
+                _logMan.PostLog(Allegato.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato elaborato");
 
                 _logger.LogDebug($"MailService.CreateItemDossier : stage 7 incremental {sw.ElapsedMilliseconds} ms");
                 /// 7) CREO UNA ALLEGATO DI TIPO FILE 
@@ -3581,15 +3392,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     var i = _allMan.Salva(MailAttach, false);
 
                     /// 2) LOGGO
-                    LogDoc log = new LogDoc()
-                    {
-                        Data = DateTime.Now,
-                        IdOggetto = MailAttach.Id,
-                        TipoOggetto = TipiOggetto.ALLEGATO,
-                        Operazione = TipoOperazione.Elaborato,
-                        Utente = User.Identity.Name
-                    };
-                    _logMan.Salva(log, true);
+                    _logMan.PostLog(MailAttach.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato elaborato");
 
                     //2.1) Aggiungo gli allegati che sono selezionati
                     await ExtractAttachments(MailAttach, Attachs, Description, tipoAll);
