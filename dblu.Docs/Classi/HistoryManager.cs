@@ -50,8 +50,7 @@ namespace dblu.Docs.Classi
         public HistoryManager(string nConnectionString, ILogger logger)
         {
             ConnectionString = nConnectionString;
-            _logger = logger;
-            SqlMapper.AddTypeHandler(typeof(ExtAttributesTypeHandler), new ExtAttributesTypeHandler());
+            _logger = logger;          
         }
 
         /// <summary>
@@ -105,7 +104,7 @@ namespace dblu.Docs.Classi
             try
             {
                 Stopwatch sw = Stopwatch.StartNew();
-                var query = "SELECT * FROM Processi LEFT OUTER JOIN Attivita ON Attivita.IdProcesso = Processi.Id where Processi.IdElemento=@IdElemento order by Attivita.Avvio";
+                var query = "SELECT P.Id, P.Nome, P.Descrizione, P.Avvio, P.Fine, P.UtenteAvvio, P.Stato, P.Diagramma, P.Versione, P.DataC, P.UtenteC, P.DataUM, P.UtenteUM, P.IdElemento, P.IdAllegato, P.JAttributi  as sAttributi, A.Id, A.Nome, A.Descrizione, A.Avvio, A.Fine, A.Assegnatario, A.Stato, A.DataC, A.UtenteC, A.DataUM, A.UtenteUM, A.IdProcesso, A.IdElemento, A.IdAllegato, A.JAttributi as sAttributi FROM Processi P LEFT OUTER JOIN Attivita A ON A.IdProcesso = P.Id where P.IdElemento=@IdElemento order by A.Avvio";
                 using (SqlConnection cn = new SqlConnection(ConnectionString))
                 {
                     cn.Query<Processi, Attivita, Processi>(query, (z, m) =>
