@@ -9,21 +9,22 @@
 
 <div class="row">
     <div class="col-10">
-        <label>Descrizione :</label> @(nProcess?.Descrizione??"")
+        <label>Descrizione :</label>&nbsp; @(nProcess?.Descrizione??"")
     </div>
                     @{
                 string s = "";
                 var Color = "#FFFFFF";
                 switch(nProcess?.Stato.ToUpper()??"")
                 {
-                    case "COMPLETED": s = "Completato"; Color = "#66bb6a";break;
-                    case "ACTIVE": s = "Attivo";Color = "#fdd835";break;
-                    case "EXTERNALLY_TERMINATED": s = "Terminato"; Color = "#ef5350";break;
+                    case "IMPORTED": s = "IMPORTATO"; Color = "#00b0ff";break;
+                    case "COMPLETED": s = "COMPLETATO"; Color = "#66bb6a";break;
+                    case "ACTIVE": s = "ATTIVO";Color = "#fdd835";break;
+                    case "EXTERNALLY_TERMINATED": s = "TERMINATO"; Color = "#ef5350";break;
                 }
                 
             }
     <div style="height: 30px;display: flex;justify-content: center;align-items: center; font-weight: bold;color:black;background-color:@Color" class="col-2">
-        <label>Stato: </label> @s
+        <label class="mr-2">Stato: </label> @s
     </div>
 </div>
 <div class="mt-2">
@@ -37,12 +38,24 @@
             <GridColumn Width="250" Field=@nameof(Attivita.Descrizione) HeaderText="Descrizione" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true"></GridColumn>
             <GridColumn Width="100" Field=@nameof(Attivita.Assegnatario) HeaderText="In carico a" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true">
                     <Template>
-                        @{
+                    @{
                         var ID = (context as Attivita).Assegnatario;
-                        var sign = Users.FirstOrDefault(d => d.UserId == ID);
-                        var singtxt = $"{sign?.Name} {sign?.LastName}";
-                        @singtxt
-
+                        if (ID == null)
+                        {
+                            @("-")
+                        }
+                        else
+                        {
+                            var sign = Users.FirstOrDefault(d => d.UserId.ToUpper() == ID.ToUpper());
+                            if (sign != null && !string.IsNullOrEmpty(sign.Name) && !string.IsNullOrEmpty(sign.LastName))
+                            {
+                                @($"{sign?.Name} {sign?.LastName}")
+                            }
+                            else
+                            {
+                                @ID
+                            }
+                        }
                     }
                 </Template>
             </GridColumn>

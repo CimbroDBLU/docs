@@ -122,7 +122,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             List<viewAllegati> doc = null;
             using (SqlConnection cn = new SqlConnection(_context.Connessione))
             {
-                doc = cn.Query<viewAllegati>($"select * from [{GetNomeVista("vALLEGATO")}] where IdElemento=@IdElemento and Tipo='FILE' ",
+                doc = cn.Query<viewAllegati>($"select * from [{GetNomeVista("vALLEGATO")}] where IdElemento=@IdElemento ",
                     new { IdElemento = IdElemento.ToString() }).ToList();
             }
 

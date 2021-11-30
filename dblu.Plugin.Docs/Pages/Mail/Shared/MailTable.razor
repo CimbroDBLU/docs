@@ -346,11 +346,15 @@
     /// <param name="args"></param>
     public async void RowDeselected(RowDeselectEventArgs<AllegatoEmail> args)
     {
-        if ((await Grid.GetSelectedRecordsAsync()).Count == 0)
-        {
-            _Logger.LogDebug($"MailTable.RowDeselected: Deselected Attach {args.Data.Id}");
-            await OnSelectAttachment.InvokeAsync(null);
-        }
+        // Commentata per San Giacomo, anche se secondo me starebbe meglio  de-commentata...
+        // Andrea Ghizzo ha paura che gli utente facciano doppio click per selezionare e non vedendo la mail selezionata muoiano.
+
+
+        //if ((await Grid.GetSelectedRecordsAsync()).Count == 0)
+        //{
+        //    _Logger.LogDebug($"MailTable.RowDeselected: Deselected Attach {args.Data.Id}");
+        //    await OnSelectAttachment.InvokeAsync(null);
+        //}
     }
 
     /// <summary>

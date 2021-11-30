@@ -99,7 +99,7 @@
                             <div>Allegati</div>
                         </HeaderTemplate>
                         <ContentTemplate>
-                            <AttachmentsTable nEnableRemove="@IsAdmin" nAttachments="@Attachments" OnSelectAttachment="OnSelectAttach" OnAddRequested="OnAddAttach" OnOpenAttachment="OnOpenAttach" OnDownloadAttachment="OnDownloadAttach" OnRemoveAttachment="OnRemoveAttach"></AttachmentsTable>
+                            <AttachmentsTable  @ref="@AttGrid" nEnableRemove="@IsAdmin" nItem="@nItem" OnSelectAttachment="OnSelectAttach" OnAddRequested="OnAddAttach" OnOpenAttachment="OnOpenAttach" OnDownloadAttachment="OnDownloadAttach" OnRemoveAttachment="OnRemoveAttach"></AttachmentsTable>
                         </ContentTemplate>
                     </AccordionItem>
                 </AccordionItems>
@@ -119,6 +119,9 @@
     [Parameter]
     public Elementi nItem { get; set; }
 
+    /// <summary>
+    /// Show metadata of the items
+    /// </summary>
     [Parameter]
     public bool nShowMetadata { get; set; } = false;
 
@@ -128,46 +131,32 @@
     private string SelAttach { get; set; } = "";
 
     /// <summary>
-    /// List of the attachments own by this item
-    /// </summary>
-    public ObservableCollection<viewAllegati> Attachments { get; set; } = new();
-
-    /// <summary>
     /// Get the correct css class depending if metadata are required
     /// </summary>
     private string ColSize => (nShowMetadata) ? "col-7" : "col-12";
 
     /// <summary>
-    /// On Init component
+    /// Reference to the attachments table
     /// </summary>
-    protected override void OnInitialized()
-    {
-        Stopwatch Sw = Stopwatch.StartNew();
-        Attachments = new ObservableCollection<viewAllegati>(_AttachService.GetvAllegatiElemento(nItem.Id));
-
-        SelAttach = Attachments?.FirstOrDefault(x => x.Tipo == "FILE").IdAllegato.ToString();
-
-        _Logger.LogInformation($"EditItemMetadata.OnInitialized: Loaded Attachments in {Sw.ElapsedMilliseconds} ms");
-
-    }
+    private AttachmentsTable AttGrid{  get;  set; }
 
     /// <summary>
     /// Save the current Attach id in memory
     /// </summary>
     /// <param name="Attach"></param>
-    public async void OnSelectAttach(Guid Attach)
+    public async void OnSelectAttach(viewAllegati Attach)
     {
-        SelAttach = Attach.ToString();
+        SelAttach = Attach.IdAllegato.ToString();
     }
 
     /// <summary>
     /// Open the attachmnent
     /// </summary>
     /// <param name="Attach"></param>
-    public async void OnOpenAttach(Guid Attach)
+    public async void OnOpenAttach(viewAllegati Attach)
     {
         await _SessionStore.SetAsync("Referrer", $"/Docs/Item/{nItem.Id}");
-        _NavigationManager.NavigateTo($"/Docs/Attachment/{Attach.ToString()}");
+        _NavigationManager.NavigateTo($"/Docs/Attachment/{Attach.IdAllegato.ToString()}");
     }
 
     /// <summary>
@@ -179,10 +168,9 @@
     /// Download the attachment using Mailview controller
     /// </summary>
     /// <param name="Attach"></param>
-    public async void OnDownloadAttach(Guid Attach)
-    {
-        viewAllegati A = Attachments.ToList().FirstOrDefault(z => z.IdAllegato == Attach);
-        _NavigationManager.NavigateTo($"/MailView/DownloadFile?IdAllegato={A.IdAllegato}&NomeFile={A.NomeFile}", true);
+    public async void OnDownloadAttach(viewAllegati Attach)
+    {        
+        _NavigationManager.NavigateTo($"/MailView/DownloadFile?IdAllegato={Attach.IdAllegato}&NomeFile={Attach.NomeFile}", true);
     }
 
     /// <summary>
@@ -215,22 +203,19 @@
 
         _Logger.LogInformation($"EditItem.OnAddAttach: Uploaded {files.Count} files in {Sw.ElapsedMilliseconds} ms");
 
-        Attachments.Clear();
-        foreach (var A in _AttachService.GetvAllegatiElemento(nItem.Id))
-            Attachments.Add(A);
+        AttGrid.Refresh();
     }
 
     /// <summary>
     /// Remove an attachment on the current selected item
     /// </summary>
     /// <param name="Attach"></param>
-    public async void OnRemoveAttach(Guid Attach)
+    public async void OnRemoveAttach(viewAllegati Attach)
     {
         Stopwatch Sw = Stopwatch.StartNew();
-
-        var A = Attachments.ToList().FirstOrDefault(z => z.IdAllegato == Attach);
-        _AttachService._allMan.Cancella(A.IdAllegato);
-        Attachments.Remove(A);
+       
+        _AttachService._allMan.Cancella(Attach.IdAllegato);
+       AttGrid.Refresh();
 
         _Logger.LogInformation($"EditItem.OnRemoveAttach: Removed attached in {Sw.ElapsedMilliseconds} ms");
     }

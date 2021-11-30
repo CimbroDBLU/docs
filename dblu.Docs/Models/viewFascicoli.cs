@@ -64,6 +64,9 @@ namespace dblu.Docs.Models
         public string Campo8 { get; set; }
         public string Campo9 { get; set; }
         public string Campo10 { get; set; }
+        public string BackColor { get; set; }
+        public string ForeColor { get; set; }
+        public string ColorColumn { get; set; }
         public DateTime DataC { get; set; }
         public string UtenteC { get; set; }
         public DateTime DataUM { get; set; }

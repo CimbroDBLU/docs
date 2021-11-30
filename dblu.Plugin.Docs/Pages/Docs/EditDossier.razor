@@ -129,11 +129,11 @@
                     </div>
                 </div>
                 <div class="form-group row">
-                    <div style="align-self: auto;" class="col-6">
+                   <div style="align-self: auto;" class="col-6">
                         <ItemsTable nItems="@Items" OnOpenItem="OnEditItem" OnSelectItem="OnSelItem"></ItemsTable>
                     </div>
                     <div style="align-self: auto;" class="col-6">
-                        <AttachmentsTable nEnableRemove="@IsAdmin" OnAddRequested="OnAddAttach" OnRemoveAttachment="OnRemoveAttach" nAttachments="@Attachments" OnOpenAttachment="OnEditAttach" OnSelectAttachment="OnSelAttach" nEnableDownload="false"></AttachmentsTable>
+                        <AttachmentsTable @ref="@AttGrid" nEnableRemove="@IsAdmin" OnAddRequested="OnAddAttach" OnRemoveAttachment="OnRemoveAttach" nItem="@Item" OnOpenAttachment="OnEditAttach" OnSelectAttachment="OnSelAttach" nEnableDownload="false"></AttachmentsTable>
                     </div>
                 </div>
             </CardContent>
@@ -183,14 +183,19 @@
     private ObservableCollection<viewElementi> Items { get; set; } = new();
 
     /// <summary>
-    /// List of Attachment of this dossier
+    /// Reference to the attachments table
     /// </summary>
-    private ObservableCollection<viewAllegati> Attachments { get; set; } = new();
+    private AttachmentsTable AttGrid{  get;  set; }
 
     /// <summary>
     /// Current selected Item ID
     /// </summary>
     private string ItemID { get; set; }
+
+    /// <summary>
+    /// Selected item
+    /// </summary>
+    private Elementi Item { get; set; } = null;
 
     /// <summary>
     /// Current selected Attach ID
@@ -224,15 +229,15 @@
         string Url=_AttachService._elmMan.GetTipoElemento(item.Tipo).ViewAttributi;
         if (Url.StartsWith("blz:/"))
         {
-           await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
-           Url = $"{Url.Replace("blz:/", "")}/{item.Id}/REVIEW";
-           _NavigationManager.NavigateTo(Url);
+            await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
+            Url = $"{Url.Replace("blz:/", "")}/{item.Id}/REVIEW";
+            _NavigationManager.NavigateTo(Url);
         }
         else
         {
-        await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
-        _NavigationManager.NavigateTo($"/Docs/Item/{Id.ToString()}");
-                }
+            await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
+            _NavigationManager.NavigateTo($"/Docs/Item/{Id.ToString()}");
+        }
     }
 
     /// <summary>
@@ -242,28 +247,32 @@
     private async void OnSelItem(Guid Id)
     {
         ItemID = Id.ToString();
-        Attachments = new ObservableCollection<viewAllegati>(_AttachService.GetvAllegatiElemento(Id));
+        Item =_AttachService._elmMan.Get(Id.ToString(),0);
     }
 
-    private async void OnEditAttach(Guid Id)
+    /// <summary>
+    /// Open the edit page
+    /// </summary>
+    /// <param name="Attach"></param>
+    private async void OnEditAttach(viewAllegati Attach)
     {
         await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
-       _NavigationManager.NavigateTo($"/Docs/Attachment/{Id.ToString()}");
+        _NavigationManager.NavigateTo($"/Docs/Attachment/{Attach.IdAllegato.ToString()}");
     }
 
     /// <summary>
     /// Save selected attachments
     /// </summary>
-    /// <param name="Id"></param>
-    private async void OnSelAttach(Guid Id)
+    /// <param name="A"></param>
+    private void OnSelAttach(viewAllegati A)
     {
-        AttachID = Id.ToString();
+        AttachID = A.IdAllegato.ToString();
     }
 
     /// <summary>
     /// Go back to the main Dossier view
     /// </summary>
-    private async void GoBack()
+    private void GoBack()
     {
         _NavigationManager.NavigateTo($"/Docs/Dossiers");
     }
@@ -307,27 +316,23 @@
             };
 
             await _AttachService._allMan.SalvaAsync(A, f.Data, true);
+            AttGrid.Refresh();
             _Logger.LogInformation($"EditDossier.OnAddAttach: {A.NomeFile} has been added");
         }
 
         _Logger.LogInformation($"EditDossier.OnAddAttach: Uploaded {files.Count} files in {Sw.ElapsedMilliseconds} ms");
-
-        Attachments.Clear();
-        foreach (var A in _AttachService.GetvAllegatiElemento(Guid.Parse(ItemID)))
-            Attachments.Add(A);
     }
 
     /// <summary>
     /// Remove an attachment on the current selected item
     /// </summary>
     /// <param name="Attach"></param>
-    public async void OnRemoveAttach(Guid Attach)
+    public void OnRemoveAttach(viewAllegati A)
     {
         Stopwatch Sw = Stopwatch.StartNew();
 
-        var A = Attachments.ToList().FirstOrDefault(z => z.IdAllegato == Attach);
-        _AttachService._allMan.Cancella(A.IdAllegato);
-        Attachments.Remove(A);
+        _AttachService._allMan.Cancella(A.IdAllegato);      
+        AttGrid.Refresh();
 
         _Logger.LogInformation($"EditDossier.OnRemoveAttach: Removed attached in {Sw.ElapsedMilliseconds} ms");
     }

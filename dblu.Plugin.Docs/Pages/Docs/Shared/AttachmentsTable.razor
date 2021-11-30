@@ -5,6 +5,7 @@
 @using dblu.Docs.Classi
 @using dblu.Docs.Models
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
+@inject ILogger<AttachmentsTable> _Logger
 
 <style>
 
@@ -14,7 +15,7 @@
 </style>
 
 
-<SfGrid @ref="@Grid" ID="@($"Attachments_{nID}")" EnablePersistence="@(nID != "unset")" SelectedRowIndex="0" DataSource="@nAttachments" AllowTextWrap="true" AllowPaging="true" Toolbar="@Tool">
+<SfGrid @ref="@Grid" ID="@($"Attachments_{nID}")" EnablePersistence="@(nID != "unset")" SelectedRowIndex=0 DataSource="@ShowedAttachments" AllowTextWrap="true" AllowPaging="true" Toolbar="@Tool">
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSize="nPageSize"></GridPageSettings>
     <GridEvents TValue="viewAllegati" RowSelected="OnRecordSelect" OnToolbarClick="OnToolbarClick" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
@@ -38,8 +39,8 @@
             <GridColumn HeaderTextAlign=TextAlign.Left HeaderText="" Width="60">
                 <Template>
                     @{
-                        var IDd = (context as viewAllegati).IdAllegato;
-                        <SfButton CssClass="smallb" OnClick="() => OnDownload(IDd)" HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Download" } })" IconCss="e_fa fas fa-download"></SfButton>
+                        var Attach = (context as viewAllegati);
+                        <SfButton CssClass="smallb" OnClick="() => OnDownload(Attach)" HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Download" } })" IconCss="e_fa fas fa-download"></SfButton>
                     }
                 </Template>
             </GridColumn>
@@ -50,8 +51,8 @@
             <GridColumn HeaderTextAlign=TextAlign.Left HeaderText="" Width="60">
                 <Template>
                     @{
-                        var ID = (context as viewAllegati).IdAllegato;
-                        <SfButton CssClass="smallb" OnClick="() => OnOpen(ID)" HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Apri" } })" IconCss="e_fa fa-folder-open"></SfButton>
+                         var Attach = (context as viewAllegati);
+                        <SfButton CssClass="smallb" OnClick="() => OnOpen(Attach)" HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Apri" } })" IconCss="e_fa fa-folder-open"></SfButton>
                     }
                 </Template>
             </GridColumn>
@@ -103,40 +104,56 @@
     public int nPageSize { get; set; } = 4;
 
     /// <summary>
-    /// Attachments list
+    /// Item  that contains the attachs
     /// </summary>
     [Parameter]
-    public ObservableCollection<viewAllegati> nAttachments { get; set; } = new();
+    public Elementi nItem { get; set; }
+
+    /// <summary>
+    /// Attachments (all)
+    /// </summary>
+    private List<viewAllegati> Attachments { get; set; } = new();
+
+    /// <summary>
+    /// Attachments current showed
+    /// </summary>
+    private List<viewAllegati> ShowedAttachments { get; set; } = new();
 
     /// <summary>
     /// Fires when open an attachment
     /// </summary>
     [Parameter]
-    public EventCallback<Guid> OnOpenAttachment { get; set; }
+    public EventCallback<viewAllegati> OnOpenAttachment { get; set; }
 
     /// <summary>
     /// Fires when an attach is selected
     /// </summary>
     [Parameter]
-    public EventCallback<Guid> OnSelectAttachment { get; set; }
+    public EventCallback<viewAllegati> OnSelectAttachment { get; set; }
 
     /// <summary>
     /// Fire on download attach
     /// </summary>
     [Parameter]
-    public EventCallback<Guid> OnDownloadAttachment { get; set; }
+    public EventCallback<viewAllegati> OnDownloadAttachment { get; set; }
 
     /// <summary>
     /// Fires on remove attach
     /// </summary>
     [Parameter]
-    public EventCallback<Guid> OnRemoveAttachment { get; set; }
+    public EventCallback<viewAllegati> OnRemoveAttachment { get; set; }
 
     /// <summary>
     /// Fire when add an attach is requested
     /// </summary>
     [Parameter]
     public EventCallback<List<dblu.Portale.Core.UI.UploadFilesDialog.UploadedFile>> OnAddRequested { get; set; }
+
+    /// <summary>
+    /// Show all attachments  (also eml/zip normally hidden)
+    /// </summary>
+    [Parameter]
+    public  bool nShowAll { get; set; } = false;
 
     /// <summary>
     /// Reference to the GRID
@@ -159,6 +176,30 @@
     private bool ShowConfirm { get; set; } = false;
 
     /// <summary>
+    /// Render fragment for drawing a button into a toogle butto into bar
+    /// </summary>
+    private RenderFragment Button =>  
+    @<div style="display:flex;"><label class="mr-2">Mostra tutti</label><SfSwitch TChecked="Boolean" Checked="@nShowAll" CheckedChanged="ToogleChanged" ></SfSwitch></div>
+    ;
+
+    /// <summary>
+    /// Old selected item
+    /// </summary>
+    private Elementi OldItem { get; set; } = null;
+
+    /// <summary>
+    /// Show all ort partial elements
+    /// </summary>
+    public void ToogleChanged()
+    {
+        nShowAll = !nShowAll;
+        if (nShowAll)
+            ShowedAttachments = Attachments;
+        else 
+            ShowedAttachments = Attachments.Where(x => x.Tipo == "FILE").ToList();
+    }
+
+    /// <summary>
     /// List of the buttons on toolbar of the grid of attributes
     /// </summary>
     private List<Object> Tool
@@ -168,54 +209,95 @@
             List<Object> t = new();
             if (nEnableAdd) t.Add(new ItemModel() { Id = "New", Text = "Nuovo", TooltipText = "Nuovo", PrefixIcon = "e-add" });
             if (nEnableRemove) t.Add(new ItemModel() { Id = "Delete", Text = "Elimina", TooltipText = "Elimina", PrefixIcon = "e-delete" });
+            t.Add(new ToolbarItem()
+                {
+                    Template = Button,
+                    Id = "button1",
+                    TooltipText = "",
+                    Align = ItemAlign.Right,
+                    Type = ItemType.Button,
+                    CssClass = ""
+                });
             return t;
         }
     }
 
+    /// <summary>
+    /// Reloadign the attachments of the ite,m
+    /// </summary>
+    public void Refresh()
+    {
+        if (nItem != null)
+        {
+            Stopwatch SW = Stopwatch.StartNew();
+            Attachments = _ele.GetvAllegatiElemento(nItem.Id);
+            if (nShowAll)
+                ShowedAttachments = Attachments;
+            else 
+                ShowedAttachments = Attachments.Where(x => x.Tipo == "FILE").ToList();
+            _Logger.LogInformation($"AttachmentsTable.Refresh: Loaded {Attachments.Count} attachs in {SW.ElapsedMilliseconds} ms");
+        }
+        else
+        {
+            Attachments = new();
+            ShowedAttachments = new();
+
+        }
+        OldItem = nItem;
+    }
+    /// <summary>
+    /// On Init loard the grid
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        Cols = _ele.GetColonne("vALLEGATO");
+        Refresh();
+    }
 
     /// <summary>
     /// On Init component, get custom columns
     /// </summary>
-    protected override async void OnInitialized()
+    protected override void OnParametersSet()
     {
-        Cols = _ele.GetColonne("vALLEGATO");
+        if (OldItem != nItem)
+        Refresh();
     }
 
     /// <summary>
     /// On Open forward the event
     /// </summary>
-    /// <param name="ID"></param>
-    private async void OnOpen(Guid ID)
+    /// <param name="Attach"></param>
+    private async void OnOpen(viewAllegati Attach)
     {
-        await OnOpenAttachment.InvokeAsync(ID);
+        OnOpenAttachment.InvokeAsync(Attach);
     }
 
     /// <summary>
     /// On double clik forward the open, (if available)
     /// </summary>
     /// <param name="args"></param>
-    public async void OnDoubleClick(RecordDoubleClickEventArgs<viewAllegati> args)
+    public void OnDoubleClick(RecordDoubleClickEventArgs<viewAllegati> args)
     {
         if (nEnableOpen)
-            await OnOpenAttachment.InvokeAsync(args.RowData.IdAllegato);
+            OnOpenAttachment.InvokeAsync(args.RowData);
     }
 
     /// <summary>
     /// On record select forward the selection
     /// </summary>
     /// <param name="args"></param>
-    public async void OnRecordSelect(RowSelectEventArgs<viewAllegati> args)
+    public void OnRecordSelect(RowSelectEventArgs<viewAllegati> args)
     {
-        await OnSelectAttachment.InvokeAsync(args.Data.IdAllegato);
+         OnSelectAttachment.InvokeAsync(args.Data);
     }
 
     /// <summary>
     /// On Download forward the event
     /// </summary>
     /// <param name="ID"></param>
-    public async void OnDownload(Guid ID)
+    public void OnDownload(viewAllegati A)
     {
-        await OnDownloadAttachment.InvokeAsync(ID);
+        OnDownloadAttachment.InvokeAsync(A);
     }
 
     /// <summary>
@@ -239,7 +321,7 @@
     /// <summary>
     /// Chiude il dialogo di upload
     /// </summary>
-    public async void OnCloseDialog()
+    public void OnCloseDialog()
     { ShowDialog = false; }
 
     /// <summary>
@@ -250,13 +332,13 @@
         ShowConfirm = false;
         viewAllegati A = (await Grid.GetSelectedRecords()).FirstOrDefault();
         if (A != null)
-            await OnRemoveAttachment.InvokeAsync(A.IdAllegato);
+            await OnRemoveAttachment.InvokeAsync(A);
     }
 
     /// <summary>
     /// Close the confirmation dialog
     /// </summary>
-    public async void OnCloseDialogConfirm()
+    public void OnCloseDialogConfirm()
     {
         ShowConfirm = false;
     }
@@ -265,7 +347,7 @@
     /// On upload requested forward the event
     /// </summary>
     /// <param name="files"></param>
-    public async void OnUpload(List<dblu.Portale.Core.UI.UploadFilesDialog.UploadedFile> files)
+    public void OnUpload(List<dblu.Portale.Core.UI.UploadFilesDialog.UploadedFile> files)
     {
         OnAddRequested.InvokeAsync(files);
         ShowDialog = false;
