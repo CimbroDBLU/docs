@@ -7,6 +7,7 @@
 @using dblu.Portale.Core.Infrastructure.Identity.Services;
 @inject ILogger<AttachLogs> _Logger
 @inject dbluDocsContext _DbContext
+@inject IConfiguration _conf
 @inject IApplicationUsersManager  _ApplicationUsersManager
 
 
@@ -70,7 +71,7 @@
     /// </summary>
     protected override async void OnInitialized()
     {
-        LogDocManager LM = new LogDocManager(_DbContext, _Logger);
+        LogDocManager LM = new LogDocManager(_DbContext, _Logger,_conf);
         nLogs = new ObservableCollection<LogDoc>(LM.GetLogOggetto(nAttach.Id, dblu.Docs.Classi.TipiOggetto.ALLEGATO));
         Users = _ApplicationUsersManager.GetUsers().ToList();
     }

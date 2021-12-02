@@ -4,6 +4,7 @@
 @using dblu.Docs.Models
 @using dblu.Portale.Core.Infrastructure.Identity.Classes
 @using dblu.Portale.Core.Infrastructure.Identity.Services
+@inject dblu.Portale.Plugin.TaskListBase.Services.Camunda.CamundaService  _CamundaService
 
 @inject IApplicationUsersManager  _ApplicationUsersManager
 
@@ -77,14 +78,18 @@
                     }
                 </Template>
             </GridColumn>
-                    <GridColumn Width="100" TextAlign=TextAlign.Right Field=@nameof(Attivita.Durata) HeaderText="Durata (d.HH:MM:SS)" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true">
-                <Template>
+            @if (_CamundaService.IsAdmin())
+            {
+                <GridColumn Width="100" TextAlign=TextAlign.Right Field=@nameof(Attivita.Durata) HeaderText="Durata (d.HH:MM:SS)" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true">
+                    <Template>
                         @{
-                        var State = (context as Attivita).Durata;
-                        @State?.ToString(@"dd\.hh\:mm\:ss");
+                            var State = (context as Attivita).Durata;
+                            @State?.ToString(@"dd\.hh\:mm\:ss")
+                            ;
                         }
-                </Template>
+                    </Template>
             </GridColumn>
+            }
         </GridColumns>
         </SfGrid>
 </div>

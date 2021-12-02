@@ -21,7 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Microsoft.Extensions.DependencyInjection;
 
 namespace dblu.Docs.Classi
 {
@@ -29,6 +29,7 @@ namespace dblu.Docs.Classi
     {
 
         private readonly ILogger _logger;
+        private readonly IConfiguration _conf;
 
 #if Framework48 
         private string StringaConnessione ;
@@ -41,32 +42,14 @@ namespace dblu.Docs.Classi
 
 #else
         private dbluDocsContext _context;
-        public LogDocManager(dbluDocsContext context, ILogger logger)
+        public LogDocManager(dbluDocsContext context, ILogger logger,IConfiguration conf)
             {
             _context = context;
-            //StringaConnessione = connessione;
             _logger = logger;
+            _conf = conf;
         }
 
 #endif        
-
-
-
-
-        //public LogDoc Get(string id)
-        //{
-        //    if (string.IsNullOrEmpty(id))
-        //    {
-        //        return null;
-        //    }
-        //    LogDoc all = null;
-        //    using (SqlConnection cn = new SqlConnection(StringaConnessione))
-        //    {
-        //        all = cn.Get<LogDoc>(id);
-        //    }
-        //    return all;
-        //}
-
 
         public List<LogDoc> GetAll()
         {
@@ -91,25 +74,15 @@ namespace dblu.Docs.Classi
             return l;
 
         }
-                    
-        //public LogDoc Get(Guid? guid)
-        //{
-        //    LogDoc all = null;
-        //    try
-        //    {
-        //        if (guid != null)
-        //        {
-        //            return Get(guid.ToString());
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex.Message);
-        //        return null;
-        //    } 
-        //    return all;
-        //}
-
+        /// <summary>
+        /// Write the log in an async way
+        /// </summary>
+        /// <param name="nId">Id of the object</param>
+        /// <param name="nType">Type of the object</param>
+        /// <param name="nOperation">Description of the operation done</param>
+        /// <param name="nUser">User that do that operation</param>
+        /// <param name="nDescription">Text description </param>
+        /// <param name="Att">Other generic properties to better detail the operation</param>
         public void  PostLog(Guid nId, TipiOggetto nType, TipoOperazione nOperation,string nUser,string nDescription, ExtAttributes Att=null)
         {
             LogDoc log = new LogDoc()
@@ -123,9 +96,32 @@ namespace dblu.Docs.Classi
                 JAttributi= null,
 
             };
-            Task.Run(() =>this.Salva(log, true));
+            Task.Run(
+                () =>
+                {
+                    try
+                    {
+                        using var _context = new dbluDocsContext(_conf);
+                        _context.LogDoc.Add(log);
+                        _context.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"LogDocManager.PostLog: Unexpected exception {ex.Message}");
+                    }
+                }
+                );
         }
 
+        /// <summary>
+        ///  Write the log in an async way
+        /// </summary>
+        /// <param name="nId">Id of the object</param>
+        /// <param name="nType">Type of the object</param>
+        /// <param name="nOperation">Description of the operation done</param>
+        /// <param name="nUser">User that do that operation</param>
+        /// <param name="nDescription">Text description </param>
+        /// <param name="Att">Other generic properties to better detail the operation</param>
         public void PostLog(string nId, TipiOggetto nType, TipoOperazione nOperation, string nUser, string nDescription, ExtAttributes Att = null)
         {
             LogDoc log = new LogDoc()
@@ -139,7 +135,21 @@ namespace dblu.Docs.Classi
                 JAttributi = null,
 
             };
-            Task.Run(() => this.Salva(log, true));
+            Task.Run(
+                () =>
+                {
+                    try
+                    {
+                        using var _context = new dbluDocsContext(_conf);
+                        _context.LogDoc.Add(log);
+                        _context.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"LogDocManager.PostLog: Unexpected exception {ex.Message}");
+                    }
+                }
+                );
         }
 
         public bool Salva(LogDoc log, bool isNew)
