@@ -1,7 +1,7 @@
 ﻿using dblu.Docs.Classi;
 using dblu.Docs.Models;
 using dblu.Portale.Core.Infrastructure.Classes;
-using dblu.Portale.Plugin.TaskListBase.DataLayer;
+using BPMClient.DataLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;

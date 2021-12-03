@@ -7,8 +7,8 @@ using dblu.Docs.Extensions;
 
 using dbluTools.Extensions;
 using Innofactor.EfCoreJsonValueConverter;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 #endif
 using dblu.Docs.Classi;
@@ -41,12 +41,17 @@ namespace dblu.Docs.Models
         //public Guid ID { get; set; }
         public DateTime Data { get; set; }
         public string Utente { get; set; }
+
+#if !Framework48
         [Column(TypeName = "smallint")]
+#endif
         public TipiOggetto TipoOggetto { get; set; }
 
         public Guid IdOggetto { get; set; }
 
+#if !Framework48
         [Column(TypeName = "smallint")]
+#endif       
         public TipoOperazione Operazione { get; set; }
         public string Descrizione { get; set; }
 
