@@ -45,6 +45,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         public readonly AllegatiManager _allMan;
         public readonly FascicoliManager _fasMan;
         public readonly ElementiManager _elmMan;
+        public readonly HistoryManager _hiMan;
 
         //public ISoggettiService ServizioSoggetti = null;
 
@@ -62,6 +63,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             _allMan = new AllegatiManager(_context.Connessione, _logger);
             _fasMan = new FascicoliManager(_context.Connessione, _logger);
             _elmMan = new ElementiManager(_context.Connessione, _logger);
+            _hiMan = new HistoryManager(_context.Connessione, _logger);
             this._config = config;
 
             //try
@@ -403,6 +405,16 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
         }
 
+        internal IEnumerable<viewElementi> GetElementiV()
+        {
+            //return _context.Fascicoli;
+            using (SqlConnection cn = new SqlConnection(_context.Connessione))
+            {
+                var sql = "SELECT * from vListaElementi";
+                return cn.Query<viewElementi>(sql);
+            }
+
+        }
         private string GetNomeVista(string Configurazione) { 
             string NomeVista = "";
             switch (Configurazione) {

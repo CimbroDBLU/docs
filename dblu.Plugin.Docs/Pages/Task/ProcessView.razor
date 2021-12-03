@@ -62,7 +62,14 @@
             </GridColumn>
             <GridColumn Width="100" Field=@nameof(Attivita.Avvio ) HeaderText="Avvio"  AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true"></GridColumn>
             <GridColumn Width="100" Field=@nameof(Attivita.Fine) HeaderText="Fine" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true"></GridColumn>
-
+            <GridColumn Width="100" HeaderText="Note" AllowEditing="false" AllowSorting="false" AllowFiltering="false" AllowSearching="false">
+            <Template>
+                    @{
+                        var S = (context as Attivita).JAttributi?["Note"]?.ToString()??"";
+                        @S
+                    }
+                </Template>
+            </GridColumn>        
             <GridColumn Width="100" Field=@nameof(Attivita.Stato) HeaderText="Stato" AllowEditing="false" AllowSorting="true" AllowFiltering="true" AllowSearching="true">
                 <Template>
                     @{

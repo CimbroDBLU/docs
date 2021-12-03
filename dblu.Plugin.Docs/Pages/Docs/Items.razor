@@ -1,0 +1,127 @@
+﻿@*
+    Component for showing a list of Items
+*@
+
+@page  "/Docs/Items"
+
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using Syncfusion.Blazor
+@using Syncfusion.Blazor.Data
+@using Syncfusion.Blazor.Grids
+@using dblu.Docs.Models
+
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
+@inject NavigationManager  _NavigationManager
+@inject ProtectedSessionStorage _SessionStore
+<style>
+
+    .smallb {
+        width: 60px;
+    }
+</style>
+
+<PageTitle nTitle="Lista Elementi" />
+
+<SfCard>
+    <CardHeader Title="Lista Elementi" />
+    <CardContent EnableSeperator="true">
+        <SfGrid Height="615" SelectedRowIndex="0" ID="ODATA_Items" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewElementi" Toolbar=@Tool>
+            <SfDataManager Url="/ODATA/Items" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
+            <GridEvents TValue="viewElementi" QueryCellInfo="CustomizeCell"  OnRecordDoubleClick="OnDoubleClick"></GridEvents>
+            <GridPageSettings PageSize="13"></GridPageSettings>
+            <GridSearchSettings Fields=@(new string[] { "DscFascicolo", "DscCategoria" })></GridSearchSettings>
+            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu">
+            </GridFilterSettings>
+            <GridColumns>
+                <GridColumn Field=@nameof(viewElementi.IdElemento) Visible="false" HeaderText="ID" IsPrimaryKey="true"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.DscElemento) Width="400" AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="Descrizione"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.DscTipoElemento) AllowSearching="true" AllowSorting="true" FilterSettings="@(new FilterSettings{Type = Syncfusion.Blazor.Grids.FilterType.CheckBox })" AllowFiltering="true" HeaderText="Tipo"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.Campo1) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.Campo2) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.Campo3) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.Campo4) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[3].Des" Visible="@Cols[3].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.Campo5) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[4].Des" Visible="@Cols[4].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.Campo6) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[5].Des" Visible="@Cols[5].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.Campo7) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[6].Des" Visible="@Cols[6].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.Campo8) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[7].Des" Visible="@Cols[7].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.Campo9) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[8].Des" Visible="@Cols[8].Visible"></GridColumn>
+                <GridColumn Field=@nameof(viewElementi.Campo10) AllowSearching="true" AllowSorting="true" AllowFiltering="true" HeaderText="@Cols[9].Des" Visible="@Cols[9].Visible"></GridColumn>
+                <GridColumn HeaderText="" Width="80">
+                    <Template>
+                        @{
+                            var Item = (context as viewElementi);
+                            <SfButton CssClass="smallb" OnClick="() => OpenItem(Item)" HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Apri" } })" IconCss="e_fa fa-folder-open"></SfButton>
+                        }
+                    </Template>
+                </GridColumn>
+            </GridColumns>
+        </SfGrid>
+    </CardContent>
+</SfCard>
+@code{
+
+    /// <summary>
+    /// List of custom columns of the Items
+    /// </summary>
+    List<Colonna> Cols { get; set; } = new List<Colonna>();
+
+    /// <summary>
+    /// List of the buttons on toolbar of the grid
+    /// </summary>
+    private List<Object> Tool = new List<Object>()
+{
+            "Search"
+    };
+
+    /// <summary>
+    /// On Init component get the custom columns
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        Cols = _ele.GetColonne("vELEMENTO");
+    }
+
+    /// <summary>
+    /// Open selected item
+    /// </summary>
+    /// <param name="Item"></param>
+    public async void OpenItem(viewElementi Item)
+    {
+        string Url=_ele.GetTipoElemento(Item.TipoElemento).ViewAttributi;
+        if (Url.StartsWith("blz:/"))
+        {
+            await _SessionStore.SetAsync("Referrer", $"/Docs/Items");
+            Url = $"{Url.Replace("blz:/", "")}/{Item.IdElemento.ToString()}/REVIEW";
+            _NavigationManager.NavigateTo(Url);
+        }
+        else
+        {
+            await _SessionStore.SetAsync("Referrer", $"/Docs/Items");
+            _NavigationManager.NavigateTo($"/Docs/Item/{Item.IdElemento.ToString()}");
+        }
+
+    }
+
+    /// <summary>
+    /// On double click edit the selected items
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnDoubleClick(RecordDoubleClickEventArgs<viewElementi> args)
+    {
+       OpenItem(args.RowData);
+    }
+
+    /// <summary>
+    /// Cell priority customization
+    /// </summary>
+    /// <param name="args"></param>
+    private void CustomizeCell(QueryCellInfoEventArgs<viewElementi> args)
+    {
+        viewElementi F= (args.Data as viewElementi);
+        if (args.Column.Field == F.ColorColumn)
+        {           
+           args.Cell.AddStyle(new string[] { $"background-color:{F.BackColor}" });
+           args.Cell.AddStyle(new string[] { $"color:{F.ForeColor}" });
+        }
+    }
+}

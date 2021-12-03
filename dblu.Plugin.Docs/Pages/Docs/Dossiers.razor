@@ -23,7 +23,7 @@
 <SfCard>
     <CardHeader Title="Lista Fascicoli" />
     <CardContent EnableSeperator="true">
-        <SfGrid Height="615" SelectedRowIndex="0" ID="ODATA_Dossiers" EnablePersistence="true" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewFascicoli" Toolbar=@Tool>
+        <SfGrid Height="615" SelectedRowIndex="0" ID="ODATA_Dossiers" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewFascicoli" Toolbar=@Tool>
             <SfDataManager Url="/ODATA/Dossiers" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
             <GridEvents TValue="viewFascicoli" QueryCellInfo="CustomizeCell"  OnRecordDoubleClick="OnDoubleClick"></GridEvents>
             <GridPageSettings   PageSize="13"></GridPageSettings>
