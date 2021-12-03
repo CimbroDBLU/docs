@@ -149,7 +149,11 @@
         else if (string.IsNullOrEmpty(nDossierID))
         {
             Dossier = null;
-        }
+            if(LastDossierID != nDossierID)
+            {
+                await OnRefresh.InvokeAsync(null);
+                LastDossierID = nDossierID;}
+            }
     }
 
 

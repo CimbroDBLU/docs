@@ -77,7 +77,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             _fasMan = new FascicoliManager(_context.Connessione, _logger);
             _elmMan = new ElementiManager(_context.Connessione, _logger);
             _serMan = new ServerEmailManager(_context.Connessione, _logger);
-            _logMan = new LogDocManager(_context, _logger);
+            _logMan = new LogDocManager(_context, _logger,config);
             _config = config;
             _usrManager = usrManager;
             _mapperConfig = new MapperConfiguration(cfg => cfg.CreateMap<BPMProcessInfo, BPMDocsProcessInfo>());

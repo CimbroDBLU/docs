@@ -18,9 +18,11 @@ namespace dblu.Docs.Models
     [Table("vListaElementi")]
     public partial class viewElementi
     {
-        [ExplicitKey]
+
         public Guid IdFascicolo { get; set; }
         public string CodiceSoggetto { get; set; }
+        [System.ComponentModel.DataAnnotations.Key]
+        [ExplicitKey]
         public Guid IdElemento { get; set; }
         public short Revisione { get; set; }
         public string TipoElemento { get; set; }
@@ -41,6 +43,9 @@ namespace dblu.Docs.Models
         public string Campo8 { get; set; }
         public string Campo9 { get; set; }
         public string Campo10 { get; set; }
+        public string BackColor { get; set; }
+        public string ForeColor { get; set; }
+        public string ColorColumn { get; set; }
 
 
         public viewElementi()

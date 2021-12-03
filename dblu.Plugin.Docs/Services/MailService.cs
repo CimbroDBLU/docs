@@ -110,7 +110,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             _fasMan = new FascicoliManager(_context.Connessione, _logger);
             _elmMan = new ElementiManager(_context.Connessione, _logger);
             _serMan = new ServerEmailManager(_context.Connessione, _logger);
-            _logMan = new LogDocManager(_context, _logger);
+            _logMan = new LogDocManager(_context, _logger,config);
             _TranformationService = documentTransformation;
             //            _sggMan = new SoggettiManager(_context, _logger);
             _config = config;
@@ -2172,7 +2172,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                     //### COMPAB TEMPORANEO DA RIMUOVERE
 
                     var pi = pd.Start("", el.TipoNavigation.Processo, el.Id.ToString(), variabili);
-
                     res = (pi != null && pi.Result != null);
 
                 }

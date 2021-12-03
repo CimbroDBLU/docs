@@ -42,12 +42,12 @@ namespace dblu.Portale.Controllers
         private LogDocManager _logMan;
         private ServerMailService _serverMailService;
         private readonly dbluDocsContext _context;
+        private readonly IConfiguration _conf;
         public DocsController(IWebHostEnvironment hostingEnvironment,
             IToastNotification toastNotification,
             ILoggerFactory loggerFactory,
             dbluDocsContext db,
-            ServerMailService serverMailService
-            )
+            ServerMailService serverMailService,IConfiguration conf )
         {
             //_context = new dbluDocsContext(db.Connessione);
             _context = db;
@@ -58,7 +58,8 @@ namespace dblu.Portale.Controllers
             _eleMan = new ElementiManager(_context.Connessione, _logger);
             _allMan = new AllegatiManager(_context.Connessione, _logger);
             _serMan = new ServerEmailManager(_context.Connessione, _logger);
-            _logMan = new LogDocManager(_context, _logger);
+            _logMan = new LogDocManager(_context, _logger, conf);
+            _conf = conf;
             _serverMailService = serverMailService;
             
         }

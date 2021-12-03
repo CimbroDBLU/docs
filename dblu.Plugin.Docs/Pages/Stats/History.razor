@@ -7,9 +7,11 @@
 @using Syncfusion.Blazor
 @using Syncfusion.Blazor.Data
 @using Syncfusion.Blazor.Grids
+@using dblu.Portale.Plugin.Docs.Services
 
 @inject IConfiguration _config
 @inject ILogger<History> _Logger
+@inject AllegatiService _AttachService
 @page "/Stats/History"
 
 
@@ -30,8 +32,8 @@
                     <DetailTemplate>
                         @{
                             var MyProcess = (context as Processi);
-                            HistoryManager History = new HistoryManager(_config["ConnectionStrings:dblu.Docs"], _Logger);
-                            List<Attivita> AL = History.GetProcessActivities(MyProcess.Id);
+                           
+                            List<Attivita> AL = _AttachService._hiMan.GetProcessActivities(MyProcess.Id);
 
                             if (AL.Count == 0)
                             {

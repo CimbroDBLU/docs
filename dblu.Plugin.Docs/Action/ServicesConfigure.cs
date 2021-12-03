@@ -63,6 +63,10 @@ namespace dblu.Portale.Plugin.Docs.Action
             function = builder.Function("Dossiers");
             function.ReturnsCollectionFromEntitySet<viewFascicoli>("ODATA_Dossiers");
 
+            builder.EntitySet<viewElementi>("ODATA_Items");
+            function = builder.Function("Items");
+            function.ReturnsCollectionFromEntitySet<viewElementi>("ODATA_Items");
+
             return builder.GetEdmModel();
         }        
     }

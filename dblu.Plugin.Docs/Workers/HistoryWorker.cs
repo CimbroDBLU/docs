@@ -100,7 +100,7 @@ namespace dblu.Portale.Plugin.Docs.Workers
                 LastImport = DateTime.MinValue;
 
             using CAMContext dbCAM = new CAMContext(conf["ConnectionStrings:CamundaDbConnection"]);
-            List<CAMHiProcess> nProcesses = dbCAM.HistoryProcesses.Include(c => c.Definition).Include(t => t.Tasks).Include(v=>v.Variables).Where(x=>x.START_TIME_>LastImport || x.END_TIME_> LastImport).AsNoTracking().ToList();
+            List<CAMHiProcess> nProcesses = dbCAM.HistoryProcesses.Include(c => c.Definition).Include(t => t.Tasks).Include(v=>v.Variables).Where(x=>x.START_TIME_>LastImport || x.END_TIME_> LastImport || x.Tasks.Any(x => x.START_TIME_ > LastImport || x.END_TIME_ > LastImport) ).AsNoTracking().ToList();
 
             if (nProcesses.Count == 0)
                 log.LogInformation($"HistoryWorker.Syncronizze: No changes detected in {sw.ElapsedMilliseconds} ms");

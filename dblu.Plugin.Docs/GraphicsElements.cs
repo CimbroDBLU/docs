@@ -69,7 +69,8 @@ namespace dblu.Portale.Plugin.Documenti
                 };
  			    var subItemF = new MenuItem[]
                     {
-                        new MenuItem("50.1.2", 2, "Docs/Dossiers", "Fascicoli", "fas fa-archive", null)
+                        new MenuItem("50.1.2", 1, "Docs/Dossiers", "Fascicoli", "fas fa-archive", null),
+                        new MenuItem("50.1.2", 2, "Docs/Items", "Elementi", "fas fa-folder-open", null)
                      };
                
                 var subItemS = new MenuItem[]

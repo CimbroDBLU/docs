@@ -30,11 +30,6 @@ namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
         public readonly ILogger _logger;
 
         /// <summary>
-        /// History Manager class for reading History Content
-        /// </summary>
-        private readonly HistoryManager HistoryM;
-
-        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="doc">Attachment Service injected</param>
@@ -43,7 +38,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
         {
             _doc = doc;
             _logger = loggerFactory.CreateLogger("ODATA");
-            HistoryM = new HistoryManager(nConfiguration["ConnectionStrings:dblu.Docs"], _logger);
+         
         }
 
         // OPTIMIZED VERSION, SEE COMMENT IN ACTUAL GET
@@ -112,7 +107,53 @@ namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
             return new PageResult<viewFascicoli>(results, null, count);
         }
 
+        [HttpGet]
+        [ODataRoute("Items")]
+        public PageResult<viewElementi> Items(ODataQueryOptions opts)
+        {
+            Stopwatch sw = Stopwatch.StartNew();
 
+
+            var results = _doc.GetElementiV().AsQueryable();
+            var count = results.Count();
+            if (opts.OrderBy != null)
+                results = opts.OrderBy.ApplyTo(results);
+            if (opts.Filter != null)
+            {
+                results = opts.Filter.ApplyTo(results, new ODataQuerySettings()).Cast<viewElementi>();
+            }
+            var queryString = opts.Request.Query;
+            string search = queryString["$search"];
+            if (search != null)
+            {
+                string key = search.Split(" OR ")[search.Split(" OR ").Length - 1].ToLowerInvariant();
+                results = results.Where(
+                                        fil => fil.IdElemento.ToString().ToLowerInvariant().Contains(key)
+                                            || fil.DscElemento.ToLowerInvariant().Contains(key)
+                                            || fil.DscTipoElemento.ToLowerInvariant().Contains(key)
+                                            || fil.Stato.ToString().ToLowerInvariant().Contains(key)
+                                            || fil.Campo1.ToLowerInvariant().Contains(key)
+                                            || fil.Campo2.ToLowerInvariant().Contains(key)
+                                            || fil.Campo3.ToLowerInvariant().Contains(key)
+                                            || fil.Campo4.ToLowerInvariant().Contains(key)
+                                            || fil.Campo5.ToLowerInvariant().Contains(key)
+                                            || fil.Campo6.ToLowerInvariant().Contains(key)
+                                            || fil.Campo7.ToLowerInvariant().Contains(key)
+                                            || fil.Campo8.ToLowerInvariant().Contains(key)
+                                            || fil.Campo9.ToLowerInvariant().Contains(key)
+                                            || fil.Campo10.ToLowerInvariant().Contains(key)
+                                       );
+            }
+            if (opts.Count != null)
+                count = results.Count();
+            if (opts.Skip != null)
+                results = opts.Skip.ApplyTo(results, new ODataQuerySettings());
+            if (opts.Top != null)
+                results = opts.Top.ApplyTo(results, new ODataQuerySettings());
+
+            _logger.LogInformation($"ODATAController.Items: ODATA Read in {sw.ElapsedMilliseconds} ms");
+            return new PageResult<viewElementi>(results, null, count);
+        }
 
         /// <summary>
         /// Function that return the data (filtered already)
@@ -130,7 +171,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
             Stopwatch sw = Stopwatch.StartNew();
 
 
-            var results = (await HistoryM.GetAll()).AsQueryable();
+            var results = (await _doc._hiMan.GetAll()).AsQueryable();
             var count = results.Count();
             if (opts.OrderBy != null)
                 results = opts.OrderBy.ApplyTo(results);
