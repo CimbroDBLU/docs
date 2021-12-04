@@ -29,7 +29,7 @@ namespace dblu.Docs.Models
         public string UtenteC { get; set; }
         public DateTime DataUM { get; set; }
         public string UtenteUM { get; set; }
-
+        [JsonIgnore]        
         public string Attributi { get; set; }
         public string Chiave1 { get; set; }
         public string Chiave2 { get; set; }
