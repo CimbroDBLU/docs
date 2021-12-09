@@ -126,7 +126,7 @@ namespace dblu.Portale.Plugin.Docs.Classes
         {
             string s = nFileName?.ToLowerInvariant()??"";
             if (s.EndsWith(".pdf")) return e_DocType.PDF;
-            if (s.EndsWith(".png") || s.EndsWith(".gif") || s.EndsWith(".jpg")) return e_DocType.IMAGE;
+            if (s.EndsWith(".png") || s.EndsWith(".gif") || s.EndsWith(".jpg") || s.EndsWith(".jpeg")) return e_DocType.IMAGE;
             //if (s.EndsWith(".doc") || s.EndsWith(".rtf")) return e_DocType.WORD_PROCESSOR;
             if(s.EndsWith(".eml")) return e_DocType.EMAIL;
             return e_DocType.UNDEFINED;

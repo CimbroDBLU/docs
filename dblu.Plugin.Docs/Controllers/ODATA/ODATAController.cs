@@ -107,6 +107,15 @@ namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
             return new PageResult<viewFascicoli>(results, null, count);
         }
 
+        /// <summary>
+        /// Function that return the data (filtered already)
+        /// NB. Return a simply IQueryable with [EnableQuery] decorator is better for performance BUT
+        /// since Synchfusion support "SEARCH" and Kestrel not yet, we replace "Search" with a manual, case insensitive, filter
+        /// </summary>
+        /// <param name="opts">Query params</param>
+        /// <returns>
+        /// Result set
+        /// </returns>
         [HttpGet]
         [ODataRoute("Items")]
         public PageResult<viewElementi> Items(ODataQueryOptions opts)
