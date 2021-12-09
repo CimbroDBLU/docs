@@ -82,7 +82,7 @@ namespace dblu.Docs.Classi
 
                 foreach (Processi P in Processes)
                     P.Stars = nWeightProcess + nWeightTask * P.Attivita.Count;
-                _logger.LogInformation($"HistoryManager.GetAll: Retreived {Processes.Count} Proceses in {sw.ElapsedMilliseconds} ms");
+                _logger.LogDebug($"HistoryManager.GetAll: Retreived {Processes.Count} Proceses in {sw.ElapsedMilliseconds} ms");
                 return Processes;
             }catch(Exception ex)
             {
@@ -123,7 +123,7 @@ namespace dblu.Docs.Classi
 
                 foreach (Processi P in Processes)
                     P.Stars = nWeightProcess + nWeightTask * P.Attivita.Count;
-                _logger.LogInformation($"HistoryManager.GetAllByElementID: Retreived {Processes.Count} Proceses in {sw.ElapsedMilliseconds} ms");
+                _logger.LogDebug($"HistoryManager.GetAllByElementID: Retreived {Processes.Count} Proceses in {sw.ElapsedMilliseconds} ms");
                 return Processes;
             }
             catch (Exception ex)
@@ -153,7 +153,7 @@ namespace dblu.Docs.Classi
                 if (all != null)
                 {
                     all.Stars = nWeightProcess + nWeightTask * all.Attivita.Count;
-                    _logger.LogInformation($"HistoryManager.Get: Retreived process {id} in {sw.ElapsedMilliseconds} ms");
+                    _logger.LogDebug($"HistoryManager.Get: Retreived process {id} in {sw.ElapsedMilliseconds} ms");
                 }
             return all;
             }
@@ -183,7 +183,7 @@ namespace dblu.Docs.Classi
                     //                   Act = cn.Get<Attivita>(id);
 
                 if (Act!=null)
-                    _logger.LogInformation($"HistoryManager.GetActivity: Retreived activity {Act.Id} in {sw.ElapsedMilliseconds} ms");
+                    _logger.LogDebug($"HistoryManager.GetActivity: Retreived activity {Act.Id} in {sw.ElapsedMilliseconds} ms");
             }              
             catch (Exception ex)
             {
@@ -212,7 +212,7 @@ namespace dblu.Docs.Classi
             {
                 using (SqlConnection cn = new SqlConnection(ConnectionString))
                     l = cn.Query<Attivita>($"Select * FROM Attivita where IdProcesso=@IdProcesso", new { IdProcesso=id }).ToList();
-                _logger.LogInformation($"HistoryManager.GetProcessActivities: Retreived {l.Count} actvities in {sw.ElapsedMilliseconds} ms");
+                _logger.LogDebug($"HistoryManager.GetProcessActivities: Retreived {l.Count} actvities in {sw.ElapsedMilliseconds} ms");
             }
             catch (Exception ex)
             {
@@ -235,7 +235,7 @@ namespace dblu.Docs.Classi
                 Stopwatch sw = Stopwatch.StartNew();
                 using (SqlConnection cn = new SqlConnection(ConnectionString))
                     dt = cn.Query<DateTime?>("SELECT MAX(DataUM) from Processi").FirstOrDefault();
-                _logger.LogInformation($"HistoryManager.GetLastProcessTime: Retreived {dt} in {sw.ElapsedMilliseconds} ms");
+                _logger.LogDebug($"HistoryManager.GetLastProcessTime: Retreived {dt} in {sw.ElapsedMilliseconds} ms");
                 return dt;
             }
             catch(Exception ex)
@@ -270,7 +270,7 @@ namespace dblu.Docs.Classi
     VALUES( @Id, @Nome  , @Descrizione, @Avvio, @Fine, @UtenteAvvio, @Stato, @Diagramma,  @Versione, @DataC, @UtenteC, @DataUM, @UtenteUM, @IdElemento, @IdAllegato, @sAttributi) ";
                         cn.Execute(sql, obj);
 
-                        _logger.LogInformation($"HistoryManager.Save: Create process {obj.Id} in {sw.ElapsedMilliseconds} ms");
+                        _logger.LogDebug($"HistoryManager.Save: Create process {obj.Id} in {sw.ElapsedMilliseconds} ms");
                     }
                     else
                     {
@@ -293,7 +293,7 @@ namespace dblu.Docs.Classi
       ,JAttributi = @sAttributi
  WHERE  Id = @Id ";
                         cn.Execute(sql, obj);
-                        _logger.LogInformation($"HistoryManager.Save: Update process {obj.Id} in {sw.ElapsedMilliseconds} ms");
+                        _logger.LogDebug($"HistoryManager.Save: Update process {obj.Id} in {sw.ElapsedMilliseconds} ms");
                     }
                     bres = true;
                 }
@@ -330,7 +330,7 @@ namespace dblu.Docs.Classi
     (Id, Nome, Descrizione, Avvio, Fine, Assegnatario, Stato, DataC, UtenteC, DataUM, UtenteUM, IdProcesso, IdElemento, IdAllegato, JAttributi )
     VALUES( @Id, @Nome  , @Descrizione, @Avvio, @Fine, @Assegnatario, @Stato, @DataC, @UtenteC, @DataUM, @UtenteUM, @IdProcesso, @IdElemento, @IdAllegato, @sAttributi) ";
                         cn.Execute(sql, obj);
-                        _logger.LogInformation($"HistoryManager.SaveActivity: Create activity {obj.Id} in {sw.ElapsedMilliseconds} ms");
+                        _logger.LogDebug($"HistoryManager.SaveActivity: Create activity {obj.Id} in {sw.ElapsedMilliseconds} ms");
                     }
                     else
                     {
@@ -352,7 +352,7 @@ namespace dblu.Docs.Classi
     ,JAttributi = @sAttributi 
     WHERE  Id = @Id ";
                         cn.Execute(sql, obj); 
-                        _logger.LogInformation($"HistoryManager.SaveActivity: Update activity {obj.Id} in {sw.ElapsedMilliseconds} ms");
+                        _logger.LogDebug($"HistoryManager.SaveActivity: Update activity {obj.Id} in {sw.ElapsedMilliseconds} ms");
                     }
                     bres = true;
                 }

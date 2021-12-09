@@ -389,14 +389,13 @@ namespace dblu.Docs.Classi
 
         public List<Allegati> GetAllegatiElemento(Guid elemento)
         {
-
             //var doc = _context.Allegati.Where(x => x.IdElemento == elemento && x.Tipo == "FILE");
             List<Allegati> doc = null;
             try
             {
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
-                    doc = cn.Query<Allegati>("Select * from Allegati where IdElemento=@IdElemento and Tipo='FILE' ",
+                    doc = cn.Query<Allegati>("Select * from Allegati where IdElemento=@IdElemento ",
                         new { IdElemento = elemento.ToString()}).ToList();
                 }
             }

@@ -74,6 +74,9 @@ namespace dblu.Docs.Classi
             return l;
 
         }
+
+
+#if !Framework48
         /// <summary>
         /// Write the log in an async way
         /// </summary>
@@ -113,6 +116,7 @@ namespace dblu.Docs.Classi
                 );
         }
 
+
         /// <summary>
         ///  Write the log in an async way
         /// </summary>
@@ -151,6 +155,7 @@ namespace dblu.Docs.Classi
                 }
                 );
         }
+#endif
 
         public bool Salva(LogDoc log, bool isNew)
         {
@@ -190,7 +195,7 @@ namespace dblu.Docs.Classi
             List<LogDoc > log = null;
             try
             {
- #if Framework48                
+#if Framework48
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
                     log = cn.Query<LogDoc>("SELECT * FROM LogDoc WHERE IdOggetto = @Id and TipoOggetto = @Tipo ORDER BY data DESC ",
