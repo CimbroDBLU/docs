@@ -188,15 +188,16 @@
     /// </summary>
     private async void OnSend()
     {
+        string UserSign = "";
         IsSpinnerVisible = true;
         var User = _HttpContextAccessor.HttpContext.User;
-        if (IncludeSign) AddSignatureToBody(User);
+        if (IncludeSign) UserSign = AddSignatureToBody(User)??"";
 
         Models.RisultatoAzione RA=new();
         if (IsAnswerDialog)
-           RA= await _MailService.RispondiEmail(nAttach.Id.ToString(), nSourceServer.Nome, To, string.Join(";", CC), Subject, Body, IncludeSource, CloseEmail, User);
+           RA= await _MailService.RispondiEmail(nAttach.Id.ToString(), nSourceServer.Nome, To, string.Join(";", CC), Subject, Body, IncludeSource, CloseEmail,UserSign, User);
         else
-            RA= await _MailService.InoltraEmail( nAttach.Id.ToString(), To, string.Join(";", CC), Subject, Body, CloseEmail, User , nSourceServer.Nome);
+            RA= await _MailService.InoltraEmail( nAttach.Id.ToString(), To, string.Join(";", CC), Subject, Body, CloseEmail, User ,UserSign, nSourceServer.Nome);
         
         OnOperationDone.InvokeAsync(RA);
         _Logger.LogInformation($"MailAnswer.OnSend: Mail {nAttach.Id} sent to {To},{string.Join(";", CC)} ");
@@ -213,10 +214,10 @@
     /// <summary>
     /// Append the user signature to the email body
     /// </summary>
-    private void AddSignatureToBody(System.Security.Claims.ClaimsPrincipal User)
+    private string AddSignatureToBody(System.Security.Claims.ClaimsPrincipal User)
     {
         List<ApplicationUser> Users = _ApplicationUsersManager.GetUsers().ToList();
         ApplicationUser CurrentUser = Users.FirstOrDefault(z => z.UserId == User.Identity.Name);
-        Body +=  "\n" + CurrentUser.Properties["SIGNATURE"] as string;
+        return  "\n" + CurrentUser.Properties["SIGNATURE"] as string;
     }
 }

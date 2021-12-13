@@ -663,7 +663,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
         public async Task<ActionResult<RisultatoAzione>> InArrivo_Inoltra(
             string IdAllegato,
             string email,  
-            bool chiudi)
+            bool chiudi,string Firma)
         {
             RisultatoAzione r = new RisultatoAzione();
             if (!string.IsNullOrEmpty(IdAllegato) && !string.IsNullOrEmpty(email))
@@ -672,7 +672,9 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     IdAllegato,
                     email, "", "" , "" ,
                     chiudi ,
-                    User);
+                    User,
+                    Firma??""
+                    );
 
                 SaveEmails(email);
 
@@ -772,6 +774,7 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
            string cc,
            string oggetto,
            string testo,
+           string Firma,
            bool allegaEmail,
            bool chiudiEmail)
 
@@ -788,7 +791,9 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                     testo,
                     allegaEmail,
                      chiudiEmail ,
-                    User);
+                     Firma ?? "",
+                    User
+                    );
 
                 SaveEmails(cc);
             }

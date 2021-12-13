@@ -63,6 +63,7 @@ using AutoMapper;
 using Syncfusion.Pdf.Graphics;
 using dblu.Portale.Plugin.Docs.Classes;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace dblu.Portale.Plugin.Docs.Services
 {
@@ -2196,7 +2197,8 @@ namespace dblu.Portale.Plugin.Docs.Services
             string Oggetto,
             string Testo,       
             bool chiudi,
-            ClaimsPrincipal User, 
+            ClaimsPrincipal User,
+            string Firma,
             string NomeServer = "")
         {
             RisultatoAzione res = new RisultatoAzione();
@@ -2287,18 +2289,18 @@ namespace dblu.Portale.Plugin.Docs.Services
                             var htxt ="";
                             var ttxt = "";
 
-                            htxt = message.HtmlBody;
+                            htxt = message?.HtmlBody??" ";
+                            htxt += "\n" + Firma;
                             string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
                             string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
-                            if (!string.IsNullOrEmpty(htxt) && !htxt.Contains("<body>"))
-                                htxt = $"<body>{htxt}</body>";
+                            if (!string.IsNullOrEmpty(htxt) && !htxt.Contains("<body>"))htxt = $"<body>{htxt}</body>";
 
                             ttxt = $"{Testo}\n\n\n\nDa : {message.From}\nA : {message.To}\nInviato : {message.Date.DateTime}\nOggetto: {message.Subject}\n\n{message.TextBody}";
                             htxt = htxt?.Replace("<body>", $"<body><p>{Testo}</p><p><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></p><br>");
 
                             builder.TextBody = ttxt;
                             builder.HtmlBody = htxt;
-
+                            Regex.Replace(builder.TextBody, "<.*?>", string.Empty);
                             foreach (MimeEntity att in message.Allegati())
                             {
                                 builder.Attachments.Add(att);
@@ -2378,6 +2380,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             string Testo,
             bool allegaEmail,
             bool chiudiEmail,
+            string Firma,
             ClaimsPrincipal User)
 
         {
@@ -2472,12 +2475,14 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             var htxt = Testo ?? "";
                             var ttxt = Testo ?? "";
+                            Testo += "\n" + Firma;
                             if (!htxt.Contains("<body>"))
                                 htxt = $"<body>{htxt}</body>";
 
                             if (allegaEmail)
                             {
-                                htxt = message.HtmlBody;
+                                htxt += message?.HtmlBody??"";
+                                
                                 string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
                                 string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
                                 if (!string.IsNullOrEmpty(htxt) && !htxt.Contains("<body>"))
@@ -2490,7 +2495,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             builder.TextBody = ttxt;
                             builder.HtmlBody = htxt;
-
+                            builder.TextBody = Regex.Replace(builder.TextBody, "<.*?>", string.Empty);
                             newmessage.Body = builder.ToMessageBody();
                             await client.SendAsync(newmessage, c);
 
