@@ -1,0 +1,29 @@
+﻿@*
+    Component for displaying a Tile for Items
+*@
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachmentsService
+@inject ILogger<DossierTile> _Logger
+<Tile nTitle="@Number"
+      nDescription="Elementi"
+      nLink="Docs/Items"
+      nIcon="fas fa-folder-open"
+      nBackColor="#039be5"
+      nForeColor="white"></Tile>
+
+
+@code {
+    /// <summary>
+    /// Number of available dossiers
+    /// </summary>
+    public string Number { get; set; }
+
+    /// <summary>
+    /// On Init component
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        Stopwatch SW = Stopwatch.StartNew();
+        Number = _AttachmentsService.CountElementi().ToString();
+        _Logger.LogDebug($"ItemsTile.OnInitialized: {Number} Items in {SW.ElapsedMilliseconds} ms");
+    }
+}

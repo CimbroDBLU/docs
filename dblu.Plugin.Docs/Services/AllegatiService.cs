@@ -384,6 +384,19 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
         }
 
+        public string CountElementi()
+        {
+            //return _context.Fascicoli;
+            string res;
+            using (SqlConnection cn = new SqlConnection(_context.Connessione))
+            {
+                var sql = "select count(ID) from Elementi";
+                res = cn.QueryFirstOrDefault<string>(sql).ToString();
+
+                return res;
+            }
+        }
+
         internal IEnumerable<Fascicoli> GetFascicoli()
         {
             //return _context.Fascicoli;

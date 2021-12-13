@@ -95,7 +95,16 @@
             </Template>
         </GridColumn>
         <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(AllegatoEmail.Oggetto) HeaderText="Oggetto"></GridColumn>
-        <GridColumn AllowEditing="false" Width="120px" AllowSorting="true" Field=@nameof(AllegatoEmail.Data) HeaderText="Data" Format="d" Type="ColumnType.Date"></GridColumn>
+        <GridColumn AllowEditing="false" TextAlign="TextAlign.Center" Width="120px" AllowSorting="true" Field=@nameof(AllegatoEmail.Data) HeaderText="Data" Format="dd/MM/yyyy HH:mm" Type="ColumnType.Date">
+            <Template>
+            @{
+                    var Attach = (context as AllegatoEmail);
+                    @Attach?.Data?.ToShortDateString()
+                    <br />
+                    @Attach?.Data?.ToShortTimeString()
+            }
+            </Template>
+            </GridColumn>
         <GridColumn AllowEditing="false" Width="40px" AllowSorting="true" Field=@nameof(AllegatoEmail.LastOp) HeaderText="LastOp">
             <Template>
                 <dblu.Portale.Plugin.Docs.Pages.Docs.Shared.LastOperation nOperation="@((context as AllegatoEmail).LastOp)"></dblu.Portale.Plugin.Docs.Pages.Docs.Shared.LastOperation>
