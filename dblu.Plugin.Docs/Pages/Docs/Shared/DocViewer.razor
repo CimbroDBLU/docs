@@ -95,13 +95,13 @@
 
         @if (!IsFullscreen)
         {
-            <SfPdfViewerServer  Height="@($"{nHeight - 42}px")" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
+            <SfPdfViewerServer  Height="@($"{nHeight - 42}px")" EnableStampAnnotations="false" EnableHandwrittenSignature="false"  EnableTextSelection="true" FreeTextSettings="@FreeTextSettings" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
                 <PdfViewerEvents Created="OnPDFViewerCreated" DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
             </SfPdfViewerServer>
         }
         else
         {
-            <SfPdfViewerServer Height="96vh" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
+            <SfPdfViewerServer Height="96vh" EnableStampAnnotations="false" EnableHandwrittenSignature="false"  EnableTextSelection="true"  FreeTextSettings="@FreeTextSettings" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
                 <PdfViewerEvents Created="OnPDFViewerCreated" DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
             </SfPdfViewerServer>
         }
@@ -225,6 +225,11 @@
     private bool IsSpinnerVisible { get; set; }
 
     /// <summary>
+    ///Set the color of the pen
+    /// </summary>
+    PdfViewerFreeTextSettings FreeTextSettings = new PdfViewerFreeTextSettings { FontColor="red"};
+
+    /// <summary>
     /// Default configuration of the
     /// </summary>
     private PdfViewerToolbarSettings ToolbarSettings
@@ -247,6 +252,7 @@
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.SearchOption,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.PrintOption,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.DownloadOption
+                           
                             }
                 };
 
@@ -328,12 +334,11 @@
     private async void OnSave()
     {
      
-     //  if (Viewer.IsDocumentEdited)
-
+     //if (Viewer.IsDocumentEdited)        
         Doc = await DocManager.Save(new MemoryStream(await Viewer.GetDocument()));
-       // else
-        // Doc = await DocManager.Save();
-        if (Doc.Payload != null && Doc.Payload.Length != 0)
+     //else
+     //   Doc = await DocManager.Save();
+     if (Doc.Payload != null && Doc.Payload.Length != 0)
         {
             string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
             await Viewer.Load("data:application/DocManager;base64," + base64String, null);

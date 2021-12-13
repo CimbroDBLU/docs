@@ -138,6 +138,12 @@ namespace dblu.Portale.Plugin.Documenti
                 myFascicoli.ElementType = OBJECT_TYPE.TEMPLATE;
                 myFascicoli.Template = "dblu.Portale.Plugin.Docs.Pages.DossierTile";
 
+                // FASCICOLI
+                var myElementi = new IndexItem("50.1.2", 6, "", "Items", "ItemsDash", "");
+                myElementi.Size = new System.Drawing.Size(2, 6);
+                myElementi.ElementType = OBJECT_TYPE.TEMPLATE;
+                myElementi.Template = "dblu.Portale.Plugin.Docs.Pages.ItemsTile";
+
                 // Smistamento
                 var mySmista = new IndexItem("50.1.5", 1, "", "Smistamento", "MailDash", "");
                 mySmista.Size = new System.Drawing.Size(2, 6);
@@ -146,7 +152,7 @@ namespace dblu.Portale.Plugin.Documenti
 
                 return new IndexItem[]
                 {
-                    myMail, myFile, myREQ, myFascicoli, mySmista                
+                    myMail, myFile, myREQ, myFascicoli,myElementi, mySmista                
                 };
             }
         }

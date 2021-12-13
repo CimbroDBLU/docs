@@ -3397,7 +3397,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     await ExtractAttachments(MailAttach, Attachs, Description, tipoAll);
 
                     /// 3) MARCO PDF IN MEMORIA
-                    (bool, MemoryStream) T = _TranformationService.SignPDF(Doc, MailAttach.elencoAttributi);
+                    (bool, MemoryStream) T = _TranformationService.SignPDF(Doc, e.elencoAttributi);
                     if (T.Item1)
                         Doc = T.Item2;
 
