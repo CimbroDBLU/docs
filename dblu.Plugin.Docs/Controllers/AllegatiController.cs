@@ -55,6 +55,9 @@ namespace dblu.Portale.Plugin.Docs.Controllers
                 Allegato.TipoNavigation = _allService._allMan.GetTipoAllegato(Allegato.Tipo);
                 Allegato.elencoAttributi = Allegato.TipoNavigation.Attributi;
                 Allegato.elencoAttributi.SetValori(Allegato.Attributi);
+                foreach (var attr in Allegato.elencoAttributi.Valori)
+                    if(!string.IsNullOrEmpty( Allegato.elencoAttributi.Valori[attr.Key].Alias))
+                        Allegato.SetAttributo(attr.Key, attr.Value);
                 
                 Allegato.UtenteUM = Utente;
                 r.Success = _allService._allMan.Salva(Allegato, flNew);
