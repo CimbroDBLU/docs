@@ -205,6 +205,20 @@ namespace dblu.Portale.Plugin.Docs.Services
             return doc;
 
         }
+
+        public List<Elementi> GetElementsByNumber(int Number)
+        {
+            //var elemento = _context.Elementi.Where(x => x.IdFascicolo == fascicolo);
+            //return elemento.ToList();
+            List<Elementi> doc = null;
+            using (SqlConnection cn = new SqlConnection(_context.Connessione))
+            {
+                doc = cn.Query<Elementi>("select * from Elementi where JSON_VALUE(Attributi,'$.NumeroProtocollo')==@Number",
+                    new { Number }).ToList();
+            }
+            return doc;
+        }
+
         public Elementi GetElemento(Guid elementoGuid, short rev)
         {
             //var elemento = _context.Elementi.Find(elementoGuid, rev);
