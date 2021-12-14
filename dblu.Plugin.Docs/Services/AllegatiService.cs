@@ -40,7 +40,6 @@ namespace dblu.Portale.Plugin.Docs.Services
         private readonly /*FileContext*/ dbluDocsContext _context;
         private readonly IWebHostEnvironment _appEnvironment;
         private readonly ILogger _logger;
-        private readonly IToastNotification _toastNotification;
         public IConfiguration _config { get; }
         public readonly AllegatiManager _allMan;
         public readonly FascicoliManager _fasMan;
@@ -52,11 +51,9 @@ namespace dblu.Portale.Plugin.Docs.Services
         public AllegatiService(/*FileContext db,*/dbluDocsContext db,
             IWebHostEnvironment appEnvironment,
             ILoggerFactory loggerFactory,
-            IToastNotification toastNotification,
             IConfiguration config
             )
         {
-            _toastNotification = toastNotification;
             _context = db;
             _appEnvironment = appEnvironment;
             _logger = loggerFactory.CreateLogger("FileRepository");
@@ -206,15 +203,15 @@ namespace dblu.Portale.Plugin.Docs.Services
 
         }
 
-        public List<Elementi> GetElementsByNumber(int Number)
+        public List<Elementi> GetElementsByAttribute(string AttrName, dynamic AttrValue )
         {
             //var elemento = _context.Elementi.Where(x => x.IdFascicolo == fascicolo);
             //return elemento.ToList();
-            List<Elementi> doc = null;
+            List<Elementi> doc = new List<Elementi>();
             using (SqlConnection cn = new SqlConnection(_context.Connessione))
             {
-                doc = cn.Query<Elementi>("select * from Elementi where JSON_VALUE(Attributi,'$.NumeroProtocollo')==@Number",
-                    new { Number }).ToList();
+                doc = cn.Query<Elementi>($"select * from Elementi where JSON_VALUE(Attributi,'$.{AttrName}') = @AttrValue",
+                    new { AttrValue }).ToList();
             }
             return doc;
         }
@@ -316,18 +313,15 @@ namespace dblu.Portale.Plugin.Docs.Services
                     catch (Exception ex)
                     {
                         _logger.LogError($"DocumentUpload {ex.Message}");
-                       // _toastNotification.AddErrorToastMessage("Error in upload file.");
-                        var exp = ex;
+                         var exp = ex;
                         return false;
                     }
                 }
                 else
                 {
-                    //_toastNotification.AddErrorToastMessage("File not supported.");
-                    return false;
+                     return false;
                 }
             }
-            //_toastNotification.AddSuccessToastMessage("File uploaded!");
             return true;
         }
 
@@ -367,7 +361,6 @@ namespace dblu.Portale.Plugin.Docs.Services
                     }
                     catch (Exception ex)
                     {
-                        // _toastNotification.AddErrorToastMessage("Error in upload file.");
                         var exp = ex;
                         return false;
                     }
