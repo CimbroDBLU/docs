@@ -394,12 +394,12 @@ else
         if (LastAttachId == nAttachID && LastDossierId == nDossierID) return;
 
         IsSpinnerVisible = true;
-        await Task.Run(() =>
+        Task.Run(() =>
         {
             nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
             LastDossierId = nDossierID;
             LastAttachId = nAttachID;
-        });
+        }).ContinueWith(T => IsSpinnerVisible = false);
         IsSpinnerVisible = false;
     }
 
@@ -413,10 +413,10 @@ else
             ActionSelected = ActionsCombo?.ActionsList?.FirstOrDefault()?.Item ?? "";
         if(firstRender)
             if(!string.IsNullOrEmpty(nSelectedItem))
-                {
+            {
                 int Index = nItems.ToList().FindIndex(d => d.Id == nSelectedItem);
                 Grid.SelectRowAsync((double)Index);
-                }
+            }
         base.OnAfterRender(firstRender);
     }
 
@@ -514,10 +514,10 @@ else
     public async void AddToItem()
     {
         BPMDocsProcessInfo Info = _MailService.GetProcessInfo(TipiOggetto.ELEMENTO, AzioneOggetto.MODIFICA);
-        bool fl = await _MailService.AttachToItem(nAttachID, nDossierID, nItem.IdElemento.ToString(), null, nCurrentDocument, nAttachments.ToList(), User, Info, null);
+        int fl = await _MailService.AttachToItem(nAttachID, nDossierID, nItem.IdElemento.ToString(), null, nCurrentDocument, nAttachments.ToList(), User, Info, null);
         ShowAddConfirm = false;
 
-        if (fl)
+        if (fl==0)
             ToastAddOK.Show();
         else ToastAddKO.Show();
 

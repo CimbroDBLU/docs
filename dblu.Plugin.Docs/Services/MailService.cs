@@ -3370,11 +3370,10 @@ namespace dblu.Portale.Plugin.Docs.Services
         /// <returns>
         /// True if attachment has be done
         /// </returns>
-        public async Task<bool> AttachToItem(string AttachID, string DossierID, string ItemID, string Description, MemoryStream Doc, List<OriginalAttachments> Attachs, ClaimsPrincipal User,BPMDocsProcessInfo Info, Dictionary<string, VariableValue> Vars)
+        public async Task<int> AttachToItem(string AttachID, string DossierID, string ItemID, string Description, MemoryStream Doc, List<OriginalAttachments> Attachs, ClaimsPrincipal User,BPMDocsProcessInfo Info, Dictionary<string, VariableValue> Vars)
         {
             try
             { 
-            bool RET = true;
 
             Stopwatch sw = Stopwatch.StartNew();
 
@@ -3384,7 +3383,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             Fascicoli f = _fasMan.Get(DossierID);
             Elementi e = _elmMan.Get(ItemID, 0);
 
-                if (tipoAll != null && f != null & e != null)
+           if (tipoAll != null && f != null & e != null)
                 {
                     /// 1) MARCO LA MAIL COM PROCESSATA
                     MailAttach.SetAttributo("CodiceSoggetto", f.GetAttributo("CodiceSoggetto"));
@@ -3458,16 +3457,19 @@ namespace dblu.Portale.Plugin.Docs.Services
                         if (!Vars.ContainsKey("IdAllegato"))
                             Vars.Add("IdAllegato", VariableValue.FromObject(AttachID));
 
-                        RET = AvviaProcesso(Info, e, Vars);
+                        if (AvviaProcesso(Info, e, Vars))
+                            return 3;
                     }
                 }
-                _logger.LogInformation($"MailService.AttachToItem : Item attached in {sw.ElapsedMilliseconds} ms");
-                return RET;
+            else
+                return 2;
+            _logger.LogInformation($"MailService.AttachToItem : Item attached in {sw.ElapsedMilliseconds} ms");
+            return 0;
             }
             catch (Exception ex)
             {
                 _logger.LogError($"MailService.AttachToItem : Unexpected exception {ex.Message}");
-                return false;
+                return 1;
             }
         }
 

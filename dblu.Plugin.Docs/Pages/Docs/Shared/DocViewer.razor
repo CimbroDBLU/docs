@@ -283,14 +283,13 @@
             return;
 
         IsSpinnerVisible = true;
-        await Task.Run(() =>
+        Task.Run(() =>
         {
-
             DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
             LoadDocument();
             OnPDFViewerCreated();
-        });
-        IsSpinnerVisible = false;
+        }).ContinueWith(T=>IsSpinnerVisible = false);
+        
     }
 
     /// <summary>

@@ -408,8 +408,9 @@
             case TableType.Sorting: LastEmailTime = _MailService._allMan.GetLastSortingEmailTime("EMAIL", nMailBox.Nome); break;
         }
         NewItems = 0;
+
         Grid.Refresh();
-        Grid.ClearSelectionAsync();
+ 
     }
 
     /// <summary>

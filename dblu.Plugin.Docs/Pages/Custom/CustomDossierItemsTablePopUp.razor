@@ -118,8 +118,8 @@
             var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
             var User = authState.User;
             ///Associa allegato a fascicolo -> non avvio alcun BPM...
-            bool res = await _MailService.AttachToItem(nAttachID, LastSelectedItem.IdFascicolo.ToString(), LastSelectedItem.IdElemento.ToString(), null, nCurrentDocument, nAttachments?.ToList() ?? new(), User, null, null);
-            if (res)
+            int res = await _MailService.AttachToItem(nAttachID, LastSelectedItem.IdFascicolo.ToString(), LastSelectedItem.IdElemento.ToString(), null, nCurrentDocument, nAttachments?.ToList() ?? new(), User, null, null);
+            if (res==0)
                 ToastOK.Show();
             else ToastKO.Show();
 

@@ -3,6 +3,8 @@
 *@
 @page "/Docs/Item/{Id}"
 @page "/Docs/Item/{Id}/{ShowMetadata}"
+@using System.IO
+@using Newtonsoft.Json
 @using dblu.Docs.Models
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
 @using dblu.Portale.Plugin.Docs.Classes
@@ -75,6 +77,7 @@
         _Logger.LogInformation($"EditItem.OnInitialized: Loaded Item {Id} in {Sw.ElapsedMilliseconds} ms");
         IsSpinnerVisible = false;
 
+      //  File.WriteAllText("c:\\TEMP\\pippo.json", JsonConvert.SerializeObject(Item, Formatting.Indented));
     }
 
     /// <summary>
