@@ -36,7 +36,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers
             try
             {
                 bool flNew = true;
-                if (fascicolo.Id != null) {
+                if (fascicolo.Id != Guid.Empty) {
                     Fascicoli a = _allService._fasMan.Get(fascicolo.Id);
                     if (a != null)
                     {
@@ -52,6 +52,9 @@ namespace dblu.Portale.Plugin.Docs.Controllers
                 fascicolo.CategoriaNavigation = _allService._fasMan.GetCategoria(fascicolo.Categoria);
                 fascicolo.elencoAttributi = fascicolo.CategoriaNavigation.Attributi;
                 fascicolo.elencoAttributi.SetValori(fascicolo.Attributi);
+                foreach (var attr in fascicolo.elencoAttributi.ToList())
+                    if (!string.IsNullOrEmpty(attr.Alias))
+                        fascicolo.SetAttributo(attr.Nome, attr.Valore);
 
                 fascicolo.UtenteUM = Utente;
                 r.Success = _allService._fasMan.Salva(fascicolo, flNew);

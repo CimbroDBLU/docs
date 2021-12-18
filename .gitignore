@@ -12,3 +12,6 @@ dbluDealersConnector/bin/
 dbluDealersConnector/obj/
 dbluDealersConnector/log.txt
 MailService/Properties/PublishProfiles/FolderProfile.pubxml
+dblu.Docs/dblu.Docs48.csproj.user
+MailService/dbluMailService.csproj.user
+*.user

@@ -128,7 +128,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers
             try
             {
                 bool flNew = true;
-                if (Elemento.Id != null)
+                if (Elemento.Id != Guid.Empty)
                 {
                     Elementi e = _AllegatiService._elmMan.Get((Guid?)Elemento.Id, Elemento.Revisione);
                     if (e != null)
@@ -147,6 +147,9 @@ namespace dblu.Portale.Plugin.Docs.Controllers
                 Elemento.TipoNavigation = _AllegatiService._elmMan.GetTipoElemento(Elemento.Tipo);
                 Elemento.elencoAttributi = Elemento.TipoNavigation.Attributi;
                 Elemento.elencoAttributi.SetValori(Elemento.Attributi);
+                foreach (var attr in Elemento.elencoAttributi.ToList())
+                    if (!string.IsNullOrEmpty(attr.Alias))
+                        Elemento.SetAttributo(attr.Nome, attr.Valore);
 
                 Elemento.UtenteUM = Utente;
                 r.Success = _AllegatiService._elmMan.Salva(Elemento, flNew);
