@@ -7,7 +7,7 @@
 @using dblu.Docs.Interfacce
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject ILogger<AttachCustomer> _Logger
-
+<div>
 @if (ShowCostumerSel)
 {
     <div class="row">
@@ -17,9 +17,11 @@
     </div>
 }
 else
-{
+{            
     <div class="row">
         <div class="col">
+            <SfSpinner @ref="Spin">
+            </SfSpinner>
             <AttachCustomerSearch nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly" nAttachID="@nAttachID" ></AttachCustomerSearch>
         </div>
     </div>
@@ -33,7 +35,7 @@ else
     }
 }
 
-
+</div>
 
 @code {
 
@@ -80,29 +82,38 @@ else
     /// </summary>
     private MailCostumerSelectionPopUp CustomerSelector { get; set; }
 
+    private SfSpinner Spin{ get; set; }
 
     public string PrevMittente { get; set; } = "";
 
 
-    protected async override void OnParametersSet()
+    protected async override Task OnParametersSetAsync()
     {
         if (string.IsNullOrEmpty(nCostumerCode))
         {
             if (Sender != PrevMittente)
             {
-                List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Sender);
-                _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: {Costumers.Count} costumers retrived for {Sender}");
-                if (Costumers.Count > 1)
+                if(Spin!=null)
+                    await Spin.ShowAsync();
+                InvokeAsync(() =>
                 {
-                    ShowCostumerSel = true;
-                    nCostumers = new ObservableCollection<ISoggetti>(_SubjectService.GetSoggettiByMail(Sender));
-                }
-                else
-                {
-                    OnLinkCostumer(Costumers?.FirstOrDefault());
-                    ShowCostumerSel = false;
-                }
-                PrevMittente = Sender;
+                   
+                    List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Sender);
+                    _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: {Costumers.Count} costumers retrived for {Sender}");
+                    if (Costumers.Count > 1)
+                    {
+                        ShowCostumerSel = true;
+                        nCostumers = new ObservableCollection<ISoggetti>(Costumers);
+                    }
+                    else
+                    {
+                        OnLinkCostumer(Costumers?.FirstOrDefault());
+                        ShowCostumerSel = false;
+                    }
+                    PrevMittente = Sender;
+                })
+                .ContinueWith(T=> {if(Spin!=null) Spin.HideAsync();});
+
             }
         }
         else

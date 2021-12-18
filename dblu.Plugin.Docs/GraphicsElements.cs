@@ -100,7 +100,7 @@ namespace dblu.Portale.Plugin.Documenti
                 {
                     new MenuItem("50.1.1", 1, "Docs/Tabelle", "Tabelle", "fas fa-table", subItemT),
                     new MenuItem("50.1.2", 2, "Docs/Fascicoli", "Fascicoli", "fas fa-archive", subItemF),                    
-                    new MenuItem("50.1.5", 3, "Mail/Sorting", "Smistamento", "fas fa-map-signs", null),
+                    new MenuItem("50.1.5", 3, "MailView/Smistamento", "Smistamento", "fas fa-map-signs", null),
                     new MenuItem("50.1.3", 4, "Mail/Inbox", "Email", "fas fa-envelope-open-text", subItemM),
                     new MenuItem("50.1.4", 5, "Files/ZIP/Inbox", "Files", "fas fa-file", subItemZ),
                     new MenuItem("50.1.5", 6, "Files/REQ/Inbox", "Richieste", "fas fa-comments", subItemZ1),

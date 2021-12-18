@@ -64,14 +64,14 @@
         OldCustomerCode = nCustomerCode;
 
         IsSpinnerVisible = true;
-        await Task.Run(async () =>
+        Task.Run(async () =>
         {
             Stopwatch SW = Stopwatch.StartNew();
             nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)).OrderByDescending(x => x.DataConsegna));
             _Logger.LogInformation($"AttachOpenItemsTable.OnParametersSetAsync: Retreived {nItems.Count} related items for {nCustomerCode} in {SW.ElapsedMilliseconds} ms");
 
-        });
-        IsSpinnerVisible = false;
+        }).ContinueWith(T => IsSpinnerVisible = false);
+
     }
 
     /// <summary>

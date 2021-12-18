@@ -397,8 +397,7 @@
             case TableType.Inbox: LastFileTime = _ZipService._allMan.GetLastInboxFileTime(nDocumentType.ToString(), nFolder.Nome); break;
         }
         NewItems = 0;
-        Grid.Refresh();
-        Grid.ClearSelectionAsync();
+        Grid.Refresh();       
     }
 
     /// <summary>

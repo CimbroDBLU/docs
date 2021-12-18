@@ -137,23 +137,27 @@
     /// <summary>
     /// Redraw the component only if necessary
     /// </summary>
-    protected override async void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        if (LastDossierID != nDossierID && !string.IsNullOrEmpty(nDossierID))
+        InvokeAsync(() =>
         {
-            Dossier = _MailService._fasMan.Get(nDossierID);
-            LastDossierID = nDossierID;
-            await OnRefresh.InvokeAsync(Dossier);
-
-        }
-        else if (string.IsNullOrEmpty(nDossierID))
-        {
-            Dossier = null;
-            if(LastDossierID != nDossierID)
+            if (LastDossierID != nDossierID && !string.IsNullOrEmpty(nDossierID))
             {
-                await OnRefresh.InvokeAsync(null);
-                LastDossierID = nDossierID;}
+                Dossier = _MailService._fasMan.Get(nDossierID);
+                LastDossierID = nDossierID;
+                OnRefresh.InvokeAsync(Dossier);
+
             }
+            else if (string.IsNullOrEmpty(nDossierID))
+            {
+                Dossier = null;
+                if (LastDossierID != nDossierID)
+                {
+                    OnRefresh.InvokeAsync(null);
+                    LastDossierID = nDossierID;
+                }
+            }
+        });
     }
 
 
@@ -213,8 +217,8 @@
     /// Forward the link event
     /// </summary>
     /// <param name="data"></param>
-    public async void OnLink((string Dossier, string Item) data)
+    public void OnLink((string Dossier, string Item) data)
     {
-        await OnLinkedToItem.InvokeAsync(data);
+        OnLinkedToItem.InvokeAsync(data);
     }
 }

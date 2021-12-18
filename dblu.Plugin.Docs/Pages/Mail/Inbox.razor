@@ -438,44 +438,48 @@
     /// <param name="e"></param>
     public void OnSelectAttach(AllegatoEmail e)
     {
-        try
+        InvokeAsync(() =>
         {
-            IsCustomerExpand = true;
 
-            if (e==null)
+            try
             {
-                _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: DeSelecting attach");
-                AttachID = "";
-                DossierID = "";
-                CustomerCode = "";
-                PDFSourceId = "";
+                IsCustomerExpand = true;
+
+                if (e == null)
+                {
+                    _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: DeSelecting attach");
+                    AttachID = "";
+                    DossierID = "";
+                    CustomerCode = "";
+                    PDFSourceId = "";
+                    PDFSourceType = e_SourceType.Attachment;
+                    return;
+                }
+
+                _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Id}");
+                Attach = e;
+                PDFSourceId = e.Id.ToString();
                 PDFSourceType = e_SourceType.Attachment;
-                return;
+
+                if (AttachID != e.Id.ToString())
+                    AttachID = e.Id.ToString();
+
+                if (DossierID != e.IdFascicolo.ToString())
+                    DossierID = e.IdFascicolo.ToString();
+
+                if (CustomerCode != e.Chiave3)
+                    CustomerCode = e.Chiave3;
+
+                if (string.IsNullOrEmpty(CustomerCode))
+                    CostumerDesc = "Cliente da selezionare";
+
+                OnAbort();
             }
-
-            _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Id}");
-            Attach = e;
-            PDFSourceId = e.Id.ToString();
-            PDFSourceType = e_SourceType.Attachment;
-
-            if (AttachID != e.Id.ToString())
-                AttachID = e.Id.ToString();
-
-            if (DossierID != e.IdFascicolo.ToString())
-                DossierID = e.IdFascicolo.ToString();
-
-            if (CustomerCode != e.Chiave3)
-                CustomerCode = e.Chiave3;
-
-            if (string.IsNullOrEmpty(CustomerCode))
-                CostumerDesc="Cliente da selezionare";
-
-            OnAbort();
-        }
-        catch (Exception ex)
-        {
-            _Logger.LogError($"Inbox[MAIL].OnSelectAttach: Unexpected errro on selecting attach {ex}");
-        }
+            catch (Exception ex)
+            {
+                _Logger.LogError($"Inbox[MAIL].OnSelectAttach: Unexpected errro on selecting attach {ex}");
+            }
+        });
     }
 
 
@@ -730,15 +734,6 @@
         Grid.SelectedRow = 0;
     }
 
-    ///// <summary>
-    ///// On closing dialog, change the visible value and  evnetually link the customer
-    ///// </summary>
-    ///// <param name="Save">True id the customer must be linked to</param>
-    //public async void OnSelectedCostumer(bool Save = false)
-    //{
-    //    ShowCostumerSelection = false;
-    //    if (Save && CustomerSelector.SelectedCostumer != null){OnLinkCostumer(CustomerSelector.SelectedCostumer);}  
-    //}
 
     /// <summary>
     /// On selected Item, Reload the PDF from the item
