@@ -2481,16 +2481,13 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             if (allegaEmail)
                             {
-                                htxt += message?.HtmlBody??"";
-                                
                                 string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
                                 string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
                                 if (!string.IsNullOrEmpty(htxt) && !htxt.Contains("<body>"))
                                     htxt = $"<body>{htxt}</body>";
 
                                 ttxt = $"{Testo}\n\n\n\nDa : {message.From}\nA : {message.To}\nInviato : {message.Date.DateTime}\nOggetto: {message.Subject}\n\n{message.TextBody}";
-                                htxt = htxt?.Replace("<body>", $"<body><p>{Testo}</p><p></p><p><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></p><br>");
-
+                                htxt = htxt?.Replace("</body>", $"<p></p><p><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br>{message.HtmlBody}</p><br></body>");
                             }
 
                             builder.TextBody = ttxt;

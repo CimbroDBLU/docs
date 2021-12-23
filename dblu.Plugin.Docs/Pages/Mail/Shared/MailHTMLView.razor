@@ -114,7 +114,7 @@
                     LastAttach = nAttach;
                     Stopwatch sw = Stopwatch.StartNew();
                     DocumentManager DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
-                    Source = (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), false)).AsEmail();
+                    Source= (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), false)).AsEmail();                   
                     if (nReadAttachments)
                     {
                         Doc = (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), true));
