@@ -150,7 +150,7 @@
     /// Indicates if is to enable the edit of an attachment
     /// </summary>
     [Parameter]
-    public bool nEnableEdit { get; set; } = true;
+    public bool nEnableEdit { get; set; } = false;
 
     /// <summary>
     /// Indicates  if is to enable the remove of an attachment
@@ -192,6 +192,9 @@
     [Parameter]
     public EventCallback<viewAllegati> OnSelectAttachment { get; set; }
 
+    /// <summary>
+    ///  Fires when an attach is edited
+    /// </summary>
     [Parameter]
     public EventCallback<viewAllegati> OnEditAttachment { get; set; }
 
