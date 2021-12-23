@@ -7,8 +7,11 @@
 @using dblu.Docs.Interfacce
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject ILogger<AttachCustomer> _Logger
+
 <div>
-@if (ShowCostumerSel)
+<SfSpinner @bind-Visible="IsLoading">
+</SfSpinner>
+@if (ShowCostumerSelection)
 {
     <div class="row">
         <div class="col">
@@ -19,9 +22,7 @@
 else
 {            
     <div class="row">
-        <div class="col">
-            <SfSpinner @ref="Spin">
-            </SfSpinner>
+        <div class="col">       
             <AttachCustomerSearch nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly" nAttachID="@nAttachID" ></AttachCustomerSearch>
         </div>
     </div>
@@ -69,55 +70,73 @@ else
     [Parameter]
     public string nAttachID { get; set; }
 
-
-    private ObservableCollection<ISoggetti> nCostumers { get; set; }
-
-    private bool  ShowCostumerSel { get; set; } = false;
-
+    /// <summary>
+    /// Sender of the attachment
+    /// </summary>
     [Parameter]
     public string Sender { get; set; }
+
+    /// <summary>
+    /// Indicates that the panel is loading
+    /// </summary>
+    private bool IsLoading { get; set; } = false;
+
+    /// <summary>
+    /// List of available costumers
+    /// </summary>
+    private ObservableCollection<ISoggetti> nCostumers { get; set; }
+
+    /// <summary>
+    /// Indicates if costumer selection must be showed
+    /// </summary>
+    private bool  ShowCostumerSelection { get; set; } = false;
 
     /// <summary>
     /// Dialog for selecting the costumer from email
     /// </summary>
     private MailCostumerSelectionPopUp CustomerSelector { get; set; }
 
-    private SfSpinner Spin{ get; set; }
+    /// <summary>
+    /// Previously set sender of the attachment
+    /// </summary>
+    public string PrevSender { get; set; } = "";
 
-    public string PrevMittente { get; set; } = "";
 
-
-    protected async override Task OnParametersSetAsync()
+    /// <summary>
+    /// On Parameters set , verify if we have an available costumer, or a suitable sender for identifing it.
+    /// </summary>
+    /// <returns></returns>
+    protected override Task OnParametersSetAsync()
     {
         if (string.IsNullOrEmpty(nCostumerCode))
         {
-            if (Sender != PrevMittente)
+            if (Sender != PrevSender)
             {
-                if(Spin!=null)
-                    await Spin.ShowAsync();
+                IsLoading = true;
                 InvokeAsync(() =>
                 {
-                   
+                    Stopwatch sw = Stopwatch.StartNew();
                     List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Sender);
-                    _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: {Costumers.Count} costumers retrived for {Sender}");
+                    _Logger.LogDebug($"AttachCostumer.OnParametersSetAsync: Read {Costumers.Count} costumers in {sw.ElapsedMilliseconds} ms");
                     if (Costumers.Count > 1)
                     {
-                        ShowCostumerSel = true;
+                        ShowCostumerSelection = true;
                         nCostumers = new ObservableCollection<ISoggetti>(Costumers);
                     }
                     else
                     {
                         OnLinkCostumer(Costumers?.FirstOrDefault());
-                        ShowCostumerSel = false;
+                        ShowCostumerSelection = false;
                     }
-                    PrevMittente = Sender;
+                    PrevSender = Sender;
                 })
-                .ContinueWith(T=> {if(Spin!=null) Spin.HideAsync();});
+                .ContinueWith(T=> IsLoading = false);
 
             }
         }
         else
-        { ShowCostumerSel = false; PrevMittente = Sender; }
+        { ShowCostumerSelection = false; PrevSender = Sender; }
+        return base.OnParametersSetAsync();
     }
 
     /// <summary>
@@ -134,7 +153,7 @@ else
     /// <param name="Save">True id the customer must be linked to</param>
     public async void OnSelectedCostumer(bool Save = false)
     {
-        ShowCostumerSel = false;
+        ShowCostumerSelection = false;
         if (Save && CustomerSelector.SelectedCostumer != null)
             OnLinkCostumer(CustomerSelector.SelectedCostumer);
 

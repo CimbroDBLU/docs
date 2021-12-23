@@ -62,28 +62,18 @@
 
         if (OldCustomerCode == nCustomerCode) { return; }
         OldCustomerCode = nCustomerCode;
-
-        IsSpinnerVisible = true;
-        Task.Run(async () =>
-        {
+     
+        InvokeAsync(async () =>
+        {  
+            IsSpinnerVisible = true;
             Stopwatch SW = Stopwatch.StartNew();
             nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)).OrderByDescending(x => x.DataConsegna));
             _Logger.LogInformation($"AttachOpenItemsTable.OnParametersSetAsync: Retreived {nItems.Count} related items for {nCustomerCode} in {SW.ElapsedMilliseconds} ms");
-
+            OnOpenItems.InvokeAsync(nItems?.Count ?? 0);
         }).ContinueWith(T => IsSpinnerVisible = false);
 
     }
 
-    /// <summary>
-    /// On after render sent the actual number of available items
-    /// </summary>
-    /// <param name="firstRender"></param>
-    /// <returns></returns>
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        OnOpenItems.InvokeAsync(nItems?.Count ?? 0);
-        return base.OnAfterRenderAsync(firstRender);
-    }
 
 
 }
