@@ -12,27 +12,82 @@
     .smallb {
         width: 50px;
     }
+
+    .smallicon_mail {
+        width: 50px;
+        background: #4dd0e1;
+    }
+
+    .smallicon_zip {
+        width: 50px;
+        background: #9ccc65;
+    }
+
+   .smallicon_pdf {
+        width: 50px;
+        background: #ffca28;
+    }
+   .smallicon_img {
+        width: 50px;
+        background: #ce93d8;
+    }
+
+   .smallicon_doc {
+        width: 50px;
+        background: #bcaaa4;
+    }
+
 </style>
 
 
-<SfGrid @ref="@Grid" ID="@($"Attachments_{nID}")" EnablePersistence="@(nID != "unset")" SelectedRowIndex=0 DataSource="@ShowedAttachments" AllowTextWrap="true" AllowPaging="true" Toolbar="@Tool">
-    <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-    <GridPageSettings PageSize="nPageSize"></GridPageSettings>
-    <GridEvents TValue="viewAllegati" RowSelected="OnRecordSelect" OnToolbarClick="OnToolbarClick" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
+<SfGrid @ref="@Grid" ID="@($"Attachments_{nID}")"  EnablePersistence="@(nID != "unset")"  AllowSorting="true"  DataSource="@ShowedAttachments" AllowTextWrap="true" AllowPaging="true" Toolbar="@Tool">
+    <GridEditSettings AllowAdding="false"  AllowEditing="@nEnableEdit" AllowDeleting="false" Mode="EditMode.Normal"></GridEditSettings>
+    <GridPageSettings PageSizes="true" PageSize="nPageSize"></GridPageSettings>
+    <GridEvents TValue="viewAllegati" OnActionComplete="OnActionCompleted" RowSelected="OnRecordSelect" OnToolbarClick="OnToolbarClick" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
     <GridColumns>
         <GridColumn Field=@nameof(viewAllegati.IdAllegato) IsPrimaryKey="true" Visible="false"></GridColumn>
-        <GridColumn Width="150" Field=@nameof(viewAllegati.Descrizione) HeaderText="Descrizione" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
-        <GridColumn Width="150" Field=@nameof(viewAllegati.NomeFile) HeaderText="File" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
-        <GridColumn Field=@nameof(viewAllegati.Campo1) HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
-        <GridColumn Field=@nameof(viewAllegati.Campo2) HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
-        <GridColumn Field=@nameof(viewAllegati.Campo3) HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
-        <GridColumn Field=@nameof(viewAllegati.Campo4) HeaderText="@Cols[3].Des" Visible="@Cols[3].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
-        <GridColumn Field=@nameof(viewAllegati.Campo5) HeaderText="@Cols[4].Des" Visible="@Cols[4].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
-        <GridColumn Field=@nameof(viewAllegati.Campo6) HeaderText="@Cols[5].Des" Visible="@Cols[5].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
-        <GridColumn Field=@nameof(viewAllegati.Campo7) HeaderText="@Cols[6].Des" Visible="@Cols[6].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
-        <GridColumn Field=@nameof(viewAllegati.Campo8) HeaderText="@Cols[7].Des" Visible="@Cols[7].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
-        <GridColumn Field=@nameof(viewAllegati.Campo9) HeaderText="@Cols[8].Des" Visible="@Cols[8].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
-        <GridColumn Field=@nameof(viewAllegati.Campo10) HeaderText="@Cols[9].Des" Visible="@Cols[8].Visible" AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+          <GridColumn HeaderTextAlign=TextAlign.Left HeaderText="Tipo" Width="80">
+                <Template>
+                    @{
+                    var Attach = (context as viewAllegati);
+                    if (Attach.Tipo == "FILE")
+                    {
+                        if(Attach.NomeFile.ToLower().EndsWith("pdf"))
+                        {
+                            <SfButton CssClass="smallicon_pdf"  HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Documento pdf" } })" IconCss="e_fa far fa-file-pdf"></SfButton>
+                        }
+                        else if(Attach.NomeFile.ToLower().EndsWith("jpg") || Attach.NomeFile.ToLower().EndsWith("png") || Attach.NomeFile.ToLower().EndsWith("jpeg"))
+                        {
+                            <SfButton CssClass="smallicon_img"  HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Immagine" } })" IconCss="e_fa far fa-image"></SfButton>
+                        }
+                        else
+                            {
+                            <SfButton CssClass="smallicon_doc"  HtmlAttributes="@(new Dictionary<string, object>() { { "title", "File" } })" IconCss="e_fa far fa-file"></SfButton>
+                            }
+                    }
+                    else if (Attach.Tipo == "EMAIL")
+                    {
+                        <SfButton CssClass="smallicon_mail"  HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Email" } })" IconCss="e_fa fas fa-envelope"></SfButton>
+                    }
+                    else if (Attach.Tipo == "ZIP")
+                    {
+                        <SfButton CssClass="smallicon_zip"  HtmlAttributes="@(new Dictionary<string, object>() { { "title", "File Zip" } })" IconCss="e_fa fas fa-file-archive"></SfButton>
+                    }
+                }
+                </Template>
+            </GridColumn>
+        <GridColumn Width="250" Field=@nameof(viewAllegati.Descrizione) HeaderText="Descrizione" AllowEditing="true" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Width="250" Field=@nameof(viewAllegati.NomeFile) HeaderText="File" AllowEditing="false"  AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewAllegati.Campo1) HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible"   AllowEditing="true" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewAllegati.Campo2) HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible"   AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewAllegati.Campo3) HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible"   AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewAllegati.Campo4) HeaderText="@Cols[3].Des" Visible="@Cols[3].Visible"   AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewAllegati.Campo5) HeaderText="@Cols[4].Des" Visible="@Cols[4].Visible"   AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewAllegati.Campo6) HeaderText="@Cols[5].Des" Visible="@Cols[5].Visible"   AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewAllegati.Campo7) HeaderText="@Cols[6].Des" Visible="@Cols[6].Visible"   AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewAllegati.Campo8) HeaderText="@Cols[7].Des" Visible="@Cols[7].Visible"   AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewAllegati.Campo9) HeaderText="@Cols[8].Des" Visible="@Cols[8].Visible"  AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
+        <GridColumn Field=@nameof(viewAllegati.Campo10) HeaderText="@Cols[9].Des" Visible="@Cols[8].Visible"  AllowEditing="false" AllowSorting="true" AllowFiltering="false" AllowSearching="false"></GridColumn>
 
         @if (nEnableDownload)
         {
@@ -92,6 +147,12 @@
     public bool nEnableAdd { get; set; } = true;
 
     /// <summary>
+    /// Indicates if is to enable the edit of an attachment
+    /// </summary>
+    [Parameter]
+    public bool nEnableEdit { get; set; } = true;
+
+    /// <summary>
     /// Indicates  if is to enable the remove of an attachment
     /// </summary>
     [Parameter]
@@ -101,7 +162,7 @@
     /// Page size
     /// </summary>
     [Parameter]
-    public int nPageSize { get; set; } = 4;
+    public int nPageSize { get; set; } = 5;
 
     /// <summary>
     /// Item  that contains the attachs
@@ -130,6 +191,9 @@
     /// </summary>
     [Parameter]
     public EventCallback<viewAllegati> OnSelectAttachment { get; set; }
+
+    [Parameter]
+    public EventCallback<viewAllegati> OnEditAttachment { get; set; }
 
     /// <summary>
     /// Fire on download attach
@@ -194,9 +258,9 @@
     {
         nShowAll = !nShowAll;
         if (nShowAll)
-            ShowedAttachments = Attachments;
+            ShowedAttachments = Attachments.OrderByDescending(x=>x.DataC).ToList();
         else 
-            ShowedAttachments = Attachments.Where(x => x.Tipo == "FILE").ToList();
+            ShowedAttachments = Attachments.Where(x => x.Tipo == "FILE").OrderByDescending(x=>x.DataC).ToList();
     }
 
     /// <summary>
@@ -207,8 +271,14 @@
         get
         {
             List<Object> t = new();
-            if (nEnableAdd) t.Add(new ItemModel() { Id = "New", Text = "Nuovo", TooltipText = "Nuovo", PrefixIcon = "e-add" });
-            if (nEnableRemove) t.Add(new ItemModel() { Id = "Delete", Text = "Elimina", TooltipText = "Elimina", PrefixIcon = "e-delete" });
+            if (nEnableAdd) t.Add(new ToolbarItem() {  Id = "New",  Text = "Nuovo", TooltipText = "Nuovo", PrefixIcon = "e-add" });
+            if (nEnableEdit)
+            {
+                t.Add("Edit");
+                t.Add("Cancel");
+                t.Add("Update");
+            }
+            if (nEnableRemove) t.Add(new ToolbarItem() { Id = "Delete", Text = "Elimina", TooltipText = "Elimina", PrefixIcon = "e-delete" });
             t.Add(new ToolbarItem()
                 {
                     Template = Button,
@@ -223,6 +293,16 @@
     }
 
     /// <summary>
+    /// Send the Edit event when a attach has been changed
+    /// </summary>
+    /// <param name="args"></param>
+    public void OnActionCompleted(ActionEventArgs<viewAllegati> args)
+    {
+        if(args.RequestType==Syncfusion.Blazor.Grids.Action.Save)
+            OnEditAttachment.InvokeAsync(args.Data);
+    }
+
+    /// <summary>
     /// Reloadign the attachments of the ite,m
     /// </summary>
     public void Refresh()
@@ -232,9 +312,12 @@
             Stopwatch SW = Stopwatch.StartNew();
             Attachments = _ele.GetvAllegatiElemento(nItem.Id);
             if (nShowAll)
-                ShowedAttachments = Attachments;
+                ShowedAttachments = Attachments.OrderByDescending(x=>x.DataC).ToList();
             else 
-                ShowedAttachments = Attachments.Where(x => x.Tipo == "FILE").ToList();
+                ShowedAttachments = Attachments.Where(x => x.Tipo == "FILE").OrderByDescending(x=>x.DataC).ToList();
+
+
+
             _Logger.LogInformation($"AttachmentsTable.Refresh: Loaded {Attachments.Count} attachs in {SW.ElapsedMilliseconds} ms");
         }
         else
@@ -245,6 +328,21 @@
         }
         OldItem = nItem;
     }
+
+    /// <summary>
+    /// Select everitime the fist pdf found
+    /// </summary>
+    /// <param name="FirstRender"></param>
+    protected override void OnAfterRender(bool FirstRender)
+   {
+       if(FirstRender)
+       {
+            var Sel=ShowedAttachments.OrderByDescending(x=>x.DataC).FirstOrDefault(x => x.Tipo == "FILE" && x.NomeFile.ToLower().EndsWith("pdf"));
+            if (Sel != null)
+                Grid?.SelectRowAsync((double)ShowedAttachments.IndexOf(Sel));
+       }
+   }
+
     /// <summary>
     /// On Init loard the grid
     /// </summary>
