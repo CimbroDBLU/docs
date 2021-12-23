@@ -438,48 +438,44 @@
     /// <param name="e"></param>
     public void OnSelectAttach(AllegatoEmail e)
     {
-        InvokeAsync(() =>
-        {
+        try
+        { 
+            IsCustomerExpand = true;
 
-            try
+            if (e == null)
             {
-                IsCustomerExpand = true;
-
-                if (e == null)
-                {
-                    _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: DeSelecting attach");
-                    AttachID = "";
-                    DossierID = "";
-                    CustomerCode = "";
-                    PDFSourceId = "";
-                    PDFSourceType = e_SourceType.Attachment;
-                    return;
-                }
-
-                _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Id}");
-                Attach = e;
-                PDFSourceId = e.Id.ToString();
+                _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: DeSelecting attach");
+                AttachID = "";
+                DossierID = "";
+                CustomerCode = "";
+                PDFSourceId = "";
                 PDFSourceType = e_SourceType.Attachment;
-
-                if (AttachID != e.Id.ToString())
-                    AttachID = e.Id.ToString();
-
-                if (DossierID != e.IdFascicolo.ToString())
-                    DossierID = e.IdFascicolo.ToString();
-
-                if (CustomerCode != e.Chiave3)
-                    CustomerCode = e.Chiave3;
-
-                if (string.IsNullOrEmpty(CustomerCode))
-                    CostumerDesc = "Cliente da selezionare";
-
-                OnAbort();
+                return;
             }
-            catch (Exception ex)
-            {
-                _Logger.LogError($"Inbox[MAIL].OnSelectAttach: Unexpected errro on selecting attach {ex}");
-            }
-        });
+
+            _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Id}");
+            Attach = e;
+            PDFSourceId = e.Id.ToString();
+            PDFSourceType = e_SourceType.Attachment;
+
+            if (AttachID != e.Id.ToString())
+                AttachID = e.Id.ToString();
+
+            if (DossierID != e.IdFascicolo.ToString())
+                DossierID = e.IdFascicolo.ToString();
+
+            if (CustomerCode != e.Chiave3)
+                CustomerCode = e.Chiave3;
+
+            if (string.IsNullOrEmpty(CustomerCode))
+                CostumerDesc = "Cliente da selezionare";
+
+            OnAbort();
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"Inbox[MAIL].OnSelectAttach: Unexpected errro on selecting attach {ex}");
+        }
     }
 
 
@@ -685,6 +681,7 @@
         DossierID = data.DossierId;
         ItemID = data.ItemId;
         Grid.Refresh();
+        OnSelectAttach(Attach);
     }
 
     /// <summary>
