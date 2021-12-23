@@ -283,7 +283,7 @@
             return;
 
         IsSpinnerVisible = true;
-        Task.Run(() =>
+        InvokeAsync(() =>
         {
             DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
             LoadDocument();
