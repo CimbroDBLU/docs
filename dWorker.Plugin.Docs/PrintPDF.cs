@@ -55,6 +55,8 @@ namespace dWorker.Plugin.Docs
                 PdfRenderer loadedDocument = new();
                 loadedDocument.Load(DocumentStream);
 
+                if (loadedDocument.PageCount == 0) return true;
+
                 using PrintDocument printDocument = new();
                 //Preparo il doc settanto nome e stampante
                 printDocument.DocumentName = Name;

@@ -61,7 +61,7 @@ namespace dWorker.Plugin.Docs
         /// <summary>
         /// Current page that needs to be printed
         /// </summary>
-        public int CurrentPageIndex => _pageNumbers[_cursor];
+        public int CurrentPageIndex => (_pageNumbers.Length>0)?_pageNumbers[_cursor]:0;
 
         /// <summary>
         /// Move the cursot to the next page (return true if it is possible)
