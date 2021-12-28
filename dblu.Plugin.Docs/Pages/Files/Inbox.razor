@@ -610,7 +610,7 @@
     public async void OnAttachCompleted(string AttachId)
     {
         Grid.Refresh();
-        Grid.SelectedRow = 0;
+        Grid.ClearSelectionAsync(); 
     }
 
     /// <summary>

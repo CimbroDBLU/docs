@@ -421,6 +421,7 @@
                 Models.RisultatoAzione res = await _ZipService.CancellaZip(Attach.Id.ToString(), User);
                 _Logger.LogInformation($"Processed[FILE,{nDocType}].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
                 Grid.Refresh();
+                Grid.ClearSelectionAsync(); 
                 ToastOK.Show();
             }
             else
@@ -471,6 +472,7 @@
             {
                 ToastReOpenOK.Show();
                 Grid.Refresh();
+                Grid.ClearSelectionAsync(); 
             }
             else
                 ToastReOpenKO.Show();

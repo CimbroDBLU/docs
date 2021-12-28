@@ -326,7 +326,7 @@
     {
         if (e == null)
         {
-             _Logger.LogDebug($"Processed[MAIL].OnSelectAttach: DeSelecting attach");
+            _Logger.LogDebug($"Processed[MAIL].OnSelectAttach: DeSelecting attach");
             AttachID = null;
             DossierID = null;
             CustomerCode = null;
@@ -450,6 +450,7 @@
                 Models.RisultatoAzione res = await _MailService.CancellaEmail(Attach.Id.ToString(), nServer, User);
                 _Logger.LogInformation($"Processed[MAIL].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
                 Grid.Refresh();
+                Grid.ClearSelectionAsync();
                 ToastOK.Show();
             }
             else
@@ -499,7 +500,7 @@
     public async void OnAttachCompleted(string AttachId)
     {
         Grid.Refresh();
-        Grid.SelectedRow = 0;
+        OnSelectAttach(null);
     }
 
     /// <summary>
@@ -533,6 +534,7 @@
             {
                 ToastReOpenOK.Show();
                 Grid.Refresh();
+                Grid.ClearSelectionAsync();
             }
             else
                 ToastReOpenKO.Show();

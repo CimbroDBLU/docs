@@ -20,7 +20,7 @@
 @inject IConfiguration _Conf
 
 
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" SelectedRowIndex="0" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
     <SfDataManager Url="@DataUrl" CrossDomain="true" Adaptor=" Syncfusion.Blazor.Adaptors.ODataV4Adaptor"></SfDataManager>
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
@@ -253,6 +253,11 @@
     /// Last emails arrived and visualized in current folder
     /// </summary>
     private DateTime LastFileTime { get; set; }
+
+    /// <summary>
+    /// Clear the selection
+    /// </summary>
+    public async void ClearSelectionAsync()=> Grid.ClearSelectionAsync();
 
     /// <summary>
     /// On init , if necessary, start the timer

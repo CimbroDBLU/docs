@@ -439,7 +439,7 @@
     public void OnSelectAttach(AllegatoEmail e)
     {
         try
-        { 
+        {             
             IsCustomerExpand = true;
 
             if (e == null)
@@ -621,6 +621,7 @@
             }
 
             Grid.Refresh();
+            Grid.ClearSelectionAsync();
             _Logger.LogInformation($"Inbox[MAIL].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
         }
         catch (Exception ex)
@@ -728,7 +729,8 @@
     public async void OnAttachCompleted(string AttachId)
     {
         Grid.Refresh();
-        Grid.SelectedRow = 0;
+        //Pulendo la selezione , automaticamente seleziona la prima riga disponibile :-)
+        Grid.ClearSelectionAsync();
     }
 
 
