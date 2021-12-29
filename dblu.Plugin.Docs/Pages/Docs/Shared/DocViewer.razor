@@ -252,7 +252,7 @@
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.SearchOption,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.PrintOption,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.DownloadOption
-                           
+
                             }
                 };
 
@@ -273,6 +273,7 @@
         }
     }
 
+
     /// <summary>
     /// On Set parameter, reload the control
     /// </summary>
@@ -283,11 +284,13 @@
             return;
 
         IsSpinnerVisible = true;
-        InvokeAsync(() =>
+        Task.Run(() =>
         {
-            DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
-            LoadDocument();
-            OnPDFViewerCreated();
+
+                DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
+                LoadDocument();
+                OnPDFViewerCreated();
+            
         }).ContinueWith(T=>IsSpinnerVisible = false);
         
     }
@@ -315,16 +318,18 @@
     /// </summary>
     private async void OnPDFViewerCreated()
     {
+        this.InvokeAsync(()=>{
         lock (this)
         {
+            
             if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length != 0)
             {
                 DownloadFileName = "";
                 string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
                 Viewer.Load("data:application/DocManager;base64," + base64String, null);
-
             }
         }
+        });
     }
 
     /// <summary>

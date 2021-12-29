@@ -380,10 +380,14 @@ else
     {
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
-
-        Cols = _ele.GetColonne("vELEMENTO");
-        Actions = GetActions();
-        ActionSelected = Actions.Where(x => x.AggregaAElemento == false).FirstOrDefault()?.Codice;
+        Task.Run(() =>
+       {
+           Cols = _ele.GetColonne("vELEMENTO");
+       }).ContinueWith(T =>
+       {
+           Actions = GetActions();
+           ActionSelected = Actions.Where(x => x.AggregaAElemento == false).FirstOrDefault()?.Codice;
+       });
     }
 
     /// <summary>
@@ -415,7 +419,7 @@ else
             if(!string.IsNullOrEmpty(nSelectedItem))
             {
                 int Index = nItems.ToList().FindIndex(d => d.Id == nSelectedItem);
-                Grid.SelectRowAsync((double)Index);
+                Grid?.SelectRowAsync((double)Index);
             }
         base.OnAfterRender(firstRender);
     }

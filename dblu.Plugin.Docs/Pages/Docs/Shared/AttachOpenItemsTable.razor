@@ -38,6 +38,7 @@
     [Parameter]
     public EventCallback<int> OnOpenItems { get; set; }
 
+
     /// <summary>
     /// Previously Customer code, to avoid reloading same events
     /// </summary>
@@ -56,22 +57,27 @@
     /// <summary>
     /// On Init component, load the list of open items
     /// </summary>
-    protected override async Task OnParametersSetAsync()
+    protected override Task OnParametersSetAsync()
     {
-        if (string.IsNullOrEmpty(nCustomerCode)) { nItems = new(); return; }
+        if (string.IsNullOrEmpty(nCustomerCode)) { nItems = new(); OldCustomerCode = ""; return base.OnParametersSetAsync(); }
 
-        if (OldCustomerCode == nCustomerCode) { return; }
+        if (OldCustomerCode == nCustomerCode) {  return base.OnParametersSetAsync(); }
         OldCustomerCode = nCustomerCode;
-     
-        InvokeAsync(async () =>
-        {  
+
+        Task.Run(async () =>
+        {
             IsSpinnerVisible = true;
             Stopwatch SW = Stopwatch.StartNew();
             nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)).OrderByDescending(x => x.DataConsegna));
             _Logger.LogInformation($"AttachOpenItemsTable.OnParametersSetAsync: Retreived {nItems.Count} related items for {nCustomerCode} in {SW.ElapsedMilliseconds} ms");
-            OnOpenItems.InvokeAsync(nItems?.Count ?? 0);
+            IsSpinnerVisible = false;  
+            InvokeAsync(async () =>
+            {
+                OnOpenItems.InvokeAsync(nItems?.Count ?? 0);
+            });
+                              
         }).ContinueWith(T => IsSpinnerVisible = false);
-
+        return base.OnParametersSetAsync();
     }
 
 

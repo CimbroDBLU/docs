@@ -112,9 +112,10 @@ else
         {
             if (Sender != PrevSender)
             {
-                IsLoading = true;
-                InvokeAsync(() =>
+                PrevSender = Sender;
+                Task.Run(() =>
                 {
+                    IsLoading = true;
                     Stopwatch sw = Stopwatch.StartNew();
                     List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Sender);
                     _Logger.LogDebug($"AttachCostumer.OnParametersSetAsync: Read {Costumers.Count} costumers in {sw.ElapsedMilliseconds} ms");
@@ -125,10 +126,13 @@ else
                     }
                     else
                     {
-                        OnLinkCostumer(Costumers?.FirstOrDefault());
+                        InvokeAsync(() =>
+                        {
+                            OnLinkCostumer(Costumers?.FirstOrDefault());
+                        });
                         ShowCostumerSelection = false;
                     }
-                    PrevSender = Sender;
+                    IsLoading = false;
                 })
                 .ContinueWith(T=> IsLoading = false);
 

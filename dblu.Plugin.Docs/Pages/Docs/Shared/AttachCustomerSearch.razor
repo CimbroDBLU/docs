@@ -126,10 +126,8 @@
     /// </summary>
     /// <returns></returns>
     public async Task Search()
-    {
-        IsSpinnerVisible = true;          
+    {       
         bool ToSend=await LoadCostumer();                
-        IsSpinnerVisible = false;
         if (ToSend)
             await OnLinkedToCostumer.InvokeAsync(CurrentCostumer);
     }
@@ -142,47 +140,45 @@
     private async Task<bool> LoadCostumer()
     {
 
+        nCostumerCode = nCostumerCode?.Trim();
+
         if (LastCostumerCode != nCostumerCode && !string.IsNullOrEmpty(nCostumerCode))
         {
-            Stopwatch SW = Stopwatch.StartNew();
-            CurrentCostumer = _MailService._soggetti.GetSoggetto(nCostumerCode);
-            _Logger.LogInformation($"AttachCostumerSearch.LoadCostumer: Retreived Costumer from code {nCostumerCode} in {SW.ElapsedMilliseconds} ms");
-            Description = CurrentCostumer?.Nome ?? "";
             LastCostumerCode = nCostumerCode;
-            return true;
-
-        }
-        else if (string.IsNullOrEmpty(nCostumerCode))
-        {
-            CurrentCostumer = null;
             Description = "";
-            if (!string.IsNullOrEmpty(LastCostumerCode))
-            {
-                LastCostumerCode = nCostumerCode;
-                return true;
-            }
+            Stopwatch SW = Stopwatch.StartNew();
+            IsSpinnerVisible = true; 
+            CurrentCostumer = _MailService._soggetti.GetSoggetto(LastCostumerCode);                     
+            _Logger.LogInformation($"AttachCostumerSearch.LoadCostumer: Retreived Costumer from code {LastCostumerCode} in {SW.ElapsedMilliseconds} ms");
+            IsSpinnerVisible = false;
+            Description = CurrentCostumer?.Nome ?? "";
 
+            return true;
         }
         LastCostumerCode = nCostumerCode;
         return false;
     }
 
     /// <summary>
-    /// Once component loaded seqarch for the costumet and aventually sent to parent the costumer identified
+    /// Once component loaded search for the costumer and eventually send to parent the costumer identified
     /// </summary>
-    /// <param name="firstRender"></param>
     /// <returns></returns>
-    protected override  Task OnAfterRenderAsync(bool firstRender)
+    protected override  Task OnParametersSetAsync()
     {
-        InvokeAsync(() => {
-            IsSpinnerVisible = true;
-            bool ToSend = LoadCostumer().Result;
-            nCostumerCode = CurrentCostumer?.Codice ?? "";
+
+        Task.Run(async () =>
+        {
+            bool ToSend = await LoadCostumer();
             if (ToSend)
-                OnLinkedToCostumer.InvokeAsync(CurrentCostumer);
-        }).ContinueWith(T=> IsSpinnerVisible = false);
-    
-    return base.OnAfterRenderAsync(firstRender);
+            {
+                await InvokeAsync(() =>
+                {
+                    OnLinkedToCostumer.InvokeAsync(CurrentCostumer);
+                });
+            }         
+        });
+
+    return base.OnParametersSetAsync();
     }
 
     /// <summary>
