@@ -678,11 +678,9 @@
     /// </summary>
     /// <param name="data"></param>
     private async void OnLinkToItem((string DossierId, string ItemId) data)
-    {
-        DossierID = data.DossierId;
-        ItemID = data.ItemId;
+    {        
         Grid.Refresh();
-        OnSelectAttach(Attach);
+        DossierID = data.DossierId;
     }
 
     /// <summary>
@@ -719,7 +717,6 @@
     public void OnRefreshDossier(Fascicoli Dossier)
     {
         DossierDesc = (Dossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {Dossier?.Descrizione} [{Dossier?.Id}]";
-
     }
 
     /// <summary>
