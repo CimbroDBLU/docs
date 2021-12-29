@@ -1,6 +1,8 @@
 ﻿@*
     Component for Complete a task, showing details of the element
 *@
+
+@page "/Activities/CompleteTask/{TaskId}"
 @using BPMClient
 @using dblu.Docs.Models
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
@@ -10,13 +12,18 @@
 @inject ProtectedSessionStorage _SessionStore
 @inject dblu.Portale.Plugin.TaskListBase.Services.Camunda.CamundaService  _CamundaService
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
+@inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject ILogger<CompleteTask> _Logger
 @inject IJSRuntime JSRuntime
 
 <PageTitle nTitle="Completa attività" />
 
 <section class="content">
+    <SfCard>
+    <CardHeader Title="Completa attività" />  
+    <CardContent EnableSeperator="true">
     <EditItemMetadata nItem="@Item" nShowMetadata="false"></EditItemMetadata>
+    </CardContent>
     <CardContent EnableSeperator="true">
         <div class="row">
             <div class="col-12">
@@ -39,6 +46,7 @@
 
     <Toast @ref="ToastCompleteKO" nToastType="Toast.e_ToastType.Fail" nTitle="Completamento task" nContent="Completamento task NON riuscito"></Toast>
     <Toast @ref="ToastCompleteOK" nToastType="Toast.e_ToastType.OK" nTitle="Completamento task" nContent="Task Completato"></Toast>
+    </SfCard>
 </section>
 
 
@@ -54,6 +62,12 @@
     /// List of variables of the Task
     /// </summary>
     private Dictionary<string, VariableValue> Variables { get; set; } = new();
+
+    /// <summary>
+    /// Id of the task
+    /// </summary>
+    [Parameter]
+    public string TaskId { get; set; }
 
     /// <summary>
     /// Item  ID under process
@@ -81,10 +95,20 @@
     private bool IsShowDialog { get; set; } = false;
 
     /// <summary>
+    /// Current UserID
+    /// </summary>
+    public string User{ get; set; }
+
+    /// <summary>
     /// Initialize the collections
     /// </summary>
-    protected override void OnInitialized()
+    protected override async  void OnInitialized()
     {
+        BPMTask tsk = new BPMTask();
+        if(!string.IsNullOrEmpty(TaskId))
+            nTask = _CamundaService._task.Get(_CamundaService._eng, TaskId);       
+
+
         BPMVariable var = new BPMVariable();
         Variables = var.GetAll(_CamundaService._eng, nTask.id).Result;
 
@@ -93,6 +117,9 @@
         else
             if (Variables.ContainsKey("_IdElemento"))
             Item = _AttachService.GetElemento(Guid.Parse((string)Variables["_IdElemento"].value), 0);
+
+        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+        User = authState.User.Identity.Name;
     }
 
     /// <summary>
@@ -118,9 +145,19 @@
         bool res = false;
         try
         {
+
             IsShowDialog = false;
             Stopwatch sw = Stopwatch.StartNew();
             BPMTask tsk = new BPMTask();
+
+            ///Prima di avanzare il task, ne prendo possesso
+            BPMTaskDto dt = tsk.Get(_CamundaService._eng, nTask.id);
+            if(dt.assignee!=User )
+            {
+                tsk.Claim(_CamundaService._eng, nTask.id, User);
+                 _Logger.LogInformation($"CompleteTask.Claim: Task {nTask.id} is in charge of {User}");
+            }
+
             Dictionary<string, VariableValue> fVars = await tsk.GetTaskFormVariables(_CamundaService._eng, nTask.id);
             BPMTaskDto tdto = tsk.Get(_CamundaService._eng, nTask.id);
             res = tsk.SubmitTaskForm(_CamundaService._eng, nTask.id, fVars);
