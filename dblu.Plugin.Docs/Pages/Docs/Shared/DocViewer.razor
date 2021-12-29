@@ -4,6 +4,7 @@
 
 @using Syncfusion.Blazor.PdfViewerServer
 @using Syncfusion.Blazor.PdfViewer
+@using System.Threading
 @using dblu.Portale.Plugin.Docs.Classes
 @using dblu.Portale.Plugin.Docs.Services
 @using System.IO
@@ -102,7 +103,7 @@
         else
         {
             <SfPdfViewerServer Height="96vh" EnableStampAnnotations="false" EnableHandwrittenSignature="false"  EnableTextSelection="true"  FreeTextSettings="@FreeTextSettings" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
-                <PdfViewerEvents Created="OnPDFViewerCreated" DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
+                <PdfViewerEvents  Created="OnPDFViewerCreated"  DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
             </SfPdfViewerServer>
         }
     }
@@ -273,26 +274,48 @@
         }
     }
 
+    protected override async  Task OnInitializedAsync()
+    {
+        DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
+        Doc = new Document("", new MemoryStream(),e_DocType.PDF);
+    }
 
     /// <summary>
     /// On Set parameter, reload the control
     /// </summary>
-    protected override async Task OnParametersSetAsync()
-    {
+    protected override Task OnParametersSetAsync()
+    { 
         //Non e' il caso di aggiornare.
         if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
-            return;
+            return base.OnParametersSetAsync();
 
         IsSpinnerVisible = true;
-        Task.Run(() =>
-        {
+        Doc = new Document("", new MemoryStream(),e_DocType.PDF);        
+        IsSpinnerVisible = false;
 
-                DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
-                LoadDocument();
-                OnPDFViewerCreated();
-            
-        }).ContinueWith(T=>IsSpinnerVisible = false);
-        
+        Task.Run(() =>
+        {           
+            LoadDocument();        
+            IsSpinnerVisible = false;
+        }).ContinueWith(T=>ApplyDoc());
+        return base.OnParametersSetAsync();
+    }
+
+    /// <summary>
+    /// Copy the pdf on the pdf viewer
+    /// </summary>
+    private void ApplyDoc()
+    {
+        lock (this)
+        {
+            if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length != 0)
+            {
+                DownloadFileName = "";
+                string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
+                Viewer.LoadAsync("data:application/DocManager;base64," + base64String, null);
+            }
+        }
+
     }
 
     /// <summary>
@@ -301,35 +324,25 @@
     private async void LoadDocument()
     {
         Doc = await DocManager.Load(nSourceType, nDocIdentifier);
+        InvokeAsync(() => StateHasChanged());
     }
 
     /// <summary>
     /// On document loaded , set the Download file name according
     /// </summary>
-    private async void OnDocumentLoaded()
+    private void OnDocumentLoaded()
     {
         DownloadFileName = Doc.FileName;
-
         OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
     }
 
     /// <summary>
-    /// Once the pdf viewer control is created, it can be load the document
+    /// Once the pdf viewer control is created, it can be load the document (reset it , if document was ready before the component)
     /// </summary>
-    private async void OnPDFViewerCreated()
+    private  void OnPDFViewerCreated()
     {
-        this.InvokeAsync(()=>{
-        lock (this)
-        {
-            
-            if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length != 0)
-            {
-                DownloadFileName = "";
-                string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
-                Viewer.Load("data:application/DocManager;base64," + base64String, null);
-            }
-        }
-        });
+        _Logger.LogDebug("DocViewer.OnPDFViewerCreated: PDF Viewer created");
+        ApplyDoc();
     }
 
     /// <summary>
