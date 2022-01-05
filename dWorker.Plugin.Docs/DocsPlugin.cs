@@ -7,6 +7,7 @@ using MoonSharp.Interpreter;
 using dblu.Docs.Classi;
 using System.IO;
 using System.Threading.Tasks;
+using dblu.Docs.Models;
 
 namespace dWorker.Plugin.Docs
 {
@@ -26,6 +27,9 @@ namespace dWorker.Plugin.Docs
         /// </summary>
         private IConfiguration _conf;
 
+        protected IPluginOwner _worker;
+
+        private DocsManager _docsManager { get; set; }
         /// <summary>
         /// Dispose pluging
         /// </summary>
@@ -44,7 +48,7 @@ namespace dWorker.Plugin.Docs
         public bool Execute(batch_operation Operation, string OperationKey)
         {
             bool res = false;
-            _logger.LogDebug($"operation: {Operation.operation_type} {OperationKey}");
+            _logger.LogDebug($"operation: {Operation.operation_type} {Operation.operation_name} {OperationKey}");
             switch (Operation.operation_type)
             {
                 case "print_attach":
@@ -52,6 +56,9 @@ namespace dWorker.Plugin.Docs
                     string Printer = Operation.printer_name;
                     _logger.LogInformation($"DocsPlugIn.Execute: Request print of attachment {AttachID}");
                     res = PrintAttach(AttachID, Printer);
+                    break;
+                case "email_capture":
+                    ProcessaPostaInArrivo(Operation, OperationKey);
                     break;
                 default:
                     break;
@@ -68,8 +75,10 @@ namespace dWorker.Plugin.Docs
         /// </returns>
         public bool Init(IPluginOwner worker)
         {
+             _worker = worker;    
             _logger = worker.logger;
             _conf = worker.conf;
+            _docsManager = new(_worker.logger, _worker.conf, "dblu.Docs");
             return true;
         }
         /// <summary>
@@ -78,7 +87,7 @@ namespace dWorker.Plugin.Docs
         /// <returns></returns>
         public List<string> OperationNames()
         {
-            return new List<string>() { "print_attach" };
+            return new List<string>() { "print_attach", "email_capture" };
         }
 
         /// <summary>
@@ -90,6 +99,7 @@ namespace dWorker.Plugin.Docs
         /// </returns>
         public bool RegisterScriptObjects(Script script)
         {
+            _worker.script.SetObject("docs", _docsManager);
             return true;
         }
 
@@ -117,6 +127,42 @@ namespace dWorker.Plugin.Docs
             }
         }
 
+
+        private bool ProcessaPostaInArrivo(batch_operation Operation, string OperationKey)
+        {
+            bool res = true;
+            try
+            {
+
+                var mailMan = new MailManager(_logger, _conf);
+                mailMan.TipoAllegato = Operation.parameters["attachment_type"].ToString();
+                mailMan.Connessione = _conf.GetConnectionString(Operation.connection_name);
+                mailMan.Bpm_url = _conf["Camunda:Ip"];
+                mailMan.Bpm_User = _conf["Camunda:User"];
+                mailMan.Bpm_Password = _conf["Camunda:Password"];
+
+                mailMan.StatoIniziale = StatoAllegato.Attivo;
+                try
+                {
+                    int s = (int)StatoAllegato.Attivo;
+                    int.TryParse(Operation.parameters["attachment_status"].ToString(), out s);
+                    mailMan.StatoIniziale = (StatoAllegato)s;
+                }
+                catch
+                {
+                }
+                string Servers = Operation.parameters["server"].ToString();
+                if (Servers == "*")
+                    Servers = "";
+                res = Task.Run(() =>  mailMan.ProcessaEmail(Servers, new System.Threading.CancellationToken())).Result;
+            }
+            catch (Exception ex)
+            {
+                res = false;
+                _logger.LogError($"ProcessaPostaInArrivo: {ex.Message}");
+            };
+            return res;
+        }
 
     }
 }

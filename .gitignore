@@ -15,3 +15,6 @@ MailService/Properties/PublishProfiles/FolderProfile.pubxml
 dblu.Docs/dblu.Docs48.csproj.user
 MailService/dbluMailService.csproj.user
 *.user
+dWorker.plugin.Docs.Setup/bin/
+dWorker.plugin.Docs.Setup/obj/
+dWorker.plugin.Docs.Setup/Properties/PublishProfiles/FolderProfile.pubxml

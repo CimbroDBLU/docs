@@ -133,6 +133,45 @@ namespace dblu.Docs.Classi
             return fsc;
         }
 
+        public bool Cancella(string Id)
+        {
+            if (string.IsNullOrEmpty(Id))
+            {
+                return false;
+            }
+            var bres = false;
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    var nr = cn.Execute($"DELETE FROM Fascicoli WHERE Id=@Id ", new { Id });
+                    bres = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Cancella Fascicolo '{Id}' {ex.Message}");
+            }
+            return bres;
+        }
+
+        public bool Cancella(Guid? guid)
+        {
+            var bres = false;
+            try
+            {
+
+                bres = this.Cancella(guid.ToString());
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Cancella Fascicolo : {ex.Message}");
+
+            }
+            return bres;
+        }
+
         public void CancellaFascicoliVuoti()
         {
             using (SqlConnection cn = new SqlConnection(StringaConnessione))
@@ -140,8 +179,6 @@ namespace dblu.Docs.Classi
                 cn.Execute("DELETE FROM FASCICOLI WHERE ID NOT IN (SELECT IDFASCICOLO FROM ELEMENTI)");
             }
         }
-
-
 
         public bool Salva(Fascicoli fascicolo, bool isNew)
         {
