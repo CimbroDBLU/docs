@@ -1,0 +1,863 @@
+﻿@*
+    Page that manage the inbox and its interaction with Dossiers and Items
+*@
+
+@page "/Mail/Sorting"
+@page "/Mail/Sorting/{nPreselAttach}"
+@page "/Mail/Sorting/{nPreselFolder}/{nPreselAttach}"
+@page "/Mail/Sorting/{nPreselFolder}/{nPreselAttach}/{nPreselItem}"
+@using Microsoft.AspNetCore.Components.CompilerServices
+@using dblu.Docs.Models
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Services
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using dblu.Portale.Plugin.Docs.Pages.Mail.Shared
+@using dblu.Portale.Plugin.Docs.Classes
+@using Microsoft.AspNetCore.Http
+@using System.IO
+@using dblu.Docs.Interfacce
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
+@inject IHttpContextAccessor _HttpContextAccessor
+@inject ILogger<Inbox> _Logger
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+
+<PageTitle nTitle="Inbox" />
+
+<section class="content">
+
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
+
+    <SfCard>
+        <CardHeader Title="Email in arrivo - Smistamento" />
+        <CardContent EnableSeperator="true">
+            <div class="row form-group">
+                <div class="col-5" style="align-self: auto;">
+                    <div class="row form-group">
+                        <div class="col">
+                            <ServerCombo @bind-nServer="@MailBox" nPresel="@nPreselFolder"></ServerCombo>
+                        </div>
+                    </div>
+                    <div class="row ">
+                        <div class="col">
+                            <MailTable @ref="@Grid" nMailBox="@MailBox" OnSelectAttachment="OnSelectAttach" OnReplyAttachment="OnReply" OnForwardAttachment="OnForward" OnMoveAttachment="OnMove" OnShowAttachment="OnShow" OnShowLogsAttachment="OnShowLogs" OnDeleteAttachment="OnDelete" nPreselAttach="@nPreselAttach" nType="MailTable.TableType.Inbox"></MailTable>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="col-7" style="align-self: auto;">
+                    @if (!string.IsNullOrEmpty(AttachID))
+                    {
+                        if (IsAnswerDialog || IsForwardDialog)
+                        {
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                        <AccordionItems>
+                                            <AccordionItem Expanded="true">
+                                                <HeaderTemplate>
+                                                    @{
+                                                        string sub = Attach?.Mittente ?? "";
+                                                        string caption = "Rispondi a ";
+                                                        if (IsForwardDialog)
+                                                        {
+                                                            caption = "Inoltra ";
+                                                            sub = @AttachSubject;
+                                                        } 
+                                                        <div>@caption<b>@sub</b></div>
+                                                    }
+                                                </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <MailForwardAnswer nAttach="@Attach" nSourceServer="@MailBox" IsAnswerDialog="@IsAnswerDialog" OnAbort="OnAbort" OnOperationDone="OnSend"></MailForwardAnswer> 
+                                                </ContentTemplate>
+                                            </AccordionItem>
+                                        </AccordionItems>
+                                    </SfAccordion>
+                                </div>
+                            </div>
+                        }
+                        else if (IsMoveDialog)
+                        {
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                        <AccordionItems>
+                                            <AccordionItem Expanded="true">
+                                                <HeaderTemplate>
+                                                    <div>Sposta <b>@AttachSubject</b></div>
+                                                </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <AttachMoveInFolder nAttach="@Attach" nSourceServer="@MailBox" OnOperationDone="OnDone" OnAbort="OnAbort"></AttachMoveInFolder>
+                                                </ContentTemplate>
+                                            </AccordionItem>
+                                        </AccordionItems>
+                                    </SfAccordion>
+                                </div>
+                            </div>
+                        }
+                        else if (IsShowDialog)
+                        {
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                        <AccordionItems>
+                                            <AccordionItem Expanded="true">
+                                                <HeaderTemplate>
+                                                    <div>Struttura di <b>@AttachSubject</b></div>
+                                                </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <MailHTMLView nAttach="@Attach" OnAbort="OnAbort"></MailHTMLView>
+                                                </ContentTemplate>
+                                            </AccordionItem>
+                                        </AccordionItems>
+                                    </SfAccordion>
+                                </div>
+                            </div>
+                        }
+                        else if (IsLogsDialog)
+                        {
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                        <AccordionItems>
+                                            <AccordionItem Expanded="true">
+                                                <HeaderTemplate>
+                                                    <div>Operazioni sulla mail <b>@AttachSubject</b></div>
+                                                </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <AttachLogs nAttach="@Attach" OnAbort="OnAbort"></AttachLogs>
+                                                </ContentTemplate>
+                                            </AccordionItem>
+                                        </AccordionItems>
+                                    </SfAccordion>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                        @*TIPI ATTIVITA'*@
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                        <AccordionItems>
+                                            <AccordionItem Expanded="@IsCustomerExpand">
+                                                <HeaderTemplate>
+                                                    <div>Tipo attività</div>
+                                                </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    @foreach(TipiElementi item in SourceTipiElementi)
+                                                    {
+                                                    <SfButton Content="@item.Descrizione" OnClick="@(()=> { NuovoElemento(item); })"></SfButton>
+
+                                                    }
+                                                </ContentTemplate>
+                                            </AccordionItem>
+                                        </AccordionItems>
+                                    </SfAccordion>
+                                </div>
+                            </div>
+
+                            @if(IsExternalComponentShown)
+                            {
+                                ObservableCollection<DynamicComponent.ComponentAttribute> Attr = new();
+                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                {
+                                    Name = "AttachID",
+                                    Position = 1,
+                                    Value = Attach.Id.ToString()
+                                });
+                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                {
+                                    Name = "CustomerCode",
+                                    Position = 2,
+                                    Value = CustomerCode
+                                });
+                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                {
+                                    Name = "nAttach",
+                                    Position = 3,
+                                    Value = SourceAttach
+                                });
+
+                                var DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == ExternalComponent.ViewAttributi.Replace(@"blz:\", "")) != null)?.GetType(@ExternalComponent.ViewAttributi.Replace(@"blz:\", ""));
+                                if (DynamicContent == null) ToastECKO.Show();
+                                else
+                                {
+                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                {
+                                    Name = "TipoElemento",
+                                    Position = 4,
+                                    Value = ExternalComponent
+                                });
+                             //  <form  id=$"form{@ExternalComponent.Codice}" >
+                                <DynamicComponent  nType="@DynamicContent" nAttributes="@Attr"></DynamicComponent>
+                              //  </form>
+                                }
+                            }
+                            @*ALLEGATI EMAIL*@
+                            @if (@IsAttachVisible)
+                            {
+                                <div class="row form-group">
+                                    <div class="col">
+                                        <SfAccordion>
+                                            <AccordionItems>
+                                                <AccordionItem Expanded="@IsAttachExpanded">
+                                                    <HeaderTemplate>
+                                                        <div>Allegati in Email</div>
+                                                    </HeaderTemplate>
+                                                    <ContentTemplate>
+                                                        <OriginalAttachsTable nAttachID="@AttachID" nAttachments="@SourceAttach"></OriginalAttachsTable>
+                                                    </ContentTemplate>
+                                                </AccordionItem>
+                                            </AccordionItems>
+                                        </SfAccordion>
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                        @*PDF VIEWER*@
+                        <div class="row form-group">
+                            <div class="col">
+                                <SfAccordion>
+                                    <AccordionItems>
+                                        <AccordionItem Expanded="true">
+                                            <HeaderTemplate>
+                                                <div>Anteprima</div>
+                                            </HeaderTemplate>
+                                            <ContentTemplate>
+                                                <DocViewer @ref="@Viewer" OnDocumentTransformed="OnDocumentTransformedZ" nHeight=700 nSourceType="@PDFSourceType" nDocIdentifier="@PDFSourceId"></DocViewer>
+                                            </ContentTemplate>
+                                        </AccordionItem>
+                                    </AccordionItems>
+                                </SfAccordion>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </CardContent>
+    </SfCard>
+
+    <QuestionDialog nTitle="Conferma"
+                    nText="Rimuovo l'email selezionata?"
+                    OnExitPressed="OnCloseDialog"
+                    OnNoPressed="OnCloseDialog"
+                    OnYesPressed="OnDeleteConfirmed"
+                    OnClose="OnCloseDialog"
+                    nShowDialog="@ShowConfirm">
+    </QuestionDialog>
+
+    <Toast @ref="ToastECKO" nToastType="Toast.e_ToastType.Fail" nTitle="Attenzione" nContent="Componente non trovato"></Toast>
+
+    <Toast @ref="ToastOK" nToastType="Toast.e_ToastType.OK" nTitle="Elimina email" nContent="Email eliminata correttamente"></Toast>
+    <Toast @ref="ToastKO" nToastType="Toast.e_ToastType.Fail" nTitle="Elimina email" nContent="Eliminazione non riuscita"></Toast>
+
+    <Toast @ref="ToastMoveOK" nToastType="Toast.e_ToastType.OK" nTitle="Sposta email" nContent="Email spostata correttamente"></Toast>
+    <Toast @ref="ToastMoveKO" nToastType="Toast.e_ToastType.Fail" nTitle="Sposta email" nContent="Spostamento NON riuscito"></Toast>
+
+    <Toast @ref="ToastForwardOK" nToastType="Toast.e_ToastType.OK" nTitle="Inoltra email" nContent="Email inoltrata correttamente"></Toast>
+    <Toast @ref="ToastForwardKO" nToastType="Toast.e_ToastType.Fail" nTitle="inoltra email" nContent="Inoltro NON riuscito"></Toast>
+
+    <Toast @ref="ToastAnswerOK" nToastType="Toast.e_ToastType.OK" nTitle="Rispondi a email" nContent="Email inviata correttamente"></Toast>
+    <Toast @ref="ToastAnswerKO" nToastType="Toast.e_ToastType.Fail" nTitle="Rispondi a email" nContent="Invio NON riuscito"></Toast>
+
+
+</section>
+
+@code
+{
+    /// <summary>
+    /// Email that has to be selected, if any. We expect to receive the qattach id of the email selected
+    /// </summary>
+    [Parameter]
+    public string nPreselAttach { get; set; } = "";
+
+    /// <summary>
+    /// Folder that has to be preselected
+    /// </summary>
+    [Parameter]
+    public string nPreselFolder { get; set; } = "";
+
+    /// <summary>
+    /// Item that has to be preselected
+    /// </summary>
+    [Parameter]
+    public string nPreselItem { get; set; } = "";
+
+    /// <summary>
+    /// Document viewer
+    /// </summary>
+    private DocViewer Viewer { get; set; }
+
+    /// <summary>
+    /// Reference to the Mail grid
+    /// </summary>
+    private MailTable Grid { get; set; }
+
+    /// <summary>
+    /// Indicates if the spinner has to be showed
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if Mail attachments panel is visible
+    /// </summary>
+    private bool IsAttachVisible { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if Mail attachments panel has has to be expanded
+    /// </summary>
+    private bool IsAttachExpanded { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if Answer panel is visible
+    /// </summary>
+    private bool IsAnswerDialog { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if Forward panel is visible
+    /// </summary>
+    private bool IsForwardDialog { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if Move panel is visible
+    /// </summary>
+    private bool IsMoveDialog { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if HTML panel is visible
+    /// </summary>
+    private bool IsShowDialog { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if LOG panel is visible
+    /// </summary>
+    private bool IsLogsDialog { get; set; } = false;
+
+    /// <summary>
+    /// Attach ID
+    /// </summary>
+    public string AttachID { get; set; }
+
+    /// <summary>
+    /// Attachment Subject
+    /// </summary>
+    private string AttachSubject { get; set; }
+
+    /// <summary>
+    /// Dossier ID
+    /// </summary>
+    private string DossierID { get; set; }
+
+    /// <summary>
+    /// Costumer Code
+    /// </summary>
+    private string CustomerCode
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Show delete confirm
+    /// </summary>
+    private bool ShowConfirm { get; set; } = false;
+
+    /// <summary>
+    /// Item ID
+    /// </summary>
+    private string ItemID { get; set; }
+
+    /// <summary>
+    /// Current Mail box
+    /// </summary>
+    private EmailServer MailBox { get; set; }
+
+    /// <summary>
+    /// Current Attach
+    /// </summary>
+    private AllegatoEmail Attach { get; set; }
+
+    /// <summary>
+    /// Toaster for an External Component  not found
+    /// </summary>
+    private Toast ToastECKO { get; set; }
+    /// <summary>
+    /// Toaster for a positive deletion
+    /// </summary>
+    private Toast ToastOK { get; set; }
+
+    /// <summary>
+    /// Toaster for a negative deletion
+    /// </summary>
+    private Toast ToastKO { get; set; }
+
+    /// <summary>
+    /// Toaster for a positive move
+    /// </summary>
+    private Toast ToastMoveOK { get; set; }
+
+    /// <summary>
+    /// Toaster for a negative move
+    /// </summary>
+    private Toast ToastMoveKO { get; set; }
+
+    /// <summary>
+    /// Toaster for a positive forward
+    /// </summary>
+    private Toast ToastForwardOK { get; set; }
+
+    /// <summary>
+    /// Toaster for a negative forward
+    /// </summary>
+    private Toast ToastForwardKO { get; set; }
+
+    /// <summary>
+    /// Toaster for a positive forward
+    /// </summary>
+    private Toast ToastAnswerOK { get; set; }
+
+    /// <summary>
+    /// Toaster for a negative forward
+    /// </summary>
+    private Toast ToastAnswerKO { get; set; }
+
+    /// <summary>
+    /// List of current Attach source Attachments
+    /// </summary>
+    private ObservableCollection<OriginalAttachments> SourceAttach { get; set; } = new();
+
+    /// <summary>
+    /// List of Tipi Elementi
+    /// </summary>
+    private ObservableCollection<TipiElementi> SourceTipiElementi { get; set; } = new();
+
+    /// <summary>
+    /// List of Ruoli
+    /// </summary>
+    private List<string> ListaRuoli = null;
+
+    /// <summary>
+    /// Current Document as memory stream
+    /// </summary>
+    public MemoryStream Document => Viewer?.Doc?.Payload ?? new();
+
+    /// <summary>
+    /// Show/Hide the dialog for the current selection
+    /// </summary>
+    private bool ShowCostumerSelection { get; set; } = false;
+
+    /// <summary>
+    ///  Source from witch read the PDF (Attachments or items)
+    /// </summary>
+    public e_SourceType PDFSourceType { get; set; }
+
+    /// <summary>
+    /// Id of the PDF Source
+    /// </summary>
+    public string PDFSourceId { get; set; }
+
+    /// <summary>
+    /// Description of the costumer accordion
+    /// </summary>
+    private string CostumerDesc { get; set; } = "Cliente";
+
+    /// <summary>
+    /// Description of the dossier accordion
+    /// </summary>
+    private string DossierDesc { get; set; } = "Fascicolo da selezionare";
+
+    /// <summary>
+    /// Indicateds if costumer block has to be expanded
+    /// </summary>
+    private bool IsCustomerExpand { get; set; } = true;
+
+
+    /// <summary>
+    /// Indicates the Cpb_chiarimenti visibility
+    /// </summary>
+    public bool IsExternalComponentShown { get; set; } = false;
+    public TipiElementi ExternalComponent { get; set; } = new TipiElementi();
+    /// <summary>
+    /// Additional receivers
+    /// </summary>
+    public string[] CC { get; set; }
+    /// <summary>
+    /// Body of the email
+    /// </summary>
+    public string Body { get; set; }
+    private string Modulo { get; set; } = "50.1.5";
+
+
+
+    /// <summary>
+    /// On selection of the email,shows and hide panels properly
+    /// </summary>
+    /// <param name="e"></param>
+    public void OnSelectAttach(AllegatoEmail e)
+    {
+        try
+        {
+            IsCustomerExpand = true;
+            IsExternalComponentShown = false;
+
+            if (e==null)
+            {
+                _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: DeSelecting attach");
+                AttachID = "";
+                DossierID = "";
+                CustomerCode = "";
+                PDFSourceId = "";
+                PDFSourceType = e_SourceType.Attachment;
+                return;
+            }
+
+            _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Id}");
+            Attach = e;
+            PDFSourceId = e.Id.ToString();
+            PDFSourceType = e_SourceType.Attachment;
+
+            if (AttachID != e.Id.ToString())
+                AttachID = e.Id.ToString();
+
+            if (DossierID != e.IdFascicolo.ToString())
+                DossierID = e.IdFascicolo.ToString();
+
+            if (CustomerCode != e.Chiave3)
+                CustomerCode = e.Chiave3;
+
+            if (string.IsNullOrEmpty(CustomerCode))
+                CostumerDesc="Cliente da selezionare";
+
+
+            OnAbort();
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"Inbox[MAIL].OnSelectAttach: Unexpected errro on selecting attach {ex}");
+        }
+    }
+
+    /// <summary>
+    /// Re-load the dash on changing params
+    /// </summary>
+    protected async override void OnParametersSet()
+    {
+        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+        ListaRuoli = _MailService.getRuoli(Modulo,"");
+        SourceTipiElementi = new ObservableCollection<TipiElementi>(_MailService._elmMan.GetAllTipiElementi(ListaRuoli));
+    }
+
+    /// <summary>
+    /// Once a document has been loaded, refresh the source attachment
+    /// </summary>
+    /// <param name="O"></param>
+    public async void OnDocumentTransformedZ(List<OriginalAttachments> O)
+    {
+        if (PDFSourceType == e_SourceType.Attachment)
+        {
+            SourceAttach.Clear();
+            foreach (OriginalAttachments o in O)
+                SourceAttach.Add(o);
+
+
+            IsAttachVisible = (SourceAttach.Count != 0);
+            IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
+        }
+    }
+
+    /// <summary>
+    /// Change the mail box selected
+    /// </summary>
+    /// <param name="e"></param>
+    public async void OnMailboxChanged(EmailServer e)
+    {
+        MailBox = e;
+
+    }
+
+    /// <summary>
+    /// Activate replay panel
+    /// </summary>
+    /// <param name="e"></param>
+    public async void OnReply(AllegatoEmail e)
+    {
+        AttachSubject = e.Chiave4;
+
+        IsForwardDialog = false;
+        IsMoveDialog = false;
+        IsShowDialog = false;
+        IsLogsDialog = false;
+
+        IsAnswerDialog = !IsAnswerDialog;
+    }
+
+    /// <summary>
+    /// Activate forward panel
+    /// </summary>
+    /// <param name="e"></param>
+    public async void OnForward(AllegatoEmail e)
+    {
+        AttachSubject = e.Chiave4;
+        IsAnswerDialog = false;
+        IsMoveDialog = false;
+        IsShowDialog = false;
+        IsLogsDialog = false;
+
+        IsForwardDialog = !IsForwardDialog;
+    }
+
+    /// <summary>
+    /// Activate move panel
+    /// </summary>
+    /// <param name="e"></param>
+    public async void OnMove(AllegatoEmail e)
+    {
+        AttachSubject = e.Chiave4;
+        IsAnswerDialog = false;
+        IsForwardDialog = false;
+        IsShowDialog = false;
+        IsLogsDialog = false;
+
+        IsMoveDialog = !IsMoveDialog;
+    }
+
+    /// <summary>
+    /// Activate HTML panel
+    /// </summary>
+    /// <param name="e"></param>
+    public async void OnShow(AllegatoEmail e)
+    {
+        AttachSubject = e.Chiave4;
+        IsAnswerDialog = false;
+        IsForwardDialog = false;
+        IsMoveDialog = false;
+        IsLogsDialog = false;
+
+        IsShowDialog = !IsShowDialog;
+    }
+
+    /// <summary>
+    /// Activate logs panel
+    /// </summary>
+    /// <param name="e"></param>
+    public async void OnShowLogs(AllegatoEmail e)
+    {
+        AttachSubject = e.Chiave4;
+        IsAnswerDialog = false;
+        IsForwardDialog = false;
+        IsMoveDialog = false;
+        IsShowDialog = false;
+
+        IsLogsDialog = !IsLogsDialog;
+    }
+
+    public string ciao { get; set; }
+    /// <summary>
+    /// Ask deletion confirm
+    /// </summary>
+    /// <param name="e"></param>
+    public async void OnDelete(AllegatoEmail e)
+    {
+        ShowConfirm = true;
+    }
+
+    /// <summary>
+    /// Close dialog confirm
+    /// </summary>
+    public async void OnCloseDialog()
+    {
+        ShowConfirm = false;
+    }
+
+    /// <summary>
+    /// Delete selected attachment
+    /// </summary>
+    public async void OnDeleteConfirmed()
+    {
+        try
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            ShowConfirm = false;
+            var User = _HttpContextAccessor.HttpContext.User;
+
+            var all = _MailService._allMan.Get(Attach.Id.ToString());
+            if (all != null)
+            {
+                all.Stato = StatoAllegato.Annullato;
+                _MailService._allMan.Salva(all, false);
+                LogDoc log = new LogDoc()
+                    {
+                        Data = DateTime.Now,
+                        IdOggetto = all.Id,
+                        TipoOggetto = TipiOggetto.ALLEGATO,
+                        Utente = User.Identity.Name,
+                        Operazione = TipoOperazione.Cancellato
+                    };
+                _MailService._logMan.Salva(log, true);
+                ToastOK.Show();
+            }
+
+            Grid.Refresh();
+            _Logger.LogInformation($"Inbox[MAIL].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"Inbox[MAIL].OnDeleteConfirmed: Unexpeted error deleting {Attach.Id}, {ex}");
+            ToastKO.Show();
+        }
+    }
+
+    /// <summary>
+    /// Once Move has done, show the proper toast
+    /// </summary>
+    /// <param name="RA"></param>
+    private async void OnDone(Models.RisultatoAzione RA)
+    {
+        if (RA.Successo)
+            ToastMoveOK.Show();
+        else ToastMoveKO.Show();
+        Grid.Refresh();
+        OnAbort();
+    }
+
+    /// <summary>
+    /// Once forward or aswer is done, show the proper toast
+    /// </summary>
+    /// <param name="RA"></param>
+    private async void OnSend(Models.RisultatoAzione RA)
+    {
+        if (IsForwardDialog)
+        {
+            if (RA.Successo) ToastForwardOK.Show();
+            else ToastForwardKO.Show();
+        }
+        else
+        {
+            if (RA.Successo) ToastAnswerOK.Show();
+            else ToastAnswerKO.Show();
+        }
+        Grid.Refresh();
+        OnAbort();
+    }
+
+
+    /// <summary>
+    /// Close all dialog panels
+    /// </summary>
+    private async void OnAbort()
+    {
+        IsAnswerDialog = false; IsForwardDialog = false; IsMoveDialog = false; IsShowDialog = false; IsLogsDialog = false;
+    }
+
+    /// <summary>
+    /// On linking item, refresh the grid and components
+    /// </summary>
+    /// <param name="data"></param>
+    private async void OnLinkToItem((string DossierId, string ItemId) data)
+    {
+        DossierID = data.DossierId;
+        ItemID = data.ItemId;
+        Grid.Refresh();
+    }
+
+    /// <summary>
+    /// Link the costumer to current Attach
+    /// </summary>
+    /// <param name="Customer">Costumer to link</param>
+    public void OnLinkCostumer(ISoggetti Customer)
+    {
+        CustomerCode = Customer?.Codice ?? "";
+        if (!string.IsNullOrEmpty(CustomerCode))
+            CostumerDesc = $"{Customer?.Codice ?? ""} - {Customer?.Nome ?? ""}";
+        else if (!string.IsNullOrEmpty(Attach.Chiave3) && Customer is null)
+            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";
+        else CostumerDesc = "Cliente da selezionare";
+    }
+
+    /// <summary>
+    /// On getting open items , fires out the number of items detected
+    /// </summary>
+    /// <param name="Items"></param>
+
+    public void OnOpenItems(int Items)
+    {
+        if (Items == 0 && !string.IsNullOrEmpty(Attach?.Chiave3 ?? ""))
+            IsCustomerExpand = false;
+        else
+            IsCustomerExpand = true;
+    }
+
+    /// <summary>
+    /// On Dossier loaded, set the descrition on the accordion
+    /// </summary>
+    /// <param name="Dossier">Fossier currently opened</param>
+    public void OnRefreshDossier(Fascicoli Dossier)
+    {
+        DossierDesc = (Dossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {Dossier?.Descrizione} [{Dossier?.Id}]";
+
+    }
+
+    /// <summary>
+    /// On completed attach, i refresh the grid
+    /// </summary>
+    /// <param name="AttachId"></param>
+    public async void OnAttachCompleted(string AttachId)
+    {
+        Grid.Refresh();
+        Grid.SelectedRow = 0;
+    }
+
+    /// <summary>
+    /// On selected Item, Reload the PDF from the item
+    /// </summary>
+    /// <param name="Id">Id of the item to load on PDF preview</param>
+    public void OnSelectedItem(string Id)
+    {
+        PDFSourceId = Id;
+        PDFSourceType = e_SourceType.Item;
+    }
+
+    /// <summary>
+    /// tipoElemento click button event
+    /// </summary>
+    private async void NuovoElemento(TipiElementi item)
+    {
+        IsSpinnerVisible = true;
+        if(item.ViewAttributi.Contains(@"blz:\"))
+        {
+
+            ExternalComponent = item;
+            //ExternalComponentName = item.ViewAttributi.Replace(@"blz:\", "");
+            IsExternalComponentShown = true;
+        }
+        else
+        {
+            //errore
+        }
+
+        IsSpinnerVisible = false;
+    }
+
+
+    /// <summary>
+    /// Invia chiarimento button's click
+    /// </summary>
+    private async void chiarInviaChiarimento()
+    {
+
+
+    }
+    /// <summary>
+    /// PopUp OnLinkedTo Item Callback Event
+    /// </summary>
+    public async void OnLinkedToItem((string, string)  data)
+    {
+        
+
+    }
+
+}
