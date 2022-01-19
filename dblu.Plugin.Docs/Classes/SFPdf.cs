@@ -614,8 +614,14 @@ namespace dblu.Portale.Plugin.Docs.Class
 
                 if (pdfstream != null)
                 {
-
+                
                     Syncfusion.Pdf.Parsing.PdfLoadedDocument pdftmp = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(pdfstream);
+                    foreach (PdfLoadedPage P in pdftmp.Pages)
+                        foreach (PdfLoadedAnnotation A in P.Annotations)
+                            A.Flatten = true;
+                    MemoryStream S=new MemoryStream();
+                    pdftmp.Save(S);
+                    pdftmp = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(S);
 
                     Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
                     document.PageSettings.SetMargins(0);

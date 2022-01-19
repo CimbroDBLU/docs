@@ -8,6 +8,7 @@
 @using Syncfusion.Blazor.Data
 @using Syncfusion.Blazor.Grids
 @using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Services
 
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
 @inject NavigationManager  _NavigationManager
@@ -19,12 +20,12 @@
 </style>
 
 <PageTitle nTitle="Lista Fascicoli" />
-
+                <SfSpinner @bind-Visible="IsSpinnerVisible">
+                </SfSpinner>
 <SfCard>
     <CardHeader Title="Lista Fascicoli" />
     <CardContent EnableSeperator="true">
-        <SfGrid Height="615" SelectedRowIndex="0" ID="ODATA_Dossiers" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewFascicoli" Toolbar=@Tool>
-            <SfDataManager Url="/ODATA/Dossiers" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
+        <SfGrid Height="615" SelectedRowIndex="0" ID="ODATA_Dossiers" DataSource="@DossiersData" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewFascicoli" Toolbar=@Tool>
             <GridEvents TValue="viewFascicoli" QueryCellInfo="CustomizeCell"  OnRecordDoubleClick="OnDoubleClick"></GridEvents>
             <GridPageSettings   PageSize="13"></GridPageSettings>
             <GridSearchSettings Fields=@(new string[] { "DscFascicolo", "DscCategoria" })></GridSearchSettings>
@@ -56,7 +57,18 @@
         </SfGrid>
     </CardContent>
 </SfCard>
+
 @code{
+
+    /// <summary>
+    /// Indicates if spinner must be visible
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// Dossiers
+    /// </summary>
+    ObservableCollection<viewFascicoli> DossiersData { get; set; } = new();
 
     /// <summary>
     /// List of custom columns of the dossiers
@@ -77,6 +89,12 @@
     protected override async void OnInitialized()
     {
         Cols = _ele.GetColonne("vFASCICOLO");
+        IsSpinnerVisible = true;
+        Task.Run(() =>
+        {
+            DossiersData = new ObservableCollection<viewFascicoli>(_ele.GetFascicoliV().AsEnumerable());
+            InvokeAsync(() => { IsSpinnerVisible = false; StateHasChanged(); });
+        });
     }
 
     /// <summary>

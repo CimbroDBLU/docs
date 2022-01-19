@@ -20,13 +20,16 @@
 @inject IConfiguration _Conf
 
 
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true"  AllowGrouping="false" TValue="AllegatoEmail" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
-    <SfDataManager Url="@DataUrl" CrossDomain="true" Adaptor=" Syncfusion.Blazor.Adaptors.ODataV4Adaptor"></SfDataManager>
+
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" DataSource="@nEmails"  AllowGrouping="false" TValue="AllegatoEmail" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSize="10"></GridPageSettings>
     <GridEvents TValue="AllegatoEmail" OnDataBound="OnDataBoundHandler" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
+
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
 
     <SfToolbar>
         <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
@@ -116,10 +119,16 @@
 
 @code {
 
+
     /// <summary>
-    /// Url to use to retreive paginated data
+    /// Indicates if spinner must be visible
     /// </summary>
-    private string DataUrl => $"/ODATA/Mails(Type='{nType.ToString()}',MailBox='{nMailBox.Nome}')";
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    ///// <summary>
+    ///// Url to use to retreive paginated data
+    ///// </summary>
+    //private string DataUrl => $"/ODATA/Mails(Type='{nType.ToString()}',MailBox='{nMailBox.Nome}')";
 
     /// <summary>
     ///Type of mail that we need to show
@@ -326,7 +335,7 @@
     /// <summary>
     /// On Init component
     /// </summary>
-    protected override async void OnParametersSet()
+    protected override Task OnParametersSetAsync()
     {
 
         if (nMailBox is not null)
@@ -337,6 +346,7 @@
             }
         }
         else nEmails = new();
+        return base.OnParametersSetAsync();
 
     }
 
@@ -407,18 +417,45 @@
     public async void Refresh()
     {
         nMailBoxOld = nMailBox;
+        IsSpinnerVisible=true;
 
-        Grid.DataManager.Url = DataUrl;
 
-
-        switch (nType)
+       Task.Run(() =>
         {
-            case TableType.Inbox: LastEmailTime = _MailService._allMan.GetLastInboxEmailTime("EMAIL", nMailBox.Nome); break;
-            case TableType.Sorting: LastEmailTime = _MailService._allMan.GetLastSortingEmailTime("EMAIL", nMailBox.Nome); break;
-        }
-        NewItems = 0;
-        Grid.Refresh();
+            //  Grid.DataManager.Url = DataUrl;
+            Stopwatch sw = Stopwatch.StartNew();
+            switch (nType)
+            {
+                case TableType.Inbox:
+                
+                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
+                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                    break;
+                case TableType.Sorting:
+                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailDaSmistare("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
+                    _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                    break;
+                case TableType.Processed:
+                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailProcessate("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
+                    _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                    break;
+                case TableType.Sent:
+                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInviate("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
+                    _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                    break;
+            }
 
+
+
+            switch (nType)
+            {
+                case TableType.Inbox: LastEmailTime = _MailService._allMan.GetLastInboxEmailTime("EMAIL", nMailBox.Nome); break;
+                case TableType.Sorting: LastEmailTime = _MailService._allMan.GetLastSortingEmailTime("EMAIL", nMailBox.Nome); break;
+            }
+            NewItems = 0;
+            InvokeAsync(() => { Grid.Refresh(); IsSpinnerVisible = false; });
+        }
+        );
     }
 
     /// <summary>

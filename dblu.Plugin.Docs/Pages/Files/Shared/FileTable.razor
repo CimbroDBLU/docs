@@ -20,13 +20,16 @@
 @inject IConfiguration _Conf
 
 
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true"  TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
-    <SfDataManager Url="@DataUrl" CrossDomain="true" Adaptor=" Syncfusion.Blazor.Adaptors.ODataV4Adaptor"></SfDataManager>
+
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" DataSource="@nFiles" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSize="10"></GridPageSettings>
     <GridEvents TValue="Allegati" OnDataBound="OnDataBoundHandler" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
+
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
 
     <SfToolbar>
         <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
@@ -112,10 +115,15 @@
 
 @code {
 
+    ///// <summary>
+    ///// Url to use to retreive paginated data
+    ///// </summary>
+    //private string DataUrl => $"/ODATA/Files(Doc='{nDocumentType.ToString()}',Type='{nType.ToString()}',Folder='{nFolder?.Cartella}')";
+
     /// <summary>
-    /// Url to use to retreive paginated data
+    /// Indicates if spinner must be visible
     /// </summary>
-    private string DataUrl => $"/ODATA/Files(Doc='{nDocumentType.ToString()}',Type='{nType.ToString()}',Folder='{nFolder?.Cartella}')";
+    private bool IsSpinnerVisible { get; set; } = false;
 
     /// <summary>
     ///Type of mail that we need to show
@@ -325,7 +333,7 @@
     /// <summary>
     /// On Init component
     /// </summary>
-    protected override async void OnParametersSet()
+    protected override Task OnParametersSetAsync()
     {
         if (nFolder is not null)
         {
@@ -335,6 +343,7 @@
             }
         }
         else nFiles = new();
+        return base.OnParametersSetAsync();
     }
 
     /// <summary>
@@ -396,13 +405,30 @@
     public void Refresh()
     {
         nFolderOld = nFolder;
-        Grid.DataManager.Url = DataUrl;
+        IsSpinnerVisible=true;
+        //Grid.DataManager.Url = DataUrl;
+        Task.Run(() =>
+        {
+        Stopwatch sw = Stopwatch.StartNew();
+        switch(nType)
+        {
+           case TableType.Inbox:
+                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetZipInArrivo(nDocumentType.ToString(), nFolder.Nome).OrderByDescending(c => c.DataC));
+                _Logger.LogInformation($"InFiles.Refresh[{TableType.Inbox},{nFolder.Nome},{nDocumentType}]: {nFiles.Count} files detected in {sw.ElapsedMilliseconds} ms");
+           break;
+           case TableType.Processed:
+                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetEmailProcessate(nDocumentType.ToString(), nFolder.Nome).OrderByDescending(c => c.DataC));
+                _Logger.LogInformation($"InFiles.Refresh[{TableType.Processed},{nFolder.Nome},{nDocumentType}]: {nFiles.Count} files detected in {sw.ElapsedMilliseconds} ms");
+           break;
+        }
+
         switch (nType)
         {
             case TableType.Inbox: LastFileTime = _ZipService._allMan.GetLastInboxFileTime(nDocumentType.ToString(), nFolder.Nome); break;
         }
         NewItems = 0;
-        Grid.Refresh();       
+        InvokeAsync(() => { Grid.Refresh(); IsSpinnerVisible = false; });
+        });     
     }
 
     /// <summary>

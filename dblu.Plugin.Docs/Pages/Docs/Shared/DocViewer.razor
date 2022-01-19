@@ -69,6 +69,7 @@
 </style>
 
 <div @onkeydown="@OnKeyDown" class="@((IsFullscreen)?"fullscreen":"sized") ">
+
     @if (Doc is null)
     {
         <div class="mt-2 mb-2" style=" text-align: center; ">@*<h3>Loading ... </h3>*@</div>
@@ -79,33 +80,25 @@
 
         <SfToolbar>
             <ToolbarItems>
-                <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-exit-full-screen e-icons":"e-full-screen e-icons") TooltipText="Fullscreen" OnClick="() => Fullscreen()"></ToolbarItem>
+                <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-exit-full-screen e-icons":"e-full-screen e-icons") TooltipText="Fullscreen" OnClick="Fullscreen"></ToolbarItem>
                 @if (nAllowEdit)
                 {
                     <ToolbarItem PrefixIcon="e-undo e-icons" TooltipText="Ruota a sx" OnClick="() => OnRotate(true)"></ToolbarItem>
                     <ToolbarItem PrefixIcon="e-redo e-icons" TooltipText="Ruota a dx" OnClick="() => OnRotate(false)"></ToolbarItem>
-                    <ToolbarItem PrefixIcon="e-changes-reject e-icons" TooltipText="Cancella" OnClick="OnRemovePage"></ToolbarItem>
+                    <ToolbarItem PrefixIcon="e-changes-reject e-icons"  TooltipText="Rimuovi pagina" OnClick="OnRemovePage"></ToolbarItem>
                 }
                 @if (nAllowNote || nAllowEdit)
                 {
-                    <ToolbarItem PrefixIcon="e-refresh e-icons" TooltipText="Ricarica" OnClick="LoadDocument"></ToolbarItem>
-                    <ToolbarItem PrefixIcon="e-save e-icons" TooltipText="Salva" OnClick="OnSave"></ToolbarItem>
+                    <ToolbarItem PrefixIcon="e-refresh e-icons" TooltipText="Ricarica" OnClick="@(async ()=>{LoadDocument(); ApplyDoc(); Viewer?.SetAnnotationModeAsync(AnnotationType.None);Viewer?.Refresh();})"></ToolbarItem>
+                        <ToolbarItem PrefixIcon="e-save e-icons" TooltipText="Salva" OnClick="OnSave"></ToolbarItem>
+                    <ToolbarItem Text="@Doc?.Description" TooltipText="Documento generato" Align=ItemAlign.Right></ToolbarItem>                    
                 }
             </ToolbarItems>
         </SfToolbar>
 
-        @if (!IsFullscreen)
-        {
-            <SfPdfViewerServer  Height="@($"{nHeight - 42}px")" EnableStampAnnotations="false" EnableHandwrittenSignature="false"  EnableTextSelection="true" FreeTextSettings="@FreeTextSettings" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
-                <PdfViewerEvents Created="OnPDFViewerCreated" DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
-            </SfPdfViewerServer>
-        }
-        else
-        {
-            <SfPdfViewerServer Height="96vh" EnableStampAnnotations="false" EnableHandwrittenSignature="false"  EnableTextSelection="true"  FreeTextSettings="@FreeTextSettings" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
-                <PdfViewerEvents  Created="OnPDFViewerCreated"  DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
-            </SfPdfViewerServer>
-        }
+        <SfPdfViewerServer EnableErrorDialog="false" Height="@sHeight" LineSettings="@LineSettings" ArrowSettings="@ArrowSettings" RectangleSettings="@RectangleSettings" CircleSettings="@CircleSettings" PolygonSettings="@PolygonSettings" InkAnnotationSettings="@InkSettings" FreeTextSettings="@FreeTextSettings" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
+                <PdfViewerEvents Created="OnPDFViewerCreated"  DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
+        </SfPdfViewerServer>        
     }
     else if (Doc.DocType == e_DocType.IMAGE)
     {
@@ -225,10 +218,50 @@
     /// </summary>
     private bool IsSpinnerVisible { get; set; }
 
+    private string sHeight
+    { 
+        get 
+        { 
+            if(!IsFullscreen)
+                return $"{nHeight - 42}px";
+            return "96vh";
+        }         
+    }
+
     /// <summary>
-    ///Set the color of the pen
+    /// FreeTextSettings
     /// </summary>
-    PdfViewerFreeTextSettings FreeTextSettings = new PdfViewerFreeTextSettings { FontColor="red"};
+    PdfViewerFreeTextSettings FreeTextSettings = new PdfViewerFreeTextSettings {  FontColor="#b71c1c" , DefaultText="Scrivi qui!",FontSize=16,BorderThickness=3, FontFamily="Courier", FontStyle= FontStyle.Bold};
+
+    /// <summary>
+    /// InkSettings
+    /// </summary>
+    PdfViewerInkAnnotationSettings InkSettings = new PdfViewerInkAnnotationSettings { Thickness=3, StrokeColor="#b71c1c" };
+
+    /// <summary>
+    /// Line Settings
+    /// </summary>
+    PdfViewerLineSettings LineSettings = new PdfViewerLineSettings {   FillColor="#b71c1c",Thickness=3, StrokeColor="#b71c1c"};
+
+    /// <summary>
+    /// Arrows Settigns
+    /// </summary>
+    PdfViewerArrowSettings ArrowSettings = new PdfViewerArrowSettings {   LineHeadStartStyle= LineHeadStyle.Arrow, LineHeadEndStyle= LineHeadStyle.None, FillColor="#b71c1c", Thickness=3 ,StrokeColor="#b71c1c"};
+
+    /// <summary>
+    /// Rectangle Settings
+    /// </summary>
+    PdfViewerRectangleSettings RectangleSettings = new PdfViewerRectangleSettings { StrokeColor="#b71c1c",Thickness=3 };
+
+    /// <summary>
+    /// Circle Settings
+    /// </summary>
+    PdfViewerCircleSettings CircleSettings = new PdfViewerCircleSettings {  StrokeColor = "#b71c1c",Thickness=3 };
+
+    /// <summary>
+    /// Poligon Settings
+    /// </summary>
+    PdfViewerPolygonSettings PolygonSettings = new PdfViewerPolygonSettings {StrokeColor="#b71c1c",Thickness=3 };
 
     /// <summary>
     /// Default configuration of the
@@ -236,25 +269,47 @@
     private PdfViewerToolbarSettings ToolbarSettings
     {
         get
-        {
+        {        
             if (nAllowNote)
                 return new PdfViewerToolbarSettings()
-                {
+                { 
+
                     ShowTooltip = true,
+                    AnnotationToolbarItems=new List<AnnotationToolbarItem>()
+                                           {
+                                            AnnotationToolbarItem.HighlightTool,
+                                            AnnotationToolbarItem.UnderlineTool,
+                                            AnnotationToolbarItem.StrikethroughTool,
+                                            AnnotationToolbarItem.ColorEditTool,
+                                            AnnotationToolbarItem.StrokeColorEditTool,
+                                            AnnotationToolbarItem.ThicknessEditTool,
+                                            AnnotationToolbarItem.OpacityEditTool,
+                                            AnnotationToolbarItem.AnnotationDeleteTool,
+                                            AnnotationToolbarItem.FreeTextAnnotationTool,
+                                            AnnotationToolbarItem.FontAlignAnnotationTool,
+                                            AnnotationToolbarItem.FontFamilyAnnotationTool,
+                                            AnnotationToolbarItem.FontSizeAnnotationTool,
+                                            AnnotationToolbarItem.FontStylesAnnotationTool,
+                                            AnnotationToolbarItem.FontColorAnnotationTool,
+                                            AnnotationToolbarItem.ShapeTool,                                            
+                                            AnnotationToolbarItem.CommentPanelTool,
+                                            AnnotationToolbarItem.InkAnnotationTool,
+                                            //AnnotationToolbarItem.CalibrateTool,
+                                            //AnnotationToolbarItem.HandWrittenSignatureTool,
+                                            },                    
                     ToolbarItems = new List<Syncfusion.Blazor.PdfViewer.ToolbarItem>()
-                {
+                    {
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.PageNavigationTool,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.MagnificationTool,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.SelectionTool,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.PanTool,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.UndoRedoTool,
-                            Syncfusion.Blazor.PdfViewer.ToolbarItem.AnnotationEditTool,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.CommentTool,
+                            Syncfusion.Blazor.PdfViewer.ToolbarItem.AnnotationEditTool,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.SearchOption,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.PrintOption,
                             Syncfusion.Blazor.PdfViewer.ToolbarItem.DownloadOption
-
-                            }
+                     }
                 };
 
             return new PdfViewerToolbarSettings()
@@ -274,10 +329,16 @@
         }
     }
 
-    protected override async  Task OnInitializedAsync()
+
+    /// <summary>
+    /// On init preset the PDF viewer
+    /// </summary>
+    /// <returns></returns>
+    protected override  Task OnInitializedAsync()
     {
         DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
         Doc = new Document("", new MemoryStream(),e_DocType.PDF);
+        return base.OnInitializedAsync();
     }
 
     /// <summary>
@@ -294,12 +355,14 @@
         IsSpinnerVisible = false;
 
         Task.Run(() =>
-        {           
-            LoadDocument();        
-            IsSpinnerVisible = false;
-        }).ContinueWith(T=>ApplyDoc());
+        {
+                LoadDocument();
+                IsSpinnerVisible = false;
+                InvokeAsync(() => ApplyDoc());
+        });
         return base.OnParametersSetAsync();
     }
+
 
     /// <summary>
     /// Copy the pdf on the pdf viewer
@@ -318,13 +381,14 @@
 
     }
 
+
     /// <summary>
-    /// Open the Docuemtn Manager
+    /// Open the Document, and once done , redraw
     /// </summary>
     private async void LoadDocument()
     {
         Doc = await DocManager.Load(nSourceType, nDocIdentifier);
-        InvokeAsync(() => StateHasChanged());
+        InvokeAsync(() =>  StateHasChanged());
     }
 
     /// <summary>
@@ -333,6 +397,8 @@
     private void OnDocumentLoaded()
     {
         DownloadFileName = Doc.FileName;
+        if(!DownloadFileName.ToLower().EndsWith(".pdf"))
+        DownloadFileName = Doc.FileName+".pdf";
         OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
     }
 
@@ -348,19 +414,15 @@
     /// <summary>
     /// Save the changes into the document
     /// </summary>
-    private async void OnSave()
+    private async Task OnSave()
     {
-     
-     //if (Viewer.IsDocumentEdited)        
+        IsSpinnerVisible = true;
+        await Viewer.SetAnnotationModeAsync(AnnotationType.None);
+
         Doc = await DocManager.Save(new MemoryStream(await Viewer.GetDocument()));
-     //else
-     //   Doc = await DocManager.Save();
-     if (Doc.Payload != null && Doc.Payload.Length != 0)
-        {
-            string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
-            await Viewer.Load("data:application/DocManager;base64," + base64String, null);
-            Viewer.Refresh();
-        }
+        ApplyDoc();
+
+        IsSpinnerVisible = false;
     }
 
     /// <summary>
@@ -368,21 +430,13 @@
     /// </summary>
     private async void OnRemovePage()
     {
+        await Viewer.SetAnnotationModeAsync(AnnotationType.None);
+
         MemoryStream IN = null;
-        if (Viewer.IsDocumentEdited)
-            IN = new MemoryStream(await Viewer.GetDocument());
+        IN = new MemoryStream(await Viewer.GetDocument());
+        Doc = await DocManager.RemovePage(Viewer.CurrentPageNumber, IN);
 
-        if (Viewer.IsDocumentEdited)
-            Doc = await DocManager.RemovePage(Viewer.CurrentPageNumber, IN);
-        else
-            Doc = await DocManager.RemovePage(Viewer.CurrentPageNumber);
-
-        if (Doc.Payload != null && Doc.Payload.Length != 0)
-        {
-            string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
-            await Viewer.Load("data:application/DocManager;base64," + base64String, null);
-            Viewer.Refresh();
-        }
+        ApplyDoc();
 
     }
 
@@ -394,19 +448,24 @@
     /// <summary>
     /// Set the control in full screen
     /// </summary>
-    private async void Fullscreen()
+    private async  void Fullscreen()
     {
         IsFullscreen = !IsFullscreen;
         if (IsFullscreen)
         {
 
             var module = await Module;
-            await module.InvokeVoidAsync("disable_scroll");
+            await module.InvokeVoidAsync("disable_scroll");          
+            ApplyDoc(); Viewer?.SetAnnotationModeAsync(AnnotationType.None);
+            Viewer?.Refresh();
         }
         else
         {
             var module = await Module;
             await module.InvokeVoidAsync("enable_scroll");
+            
+            ApplyDoc(); Viewer?.SetAnnotationModeAsync(AnnotationType.None);
+            Viewer?.Refresh();
         }
 
     }
@@ -443,7 +502,7 @@
         if (_module != null)
         {
             var module = await _module;
-            await module.DisposeAsync();
+            module.DisposeAsync();
         }
     }
 
@@ -451,23 +510,16 @@
     /// Rotate the page
     /// </summary>
     /// <param name="Left">True if rotation is in left, otherwise right</param>
-    private async void OnRotate(bool Left)
+    private async Task OnRotate(bool Left)
     {
-        MemoryStream IN = null;
-        if (Viewer.IsDocumentEdited)
-            IN = new MemoryStream(await Viewer.GetDocument());
-
+        await Viewer.SetAnnotationModeAsync(AnnotationType.None);
+        MemoryStream IN = new MemoryStream(await Viewer.GetDocument());
         if (Left)
             Doc = await DocManager.RotateLeft(Viewer.CurrentPageNumber, IN);
         else
             Doc = await DocManager.RotateRight(Viewer.CurrentPageNumber, IN);
 
-        if (Doc.Payload != null && Doc.Payload.Length != 0)
-        {
-            string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
-            await Viewer.Load("data:application/DocManager;base64," + base64String, null);
-            Viewer.Refresh();
-        }
+        ApplyDoc();
     }
 
 }

@@ -37,6 +37,16 @@
         background: #bcaaa4;
     }
 
+    .smallicon_wrd {
+        width: 50px;
+        background: #42a5f5;
+    }
+
+    .smallicon_xls {
+        width: 50px;
+        background: #26a69a;
+    }
+
 </style>
 
 
@@ -59,6 +69,14 @@
                         else if(Attach.NomeFile.ToLower().EndsWith("jpg") || Attach.NomeFile.ToLower().EndsWith("png") || Attach.NomeFile.ToLower().EndsWith("jpeg"))
                         {
                             <SfButton CssClass="smallicon_img"  HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Immagine" } })" IconCss="e_fa far fa-image"></SfButton>
+                        }
+                        else if(Attach.NomeFile.ToLower().EndsWith("doc") || Attach.NomeFile.ToLower().EndsWith("docx"))
+                        {
+                            <SfButton CssClass="smallicon_wrd"  HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Documento Word" } })" IconCss="e_fa far fa-file-word"></SfButton>
+                        }
+                        else if(Attach.NomeFile.ToLower().EndsWith("xls") || Attach.NomeFile.ToLower().EndsWith("xlsx"))
+                        {
+                            <SfButton CssClass="smallicon_xls"  HtmlAttributes="@(new Dictionary<string, object>() { { "title", "Documento Excel" } })" IconCss="e_fa far fa-file-excel"></SfButton>
                         }
                         else
                             {

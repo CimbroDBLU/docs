@@ -103,7 +103,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
             if (opts.Top != null)
                 results = opts.Top.ApplyTo(results, new ODataQuerySettings());
 
-            _logger.LogInformation($"ODATAController.Dossiers: ODATA Read in {sw.ElapsedMilliseconds} ms");
+            _logger.LogInformation($"ODATAController.Dossiers: ODATA Read {count} in {sw.ElapsedMilliseconds} ms");
             return new PageResult<viewFascicoli>(results, null, count);
         }
 
@@ -160,7 +160,7 @@ namespace dblu.Portale.Plugin.Docs.Controllers.ODATA
             if (opts.Top != null)
                 results = opts.Top.ApplyTo(results, new ODataQuerySettings());
 
-            _logger.LogInformation($"ODATAController.Items: ODATA Read in {sw.ElapsedMilliseconds} ms");
+            _logger.LogInformation($"ODATAController.Items: ODATA Read {count} in {sw.ElapsedMilliseconds} ms");
             return new PageResult<viewElementi>(results, null, count);
         }
 

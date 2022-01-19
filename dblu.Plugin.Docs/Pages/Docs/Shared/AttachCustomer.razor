@@ -84,7 +84,7 @@ else
     /// <summary>
     /// List of available costumers
     /// </summary>
-    private ObservableCollection<ISoggetti> nCostumers { get; set; }
+    private ObservableCollection<ISoggetti> nCostumers { get; set; } = new();
 
     /// <summary>
     /// Indicates if costumer selection must be showed
@@ -132,10 +132,9 @@ else
                         });
                         ShowCostumerSelection = false;
                     }
-                    IsLoading = false;
-                })
-                .ContinueWith(T=> IsLoading = false);
 
+                    InvokeAsync(() => { IsLoading = false;StateHasChanged(); });
+                });
             }
         }
         else

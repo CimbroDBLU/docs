@@ -76,11 +76,11 @@
         <CardContent EnableSeperator="true">
             @if (!string.IsNullOrEmpty(Summary) && Summary.ToLowerInvariant() == "true")
                 {   
-                <DocViewer nAllowNote="true" nAllowEdit="false" nSourceType="e_SourceType.Memory" nDocIdentifier="@SummaryDoc" nHeight=680></DocViewer>
+                <DocViewer nAllowNote="true" nAllowEdit="true" nSourceType="e_SourceType.Memory" nDocIdentifier="@SummaryDoc" nHeight=680></DocViewer>
                 }
             else
                 {
-                <DocViewer nAllowNote="true" nAllowEdit="false" nSourceType="e_SourceType.Attachment" nDocIdentifier="@Id" nHeight=550></DocViewer>
+                <DocViewer nAllowNote="true" nAllowEdit="true" nSourceType="e_SourceType.Attachment" nDocIdentifier="@Id" nHeight=550></DocViewer>
                 }
         </CardContent>
             <CardContent EnableSeperator="true">
@@ -159,6 +159,7 @@
     /// </summary>
     private async void GoBack()
     {
+        Id = "";
         string back = (await _SessionStore.GetAsync<string>("Referrer")).Value;
         if (string.IsNullOrEmpty(back))
             _NavigationManager.NavigateTo($"/Docs/Dossiers");

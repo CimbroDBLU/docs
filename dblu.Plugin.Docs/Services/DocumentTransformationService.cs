@@ -5,12 +5,17 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MimeKit;
+using Syncfusion.DocIO.DLS;
+using Syncfusion.DocIORenderer;
 using Syncfusion.Drawing;
 using Syncfusion.HtmlConverter;
+using Syncfusion.OfficeChart;
 using Syncfusion.Pdf;
 using Syncfusion.Pdf.Graphics;
 using Syncfusion.Pdf.Interactive;
 using Syncfusion.Pdf.Parsing;
+using Syncfusion.XlsIO;
+using Syncfusion.XlsIORenderer;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,6 +27,7 @@ using System.Threading.Tasks;
 using Telerik.Reporting;
 using Telerik.Reporting.Processing;
 using Telerik.Windows.Documents.Model;
+using ExportImageFormat = Syncfusion.OfficeChart.ExportImageFormat;
 
 namespace dblu.Portale.Plugin.Docs.Services
 {
@@ -116,11 +122,11 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
         /// <summary>
-        /// Trnasofr a Mail in a PFD
+        /// Trasform a Mail in a PDF
         /// </summary>
         /// <param name="Message">Mime Mesasge to transorm</param>
         /// <returns>
-        /// The transofrmed document
+        /// The transformed document
         /// </returns>
         public ProcessedDocument PDF_From_EMail(MimeMessage Message)
         {
@@ -233,83 +239,35 @@ namespace dblu.Portale.Plugin.Docs.Services
                     }
                     try
                     {
+                        MemoryStream M = new();
                         switch (System.IO.Path.GetExtension(fileName).ToLower())
                         {
-                            case ".pdf":
-                                MemoryStream m1 = AUX_AdjustPDFStream(m, fileName, out avvisi);
-                                if (m1 != null)
-                                {
-                                    m1.Position = 0;
-                                    ListaPdf.Add(m1);
-                                    incluso = true;
-                                }
-                                m.Close();
-                                m.Dispose();
+                            case ".pdf": 
+                                M=AUX_AdjustPDFStream(m, fileName, out avvisi);
                                 break;
                             case ".jpg":
                             case ".jpeg":
                             case ".png":
-                                try
-                                {
-
-                                    PdfImage image = new PdfBitmap(m);
-                                    float shrinkFactor;
-                                    float myWidth = image.Width;
-                                    float myHeight = image.Height;
-
-                                    if (myWidth > 100 && myHeight > 100)
-                                    {
-                                        document = new PdfDocument();
-
-                                        if (image.Width > image.Height)
-                                            document.PageSettings.Orientation = PdfPageOrientation.Landscape;
-
-                                        PdfPage page = document.Pages.Add();
-                                        float PageWidth = page.Graphics.ClientSize.Width;
-                                        float PageHeight = page.Graphics.ClientSize.Height;
-                                        PdfGraphics graphics = page.Graphics;
-
-                                        if (myWidth > PageWidth)
-                                        {
-                                            shrinkFactor = myWidth / PageWidth;
-                                            myWidth = PageWidth;
-                                            myHeight = myHeight / shrinkFactor;
-                                        }
-
-                                        if (myHeight > PageHeight)
-                                        {
-                                            shrinkFactor = myHeight / PageHeight;
-                                            myHeight = PageHeight;
-                                            myWidth = myWidth / shrinkFactor;
-                                        }
-
-                                        float XPosition = (PageWidth - myWidth) / 2;
-                                        float YPosition = (PageHeight - myHeight) / 2;
-                                        graphics.DrawImage(image, XPosition, YPosition, myWidth, myHeight);
-
-                                        pdfstream = new MemoryStream();
-                                        document.Save(pdfstream);
-                                        document.Close(true);
-
-
-                                        ListaPdf.Add(pdfstream);
-                                        incluso = true;
-                                    }
-                                    else
-                                    {
-                                        incluso = false;
-                                    }
-
-                                }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogError($"DocumentTransformationService.PDF_From_EMail: Unable to include file {fileName}. {ex.Message}");
-                                }
+                                M = AUX_ImageToPDF(m, fileName,true, out avvisi);
+                                break;
+                            case ".xls":
+                            case ".xlsx":
+                                M = AUX_XlsToPDF(m, fileName, out avvisi);
+                                break;
+                            case ".doc":
+                            case ".docx":
+                                M = AUX_DocToPDF(m, fileName, out avvisi);
                                 break;
                             default:
-                                avvisi = "file non supportato.";
+                                avvisi = "Formato non supportato.";
                                 break;
                         }
+                        m.Close();
+                        m.Dispose();
+                        incluso = (M != null);
+                        if (incluso)
+                            ListaPdf.Add(M);                       
+
                     }
                     catch (Exception ex)
                     {
@@ -390,7 +348,35 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
         /// <summary>
-        /// Trnasofr a ZipArchive in a PFD
+        /// Trasform a doc/docx in a PDF
+        /// </summary>
+        /// <param name="Filename">Filename to convert</param>
+        /// <param name="m">MemoryStream with the doc loaded</param>
+        /// <returns>The transformed document</returns>
+        public ProcessedDocument PDF_From_WordProcessor(string Filename, MemoryStream m)
+        {
+            Stopwatch Sw1 = Stopwatch.StartNew();
+            MemoryStream PDF = AUX_DocToPDF(m, Filename, out string Notifications);
+            _logger.LogInformation($"DocumentTransformationService.PDF_From_WordProcessor: WordProcessor document {Filename} processed in {Sw1.ElapsedMilliseconds} ms");
+            return new() { Payload = PDF };
+        }
+
+        /// <summary>
+        /// Transofrm a xls/xlsx in a PDF
+        /// </summary>
+        /// <param name="Filename">Filename to convert</param>
+        /// <param name="m">MemoryStream with the doc loaded</param>
+        /// <returns>The transformed document<</returns>
+        public ProcessedDocument PDF_From_SpreadSheet(string Filename, MemoryStream m)
+        {
+            Stopwatch Sw1 = Stopwatch.StartNew();
+            MemoryStream PDF = AUX_XlsToPDF(m, Filename, out string Notifications);
+            _logger.LogInformation($"DocumentTransformationService.PDF_From_SpreadSheet: Spreadsheed {Filename} processed in {Sw1.ElapsedMilliseconds} ms");
+            return new() { Payload = PDF };
+        }
+
+        /// <summary>
+        /// Trnasfom a ZipArchive in a PFD
         /// </summary>
         /// <param name="Message">Mime Mesasge to transorm</param>
         /// <returns>
@@ -430,91 +416,41 @@ namespace dblu.Portale.Plugin.Docs.Services
                         var m = new MemoryStream();
                         var incluso = false;
                         string avvisi = "";
+                        using (var unzippedEntryStream = entry.Open())
+                        {
+                            unzippedEntryStream.CopyTo(m);
+                        }
                         try
                         {
+                            MemoryStream M = new();
                             switch (System.IO.Path.GetExtension(fileName).ToLower())
                             {
                                 case ".pdf":
-                                    try
-                                    {
-                                        using (var unzippedEntryStream = entry.Open())
-                                        {
-                                            unzippedEntryStream.CopyTo(m);
-                                        }
-                                        MemoryStream m1 = AUX_AdjustPDFStream(m, fileName, out avvisi);
-                                        if (m1 != null)
-                                        {
-                                            m1.Position = 0;
-                                            ListaPdf.Add(m1);
-                                            incluso = true;
-                                        }
-                                        m.Close();
-                                        m.Dispose();
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogError($"DocumentTransformationService.PDF_From_ZIP: Unable to include file {fileName} {ex.Message}");
-                                    }
+                                    M = AUX_AdjustPDFStream(m, fileName, out avvisi);
                                     break;
                                 case ".jpg":
                                 case ".jpeg":
                                 case ".png":
-                                    try
-                                    {
-                                        using (var unzippedEntryStream = entry.Open())
-                                            unzippedEntryStream.CopyTo(m);
-
-                                        document = new PdfDocument();
-
-                                        PdfImage image = new PdfBitmap(m);
-
-                                        float shrinkFactor;
-                                        float myWidth = image.Width;
-                                        float myHeight = image.Height;
-
-                                        if (image.Width > image.Height)
-                                            document.PageSettings.Orientation = PdfPageOrientation.Landscape;
-
-                                        PdfPage page = document.Pages.Add();
-                                        float PageWidth = page.Graphics.ClientSize.Width;
-                                        float PageHeight = page.Graphics.ClientSize.Height;
-                                        PdfGraphics graphics = page.Graphics;
-
-                                        if (myWidth > PageWidth)
-                                        {
-                                            shrinkFactor = myWidth / PageWidth;
-                                            myWidth = PageWidth;
-                                            myHeight = myHeight / shrinkFactor;
-                                        }
-
-                                        if (myHeight > PageHeight)
-                                        {
-                                            shrinkFactor = myHeight / PageHeight;
-                                            myHeight = PageHeight;
-                                            myWidth = myWidth / shrinkFactor;
-                                        }
-
-                                        float XPosition = (PageWidth - myWidth) / 2;
-                                        float YPosition = (PageHeight - myHeight) / 2;
-                                        graphics.DrawImage(image, XPosition, YPosition, myWidth, myHeight);
-
-                                        pdfstream = new MemoryStream();
-                                        document.Save(pdfstream);
-                                        document.Close(true);
-
-                                        //Close the document
-                                        ListaPdf.Add(pdfstream);
-                                        incluso = true;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogError($"DocumentTransformationService.PDF_From_ZIP: Unable to include file {fileName} {ex.Message}");                                        
-                                    }
+                                    M = AUX_ImageToPDF(m, fileName, false, out avvisi);
+                                    break;
+                                case ".xls":
+                                case ".xlsx":
+                                    M = AUX_XlsToPDF(m, fileName, out avvisi);
+                                    break;
+                                case ".doc":
+                                case ".docx":
+                                    M = AUX_DocToPDF(m, fileName, out avvisi);
                                     break;
                                 default:
-                                    avvisi = "file non supportato.";
+                                    avvisi = "Formato non supportato.";
                                     break;
                             }
+                            m.Close();
+                            m.Dispose();
+                            incluso = (M != null);
+                            if (incluso)
+                                ListaPdf.Add(M);
+
                         }
                         catch (Exception ex)
                         {
@@ -629,7 +565,13 @@ namespace dblu.Portale.Plugin.Docs.Services
                 if (Doc != null)
                 {
 
-                    Syncfusion.Pdf.Parsing.PdfLoadedDocument pdftmp = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(Doc);
+                    Syncfusion.Pdf.Parsing.PdfLoadedDocument pdftmp = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(Doc);                   
+                    foreach (PdfLoadedPage P in pdftmp.Pages)
+                        foreach (PdfLoadedAnnotation A in P.Annotations)
+                            A.Flatten = true;
+                    MemoryStream MS = new MemoryStream();
+                    pdftmp.Save(MS);
+                    pdftmp = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(MS);
 
                     Syncfusion.Pdf.PdfDocument document = new Syncfusion.Pdf.PdfDocument();
                     document.PageSettings.SetMargins(0);
@@ -794,10 +736,161 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
         /// <summary>
+        /// Aux Method: Convert an XLS in a PDF
+        /// </summary>
+        /// <param name="Stream">Stream to process</param>
+        /// <param name="FileName">Original file name</param>
+        /// <param name="Notifications">Issues detected</param>
+        /// <returns>
+        /// Memory stream with the XLS
+        /// </returns>
+        private MemoryStream AUX_XlsToPDF(MemoryStream Stream, string FileName, out string Notifications)
+        {
+            Notifications = "";
+            try
+            {
+                using (ExcelEngine excelEngine = new ExcelEngine())
+                {
+                    IApplication application = excelEngine.Excel;
+                    Stream.Position = 0;
+                    IWorkbook workbook = application.Workbooks.Open(Stream);
+                    List<MemoryStream> lst = new();
+                    foreach (IWorksheet worksheet in workbook.Worksheets)
+                    {
+                        worksheet.PageSetup.PrintComments = ExcelPrintLocation.PrintInPlace;
+
+                        XlsIORenderer renderer = new XlsIORenderer();
+                        PdfDocument pdfDocument = renderer.ConvertToPDF(worksheet);
+
+                        MemoryStream outputStream = new MemoryStream();
+                        pdfDocument.Save(outputStream);
+                        outputStream.Position = 0;
+                        lst.Add(outputStream);
+                    }
+
+
+                    MemoryStream PDF = new();
+                    PdfDocument finalDoc = new PdfDocument();
+                    PdfDocumentBase.Merge(finalDoc,lst.ToArray());
+                    finalDoc.Save(PDF);
+                    PDF.Position = 0;
+
+                    return PDF;
+                }
+              
+            }
+            catch (Exception ex)
+            {
+                Notifications = "Impossibile includere il file";
+                _logger.LogError($"DocumentTransformationService.AUX_XlsToPDF: Unable to include file {FileName}. {ex.Message}");
+            }
+            return new();
+        }
+
+        /// <summary>
+        /// Aux Method: Convert an image in a PDF
+        /// </summary>
+        /// <param name="Stream">Stream to process</param>
+        /// <param name="FileName">Original file name</param>
+        /// <param name="IgnoreSmallImages">True if small images has to be escluded (in that case function returns null)</param>
+        /// <param name="Notifications">Issues detected</param>
+        /// <returns>Memory stream with the image</returns>
+        private MemoryStream AUX_ImageToPDF(MemoryStream Stream, string FileName,bool IgnoreSmallImages, out string Notifications)
+        {
+            Notifications = "";
+            try
+            {
+            PdfDocument document = new PdfDocument();
+
+            PdfImage image = new PdfBitmap(Stream);
+
+            float shrinkFactor;
+            float myWidth = image.Width;
+            float myHeight = image.Height;
+
+            if(IgnoreSmallImages && myWidth <= 100 && myHeight<=100)
+                {
+                    Notifications = "Immagine di dimensioni ridotte";
+                    return null;
+                }
+
+            if (image.Width > image.Height)
+                document.PageSettings.Orientation = PdfPageOrientation.Landscape;
+
+            PdfPage page = document.Pages.Add();
+            float PageWidth = page.Graphics.ClientSize.Width;
+            float PageHeight = page.Graphics.ClientSize.Height;
+            PdfGraphics graphics = page.Graphics;
+
+            if (myWidth > PageWidth)
+            {
+                shrinkFactor = myWidth / PageWidth;
+                myWidth = PageWidth;
+                myHeight = myHeight / shrinkFactor;
+            }
+
+            if (myHeight > PageHeight)
+            {
+                shrinkFactor = myHeight / PageHeight;
+                myHeight = PageHeight;
+                myWidth = myWidth / shrinkFactor;
+            }
+
+            float XPosition = (PageWidth - myWidth) / 2;
+            float YPosition = (PageHeight - myHeight) / 2;
+            graphics.DrawImage(image, XPosition, YPosition, myWidth, myHeight);
+
+            MemoryStream pdfstream = new MemoryStream();
+            document.Save(pdfstream);
+            document.Close(true);
+            pdfstream.Position = 0;
+            return pdfstream;
+            }
+            catch (Exception ex)
+            {
+                Notifications = "Impossibile includere il file";
+                _logger.LogError($"DocumentTransformationService.AUX_ImageToPDF: Unable to include file {FileName}. {ex.Message}");
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Aux Method: Convert a DOC in a PDF
+        /// </summary>
+        /// <param name="Stream">Stream to process</param>
+        /// <param name="FileName">Original file name</param>
+        /// <param name="Notifications">Issues detected</param>
+        /// <returns>Memory stream with the doc</returns>
+        private MemoryStream AUX_DocToPDF(MemoryStream Stream, string FileName, out string Notifications)
+        {
+            Notifications = "";
+            try
+            {
+                WordDocument wordDocument = new WordDocument(Stream, Syncfusion.DocIO.FormatType.Automatic);
+                DocIORenderer render = new DocIORenderer();
+                render.Settings.ChartRenderingOptions.ImageFormat = ExportImageFormat.Jpeg;
+                PdfDocument pdfDocument = render.ConvertToPDF(wordDocument);
+                render.Dispose();
+                wordDocument.Dispose();
+                MemoryStream outputStream = new MemoryStream();
+                pdfDocument.Save(outputStream);
+                pdfDocument.Close();
+                outputStream.Position = 0;
+                return outputStream;
+            }
+            catch (Exception ex)
+            {
+                Notifications = "Impossibile includere il file";
+                _logger.LogError($"DocumentTransformationService.AUX_DocToPDF: Unable to include file {FileName}. {ex.Message}");
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Adjust PDF stream (Ex elaborastreamPDF)
         /// Apply optimization to the PDF
         /// </summary>
-        /// <param name="Stream">Srteam to process</param>
+        /// <param name="Stream">Stream to process</param>
         /// <param name="FileName">Original file name</param>
         /// <param name="Notifications">Issues detected</param>
         /// <returns>

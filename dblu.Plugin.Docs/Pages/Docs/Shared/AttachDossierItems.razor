@@ -135,27 +135,29 @@
     /// <summary>
     /// Redraw the component only if necessary
     /// </summary>
-    protected override async Task OnParametersSetAsync()
+    protected override Task OnParametersSetAsync()
     {
-        InvokeAsync(() =>
+        Task.Run(() =>
         {
             if (LastDossierID != nDossierID && !string.IsNullOrEmpty(nDossierID))
             {
                 Dossier = _MailService._fasMan.Get(nDossierID);
                 LastDossierID = nDossierID;
-                OnRefresh.InvokeAsync(Dossier);
 
+                InvokeAsync(() => { OnRefresh.InvokeAsync(Dossier); });
             }
             else if (string.IsNullOrEmpty(nDossierID))
             {
                 Dossier = null;
                 if (LastDossierID != nDossierID)
                 {
-                    OnRefresh.InvokeAsync(null);
+                    InvokeAsync(() => { OnRefresh.InvokeAsync(null); });
                     LastDossierID = nDossierID;
                 }
             }
         });
+
+        return base.OnParametersSetAsync();
     }
 
 

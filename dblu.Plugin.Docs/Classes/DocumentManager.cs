@@ -61,9 +61,13 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// </summary>
         IMAGE,
         /// <summary>
-        /// WORD_PROCESSOR (DOC, RTF)
+        /// WORD_PROCESSOR (DOC, DOCX)
         /// </summary>
         WORD_PROCESSOR,
+        /// <summary>
+        /// SPREAD SHEET (XLS,XLSX)
+        /// </summary>
+        SPREAD_SHEET,
         /// <summary>
         /// EML documents
         /// </summary>
@@ -79,6 +83,11 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// Name of the file
         /// </summary>
         public string FileName { get; set; }
+
+        /// <summary>
+        /// Description of the document
+        /// </summary>
+        public string Description { get; set; }
 
         /// <summary>
         /// Type of the document
@@ -109,6 +118,7 @@ namespace dblu.Portale.Plugin.Docs.Classes
         public Document(string nFileName,MemoryStream nPayload, e_DocType nType=e_DocType.UNDEFINED)
         {
             FileName = nFileName;
+            Description = FileName;
             Payload = nPayload;
             if (nPayload is not null)
                 nPayload.Position = 0;
@@ -122,13 +132,14 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// </summary>
         /// <param name="nFileName"></param>
         /// <returns></returns>
-        private  e_DocType GetDocType(string nFileName)
+        public static e_DocType GetDocType(string nFileName)
         {
             string s = nFileName?.ToLowerInvariant()??"";
             if (s.EndsWith(".pdf")) return e_DocType.PDF;
             if (s.EndsWith(".png") || s.EndsWith(".gif") || s.EndsWith(".jpg") || s.EndsWith(".jpeg")) return e_DocType.IMAGE;
-            //if (s.EndsWith(".doc") || s.EndsWith(".rtf")) return e_DocType.WORD_PROCESSOR;
-            if(s.EndsWith(".eml")) return e_DocType.EMAIL;
+            if (s.EndsWith(".doc") || s.EndsWith(".docx")) return e_DocType.WORD_PROCESSOR;
+            if (s.EndsWith(".xls") || s.EndsWith(".xlsx")) return e_DocType.SPREAD_SHEET;
+            if (s.EndsWith(".eml")) return e_DocType.EMAIL;
             return e_DocType.UNDEFINED;
         }
 
@@ -286,24 +297,32 @@ namespace dblu.Portale.Plugin.Docs.Classes
                 e_DocType DetectedType = e_DocType.UNDEFINED;
                 if (IsTransformationEnable)
                     switch (A1.Tipo)
-                    {
-                        case "FILE":
-                            var stream = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
-                            return new Document(A1?.NomeFile, stream, DetectedType);
+                    {                       
                         case "ZIP":
                             MemoryStream PayloadZip = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
                             string TextZIP = $"Da: {A1.elencoAttributi.Get("NomeSoggetto")} \nOggetto: {A1.Descrizione} \ndel: { A1.elencoAttributi.Get("Data")??A1.DataC}\n\n {A1.Testo} ";
                             var zip = DocumentService.PDF_From_ZIP(A1?.NomeFile, new ZipArchive(PayloadZip), TextZIP);
-                            return new Document(A1?.NomeFile, zip.Payload, e_DocType.PDF) { SourceAttachments = zip.Attachments, IsTransformation = true };
+                            return new Document(A1?.NomeFile, zip.Payload, e_DocType.PDF) { Description = A1.Descrizione + " [ZIP]", SourceAttachments = zip.Attachments, IsTransformation = true };
                         case "REQ":
                             MemoryStream PayloadReq = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
                             string TextREQ = $"Da: {A1.elencoAttributi.Get("NomeSoggetto")} \nOggetto: {A1.Descrizione} \ndel: { A1.elencoAttributi.Get("Data") ?? A1.DataC}\nRiferimento: {A1.elencoAttributi.Get("Riferimento")??""}\nTipo: {A1.elencoAttributi.Get("Tipo")??""}\n\n {A1.Testo} ";
                             var req = DocumentService.PDF_From_ZIP(A1?.NomeFile, new ZipArchive(PayloadReq), TextREQ);
-                            return new Document(A1?.NomeFile, req.Payload, e_DocType.PDF) { SourceAttachments = req.Attachments, IsTransformation = true };
-                        default:
+                            return new Document(A1?.NomeFile, req.Payload, e_DocType.PDF) { Description = A1.Descrizione + " [REQ]", SourceAttachments = req.Attachments, IsTransformation = true };
+                        case "EMAIL":
                             MemoryStream Payload = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
                             var email = DocumentService.PDF_From_EMail(MimeMessage.Load(Payload));
-                            return new Document(A1?.NomeFile, email.Payload, e_DocType.PDF) { SourceAttachments = email.Attachments, IsTransformation = true };
+                            return new Document(A1?.NomeFile, email.Payload, e_DocType.PDF) { Description = A1.Descrizione + " [EMAIL]", SourceAttachments = email.Attachments, IsTransformation = true };
+                        case "FILE":
+                        default:
+                            //E' un file generico, provo a vedere se e' trasformabile in PDF in base al tipo (estensione)
+                            //Le immagini non le traformo perche le faccio vedere cosi come sono
+                            var stream = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
+                            DetectedType = Document.GetDocType(A1?.NomeFile);
+                            if (IsTransformationEnable && DetectedType == e_DocType.WORD_PROCESSOR)
+                                return new Document(A1?.NomeFile, DocumentService.PDF_From_WordProcessor(A1?.NomeFile, stream).Payload, e_DocType.PDF) { Description = A1?.NomeFile + " [DOCUMENT]", IsTransformation = true };
+                            if (IsTransformationEnable && DetectedType == e_DocType.SPREAD_SHEET)
+                                return new Document(A1?.NomeFile, DocumentService.PDF_From_SpreadSheet(A1?.NomeFile, stream).Payload, e_DocType.PDF) { Description = A1?.NomeFile + " [DOCUMENT]", IsTransformation = true };
+                            return new Document(A1?.NomeFile, stream, DetectedType);
                     }
                 else
                 {
@@ -340,9 +359,6 @@ namespace dblu.Portale.Plugin.Docs.Classes
                 {
                     MemoryStream Optimized = new();
                     PdfLoadedDocument loadedDocument = new PdfLoadedDocument(stream);
-                    foreach (PdfLoadedPage P in loadedDocument.Pages)
-                        foreach (PdfLoadedAnnotation A in P.Annotations)
-                            A.Flatten = true;
 
                     loadedDocument.Save(Optimized);
                     if (!Doc.IsTransformation)
@@ -395,17 +411,44 @@ namespace dblu.Portale.Plugin.Docs.Classes
                     {
                         case PdfPageRotateAngle.RotateAngle0:
                             page.Rotation = PdfPageRotateAngle.RotateAngle90;
+                            foreach (PdfLoadedAnnotation A in page.Annotations)
+                            {
+                                string t = A.Text;
+                                A.Rotate = PdfAnnotationRotateAngle.RotateAngle270;
+                                A.Text = t;
+                            }
                             break;
                         case PdfPageRotateAngle.RotateAngle90:
                             page.Rotation = PdfPageRotateAngle.RotateAngle180;
+                            foreach (PdfLoadedAnnotation A in page.Annotations)
+                            {
+                                string t = A.Text;
+                                A.Rotate = PdfAnnotationRotateAngle.RotateAngle180;
+                                A.Text = t;
+                            }
                             break;
                         case PdfPageRotateAngle.RotateAngle180:
                             page.Rotation = PdfPageRotateAngle.RotateAngle270;
+                            foreach (PdfLoadedAnnotation A in page.Annotations)
+                            {
+                                string t = A.Text;
+                                A.Rotate = PdfAnnotationRotateAngle.RotateAngle90;
+                                A.Text = t;
+                            }
                             break;
                         case PdfPageRotateAngle.RotateAngle270:
                             page.Rotation = PdfPageRotateAngle.RotateAngle0;
+                            foreach (PdfLoadedAnnotation A in page.Annotations)
+                            {
+                                string t = A.Text;
+                                A.Rotate = PdfAnnotationRotateAngle.RotateAngle0;
+                                A.Text = t;
+                            }
                             break;
                     }
+
+
+
                     loadedDocument.Save(M);
                     Doc.Payload = M;
                     Logger.LogInformation($"DocumentManager.RotateRight[{LogMarkup}]: Done in {SW.ElapsedMilliseconds} ms");
@@ -443,15 +486,41 @@ namespace dblu.Portale.Plugin.Docs.Classes
                     {
                         case PdfPageRotateAngle.RotateAngle0:
                             page.Rotation = PdfPageRotateAngle.RotateAngle270;
+                            foreach (PdfLoadedAnnotation A in page.Annotations)
+                            {
+                                string t = A.Text;
+                                A.Rotate = PdfAnnotationRotateAngle.RotateAngle90;
+                                A.Text = t;
+                            }
                             break;
                         case PdfPageRotateAngle.RotateAngle90:
                             page.Rotation = PdfPageRotateAngle.RotateAngle0;
+                            foreach (PdfLoadedAnnotation A in page.Annotations)
+                            {
+                                string t = A.Text;
+                                A.Rotate = PdfAnnotationRotateAngle.RotateAngle0;
+                                A.Text = t;
+                            }
                             break;
                         case PdfPageRotateAngle.RotateAngle180:
                             page.Rotation = PdfPageRotateAngle.RotateAngle90;
+                            foreach (PdfLoadedAnnotation A in page.Annotations)
+                            {
+                                string t = A.Text;
+                                A.Rotate = PdfAnnotationRotateAngle.RotateAngle270;
+                                A.Text = t;
+                            }
                             break;
                         case PdfPageRotateAngle.RotateAngle270:
                             page.Rotation = PdfPageRotateAngle.RotateAngle180;
+                            foreach (PdfLoadedAnnotation A in page.Annotations)
+                            {
+                                string t = A.Text;
+                                A.Rotate = PdfAnnotationRotateAngle.RotateAngle180;
+                                A.Text = t;
+                            }
+
+                            
                             break;
                     }
                     loadedDocument.Save(M);

@@ -142,6 +142,9 @@
 
         nCostumerCode = nCostumerCode?.Trim();
 
+        if(string.IsNullOrEmpty(nCostumerCode)) Description = "";
+
+
         if (LastCostumerCode != nCostumerCode && !string.IsNullOrEmpty(nCostumerCode))
         {
             LastCostumerCode = nCostumerCode;
@@ -155,6 +158,7 @@
 
             return true;
         }
+        
         LastCostumerCode = nCostumerCode;
         return false;
     }
@@ -166,8 +170,9 @@
     protected override  Task OnParametersSetAsync()
     {
 
-        Task.Run(async () =>
+       Task.Run(async () =>
         {
+
             bool ToSend = await LoadCostumer();
             if (ToSend)
             {
@@ -175,7 +180,7 @@
                 {
                     OnLinkedToCostumer.InvokeAsync(CurrentCostumer);
                 });
-            }         
+            }            
         });
 
     return base.OnParametersSetAsync();

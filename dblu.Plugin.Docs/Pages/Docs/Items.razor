@@ -25,8 +25,7 @@
 <SfCard>
     <CardHeader Title="Lista Elementi" />
     <CardContent EnableSeperator="true">
-        <SfGrid Height="615" SelectedRowIndex="0" ID="ODATA_Items" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewElementi" Toolbar=@Tool>
-            <SfDataManager Url="/ODATA/Items" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
+        <SfGrid Height="615" SelectedRowIndex="0" ID="ODATA_Items"  DataSource="@ItemsData" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewElementi" Toolbar=@Tool>          
             <GridEvents TValue="viewElementi" QueryCellInfo="CustomizeCell"  OnRecordDoubleClick="OnDoubleClick"></GridEvents>
             <GridPageSettings PageSize="13"></GridPageSettings>
             <GridSearchSettings Fields=@(new string[] { "DscFascicolo", "DscCategoria" })></GridSearchSettings>
@@ -61,6 +60,16 @@
 @code{
 
     /// <summary>
+    /// Indicates if spinner must be visible
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
+
+    /// <summary>
+    /// Dossiers
+    /// </summary>
+    ObservableCollection<viewElementi> ItemsData { get; set; } = new();
+
+    /// <summary>
     /// List of custom columns of the Items
     /// </summary>
     List<Colonna> Cols { get; set; } = new List<Colonna>();
@@ -79,6 +88,12 @@
     protected override async void OnInitialized()
     {
         Cols = _ele.GetColonne("vELEMENTO");
+        IsSpinnerVisible = true;
+        Task.Run(() =>
+        {
+            ItemsData = new ObservableCollection<viewElementi>(_ele.GetElementiV().AsEnumerable());
+            InvokeAsync(() => { IsSpinnerVisible = false; StateHasChanged(); });
+        });
     }
 
     /// <summary>

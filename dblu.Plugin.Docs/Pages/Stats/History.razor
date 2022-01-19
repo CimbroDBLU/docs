@@ -17,12 +17,14 @@
 
 <section class="content">
 
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
+
     <SfCard>
         <CardHeader Title="Storico dei Processi" />
         <CardContent EnableSeperator="true">
 
-            <SfGrid EnablePersistence="false" ID="ODATA_Historys" TValue="Processi" AllowFiltering="true" AllowGrouping="false" AllowTextWrap="true" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@(new List<Object>() { "Search" })">
-                <SfDataManager HttpClientInstance="@Client" Url="/ODATA/History" CrossDomain="true" Adaptor="Adaptors.ODataV4Adaptor"></SfDataManager>
+            <SfGrid EnablePersistence="false" ID="ODATA_Historys" DataSource="@Processes" TValue="Processi" AllowFiltering="true" AllowGrouping="false" AllowTextWrap="true" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@(new List<Object>() { "Search" })">
                 <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
                 <GridEvents TValue="Processi"></GridEvents>
                 <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Dialog"></GridEditSettings>
@@ -83,16 +85,27 @@
 </section>
 
 @code {
-
-    private static HttpClient Client { get; set; } = new();
-
+    /// <summary>
+    /// Indicates if spinner must be visible
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; } = false;
 
     /// <summary>
-    /// On Init component
+    /// Dossiers
+    /// </summary>
+    ObservableCollection<Processi> Processes { get; set; } = new();
+
+    /// <summary>
+    /// On Init component get the custom columns
     /// </summary>
     protected override async void OnInitialized()
-    {
-        Client.Timeout = new TimeSpan(0, 5, 0);
+    {        
+        IsSpinnerVisible = true;
+        Task.Run(async () =>
+        {
+            Processes = new ObservableCollection<Processi>((await _AttachService._hiMan.GetAll()).AsEnumerable());
+            InvokeAsync(() => { IsSpinnerVisible = false; StateHasChanged(); });
+        });
     }
 
 }
