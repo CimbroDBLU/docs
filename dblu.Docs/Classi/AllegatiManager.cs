@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+
 namespace dblu.Docs.Classi
 {
     public class AllegatiManager 
@@ -134,14 +135,13 @@ namespace dblu.Docs.Classi
                             new { Name = Nome});
                 if (doc != null)
                 {
-                    m = new MemoryStream(doc.FileStream);
+                       m = new MemoryStream(doc.FileStream);
                 }
             }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
-                return null;
+                _logger.LogError($"AllegatiManager.GetFileAsync {Nome} :{ex.Message}");
             }
             return m;
         }

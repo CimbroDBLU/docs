@@ -834,6 +834,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                                 M = AUX_DocToPDF(m, fileName, out avvisi);
                                 break;
                             default:
+                                M = null;
                                 avvisi = "Formato non supportato.";
                                 break;
                         }
