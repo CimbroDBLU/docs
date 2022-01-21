@@ -437,6 +437,7 @@
     /// <param name="args"></param>
     public async void OnDataBoundHandler(BeforeDataBoundArgs<Allegati> args)
     {
+        ClearSelectionAsync();
         SearchKey = Grid.SearchSettings.Key;
     }
 

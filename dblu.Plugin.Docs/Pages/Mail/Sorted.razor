@@ -362,6 +362,11 @@
     }
 
     /// <summary>
+    /// Costumer Name
+    /// </summary>
+    private string CustomerName { get; set; } = "";
+
+    /// <summary>
     /// Show delete confirm
     /// </summary>
     private bool ShowConfirm { get; set; } = false;
@@ -511,6 +516,7 @@
                 DossierID = "";
                 CustomerCode = "";
                 PDFSourceId = "";
+                CustomerName = "";
                 PDFSourceType = e_SourceType.Attachment;
                 return;
             }
@@ -527,18 +533,32 @@
                 DossierID = e.IdFascicolo.ToString();
 
             if (CustomerCode != e.Chiave3)
+            {
                 CustomerCode = e.Chiave3;
+                CustomerName = Attach.jAttributi["NomeSoggetto"]?.ToString();
+            }
 
-            if (string.IsNullOrEmpty(CustomerCode))
-                CostumerDesc="Cliente da selezionare";
-
-
+            ApplyCustomer();
             OnAbort();
         }
         catch (Exception ex)
         {
             _Logger.LogError($"Inbox[MAIL].OnSelectAttach: Unexpected errro on selecting attach {ex}");
         }
+    }
+
+
+     /// <summary>
+    /// Set Description of the costumer
+    /// </summary>
+    public void ApplyCustomer()
+    {
+        if (string.IsNullOrEmpty(Attach.Chiave3))
+            CostumerDesc = $"Cliente da selezionare";
+        else if (!string.IsNullOrEmpty(CustomerCode))
+            CostumerDesc = $"{CustomerCode} - {CustomerName?? ""}";       
+        else if (string.IsNullOrEmpty(CustomerCode) && string.IsNullOrEmpty(CustomerName))
+            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";       
     }
 
     /// <summary>

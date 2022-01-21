@@ -499,7 +499,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
+                            _logger.LogError($"DocumentTransformationService.PDF_From_ZIP: {ex.Message}");
                         }
                         foreach (var ms in ListaPdf)
                             ms.Close();
@@ -509,7 +509,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"CreaTmpPdfCompleto: {ex.Message}");
+                _logger.LogError($"DocumentTransformationService.PDF_From_ZIP: {ex.Message}");
 
             }
 
@@ -532,6 +532,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         {
             try
             {
+                Stopwatch sw= Stopwatch.StartNew();
                 string rpt = _config["Docs:EtichettaProtocollo"];
                 if (string.IsNullOrEmpty(rpt))
                     return (true, Doc);
@@ -674,6 +675,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     document.Save(mpdf);
                     document.Close();
                     mpdf.Position = 0;
+                    _logger.LogInformation($"DocumentTransformationService.SignPDF:Document signed in {sw.ElapsedMilliseconds} ms");
                     return (true, mpdf);
                 }
                 return (false, new MemoryStream());
@@ -683,6 +685,246 @@ namespace dblu.Portale.Plugin.Docs.Services
                 _logger.LogError($"DocumentTransformationService.SignPDF: Unexpected error {ex}");
                 return (false, new MemoryStream());
             }
+        }
+
+        /// <summary>
+        /// Create a PDF summary document from a email message
+        /// </summary>
+        /// <param name="FileName">Name of the document</param>
+        /// <param name="Message">Mime message to use</param>
+        /// <returns>
+        /// List of attachments included
+        /// </returns>
+        public List<EmailAttachments> SummaryReport(string FileName, MimeMessage Message)
+        {
+            List<EmailAttachments> res = new List<EmailAttachments>();
+            Stopwatch sw = Stopwatch.StartNew();
+            int.TryParse(_config["Docs:CompressioneImmagini"], out int Quality);
+            if (Quality < 0 || Quality > 100) Quality = 50;
+
+
+            try
+            {
+                PdfUnitConverter convertor = new PdfUnitConverter();
+
+                var testfile = FileName + ".tmp";
+                if (File.Exists(FileName))
+                    File.Delete(FileName);
+
+                var mittente = $"{Message.From.Mailboxes.First().Name} ({Message.From.Mailboxes.First().Address})";
+                var oggetto = Message.Subject;
+                var txt = Message.TextBody == null ? "" : Message.TextBody;
+                var htxt = Message.ToHtml();
+                var pdfstream = new MemoryStream();
+                var ListaPdf = new List<MemoryStream>();
+
+                PdfDocument document = new PdfDocument();
+                HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
+                WebKitConverterSettings settings = new WebKitConverterSettings();
+
+
+
+                if (htxt == "")
+                {
+                    if (txt != null)
+                    {
+                        PdfPage page = document.Pages.Add();
+                        PdfGraphics graphics = page.Graphics;
+                        PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \ndel: {Message.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm")} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
+                        textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
+                        document.Save(pdfstream);
+                        document.Close(true);
+                    }
+                }
+                else   // conversione html in pdf
+                {
+                    try
+                    {
+
+                        if (!htxt.Contains("<body"))
+                        {
+                            htxt = $"<body>{htxt}</body>";
+                        }
+                        htxt = AUX_CleanHTML(htxt);
+                        int bodys = htxt.IndexOf("<body");
+                        if (bodys >= 0)
+                        {
+                            int bodye = htxt.IndexOf(">", bodys);
+                            htxt = htxt.Substring(0, bodye + 1) +
+                                $"<div><b>Da: </b>{mittente}<br><b>Oggetto: </b>{oggetto}<br><b>del: </b>{Message.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm ")}</div><br>"
+                                + htxt.Substring(bodye + 1);
+                        }
+
+                        string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
+
+                        settings.WebKitPath = _config["Docs:PercorsoWebKit"];
+                        settings.EnableJavaScript = false;
+                        settings.EnableHyperLink = false;
+                        settings.EnableOfflineMode = true;
+                        settings.SplitTextLines = true;
+                        settings.SplitImages = true;
+                        settings.Margin.Right = 0;
+                        settings.Margin.Left = 0;
+                        settings.Margin.Top = 0;
+                        settings.Margin.Bottom = 0;
+                        htmlConverter.ConverterSettings = settings;
+                        document = htmlConverter.Convert(htxt, baseUrl);
+                        document.Save(pdfstream);
+                        document.Close(true);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"DocumentTransformationService.SummaryReport: Unable to include text. {ex.Message}");
+                    }
+
+                }
+                ListaPdf.Add(pdfstream);
+
+                int i = 0;
+                foreach (var attachment in Message.Allegati())
+                {
+                    var fileName = "";
+                    var m = new MemoryStream();
+                    var incluso = false;
+                    string avvisi = "";
+                    i++;
+                    if (attachment is MessagePart)
+                    {
+                        fileName = attachment.ContentDisposition?.FileName;
+                        var rfc822 = (MessagePart)attachment;
+
+                        if (string.IsNullOrEmpty(fileName))
+                            fileName = "email-allegata.eml";
+                        rfc822.Message.WriteTo(m);
+                    }
+                    else
+                    {
+                        var part = (MimePart)attachment;
+                        fileName = part.NomeAllegato(i);
+
+                        if (part.FileName is null && part is TextPart)
+                        {
+                            var tp = (TextPart)part;
+                            if (tp.IsHtml && tp.IsAttachment)
+                            {
+                                continue;
+                            }
+                        }
+                        part.Content.DecodeTo(m);
+                    }
+                    try
+                    {
+                        MemoryStream M = new();
+                        switch (System.IO.Path.GetExtension(fileName).ToLower())
+                        {
+                            case ".pdf":
+                                M = AUX_AdjustPDFStream(m, fileName, out avvisi);
+                                break;
+                            case ".jpg":
+                            case ".jpeg":
+                            case ".png":
+                                M = AUX_ImageToPDF(m, fileName, true, out avvisi);
+                                break;
+                            case ".xls":
+                            case ".xlsx":
+                                M = AUX_XlsToPDF(m, fileName, out avvisi);
+                                break;
+                            case ".doc":
+                            case ".docx":
+                                M = AUX_DocToPDF(m, fileName, out avvisi);
+                                break;
+                            default:
+                                avvisi = "Formato non supportato.";
+                                break;
+                        }
+                        m.Close();
+                        m.Dispose();
+                        incluso = (M != null);
+                        if (incluso)
+                            ListaPdf.Add(M);
+
+                    }
+                    catch (Exception ex)
+                    {                      
+                        _logger.LogError($"DocumentTransformationService.SummaryReport: Unexpected exception. {ex.Message}");
+                    }
+                    var a = new EmailAttachments { Id = fileName, NomeFile = fileName, Valido = false, Incluso = incluso, Avvisi = avvisi };
+                    res.Add(a);
+                }
+
+                if (ListaPdf.Count() == 0)
+                {
+                    // Aggiungo pagina riepilogo
+                    PdfPage page = document.Pages.Add();
+                    PdfGraphics graphics = page.Graphics;
+                    PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
+                    textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
+                    document.Save(pdfstream);
+                    document.Close(true);
+                    ListaPdf.Add(pdfstream);
+                }
+
+                if (ListaPdf.Count() > 0)
+                {
+
+                    using (PdfDocument finalDoc = new PdfDocument())
+                    {
+                        //Fondo gli altri allegati
+                        try
+                        {
+                            foreach (Stream s in ListaPdf)
+                            {
+                                s.Position = 0;
+                                PdfLoadedDocument l = new PdfLoadedDocument(s);
+                                for (int q = 0; q < l.PageCount; q++)
+                                {
+                                    try
+                                    {
+                                        finalDoc.ImportPage(l, q);
+                                    }
+                                    catch (Exception)
+                                    {
+                                        _logger.LogError($"DocumentTransformationService.SummaryReport: Unable to import page {q}, skipping it...");
+                                    }
+                                }
+                            }
+
+                            ///Comprimo il tutto
+                            MemoryStream MS = new();
+                            finalDoc.Save(MS);
+                            if (Quality != 0)
+                            {
+                                Stopwatch SW = new(); SW.Start();
+
+                                finalDoc.Save(MS);
+                                long unc = MS?.Length ?? 0;
+                                MS = AUX_CompressPDF(MS, Quality);
+                                long com = MS?.Length ?? 0;
+
+                                _logger.LogInformation($"DocumentTransformationService.SummaryReport: ONFLY Compression {unc}->{com} = {((unc - com) * 100.0) / unc:f}% in {SW.ElapsedMilliseconds} ms");
+                            }
+
+                            //Creazione stram per il file finale
+                            using (FileStream fileStreamMerge = new FileStream(FileName, FileMode.CreateNew, FileAccess.ReadWrite))
+                                fileStreamMerge.Write(MS.ToArray());
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError($"DocumentTransformationService.SummaryReport: Unexpected exception {ex.Message}");
+                        }
+                        foreach (var ms in ListaPdf)
+                            ms.Close();
+                        finalDoc.Close(true);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"DocumentTransformationService.SummaryReport: Unexpected exception { ex.Message}");
+
+            }
+            _logger.LogInformation($"DocumentTransformationService.SummaryReport: Document {FileName} created in {sw.ElapsedMilliseconds} ms");
+            return res;
         }
 
         /// <summary>

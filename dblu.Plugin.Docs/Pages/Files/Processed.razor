@@ -77,7 +77,7 @@
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachCustomer OnLinkedToCostumer="OnLinkCostumer"  nReadOnly="true" nCostumerCode="@CustomerCode" nAttachID="@AttachID"></AttachCustomer>
+                                                    <AttachCustomer OnLinkedToCostumer="OnLinkCostumer"  nReadOnly="true" nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" nAttachID="@AttachID"></AttachCustomer>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -223,6 +223,11 @@
     }
 
     /// <summary>
+    /// Costumer Name
+    /// </summary>
+    private string CustomerName { get; set; } = "";
+
+    /// <summary>
     /// Show delete confirm
     /// </summary>
     private bool ShowConfirm { get; set; } = false;
@@ -322,10 +327,11 @@
     {
         if (e == null)
         {
-             _Logger.LogDebug($"Processed[FILE].OnSelectAttach: DeSelecting attach");
+            _Logger.LogDebug($"Processed[FILE].OnSelectAttach: DeSelecting attach");
             AttachID = "";
             DossierID = "";
             CustomerCode = "";
+            CustomerName = "";
             return;
         }
         _Logger.LogDebug($"Processed[FILE].OnSelectAttach: Selecting attach {e.Id}");
@@ -336,9 +342,12 @@
 
         if (DossierID != e.IdFascicolo.ToString())
             DossierID = e.IdFascicolo.ToString();
-
+        
         if (CustomerCode != e.Chiave3)
-            CustomerCode = e.Chiave3;
+            {
+                CustomerCode = e.Chiave3;
+                CustomerName = Attach.jAttributi["NomeSoggetto"].ToString();
+            }
 
         SourceAttach = new ObservableCollection<OriginalAttachments>(await _ZipService.GetIncludedFileAsync(Attach, null));
         if (SourceAttach != null && SourceAttach.Count != 0)
@@ -347,10 +356,22 @@
 
         OnAbort();
 
-        if (string.IsNullOrEmpty(CustomerCode))
-            CostumerDesc = "Cliente non selezionato";
+        ApplyCustomer();
     }
 
+
+    /// <summary>
+    /// Set Description of the costumer
+    /// </summary>
+    public void ApplyCustomer()
+    {
+        if (string.IsNullOrEmpty(Attach.Chiave3))
+            CostumerDesc = $"Cliente da selezionare";
+        else if (!string.IsNullOrEmpty(CustomerCode))
+            CostumerDesc = $"{CustomerCode} - {CustomerName?? ""}";       
+        else if (string.IsNullOrEmpty(CustomerCode) && string.IsNullOrEmpty(CustomerName))
+            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";       
+    }
 
     /// <summary>
     /// Change the mail box selected
@@ -365,14 +386,14 @@
     /// Link the costumer to current Attach
     /// </summary>
     /// <param name="Customer">Costumer to link</param>
-    public void OnLinkCostumer(ISoggetti Customer)
+    public void OnLinkCostumer(AttachCustomerSearch.CustomerData Customer)
     {
-        CustomerCode = Customer?.Codice ?? "";
-        if (!string.IsNullOrEmpty(CustomerCode))
-            CostumerDesc = $"{Customer?.Codice ?? ""} - {Customer?.Nome ?? ""}";
-        else if (!string.IsNullOrEmpty(Attach.Chiave3) && Customer is null)
-            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";
-        else CostumerDesc = "Cliente non selezionato";
+        if (Customer.AttachId == Attach.Id.ToString())
+        {
+            CustomerCode = Customer.Customer?.Codice ?? "";
+            CustomerName = Customer.Customer?.Nome ?? "";
+            ApplyCustomer();
+        }
     }
 
     /// <summary>
