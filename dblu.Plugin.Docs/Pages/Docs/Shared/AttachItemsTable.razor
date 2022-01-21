@@ -398,6 +398,13 @@ else
             nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
             LastDossierId = nDossierID;
             LastAttachId = nAttachID;
+
+            if(!string.IsNullOrEmpty(nSelectedItem))
+            {
+                int Index = nItems.ToList().FindIndex(d => d.Id == nSelectedItem);
+                Grid?.SelectRowAsync((double)Index);
+                InvokeAsync(() => { OnSelectedItem.InvokeAsync(nItems.FirstOrDefault(d => d.Id == nSelectedItem)); });
+            }
         }).ContinueWith(T => IsSpinnerVisible = false);
         IsSpinnerVisible = false;
     }
@@ -410,12 +417,6 @@ else
     {
         if (string.IsNullOrEmpty(ActionSelected))
             ActionSelected = ActionsCombo?.ActionsList?.FirstOrDefault()?.Item ?? "";
-        if(firstRender)
-            if(!string.IsNullOrEmpty(nSelectedItem))
-            {
-                int Index = nItems.ToList().FindIndex(d => d.Id == nSelectedItem);
-                Grid?.SelectRowAsync((double)Index);
-            }
         base.OnAfterRender(firstRender);
     }
 
@@ -473,7 +474,7 @@ else
                 {
                     await _SessionStore.SetAsync("Referrer", $"/{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}/{nAttachID}");
                     string url = $"/Docs/Attachment/{nAttachID}/{"false"}/{"true"}";
-                    await JSRuntime.InvokeAsync<object>("open", url, "_blank");
+                    JSRuntime.InvokeAsync<object>("open", url, "_blank");
                 }
                 break;
         }

@@ -308,6 +308,7 @@
     /// </summary>
     public void OnSearch()
     {
+        ClearSelectionAsync();
         Grid.SearchAsync(SearchKey);
     }
 

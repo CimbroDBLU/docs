@@ -88,6 +88,29 @@ namespace dblu.Docs.Classi
             return elm;
         }
 
+        /// <summary>
+        /// Recupera la lista di elementi di un particolare soggetto
+        /// </summary>
+        /// <param name="CodiceSoggetto">Soggetto da filtrare</param>
+        /// <returns>Lista di elemennti recuperati</returns>
+        public List<Elementi> GetElementiAperti(string CodiceSoggetto)
+        {
+            List<Elementi> l = new List<Elementi>();
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    l = cn.Query<Elementi>($"Select * FROM Elementi E where Chiave3=@CodiceSoggetto", new { CodiceSoggetto }).ToList();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetElementiAperti: {ex.Message}");
+            }
+            return l;
+        }
+
 
         public List<Elementi> GetElementi(string Tipo, int Stato)
         {

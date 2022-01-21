@@ -97,7 +97,7 @@
         </SfToolbar>
 
         <SfPdfViewerServer EnableErrorDialog="false" Height="@sHeight" LineSettings="@LineSettings" ArrowSettings="@ArrowSettings" RectangleSettings="@RectangleSettings" CircleSettings="@CircleSettings" PolygonSettings="@PolygonSettings" InkAnnotationSettings="@InkSettings" FreeTextSettings="@FreeTextSettings" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
-                <PdfViewerEvents Created="OnPDFViewerCreated"  DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
+                <PdfViewerEvents Created="OnPDFViewerCreated" DocumentLoadFailed="OnDocumentLoadFailed"  DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
         </SfPdfViewerServer>        
     }
     else if (Doc.DocType == e_DocType.IMAGE)
@@ -156,6 +156,7 @@
 </SfSpinner>
 
 @code {
+
 
     /// <summary>
     /// Type of Attachment to work with
@@ -356,9 +357,12 @@
 
         Task.Run(() =>
         {
+            lock (this)
+            {
                 LoadDocument();
-                IsSpinnerVisible = false;
-                InvokeAsync(() => ApplyDoc());
+            }
+            IsSpinnerVisible = false;
+            InvokeAsync(() => ApplyDoc());
         });
         return base.OnParametersSetAsync();
     }
@@ -369,15 +373,19 @@
     /// </summary>
     private void ApplyDoc()
     {
-        lock (this)
+
+        if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length != 0)
         {
-            if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length != 0)
+            lock (this)
             {
                 DownloadFileName = "";
                 string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
                 Viewer.LoadAsync("data:application/DocManager;base64," + base64String, null);
             }
         }
+
+        if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length == 0)
+            Viewer.UnloadAsync();
 
     }
 
@@ -389,6 +397,13 @@
     {
         Doc = await DocManager.Load(nSourceType, nDocIdentifier);
         InvokeAsync(() =>  StateHasChanged());
+    }
+
+    /// <summary>
+    /// On load failed
+    /// </summary>
+    private void OnDocumentLoadFailed()
+    {
     }
 
     /// <summary>

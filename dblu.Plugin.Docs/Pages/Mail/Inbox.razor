@@ -6,6 +6,7 @@
 @page "/Mail/Inbox/{nPreselAttach}"
 @page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}"
 @page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}/{nPreselItem}"
+@using Newtonsoft.Json.Linq
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.Services
@@ -145,7 +146,7 @@
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachCustomer  Sender="@(Attach?.Mittente??"")"  OnLinkedToCostumer="OnLinkCostumer" OnOpenItems="OnOpenItems" nAttachID="@AttachID" nCostumerCode="@CustomerCode" ></AttachCustomer>
+                                                    <AttachCustomer  Sender="@(Attach?.Mittente??"")"  OnLinkedToCostumer="OnLinkCostumer" OnOpenItems="OnOpenItems" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" ></AttachCustomer>
                                                 </ContentTemplate>
 
                                             </AccordionItem>
@@ -332,6 +333,11 @@
     }
 
     /// <summary>
+    /// Costumer Name
+    /// </summary>
+    private string CustomerName { get; set; } = "";
+
+    /// <summary>
     /// Show delete confirm
     /// </summary>
     private bool ShowConfirm { get; set; } = false;
@@ -448,6 +454,7 @@
                 AttachID = "";
                 DossierID = "";
                 CustomerCode = "";
+                CostumerDesc = "";
                 PDFSourceId = "";
                 PDFSourceType = e_SourceType.Attachment;
                 return;
@@ -465,10 +472,11 @@
                 DossierID = e.IdFascicolo.ToString();
 
             if (CustomerCode != e.Chiave3)
-                CustomerCode = e.Chiave3;
-
-            if (string.IsNullOrEmpty(CustomerCode))
-                CostumerDesc = "Cliente da selezionare";
+            {
+                CustomerCode = e.Chiave3;           
+                CustomerName = Attach.jAttributi["NomeSoggetto"]?.ToString();                
+            }
+            ApplyCustomer();
 
             OnAbort();
         }
@@ -687,14 +695,27 @@
     /// Link the costumer to current Attach
     /// </summary>
     /// <param name="Customer">Costumer to link</param>
-    public void OnLinkCostumer(ISoggetti Customer)
+    public void OnLinkCostumer(AttachCustomerSearch.CustomerData Customer)
     {
-        CustomerCode = Customer?.Codice ?? "";
-        if (!string.IsNullOrEmpty(CustomerCode))
-            CostumerDesc = $"{Customer?.Codice ?? ""} - {Customer?.Nome ?? ""}";
-        else if (!string.IsNullOrEmpty(Attach.Chiave3) && Customer is null)
-            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";
-        else CostumerDesc = "Cliente da selezionare";
+        if (Customer.AttachId == Attach.Id.ToString())
+        {
+            CustomerCode = Customer.Customer?.Codice ?? "";
+            CustomerName = Customer.Customer?.Nome ?? "";
+            ApplyCustomer();
+        }
+    }
+
+    /// <summary>
+    /// Set Description of the costumer
+    /// </summary>
+    public void ApplyCustomer()
+    {
+        if (string.IsNullOrEmpty(Attach.Chiave3))
+            CostumerDesc = $"Cliente da selezionare";
+        else if (!string.IsNullOrEmpty(CustomerCode))
+            CostumerDesc = $"{CustomerCode} - {CustomerName?? ""}";       
+        else if (string.IsNullOrEmpty(CustomerCode) && string.IsNullOrEmpty(CustomerName))
+            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";       
     }
 
     /// <summary>

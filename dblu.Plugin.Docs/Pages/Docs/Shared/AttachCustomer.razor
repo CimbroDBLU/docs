@@ -5,6 +5,7 @@
 @using dblu.Portale.Plugin.Docs.Services
 @using dblu.Portale.Plugin.Docs.Pages.Mail.Shared
 @using dblu.Docs.Interfacce
+@using static dblu.Portale.Plugin.Docs.Pages.Docs.Shared.AttachCustomerSearch
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject ILogger<AttachCustomer> _Logger
 
@@ -23,7 +24,7 @@ else
 {            
     <div class="row">
         <div class="col">       
-            <AttachCustomerSearch nCostumerCode="@nCostumerCode" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="@nReadOnly" nAttachID="@nAttachID" ></AttachCustomerSearch>
+            <AttachCustomerSearch nCostumerCode="@nCostumerCode" nCostumerName="@nCostumerName" OnLinkedToCostumer="OnLinkedToCostumer" nReadOnly="@nReadOnly" nAttachID="@nAttachID" ></AttachCustomerSearch>
         </div>
     </div>
     @if (!nReadOnly)
@@ -47,6 +48,12 @@ else
     public string nCostumerCode { get; set; }
 
     /// <summary>
+    /// Costumer Name
+    /// </summary>
+    [Parameter]
+    public string nCostumerName { get; set; }
+
+    /// <summary>
     /// Indicates if is possible to change user/order
     /// </summary>
     [Parameter]
@@ -56,7 +63,7 @@ else
     /// Fires when a costumer has been selected
     /// </summary>
     [Parameter]
-    public EventCallback<ISoggetti> OnLinkedToCostumer { get; set; }
+    public EventCallback<AttachCustomerSearch.CustomerData> OnLinkedToCostumer { get; set; }
 
     /// <summary>
     /// Fires the number on open items loded regarding this costumer
@@ -113,6 +120,7 @@ else
             if (Sender != PrevSender)
             {
                 PrevSender = Sender;
+                string OldID= nAttachID;
                 Task.Run(() =>
                 {
                     IsLoading = true;
@@ -128,7 +136,7 @@ else
                     {
                         InvokeAsync(() =>
                         {
-                            OnLinkCostumer(Costumers?.FirstOrDefault());
+                            OnLinkedToCostumer.InvokeAsync(new CustomerData(){ Customer=Costumers?.FirstOrDefault(), AttachId=OldID });
                         });
                         ShowCostumerSelection = false;
                     }
@@ -142,23 +150,17 @@ else
         return base.OnParametersSetAsync();
     }
 
+
+
     /// <summary>
-    /// Forward the link event
-    /// </summary>
-    /// <param name="data"></param>
-    public async void OnLinkCostumer(ISoggetti Costumer)
-    {
-        await OnLinkedToCostumer.InvokeAsync(Costumer);
-    }
-    /// <summary>
-    /// On closing dialog, change the visible value and  evnetually link the customer
+    /// On closing, change the visible value and  evnetually link the customer
     /// </summary>
     /// <param name="Save">True id the customer must be linked to</param>
     public async void OnSelectedCostumer(bool Save = false)
     {
         ShowCostumerSelection = false;
         if (Save && CustomerSelector.SelectedCostumer != null)
-            OnLinkCostumer(CustomerSelector.SelectedCostumer);
+            OnLinkedToCostumer.InvokeAsync(new CustomerData(){ Customer=CustomerSelector.SelectedCostumer, AttachId=nAttachID });
 
     }
 }

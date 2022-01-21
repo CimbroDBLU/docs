@@ -46,12 +46,34 @@
 
 @code {
 
+    /// <summary>
+    /// Data referred to a costumer
+    /// </summary>
+    public class CustomerData
+    {
+        /// <summary>
+        /// Subject retrived
+        /// </summary>
+        public ISoggetti Customer{ get; set; }
+
+        /// <summary>
+        /// Id of the Attach for witch i am retreiving this Customer
+        /// Used to identify requests
+        /// </summary>
+        public string AttachId{ get; set; }
+    }
 
     /// <summary>
     /// Costumer code
     /// </summary>
     [Parameter]
     public string nCostumerCode { get; set; }
+
+    /// <summary>
+    /// Costumer Name
+    /// </summary>
+    [Parameter]
+    public string nCostumerName { get; set; }
 
     /// <summary>
     /// Attachment ID
@@ -63,7 +85,7 @@
     /// Fires when a costumer has been selected
     /// </summary>
     [Parameter]
-    public EventCallback<ISoggetti> OnLinkedToCostumer { get; set; }
+    public EventCallback<AttachCustomerSearch.CustomerData> OnLinkedToCostumer { get; set; }
 
     /// <summary>
     /// Indicates if is possible to change user/order
@@ -101,11 +123,6 @@
     /// </summary>
     private ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> DynamicAttributes = new();
 
-    /// <summary>
-    /// Current Selected costumer
-    /// </summary>
-    public ISoggetti CurrentCostumer { get; set; } = null;
-
 
     /// <summary>
     /// On  changing user, refresh the component
@@ -118,7 +135,7 @@
         nCostumerCode = args.Codice;
         bool ToSend=await LoadCostumer();
         if (ToSend)
-            await OnLinkedToCostumer.InvokeAsync(args);
+            await OnLinkedToCostumer.InvokeAsync(new CustomerData() { Customer=args, AttachId=nAttachID });
     }
 
     /// <summary>
@@ -127,9 +144,7 @@
     /// <returns></returns>
     public async Task Search()
     {       
-        bool ToSend=await LoadCostumer();                
-        if (ToSend)
-            await OnLinkedToCostumer.InvokeAsync(CurrentCostumer);
+        LoadCostumer();
     }
 
 
@@ -147,18 +162,26 @@
 
         if (LastCostumerCode != nCostumerCode && !string.IsNullOrEmpty(nCostumerCode))
         {
-            LastCostumerCode = nCostumerCode;
+            LastCostumerCode = nCostumerCode;           
             Description = "";
-            Stopwatch SW = Stopwatch.StartNew();
-            IsSpinnerVisible = true; 
-            CurrentCostumer = _MailService._soggetti.GetSoggetto(LastCostumerCode);                     
-            _Logger.LogInformation($"AttachCostumerSearch.LoadCostumer: Retreived Costumer from code {LastCostumerCode} in {SW.ElapsedMilliseconds} ms");
-            IsSpinnerVisible = false;
-            Description = CurrentCostumer?.Nome ?? "";
 
-            return true;
+            Task.Run(async () => 
+            {
+            Stopwatch SW = Stopwatch.StartNew();
+                IsSpinnerVisible = true;
+                ISoggetti CurrentCostumer = _MailService._soggetti.GetSoggetto(LastCostumerCode);
+                _Logger.LogInformation($"AttachCostumerSearch.LoadCostumer: Retreived Costumer from code {LastCostumerCode} in {SW.ElapsedMilliseconds} ms");
+                IsSpinnerVisible = false;
+                Description = CurrentCostumer?.Nome ?? "";
+                await InvokeAsync(() =>
+                {
+                        OnLinkedToCostumer.InvokeAsync(new CustomerData() { Customer=CurrentCostumer, AttachId=nAttachID });
+                });
+
+        });
+
         }
-        
+
         LastCostumerCode = nCostumerCode;
         return false;
     }
@@ -167,23 +190,10 @@
     /// Once component loaded search for the costumer and eventually send to parent the costumer identified
     /// </summary>
     /// <returns></returns>
-    protected override  Task OnParametersSetAsync()
+    protected override async Task OnParametersSetAsync()
     {
 
-       Task.Run(async () =>
-        {
-
-            bool ToSend = await LoadCostumer();
-            if (ToSend)
-            {
-                await InvokeAsync(() =>
-                {
-                    OnLinkedToCostumer.InvokeAsync(CurrentCostumer);
-                });
-            }            
-        });
-
-    return base.OnParametersSetAsync();
+        Description = nCostumerName;
     }
 
     /// <summary>

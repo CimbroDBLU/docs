@@ -723,9 +723,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             {
                 try
                 {
-                    //res = CreaTmpPdfCompleto(NomePdf, Messaggio);
-                    var sfdpf = new SFPdf(_appEnvironment, _logger, _config, _allMan);
-                    res = sfdpf.CreaTmpPdfCompletoSF(NomePdf, Messaggio);
+                    res=_TranformationService.SummaryReport(NomePdf, Messaggio);
                 }
                 catch (Exception ex)
                 {
