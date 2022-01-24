@@ -70,6 +70,9 @@
 
 <div @onkeydown="@OnKeyDown" class="@((IsFullscreen)?"fullscreen":"sized") ">
 
+
+
+
     @if (Doc is null)
     {
         <div class="mt-2 mb-2" style=" text-align: center; ">@*<h3>Loading ... </h3>*@</div>
@@ -77,8 +80,7 @@
     }
     else if (Doc.DocType == e_DocType.PDF)
     {
-
-        <SfToolbar>
+            <SfToolbar>
             <ToolbarItems>
                 <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-exit-full-screen e-icons":"e-full-screen e-icons") TooltipText="Fullscreen" OnClick="Fullscreen"></ToolbarItem>
                 @if (nAllowEdit)
@@ -96,9 +98,10 @@
             </ToolbarItems>
         </SfToolbar>
 
-        <SfPdfViewerServer EnableErrorDialog="false" Height="@sHeight" LineSettings="@LineSettings" ArrowSettings="@ArrowSettings" RectangleSettings="@RectangleSettings" CircleSettings="@CircleSettings" PolygonSettings="@PolygonSettings" InkAnnotationSettings="@InkSettings" FreeTextSettings="@FreeTextSettings" DownloadFileName="@DownloadFileName" @ref="@Viewer" ToolbarSettings="@ToolbarSettings">
-                <PdfViewerEvents Created="OnPDFViewerCreated" DocumentLoadFailed="OnDocumentLoadFailed"  DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
-        </SfPdfViewerServer>        
+         <SfPdfViewerServer DocumentPath="" EnableErrorDialog="false" Height="@sHeight" DownloadFileName="" @ref="@Viewer">     
+             <PdfViewerEvents Created="OnPDFViewerCreated"  DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
+         </SfPdfViewerServer>
+       
     }
     else if (Doc.DocType == e_DocType.IMAGE)
     {
@@ -338,33 +341,26 @@
     protected override  Task OnInitializedAsync()
     {
         DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
-        Doc = new Document("", new MemoryStream(),e_DocType.PDF);
         return base.OnInitializedAsync();
     }
 
     /// <summary>
     /// On Set parameter, reload the control
     /// </summary>
-    protected override Task OnParametersSetAsync()
-    { 
+    protected override async void OnParametersSet()
+    {         
         //Non e' il caso di aggiornare.
         if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
-            return base.OnParametersSetAsync();
+            return;
 
-        IsSpinnerVisible = true;
-        Doc = new Document("", new MemoryStream(),e_DocType.PDF);        
+
+        IsSpinnerVisible = true;       
+
+        LoadDocument();        
+        ApplyDoc();
+
         IsSpinnerVisible = false;
 
-        Task.Run(() =>
-        {
-            lock (this)
-            {
-                LoadDocument();
-            }
-            IsSpinnerVisible = false;
-            InvokeAsync(() => ApplyDoc());
-        });
-        return base.OnParametersSetAsync();
     }
 
 
@@ -380,6 +376,15 @@
             {
                 DownloadFileName = "";
                 string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
+                Viewer.ToolbarSettings = ToolbarSettings;
+                Viewer.ArrowSettings = ArrowSettings;
+                Viewer.InkAnnotationSettings = InkSettings;
+                Viewer.FreeTextSettings=FreeTextSettings;
+                Viewer.LineSettings=LineSettings;
+                Viewer.RectangleSettings=RectangleSettings;
+                Viewer.CircleSettings=CircleSettings;
+                Viewer.PolygonSettings = PolygonSettings;
+
                 Viewer.LoadAsync("data:application/DocManager;base64," + base64String, null);
             }
         }
@@ -395,15 +400,7 @@
     /// </summary>
     private async void LoadDocument()
     {
-        Doc = await DocManager.Load(nSourceType, nDocIdentifier);
-        InvokeAsync(() =>  StateHasChanged());
-    }
-
-    /// <summary>
-    /// On load failed
-    /// </summary>
-    private void OnDocumentLoadFailed()
-    {
+        Doc = await DocManager.Load(nSourceType, nDocIdentifier);       
     }
 
     /// <summary>
@@ -413,7 +410,9 @@
     {
         DownloadFileName = Doc.FileName;
         if(!DownloadFileName.ToLower().EndsWith(".pdf"))
-        DownloadFileName = Doc.FileName+".pdf";
+            DownloadFileName = Doc.FileName+".pdf";
+        if(Viewer!=null)
+            Viewer.DownloadFileName = DownloadFileName;
         OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
     }
 

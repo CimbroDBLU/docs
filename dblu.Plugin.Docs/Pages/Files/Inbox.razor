@@ -400,13 +400,14 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public void OnSelectAttach(Allegati e)
+    public async void OnSelectAttach(Allegati e)
     {
         try
         {
             if (e == null)
             {
-                _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: DeSelecting attach");
+                _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: DeSelecting attach");              
+
                 AttachID = "";
                 DossierID = "";
                 CustomerCode = "";

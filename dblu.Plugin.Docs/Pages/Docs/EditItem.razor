@@ -9,6 +9,7 @@
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
 @using dblu.Portale.Plugin.Docs.Classes
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject IJSRuntime _JSRuntime
 
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
 @inject NavigationManager  _NavigationManager
@@ -90,7 +91,9 @@
             _NavigationManager.NavigateTo($"/Docs/Dossiers");
         else
         {
-            _NavigationManager.NavigateTo(back);
+
+            await _JSRuntime.InvokeVoidAsync("BlazorSetHREF", back);
+            //_NavigationManager.NavigateTo(back);
             await _SessionStore.DeleteAsync("Referrer");
         }
     }

@@ -7,6 +7,7 @@
 @page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}"
 @page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}/{nPreselItem}"
 @using Newtonsoft.Json.Linq
+@using Syncfusion.Blazor.PdfViewerServer
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.Services
@@ -202,7 +203,7 @@
                                             <HeaderTemplate>
                                                 <div>Anteprima</div>
                                             </HeaderTemplate>
-                                            <ContentTemplate>
+                                            <ContentTemplate>                                                
                                                 <DocViewer @ref="@Viewer" OnDocumentTransformed="OnDocumentTransformedZ" nHeight=700 nSourceType="@PDFSourceType" nDocIdentifier="@PDFSourceId"></DocViewer>
                                             </ContentTemplate>
                                         </AccordionItem>
@@ -442,17 +443,19 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public void OnSelectAttach(AllegatoEmail e)
+    public async void OnSelectAttach(AllegatoEmail e)
     {
         try
         {
             IsCustomerExpand = true;
 
+
             if (e == null)
             {
                 _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: DeSelecting attach");
-                AttachID = "";
                 DossierID = "";
+
+                AttachID = "";                
                 CustomerCode = "";
                 CostumerDesc = "";
                 PDFSourceId = "";
@@ -474,7 +477,7 @@
             if (CustomerCode != e.Chiave3)
             {
                 CustomerCode = e.Chiave3;           
-                CustomerName = Attach.jAttributi["NomeSoggetto"]?.ToString();                
+                CustomerName = Attach?.jAttributi["NomeSoggetto"]?.ToString();                
             }
             ApplyCustomer();
 
@@ -710,12 +713,14 @@
     /// </summary>
     public void ApplyCustomer()
     {
+        CostumerDesc = "";
         if (string.IsNullOrEmpty(Attach.Chiave3))
             CostumerDesc = $"Cliente da selezionare";
         else if (!string.IsNullOrEmpty(CustomerCode))
             CostumerDesc = $"{CustomerCode} - {CustomerName?? ""}";       
         else if (string.IsNullOrEmpty(CustomerCode) && string.IsNullOrEmpty(CustomerName))
-            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";       
+            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";
+        
     }
 
     /// <summary>

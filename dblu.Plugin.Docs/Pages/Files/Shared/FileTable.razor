@@ -413,18 +413,18 @@
         switch(nType)
         {
            case TableType.Inbox:
-                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetZipInArrivo(nDocumentType.ToString(), nFolder.Nome).OrderByDescending(c => c.DataC));
+                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetZipInArrivo(nDocumentType.ToString(), nFolder.Cartella).OrderByDescending(c => c.DataC));
                 _Logger.LogInformation($"InFiles.Refresh[{TableType.Inbox},{nFolder.Nome},{nDocumentType}]: {nFiles.Count} files detected in {sw.ElapsedMilliseconds} ms");
            break;
            case TableType.Processed:
-                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetEmailProcessate(nDocumentType.ToString(), nFolder.Nome).OrderByDescending(c => c.DataC));
+                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetEmailProcessate(nDocumentType.ToString(), nFolder.Cartella).OrderByDescending(c => c.DataC));
                 _Logger.LogInformation($"InFiles.Refresh[{TableType.Processed},{nFolder.Nome},{nDocumentType}]: {nFiles.Count} files detected in {sw.ElapsedMilliseconds} ms");
            break;
         }
 
         switch (nType)
         {
-            case TableType.Inbox: LastFileTime = _ZipService._allMan.GetLastInboxFileTime(nDocumentType.ToString(), nFolder.Nome); break;
+            case TableType.Inbox: LastFileTime = _ZipService._allMan.GetLastInboxFileTime(nDocumentType.ToString(), nFolder.Cartella); break;
         }
         NewItems = 0;
         InvokeAsync(() => { Grid.Refresh(); IsSpinnerVisible = false; });

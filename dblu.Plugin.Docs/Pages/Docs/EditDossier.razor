@@ -12,6 +12,7 @@
 @inject ProtectedSessionStorage _SessionStore
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject ILogger<EditDossier> _Logger
+@inject IJSRuntime _JSRuntime
 
 
 <PageTitle nTitle="@CardTitle" />
@@ -231,12 +232,14 @@
         {
             await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
             Url = $"{Url.Replace("blz:/", "")}/{item.Id}/REVIEW";
-            _NavigationManager.NavigateTo(Url);
+             await _JSRuntime.InvokeVoidAsync("BlazorSetHREF", Url);
+          //  _NavigationManager.NavigateTo(Url);
         }
         else
         {
             await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
-            _NavigationManager.NavigateTo($"/Docs/Item/{Id.ToString()}");
+             await _JSRuntime.InvokeVoidAsync("BlazorSetHREF", $"/Docs/Item/{Id.ToString()}");
+           // _NavigationManager.NavigateTo($"/Docs/Item/{Id.ToString()}");
         }
     }
 
@@ -256,7 +259,7 @@
     /// <param name="Attach"></param>
     private async void OnEditAttach(viewAllegati Attach)
     {
-        await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
+        await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");        
         _NavigationManager.NavigateTo($"/Docs/Attachment/{Attach.IdAllegato.ToString()}");
     }
 

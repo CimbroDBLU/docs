@@ -141,22 +141,18 @@
     protected async override void OnInitialized()
     {
         IsSpinnerVisible = true;
-        Task.Run(async()=>
+        if (string.IsNullOrEmpty(ShowMetadata)) ShowMetadata = "true";
+        Attachment = _AttachService._allMan.Get(Guid.Parse(Id));
+        CardTitle = $"Modifica Allegato [{Attachment.Descrizione}]";
+        if (!string.IsNullOrEmpty(Summary) && Summary.ToLowerInvariant() == "true")
         {
-            if (string.IsNullOrEmpty(ShowMetadata)) ShowMetadata = "true";
-            Attachment = _AttachService._allMan.Get(Guid.Parse(Id));
-            CardTitle = $"Modifica Allegato [{Attachment.Descrizione}]";
-            if (!string.IsNullOrEmpty(Summary) && Summary.ToLowerInvariant() == "true")
-            {
-                CardTitle = $"Riepilogo [{Attachment.Descrizione}]";
+            CardTitle = $"Riepilogo [{Attachment.Descrizione}]";
 
-                MemoryStream M = await _MailService.GetPdfRiepilogo(Id);
-                SummaryDoc = $"SUMMARY-{Id}.PDF;{Convert.ToBase64String(M.ToArray())}";
+            MemoryStream M = await _MailService.GetPdfRiepilogo(Id);
+            SummaryDoc = $"SUMMARY-{Id}.PDF;{Convert.ToBase64String(M.ToArray())}";
                 
-            }  
-            InvokeAsync(() => { IsSpinnerVisible = false;StateHasChanged(); });
-        });
-        
+        }  
+        IsSpinnerVisible = false;
     }
 
     /// <summary>
