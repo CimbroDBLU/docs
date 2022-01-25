@@ -96,9 +96,8 @@
                     <ToolbarItem Text="@Doc?.Description" TooltipText="Documento generato" Align=ItemAlign.Right></ToolbarItem>                    
                 }
             </ToolbarItems>
-        </SfToolbar>
-
-         <SfPdfViewerServer DocumentPath="" EnableErrorDialog="false" Height="@sHeight" DownloadFileName="" @ref="@Viewer">     
+        </SfToolbar>                 
+         <SfPdfViewerServer DocumentPath="" EnableErrorDialog="false" Height="@sHeight" DownloadFileName="" @ref="@Viewer" >     
              <PdfViewerEvents Created="OnPDFViewerCreated"  DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
          </SfPdfViewerServer>
        
@@ -341,6 +340,7 @@
     protected override  Task OnInitializedAsync()
     {
         DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
+
         return base.OnInitializedAsync();
     }
 
@@ -348,7 +348,7 @@
     /// On Set parameter, reload the control
     /// </summary>
     protected override async void OnParametersSet()
-    {         
+    {        
         //Non e' il caso di aggiornare.
         if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
             return;
@@ -363,6 +363,27 @@
 
     }
 
+    /// <summary>
+    /// On After render set the configuration (only the first time, otherwise versions > 19.3.x.x crashes)
+    /// </summary>
+    /// <param name="first"></param>
+    protected override async void OnAfterRender(bool first)
+    {
+        if(first)
+                if(Viewer!=null)
+                    {
+                        Viewer.ToolbarSettings = ToolbarSettings;
+                        Viewer.ArrowSettings = ArrowSettings;
+                        Viewer.InkAnnotationSettings = InkSettings;
+                        Viewer.FreeTextSettings=FreeTextSettings;
+                        Viewer.LineSettings=LineSettings;
+                        Viewer.RectangleSettings=RectangleSettings;
+                        Viewer.CircleSettings=CircleSettings;
+                        Viewer.PolygonSettings = PolygonSettings;
+                    }
+    }
+
+
 
     /// <summary>
     /// Copy the pdf on the pdf viewer
@@ -376,6 +397,7 @@
             {
                 DownloadFileName = "";
                 string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
+    
                 Viewer.ToolbarSettings = ToolbarSettings;
                 Viewer.ArrowSettings = ArrowSettings;
                 Viewer.InkAnnotationSettings = InkSettings;
@@ -384,7 +406,7 @@
                 Viewer.RectangleSettings=RectangleSettings;
                 Viewer.CircleSettings=CircleSettings;
                 Viewer.PolygonSettings = PolygonSettings;
-
+     
                 Viewer.LoadAsync("data:application/DocManager;base64," + base64String, null);
             }
         }

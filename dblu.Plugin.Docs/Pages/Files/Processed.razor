@@ -57,7 +57,7 @@
                                                     <div>Operazioni sul file <b>@AttachSubject</b></div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachLogs nAttach="@Attach" OnAbort="OnAbort"></AttachLogs>
+                                                    <REG_Logs nAttach="@Attach" OnAbort="OnAbort"></REG_Logs>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -77,7 +77,7 @@
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachCustomer OnLinkedToCostumer="OnLinkCostumer"  nReadOnly="true" nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" nAttachID="@AttachID"></AttachCustomer>
+                                                    <REG_Customer OnLinkedToCostumer="OnLinkCostumer"  nReadOnly="true" nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" nAttachID="@AttachID"></REG_Customer>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -386,7 +386,7 @@
     /// Link the costumer to current Attach
     /// </summary>
     /// <param name="Customer">Costumer to link</param>
-    public void OnLinkCostumer(AttachCustomerSearch.CustomerData Customer)
+    public void OnLinkCostumer(REG_CustomerSearch.CustomerData Customer)
     {
         if (Customer.AttachId == Attach.Id.ToString())
         {

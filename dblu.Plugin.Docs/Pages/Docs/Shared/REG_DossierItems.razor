@@ -11,9 +11,9 @@
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject AuthenticationStateProvider _AuthenticationStateProvider
-@inject ILogger<AttachDossierItems> _Logger
+@inject ILogger<REG_DossierItems> _Logger
 
-<AttachItemsTable nRecordServer="@nRecordServer" nSelectedItem="@nSelectedItem" nDocumentType="@nDocumentType" @ref="@Table" nAttachID="@nAttachID" nSourceFolder="@nSourceFolder" nDossierID="@nDossierID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode" OnSelectedItem="OnSelectedItemZ" OnLinkedToItem="OnLink" OnComplete="Complete" OnAttachCompleted="OnAttachCompleted" ></AttachItemsTable>
+<REG_ItemsTable nRecordServer="@nRecordServer" nSelectedItem="@nSelectedItem" nDocumentType="@nDocumentType" @ref="@Table" nAttachID="@nAttachID" nSourceFolder="@nSourceFolder" nDossierID="@nDossierID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode" OnSelectedItem="OnSelectedItemZ" OnLinkedToItem="OnLink" OnComplete="Complete" OnAttachCompleted="OnAttachCompleted" ></REG_ItemsTable>
 <Toast @ref="ToastCompleteOK" nToastType="Toast.e_ToastType.OK" nTitle="Completa email" nContent="Email completata"></Toast>
 <Toast @ref="ToastCompleteKO" nToastType="Toast.e_ToastType.Fail" nTitle="Completa email" nContent="Completamento non riuscito"></Toast>
 
@@ -115,7 +115,7 @@
     /// <summary>
     /// Reference to the items table
     /// </summary>
-    private AttachItemsTable Table { get; set; }
+    private REG_ItemsTable Table { get; set; }
 
     /// <summary>
     /// Get current dossier
@@ -189,14 +189,14 @@
                 _MailService._logMan.PostLog(Guid.Parse(nAttachID), TipiOggetto.ALLEGATO, TipoOperazione.Chiuso, User.Identity.Name, $"Allegato chiuso");
                 ToastCompleteOK.Show();
                 OnAttachCompleted.InvokeAsync(nAttachID);
-                _Logger.LogInformation($"AttachDossierItems.Complete: Attach {nAttachID} has been completed in {sw.ElapsedMilliseconds} ms");
+                _Logger.LogInformation($"REG_DossierItems.Complete: Attach {nAttachID} has been completed in {sw.ElapsedMilliseconds} ms");
                 return true;
             }
             ToastCompleteKO.Show();
         }
         catch (Exception ex)
         {
-            _Logger.LogError($"AttachDossierItems.Complete: Complete fails, {ex}");
+            _Logger.LogError($"REG_DossierItems.Complete: Complete fails, {ex}");
             ToastCompleteKO.Show();
         }
         return false;

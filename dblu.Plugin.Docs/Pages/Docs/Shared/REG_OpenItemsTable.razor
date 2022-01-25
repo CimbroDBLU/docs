@@ -4,7 +4,7 @@
 
 @using dblu.Docs.Interfacce
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
-@inject ILogger<AttachOpenItemsTable> _Logger
+@inject ILogger<REG_OpenItemsTable> _Logger
 
 @if (nItems.Count != 0)
 {
@@ -69,7 +69,7 @@
             IsSpinnerVisible = true;
             Stopwatch SW = Stopwatch.StartNew();
             nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)).OrderByDescending(x => x.DataConsegna));
-            _Logger.LogInformation($"AttachOpenItemsTable.OnParametersSetAsync: Retreived {nItems.Count} related items for {nCustomerCode} in {SW.ElapsedMilliseconds} ms");
+            _Logger.LogInformation($"REG_OpenItemsTable.OnParametersSetAsync: Retreived {nItems.Count} related items for {nCustomerCode} in {SW.ElapsedMilliseconds} ms");
             IsSpinnerVisible = false;  
             InvokeAsync(async () =>
             {

@@ -61,7 +61,7 @@
                                                     <div>Sposta <b>@AttachSubject</b></div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachMoveInFolder nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nAttach="@Attach" nSourceServer="@MailBox" OnOperationDone="OnDone" OnAbort="OnAbort"></AttachMoveInFolder>
+                                                    <REG_MoveInFolder nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nAttach="@Attach" nSourceServer="@MailBox" OnOperationDone="OnDone" OnAbort="OnAbort"></REG_MoveInFolder>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -80,7 +80,7 @@
                                                     <div>Operazioni sul file <b>@AttachSubject</b></div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachLogs nAttach="@Attach" OnAbort="OnAbort"></AttachLogs>
+                                                    <REG_Logs nAttach="@Attach" OnAbort="OnAbort"></REG_Logs>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -100,7 +100,7 @@
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachCustomer OnOpenItems="OnOpenItems"  OnLinkedToCostumer="OnLinkCostumer"  nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" nAttachID="@AttachID"></AttachCustomer>
+                                                    <REG_Customer OnOpenItems="OnOpenItems"  OnLinkedToCostumer="OnLinkCostumer"  nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" nAttachID="@AttachID"></REG_Customer>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -117,7 +117,7 @@
                                                     <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachDossierItems OnRefresh="OnRefreshDossier" nSelectedItem="@nPreselItem" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
+                                                    <REG_AttachDossierItems OnRefresh="OnRefreshDossier" nSelectedItem="@nPreselItem" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></REG_AttachDossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -594,7 +594,7 @@
     /// Link the costumer to current Attach
     /// </summary>
     /// <param name="Customer">Costumer to link</param>
-    public void OnLinkCostumer(AttachCustomerSearch.CustomerData Customer)
+    public void OnLinkCostumer(REG_CustomerSearch.CustomerData Customer)
     {
         if (Customer.AttachId == Attach.Id.ToString())
         {

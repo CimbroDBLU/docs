@@ -22,7 +22,7 @@
 @inject ProtectedSessionStorage _SessionStore
 @inject NavigationManager  _NavigationManager
 @inject IJSRuntime JSRuntime
-@inject ILogger<AttachItemsTable> _Logger
+@inject ILogger<REG_ItemsTable> _Logger
 
 <style>
 
@@ -583,7 +583,7 @@ else
             Stopwatch sw=Stopwatch.StartNew();
             TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
 
-            _Logger.LogDebug($"AttachItemsTable.Register: linq incremental  {sw.ElapsedMilliseconds} ms");
+            _Logger.LogDebug($"REG_ItemsTable.Register: linq incremental  {sw.ElapsedMilliseconds} ms");
 
             //1)aggiungo al fascicolo
             Elementi e = await _MailService.CreateItemDossier(nAttachID, nDossierID, T.Categoria, T.Codice, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "",nAttachments.ToList(), nItem?.DscElemento, User, nCurrentDocument);
@@ -592,18 +592,18 @@ else
             else
                 ToastActionOK.Show();
 
-            _Logger.LogDebug($"AttachItemsTable.Register: CreateItemDossier incremental  {sw.ElapsedMilliseconds} ms");
+            _Logger.LogDebug($"REG_ItemsTable.Register: CreateItemDossier incremental  {sw.ElapsedMilliseconds} ms");
             Stopwatch sw1 = Stopwatch.StartNew();
             //2)Apro la pagina di protocollazione indicata
             string AttachId = _MailService._elmMan.GetAllegatiElemento(e.Id).FirstOrDefault(x => x.Tipo == "FILE")?.Id.ToString()??nAttachID;
-            _Logger.LogDebug($"AttachItemsTable.Register: GetAllegatiElemento  incremental {sw.ElapsedMilliseconds} ms");
+            _Logger.LogDebug($"REG_ItemsTable.Register: GetAllegatiElemento  incremental {sw.ElapsedMilliseconds} ms");
 
             string prev = $"{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}";
             if (!prev.EndsWith("Inbox"))
                 prev = prev.Substring(0, prev.IndexOf("Inbox") + 5);
             await _SessionStore.SetAsync("Referrer", $"/{prev}/{nSourceFolder}/{nAttachID}");
 
-            _Logger.LogDebug($"AttachItemsTable.Register: Created Dossier in {sw.ElapsedMilliseconds} ms");
+            _Logger.LogDebug($"REG_ItemsTable.Register: Created Dossier in {sw.ElapsedMilliseconds} ms");
 
             string Url = $"{ComponentName.Replace("blz:/", "")}/{e.Id}";
             _NavigationManager.NavigateTo(Url);
@@ -789,7 +789,7 @@ else
         }
         catch (Exception ex)
         {
-            _Logger.LogError($"AttachItemsTable.OnLink: Unexpected error {ex}");
+            _Logger.LogError($"REG_ItemsTable.OnLink: Unexpected error {ex}");
         }
     }
 

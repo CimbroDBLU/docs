@@ -10,7 +10,7 @@
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject NavigationManager _NavigatorManager
 @inject AuthenticationStateProvider _AuthenticationStateProvider
-@inject ILogger<AttachCustomerSearch> _Logger
+@inject ILogger<REG_CustomerSearch> _Logger
 
     <div>
             <div class="row">
@@ -85,7 +85,7 @@
     /// Fires when a costumer has been selected
     /// </summary>
     [Parameter]
-    public EventCallback<AttachCustomerSearch.CustomerData> OnLinkedToCostumer { get; set; }
+    public EventCallback<REG_CustomerSearch.CustomerData> OnLinkedToCostumer { get; set; }
 
     /// <summary>
     /// Indicates if is possible to change user/order
@@ -170,7 +170,7 @@
             Stopwatch SW = Stopwatch.StartNew();
                 IsSpinnerVisible = true;
                 ISoggetti CurrentCostumer = _MailService._soggetti.GetSoggetto(LastCostumerCode);
-                _Logger.LogInformation($"AttachCostumerSearch.LoadCostumer: Retreived Costumer from code {LastCostumerCode} in {SW.ElapsedMilliseconds} ms");
+                _Logger.LogInformation($"REG_CustomerSearch.LoadCostumer: Retreived Costumer from code {LastCostumerCode} in {SW.ElapsedMilliseconds} ms");
                 IsSpinnerVisible = false;
                 Description = CurrentCostumer?.Nome ?? "";
                 await InvokeAsync(() =>
@@ -235,7 +235,7 @@
         }
         catch (Exception ex)
         {
-            _Logger.LogError($"AttachCostumerSearch.UndefinedComponent: Unexpected error {ex}");
+            _Logger.LogError($"REG_CustomerSearch.UndefinedComponent: Unexpected error {ex}");
         }
     }
 
@@ -298,7 +298,7 @@
         }
         catch (Exception ex)
         {
-            _Logger.LogError($"AttachCostumerSearch.OnSearch: Unexpected error {ex}");
+            _Logger.LogError($"REG_CustomerSearch.OnSearch: Unexpected error {ex}");
         }
     }
 
