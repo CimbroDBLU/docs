@@ -353,24 +353,24 @@
         if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
             return;
 
-        if (LastLoaded == nDocIdentifier)
-            return;
-        LastLoaded = nDocIdentifier;
+        //if (LastLoaded == nDocIdentifier)
+        //    return;
+        //LastLoaded = nDocIdentifier;
 
-        //IsSpinnerVisible = true;               
-        //LoadDocument();        
-        //ApplyDoc();
-        //IsSpinnerVisible = false;
-        IsSpinnerVisible = true;          
-        Task.Run(()=>{
-            lock (this)
-            {
-               if(DocManager.DocIdentifier!=LastLoaded)
-                    LoadDocument();
-               ApplyDoc();
-               InvokeAsync(() => { IsSpinnerVisible = false; StateHasChanged(); });               
-            }            
-        });
+        IsSpinnerVisible = true;               
+        LoadDocument();        
+        ApplyDoc();
+        IsSpinnerVisible = false;
+        //IsSpinnerVisible = true;          
+        //Task.Run(()=>{
+        //    lock (this)
+        //    {
+        //       if(DocManager.DocIdentifier!=LastLoaded)
+        //            LoadDocument();
+        //       ApplyDoc();
+        //       InvokeAsync(() => { IsSpinnerVisible = false; StateHasChanged(); });               
+        //    }            
+        //});
 
 
 
@@ -410,7 +410,7 @@
             {
                 DownloadFileName = "";
                 string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
-                if(nDocIdentifier==LastLoaded)
+               // if(nDocIdentifier==LastLoaded)
                 {
                     Viewer.LoadAsync("data:application/DocManager;base64," + base64String, null);                   
                 }
@@ -422,7 +422,7 @@
 
     }
 
-    private string LastLoaded { get; set; }
+    //private string LastLoaded { get; set; }
 
     /// <summary>
     /// Open the Document, and once done , redraw
@@ -438,15 +438,15 @@
     /// </summary>
     private void OnDocumentLoaded()
     {
-        if (nDocIdentifier == LastLoaded)
-        {
+        //if (nDocIdentifier == LastLoaded)
+        //{
             DownloadFileName = Doc.FileName;
             if (!DownloadFileName.ToLower().EndsWith(".pdf"))
                 DownloadFileName = Doc.FileName + ".pdf";
             if (Viewer != null)
                 Viewer.DownloadFileName = DownloadFileName;
             OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
-        }
+        //}
     }
 
     /// <summary>

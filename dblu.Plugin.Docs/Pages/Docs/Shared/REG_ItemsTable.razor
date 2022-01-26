@@ -101,12 +101,12 @@
         </GridColumns>
     </SfGrid>
     <div class="mt-2">
-        <ActionsButtonsList nAttachID="@nAttachID"nDossierID="@nDossierID" nAttachments="@nAttachments" nCostumerCode="@nCostumerCode"  nCurrentDocument="@nCurrentDocument" nItemTypes="@Actions" nDisplayActions="@(!string.IsNullOrEmpty(nCostumerCode))" OnLinkItemPressed="OnLinkItem" OnLinkPressed="OnLink" nDisplayComplete="@(!IsSummaryActive)" OnCompletePressed="OnComplete" OnAttachCompleted=OnAttachCompleted  ></ActionsButtonsList>
+        <ActionsButtonsList nAttachID="@nAttachID"nDossierID="@nDossierID" nAttachments="@nAttachments" nCostumerCode="@nCostumerCode"  nCurrentDocument="@nCurrentDocument" nItemTypes="@Actions" nDisplayActions="@(!string.IsNullOrEmpty(nCostumerCode))" OnLinkItemPressed="OnLinkItem" OnLinkPressed="OnLink" nDisplayComplete="@(IsSummaryActive)" OnCompletePressed="OnComplete" OnAttachCompleted=OnAttachCompleted  ></ActionsButtonsList>
     </div>
 }
 else
 {
-   <ActionsButtonsList nAttachID="@nAttachID" nDossierID="@nDossierID" nAttachments="@nAttachments" nCostumerCode="@nCostumerCode" nCurrentDocument="@nCurrentDocument" nItemTypes="@Actions" nDisplayActions="@(!string.IsNullOrEmpty(nCostumerCode))" OnLinkItemPressed="OnLinkItem" OnLinkPressed="OnLink" nDisplayComplete="@(!IsSummaryActive)" OnCompletePressed="OnComplete"  OnAttachCompleted=OnAttachCompleted ></ActionsButtonsList>
+   <ActionsButtonsList nAttachID="@nAttachID" nDossierID="@nDossierID" nAttachments="@nAttachments" nCostumerCode="@nCostumerCode" nCurrentDocument="@nCurrentDocument" nItemTypes="@Actions" nDisplayActions="@(!string.IsNullOrEmpty(nCostumerCode))" OnLinkItemPressed="OnLinkItem" OnLinkPressed="OnLink" nDisplayComplete="@(IsSummaryActive)" OnCompletePressed="OnComplete"  OnAttachCompleted=OnAttachCompleted ></ActionsButtonsList>
 }
 @if (IsShowDialog)
 {
