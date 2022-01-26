@@ -2287,7 +2287,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                             var htxt ="";
                             var ttxt = "";
 
-                            htxt = message?.HtmlBody??" ";
+                            
+                            htxt = message?.HtmlBody?? $" ";
                             htxt += "\n" + Firma;
                             string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
                             string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
@@ -2297,7 +2298,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                             htxt = htxt?.Replace("<body>", $"<body><p>{Testo}</p><p><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></p><br>");
 
                             builder.TextBody = ttxt;
-                            builder.HtmlBody = htxt;
+                            ///Aggiungo l'html solo se ho nel messaggio , senno vien fuori male
+                            if(!string.IsNullOrEmpty(message?.HtmlBody))
+                                builder.HtmlBody = htxt;
+
                             Regex.Replace(builder.TextBody, "<.*?>", string.Empty);
                             foreach (MimeEntity att in message.Allegati())
                             {
@@ -2489,7 +2493,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                             }
 
                             builder.TextBody = ttxt;
-                            builder.HtmlBody = htxt;
+                            ///Aggiungo l'html solo se ho nel messaggio , senno vien fuori male
+                            if (!string.IsNullOrEmpty(message?.HtmlBody))
+                                builder.HtmlBody = htxt;
+                            //builder.HtmlBody = htxt;
                             builder.TextBody = Regex.Replace(builder.TextBody, "<.*?>", string.Empty);
                             newmessage.Body = builder.ToMessageBody();
                             await client.SendAsync(newmessage, c);
