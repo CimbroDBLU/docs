@@ -353,13 +353,26 @@
         if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
             return;
 
+        if (LastLoaded == nDocIdentifier)
+            return;
+        LastLoaded = nDocIdentifier;
 
-        IsSpinnerVisible = true;       
+        //IsSpinnerVisible = true;               
+        //LoadDocument();        
+        //ApplyDoc();
+        //IsSpinnerVisible = false;
+        IsSpinnerVisible = true;          
+        Task.Run(()=>{
+            lock (this)
+            {
+               if(DocManager.DocIdentifier!=LastLoaded)
+                    LoadDocument();
+               ApplyDoc();
+               InvokeAsync(() => { IsSpinnerVisible = false; StateHasChanged(); });               
+            }            
+        });
 
-        LoadDocument();        
-        ApplyDoc();
 
-        IsSpinnerVisible = false;
 
     }
 
@@ -370,17 +383,17 @@
     protected override async void OnAfterRender(bool first)
     {
         if(first)
-                if(Viewer!=null)
-                    {
-                        Viewer.ToolbarSettings = ToolbarSettings;
-                        Viewer.ArrowSettings = ArrowSettings;
-                        Viewer.InkAnnotationSettings = InkSettings;
-                        Viewer.FreeTextSettings=FreeTextSettings;
-                        Viewer.LineSettings=LineSettings;
-                        Viewer.RectangleSettings=RectangleSettings;
-                        Viewer.CircleSettings=CircleSettings;
-                        Viewer.PolygonSettings = PolygonSettings;
-                    }
+            if(Viewer!=null)
+            {
+                Viewer.ToolbarSettings = ToolbarSettings;
+                Viewer.ArrowSettings = ArrowSettings;
+                Viewer.InkAnnotationSettings = InkSettings;
+                Viewer.FreeTextSettings=FreeTextSettings;
+                Viewer.LineSettings=LineSettings;
+                Viewer.RectangleSettings=RectangleSettings;
+                Viewer.CircleSettings=CircleSettings;
+                Viewer.PolygonSettings = PolygonSettings;
+            }
     }
 
 
@@ -392,22 +405,15 @@
     {
 
         if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length != 0)
-        {
-            lock (this)
+        {     
+            lock (Viewer)
             {
                 DownloadFileName = "";
                 string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
-    
-                Viewer.ToolbarSettings = ToolbarSettings;
-                Viewer.ArrowSettings = ArrowSettings;
-                Viewer.InkAnnotationSettings = InkSettings;
-                Viewer.FreeTextSettings=FreeTextSettings;
-                Viewer.LineSettings=LineSettings;
-                Viewer.RectangleSettings=RectangleSettings;
-                Viewer.CircleSettings=CircleSettings;
-                Viewer.PolygonSettings = PolygonSettings;
-     
-                Viewer.LoadAsync("data:application/DocManager;base64," + base64String, null);
+                if(nDocIdentifier==LastLoaded)
+                {
+                    Viewer.LoadAsync("data:application/DocManager;base64," + base64String, null);                   
+                }
             }
         }
 
@@ -416,12 +422,14 @@
 
     }
 
+    private string LastLoaded { get; set; }
 
     /// <summary>
     /// Open the Document, and once done , redraw
     /// </summary>
     private async void LoadDocument()
     {
+
         Doc = await DocManager.Load(nSourceType, nDocIdentifier);       
     }
 
@@ -430,12 +438,15 @@
     /// </summary>
     private void OnDocumentLoaded()
     {
-        DownloadFileName = Doc.FileName;
-        if(!DownloadFileName.ToLower().EndsWith(".pdf"))
-            DownloadFileName = Doc.FileName+".pdf";
-        if(Viewer!=null)
-            Viewer.DownloadFileName = DownloadFileName;
-        OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
+        if (nDocIdentifier == LastLoaded)
+        {
+            DownloadFileName = Doc.FileName;
+            if (!DownloadFileName.ToLower().EndsWith(".pdf"))
+                DownloadFileName = Doc.FileName + ".pdf";
+            if (Viewer != null)
+                Viewer.DownloadFileName = DownloadFileName;
+            OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
+        }
     }
 
     /// <summary>
