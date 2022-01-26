@@ -65,12 +65,12 @@
         <SfToolbar>
             <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
             <ToolbarItems>
-                <ToolbarItem Id="Open" PrefixIcon="e-icons e-folder-open" TooltipText="Apri"></ToolbarItem>
-                <ToolbarItem Id="Add" PrefixIcon="e-add" TooltipText="Aggiungi"></ToolbarItem>
-                <ToolbarItem Id="Duplicate" PrefixIcon="e-icons e-copy" TooltipText="Duplica"></ToolbarItem>
-                <ToolbarItem Id="Print" CssClass="e-dblu" PrefixIcon="e-icons e-print" Disabled="@IsSummaryActive"></ToolbarItem>
+                <ToolbarItem Id="Open" PrefixIcon="e-icons e-folder-open" TooltipText="Apri" Disabled="@(!IsItemSelected)"></ToolbarItem>
+                <ToolbarItem Id="Add" PrefixIcon="e-add" TooltipText="Aggiungi" ></ToolbarItem>
+                <ToolbarItem Id="Duplicate" PrefixIcon="e-icons e-copy" TooltipText="Duplica" Disabled="@(!IsItemSelected)"></ToolbarItem>
+                <ToolbarItem Id="Print" CssClass="e-dblu" PrefixIcon="e-icons e-print" Disabled="@(!(IsItemSelected && IsSummaryActive))"></ToolbarItem>
 
-                <ToolbarItem Id="Delete" PrefixIcon="e-delete" TooltipText="Elimina"></ToolbarItem>
+                <ToolbarItem Id="Delete" PrefixIcon="e-delete" TooltipText="Elimina" Disabled="@(!IsItemSelected)"></ToolbarItem>
                 <ToolbarItem Align=ItemAlign.Right Id="SearchItem" Type="ItemType.Input">
                     <Template>
                         <SfTextBox @ref="@SearchText" ID="SearchItemText" EnablePersistence="false"  Autocomplete="AutoComplete.On"  @bind-Value="@SearchKey" @onchange="OnSearch" Placeholder="Ricerca" Created="@OnSearchCreated"></SfTextBox>
@@ -79,7 +79,7 @@
             </ToolbarItems>
         </SfToolbar>
         <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-        <GridEvents TValue="EmailElementi" RowSelected="OnRecordSelect" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
+        <GridEvents TValue="EmailElementi" RowSelected="OnRecordSelect" RowDeselected="OnRecordDeselected" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
         <GridPageSettings PageSize="4"></GridPageSettings>
         <GridColumns>
             <GridColumn Field=@nameof(EmailElementi.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
@@ -228,7 +228,7 @@ else
     /// <summary>
     /// Inidicate id the toolbar button for printing the summary is enable or not
     /// </summary>
-    private bool IsSummaryActive => (nItems?.Where(x => (int)x.Stato > 1).FirstOrDefault() == null) ? true : false;
+    private bool IsSummaryActive => (nItems?.Where(x => (int)x.Stato > 1).FirstOrDefault() == null) ? false : true;
 
     /// <summary>
     /// Show /hide the duplicate confirmation
@@ -368,6 +368,11 @@ else
     public EventCallback OnComplete { get; set; }
 
     /// <summary>
+    /// Indicates if item has been selected
+    /// </summary>
+    public bool IsItemSelected { get; set; } = false;
+
+    /// <summary>
     /// Pre-selected Item
     /// </summary>
     [Parameter]
@@ -391,6 +396,8 @@ else
     protected override async Task OnParametersSetAsync()
     {
         if (LastAttachId == nAttachID && LastDossierId == nDossierID) return;
+
+        IsItemSelected = false;
 
         IsSpinnerVisible = true;
         Task.Run(() =>
@@ -438,7 +445,18 @@ else
     /// <param name="args"></param>
     public async void OnRecordSelect(RowSelectEventArgs<EmailElementi> args)
     {
+        IsItemSelected =  (await Grid.GetSelectedRecords()).Any();
         OnSelectedItem.InvokeAsync(args.Data);
+    }
+
+    /// <summary>
+    /// On record deselected
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnRecordDeselected(RowDeselectEventArgs<EmailElementi> args)
+    {
+        IsItemSelected =  (await Grid.GetSelectedRecords()).Any();
+        
     }
 
     /// <summary>
