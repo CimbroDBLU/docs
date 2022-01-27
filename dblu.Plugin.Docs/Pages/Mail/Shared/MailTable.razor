@@ -25,7 +25,7 @@
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-    <GridPageSettings PageSize="10"></GridPageSettings>
+    <GridPageSettings PageSize="20"></GridPageSettings>
     <GridEvents TValue="AllegatoEmail" OnDataBound="OnDataBoundHandler" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
 
     <SfSpinner @bind-Visible="IsSpinnerVisible">
@@ -429,19 +429,19 @@
             {
                 case TableType.Inbox:
                 
-                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
+                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
                      _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
                     break;
                 case TableType.Sorting:
-                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailDaSmistare("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
+                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailDaSmistare("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
                     break;
                 case TableType.Processed:
-                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailProcessate("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
+                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailProcessate("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
                     break;
                 case TableType.Sent:
-                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInviate("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
+                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInviate("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
                     break;
             }

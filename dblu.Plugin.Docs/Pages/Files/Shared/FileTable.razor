@@ -25,7 +25,7 @@
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-    <GridPageSettings PageSize="10"></GridPageSettings>
+    <GridPageSettings PageSize="20"></GridPageSettings>
     <GridEvents TValue="Allegati" OnDataBound="OnDataBoundHandler" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
 
     <SfSpinner @bind-Visible="IsSpinnerVisible">
@@ -413,11 +413,11 @@
         switch(nType)
         {
            case TableType.Inbox:
-                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetZipInArrivo(nDocumentType.ToString(), nFolder.Cartella).OrderByDescending(c => c.DataC));
+                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetZipInArrivo(nDocumentType.ToString(), nFolder.Cartella).OrderBy(c => c.DataC));
                 _Logger.LogInformation($"InFiles.Refresh[{TableType.Inbox},{nFolder.Nome},{nDocumentType}]: {nFiles.Count} files detected in {sw.ElapsedMilliseconds} ms");
            break;
            case TableType.Processed:
-                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetEmailProcessate(nDocumentType.ToString(), nFolder.Cartella).OrderByDescending(c => c.DataC));
+                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetEmailProcessate(nDocumentType.ToString(), nFolder.Cartella).OrderBy(c => c.DataC));
                 _Logger.LogInformation($"InFiles.Refresh[{TableType.Processed},{nFolder.Nome},{nDocumentType}]: {nFiles.Count} files detected in {sw.ElapsedMilliseconds} ms");
            break;
         }

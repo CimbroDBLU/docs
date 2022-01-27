@@ -210,7 +210,7 @@
     /// <param name="e"></param>
     public void OnSelectedItemZ(EmailElementi e)
     {
-        this.OnSelectedItem.InvokeAsync(e.Id);
+        this.OnSelectedItem.InvokeAsync(e?.Id);
     }
 
     /// <summary>
