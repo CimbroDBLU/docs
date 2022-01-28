@@ -64,6 +64,7 @@ using Syncfusion.Pdf.Graphics;
 using dblu.Portale.Plugin.Docs.Classes;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using BPMClient.DataLayer;
 
 namespace dblu.Portale.Plugin.Docs.Services
 {
@@ -2138,12 +2139,24 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
             return res;
         }
+        
 
-        public bool AvviaProcesso(BPMDocsProcessInfo Info, Elementi el, Dictionary<string, VariableValue> variabili)
+        public bool AvviaProcesso(BPMDocsProcessInfo Info, Elementi el, Dictionary<string, VariableValue> variabili,bool OnlyNotExsisting=false)
         {
             bool res = true;
             try
             {
+                BPMTask tsk = new BPMTask();
+
+                ///Il processo esiste già, esco
+                if (OnlyNotExsisting)
+                    foreach( CAMTask T in _bpm.GetTasksByItemID(el.Id.ToString()))
+                    {                           
+                        BPMTaskDto d = tsk.Get(_bpm._eng, T.ID_);
+                        if (d.processDefinitionId.Contains(el.TipoNavigation.Processo))
+                            return true;
+                    }
+
                 if (!string.IsNullOrEmpty(el.TipoNavigation.Processo))
                 {
 
@@ -3448,8 +3461,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     FILE = await _allMan.SalvaAsync(FILE, Doc, isNewFILE);
 
 
-                    /// 6 ATTIVO PROCESSI
-
+                    /// 6 ATTIVO PROCESSO se non esiste già
                     if (Info != null)
                     {
                         Info.StatoPrec = (int)e.Stato;
@@ -3459,7 +3471,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         if (!Vars.ContainsKey("IdAllegato"))
                             Vars.Add("IdAllegato", VariableValue.FromObject(AttachID));
 
-                        if (AvviaProcesso(Info, e, Vars))
+                        if (!AvviaProcesso(Info, e, Vars,true))
                             return 3;
                     }
                 }
