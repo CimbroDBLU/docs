@@ -68,7 +68,7 @@
         {
             IsSpinnerVisible = true;
             Stopwatch SW = Stopwatch.StartNew();
-            nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)).OrderByDescending(x => x.DataConsegna));
+            nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)));
             _Logger.LogInformation($"REG_OpenItemsTable.OnParametersSetAsync: Retreived {nItems.Count} related items for {nCustomerCode} in {SW.ElapsedMilliseconds} ms");
             IsSpinnerVisible = false;  
             InvokeAsync(async () =>

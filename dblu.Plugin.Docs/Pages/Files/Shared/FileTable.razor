@@ -263,9 +263,14 @@
     private DateTime LastFileTime { get; set; }
 
     /// <summary>
+    /// List of previous selected indexes on the table
+    /// </summary>
+    private List<double> SelectedIndexes { get; set; } = new();
+
+    /// <summary>
     /// Clear the selection
     /// </summary>
-    public async void ClearSelectionAsync()=> Grid.ClearSelectionAsync();
+    public async void ClearSelectionAsync() {SelectedIndexes.Clear(); Grid.ClearSelectionAsync(); }
 
     /// <summary>
     /// On init , if necessary, start the timer
@@ -402,12 +407,21 @@
     /// <summary>
     /// Reload the list fo the email
     /// </summary>
-    public void Refresh()
+    public async void Refresh()
     {
+        if(nFolderOld == nFolder)
+        {
+            SelectedIndexes.Clear();
+            List<double> T = (await Grid.GetSelectedRowIndexesAsync()).ToList();
+            foreach (var index in T)
+                SelectedIndexes.Add(index);
+            Grid.ClearSelectionAsync();
+        }
+        else ClearSelectionAsync();
         nFolderOld = nFolder;
         IsSpinnerVisible=true;
         //Grid.DataManager.Url = DataUrl;
-        Task.Run(() =>
+        Task.Run(async () =>
         {
         Stopwatch sw = Stopwatch.StartNew();
         switch(nType)
@@ -448,6 +462,9 @@
     {
         try
         {
+             foreach (var index in SelectedIndexes)               
+                await Grid.SelectRowAsync(index);
+
              if ((await Grid.GetSelectedRecordsAsync()).Count != 0)
                 return;
 

@@ -210,6 +210,11 @@
     public string nPreselItem { get; set; } = "";
 
     /// <summary>
+    /// Indicate an autoselection of an item
+    /// </summary>
+    private string AutoSel { get; set; } = "";
+
+    /// <summary>
     /// Type of document we need to manage (ZIP,REQ...)
     /// </summary>
     [Parameter]
@@ -427,6 +432,9 @@
             if (DossierID != e.IdFascicolo.ToString())
                 DossierID = e.IdFascicolo.ToString();
 
+            AutoSel=nPreselItem;
+            nPreselItem = null;
+
             if (CustomerCode != e.Chiave3)
             {
                 CustomerCode = e.Chiave3;
@@ -585,9 +593,8 @@
     /// <param name="data"></param>
     private async void OnLinkToItem((string DossierId, string ItemId) data)
     {
-        DossierID = data.DossierId;
-        ItemID = data.ItemId;
-        Grid.Refresh();
+        Grid.Refresh();      
+        nPreselItem = data.ItemId;
     }
 
     /// <summary>
@@ -641,8 +648,11 @@
     /// <param name="Id">Id of the item to load on PDF preview</param>
     public void OnSelectedItem(string Id)
     {
+        if(!string.IsNullOrEmpty(Id))
+        {
         PDFSourceId = Id;
         PDFSourceType = e_SourceType.Item;
+        }
     }
 
 

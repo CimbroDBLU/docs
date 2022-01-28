@@ -397,15 +397,6 @@
             {
                 DownloadFileName = "";
                 string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
-    
-                Viewer.ToolbarSettings = ToolbarSettings;
-                Viewer.ArrowSettings = ArrowSettings;
-                Viewer.InkAnnotationSettings = InkSettings;
-                Viewer.FreeTextSettings=FreeTextSettings;
-                Viewer.LineSettings=LineSettings;
-                Viewer.RectangleSettings=RectangleSettings;
-                Viewer.CircleSettings=CircleSettings;
-                Viewer.PolygonSettings = PolygonSettings;
      
                 Viewer.LoadAsync("data:application/DocManager;base64," + base64String, null);
             }

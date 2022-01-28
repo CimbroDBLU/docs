@@ -165,7 +165,7 @@
                                                     <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <REG_DossierItems nSelectedItem="@nPreselItem" OnRefresh="OnRefreshDossier" nCurrentDocument="@Document" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></REG_DossierItems>
+                                                    <REG_DossierItems nSelectedItem="@AutoSel" OnRefresh="OnRefreshDossier" nCurrentDocument="@Document" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></REG_DossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -257,7 +257,12 @@
     /// Item that has to be preselected
     /// </summary>
     [Parameter]
-    public string nPreselItem { get; set; } = "";
+    public string nPreselItem { get; set; } = null;
+
+    /// <summary>
+    /// Indicate an autoselection of an item
+    /// </summary>
+    private string AutoSel { get; set; } = "";
 
     /// <summary>
     /// Document viewer
@@ -465,14 +470,18 @@
 
             _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Id}");
             Attach = e;
+
             PDFSourceId = e.Id.ToString();
             PDFSourceType = e_SourceType.Attachment;
-
+           
             if (AttachID != e.Id.ToString())
                 AttachID = e.Id.ToString();
 
             if (DossierID != e.IdFascicolo.ToString())
-                DossierID = e.IdFascicolo.ToString();
+                DossierID = e.IdFascicolo.ToString();            
+
+            AutoSel=nPreselItem;
+            nPreselItem = null;
 
             if (CustomerCode != e.Chiave3)
             {
@@ -684,14 +693,16 @@
         IsAnswerDialog = false; IsForwardDialog = false; IsMoveDialog = false; IsShowDialog = false; IsLogsDialog = false;
     }
 
+
+
     /// <summary>
     /// On linking item, refresh the grid and components
     /// </summary>
     /// <param name="data"></param>
     private async void OnLinkToItem((string DossierId, string ItemId) data)
     {        
-        Grid.Refresh();
-        DossierID = data.DossierId;
+        Grid.Refresh();      
+        nPreselItem = data.ItemId;
     }
 
     /// <summary>
@@ -763,8 +774,11 @@
     /// <param name="Id">Id of the item to load on PDF preview</param>
     public void OnSelectedItem(string Id)
     {
+        if(!string.IsNullOrEmpty(Id))
+        {
         PDFSourceId = Id;
         PDFSourceType = e_SourceType.Item;
+        }
     }
 
 }

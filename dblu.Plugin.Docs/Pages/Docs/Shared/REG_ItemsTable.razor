@@ -396,23 +396,25 @@ else
     protected override async Task OnParametersSetAsync()
     {
         if (LastAttachId == nAttachID && LastDossierId == nDossierID) return;
-
+        LastDossierId = nDossierID;
+        LastAttachId = nAttachID;
+        string ItemS = nSelectedItem;
         IsItemSelected = false;
-
         IsSpinnerVisible = true;
-        Task.Run(() =>
-        {
-            nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
-            LastDossierId = nDossierID;
-            LastAttachId = nAttachID;
 
-            if(!string.IsNullOrEmpty(nSelectedItem))
-            {
-                int Index = nItems.ToList().FindIndex(d => d.Id == nSelectedItem);
-                Grid?.SelectRowAsync((double)Index);
-                InvokeAsync(() => { OnSelectedItem.InvokeAsync(nItems.FirstOrDefault(d => d.Id == nSelectedItem)); });
-            }
-        }).ContinueWith(T => IsSpinnerVisible = false);
+        Stopwatch sw=Stopwatch.StartNew();
+        nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
+        _Logger.LogDebug($"REG_ItemsTable.OnParametersSetAsync: Red Dossier {nDossierID}, all items in {sw.ElapsedMilliseconds} ms");
+
+        if(!string.IsNullOrEmpty(ItemS))
+        {
+            int Index = nItems.ToList().FindIndex(d => d.Id == ItemS);
+            //_Logger.LogDebug($"REG_ItemsTable..OnParametersSetAsync: Select {Index}");
+        
+            Grid?.SelectRowAsync((double)Index); 
+            await OnSelectedItem.InvokeAsync(nItems.FirstOrDefault(d => d.Id == ItemS)); 
+
+        }
         IsSpinnerVisible = false;
     }
 
@@ -554,9 +556,6 @@ else
 
         ShowDuplicateConfirm = false;
         OnOpen(new EmailElementi() { IdElemento = f.Id, TipoElemento = f.Tipo });
-        //Refresh();
-        //StateHasChanged();
-
     }
 
     /// <summary>
