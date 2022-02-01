@@ -409,7 +409,7 @@ else
         if(!string.IsNullOrEmpty(ItemS))
         {
             int Index = nItems.ToList().FindIndex(d => d.Id == ItemS);
-            //_Logger.LogDebug($"REG_ItemsTable..OnParametersSetAsync: Select {Index}");
+            _Logger.LogDebug($"REG_ItemsTable..OnParametersSetAsync: Select {Index}");
         
             Grid?.SelectRowAsync((double)Index); 
             await OnSelectedItem.InvokeAsync(nItems.FirstOrDefault(d => d.Id == ItemS)); 

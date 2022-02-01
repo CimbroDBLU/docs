@@ -451,9 +451,9 @@
     public async void OnSelectAttach(AllegatoEmail e)
     {
         try
-        {
-            IsCustomerExpand = true;
+        {    
 
+            IsCustomerExpand = true;
 
             if (e == null)
             {
@@ -469,20 +469,23 @@
             }
 
             _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Id}");
-            Attach = e;
 
-            PDFSourceId = e.Id.ToString();
-            PDFSourceType = e_SourceType.Attachment;
-           
+            AutoSel=nPreselItem;     
+            Attach = e;
+            if (e?.Id.ToString() != AttachID)
+            {
+                nPreselItem = null;
+                PDFSourceId = e.Id.ToString();
+                PDFSourceType = e_SourceType.Attachment;
+            }
+
             if (AttachID != e.Id.ToString())
                 AttachID = e.Id.ToString();
 
             if (DossierID != e.IdFascicolo.ToString())
                 DossierID = e.IdFascicolo.ToString();            
 
-            AutoSel=nPreselItem;
-            nPreselItem = null;
-
+            
             if (CustomerCode != e.Chiave3)
             {
                 CustomerCode = e.Chiave3;           

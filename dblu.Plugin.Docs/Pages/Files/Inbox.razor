@@ -408,7 +408,8 @@
     public async void OnSelectAttach(Allegati e)
     {
         try
-        {
+        {           
+            if(e?.Id.ToString()==AttachID) return;
             if (e == null)
             {
                 _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: DeSelecting attach");              
@@ -421,19 +422,25 @@
                 PDFSourceType = e_SourceType.Attachment;
                 return;
             }
+            
+
             _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: Selecting attach {e.Id}");
+            
+            AutoSel=nPreselItem;     
             Attach = e;
-            PDFSourceId = e.Id.ToString();
-            PDFSourceType = e_SourceType.Attachment;
+            if (e?.Id.ToString() != AttachID)
+            {
+                nPreselItem = null;
+                PDFSourceId = e.Id.ToString();
+                PDFSourceType = e_SourceType.Attachment;
+            }
+
 
             if (AttachID != e.Id.ToString())
                 AttachID = e.Id.ToString();
 
             if (DossierID != e.IdFascicolo.ToString())
                 DossierID = e.IdFascicolo.ToString();
-
-            AutoSel=nPreselItem;
-            nPreselItem = null;
 
             if (CustomerCode != e.Chiave3)
             {
