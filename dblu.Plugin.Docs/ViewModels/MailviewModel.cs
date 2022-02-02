@@ -1,4 +1,5 @@
 ﻿using BPMClient;
+using dblu.Docs.Classi;
 using dblu.Docs.Extensions;
 using dblu.Docs.Interfacce;
 using dblu.Docs.Models;
@@ -28,27 +29,6 @@ namespace dblu.Portale.Plugin.Docs.ViewModels
     public class inArrivoView_new
     {
         public string Modulo { get; set; }
-    }
-
-    public class EmailAttachments
-    {
-        public string Id { get; set; }
-        public string NomeFile { get; set; }
-        public bool Valido { get; set; }
-        public bool Incluso { get; set; }
-        public string Avvisi { get; set; }
-        public string IsIncluso {
-            get {
-                return Incluso ? "Si" : "No";
-            }
-            set {
-                
-            }
-        }
-
-        public EmailAttachments() { 
-        }
-
     }
 
     public class LiteMailViewModel { 

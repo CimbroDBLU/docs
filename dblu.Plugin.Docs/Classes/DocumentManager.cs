@@ -19,6 +19,7 @@ using Syncfusion.Drawing;
 using MimeKit;
 using dblu.Docs.Extensions;
 using System.IO.Compression;
+using dblu.Docs.Classi;
 
 namespace dblu.Portale.Plugin.Docs.Classes
 {
@@ -209,17 +210,23 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// </summary>
         private Document Doc { get; set; }
 
+        private string FileRootPath { get; set; }
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="nAttachmentService">Attachment service for IO operations</param>
         /// <param name="nDocumentService">Service for change document type (ex: from email to pdf)</param>
         /// <param name="nLog">Logger interface</param>
-        public DocumentManager(AllegatiService nAttachmentService,DocumentTransformationService nDocumentService, ILogger nLog)
+        /// <param name="nFileRootPath">File root path</param>
+        /// 
+
+        public DocumentManager(AllegatiService nAttachmentService,DocumentTransformationService nDocumentService, ILogger nLog, string nFileRootPath)
         {
             AttachmentService = nAttachmentService;
             DocumentService = nDocumentService;
             Logger = nLog;
+            FileRootPath = nFileRootPath;
         }
 
         /// <summary>
@@ -310,7 +317,7 @@ namespace dblu.Portale.Plugin.Docs.Classes
                             return new Document(A1?.NomeFile, req.Payload, e_DocType.PDF) { Description = A1.Descrizione + " [REQ]", SourceAttachments = req.Attachments, IsTransformation = true };
                         case "EMAIL":
                             MemoryStream Payload = await AttachmentService._allMan.GetFileAsync(A1.Id.ToString());
-                            var email = DocumentService.PDF_From_EMail(MimeMessage.Load(Payload));
+                            var email = DocumentService.PDF_From_EMail(MimeMessage.Load(Payload), FileRootPath);
                             return new Document(A1?.NomeFile, email.Payload, e_DocType.PDF) { Description = A1.Descrizione + " [EMAIL]", SourceAttachments = email.Attachments, IsTransformation = true };
                         case "FILE":
                         default:

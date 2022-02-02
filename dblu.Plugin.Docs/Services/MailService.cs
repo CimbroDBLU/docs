@@ -723,7 +723,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             {
                 try
                 {
-                    res=_TranformationService.SummaryReport(NomePdf, Messaggio);
+                    res=_TranformationService.SummaryReport(NomePdf, Messaggio, _appEnvironment.WebRootPath);
                 }
                 catch (Exception ex)
                 {
@@ -3396,7 +3396,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     await ExtractAttachments(MailAttach, Attachs, Description, tipoAll);
 
                     /// 3) MARCO PDF IN MEMORIA
-                    (bool, MemoryStream) T = _TranformationService.SignPDF(Doc, e.elencoAttributi);
+                    (bool, MemoryStream) T = _TranformationService.SignPDF(Doc, e.elencoAttributi, _appEnvironment.WebRootPath);
                     if (T.Item1)
                         Doc = T.Item2;
 

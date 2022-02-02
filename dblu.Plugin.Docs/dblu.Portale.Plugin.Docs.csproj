@@ -24,6 +24,10 @@
     <EmbeddedResource Remove="Interfaces\**" />
     <None Remove="Interfaces\**" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="Services\DocumentTransformationService.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Remove="Views\Docs\EditorPdf.cshtml" />

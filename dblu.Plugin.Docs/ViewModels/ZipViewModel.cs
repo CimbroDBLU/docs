@@ -1,4 +1,5 @@
 ﻿using BPMClient;
+using dblu.Docs.Classi;
 using dblu.Docs.Models;
 using System;
 using System.Collections.Generic;

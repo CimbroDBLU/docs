@@ -1,6 +1,6 @@
 ﻿using dblu.Docs.Classi;
 using dblu.Docs.Extensions;
-using dblu.Portale.Plugin.Docs.ViewModels;
+//using dblu.Portale.Plugin.Docs.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

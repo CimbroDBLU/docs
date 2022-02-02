@@ -1,4 +1,5 @@
-﻿using dblu.Portale.Plugin.Docs.ViewModels;
+﻿using dblu.Docs.Classi;
+using dblu.Portale.Plugin.Docs.ViewModels;
 using Microsoft.VisualBasic.CompilerServices;
 using Newtonsoft.Json;
 //using Syncfusion.Blazor.CircularGauge.Internal;

@@ -2,17 +2,21 @@
     Component for showing an attached document
 *@
 
+@using Microsoft.AspNetCore.Hosting
 @using Syncfusion.Blazor.PdfViewerServer
 @using Syncfusion.Blazor.PdfViewer
 @using System.Threading
+@using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.Classes
 @using dblu.Portale.Plugin.Docs.Services
 @using System.IO
 
+
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachmentsService
-@inject dblu.Portale.Plugin.Docs.Services.DocumentTransformationService _DocumentService
+@inject dblu.Docs.Classi.DocumentTransformationService _DocumentService
 @inject ILogger<DocViewer> _Logger
 @inject IJSRuntime JSRuntime
+@inject IHostingEnvironment _environment
 
 @implements IAsyncDisposable
 
@@ -337,7 +341,7 @@
     /// <returns></returns>
     protected override  Task OnInitializedAsync()
     {
-        DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
+        DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger,_environment.WebRootPath);
         Doc = new Document("", new MemoryStream(),e_DocType.PDF);
         return base.OnInitializedAsync();
     }

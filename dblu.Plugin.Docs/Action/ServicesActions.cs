@@ -1,4 +1,5 @@
-﻿using dblu.Docs.Interfacce;
+﻿using dblu.Docs.Classi;
+using dblu.Docs.Interfacce;
 using dblu.Docs.Models;
 using dblu.Portale.Core.Infrastructure.Classes;
 using dblu.Portale.Plugin.Docs.Services;

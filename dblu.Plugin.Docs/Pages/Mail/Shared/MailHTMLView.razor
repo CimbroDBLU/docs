@@ -2,15 +2,18 @@
     Component for showing the html of an email, or only the text if html body is empty
     It has be bound in a i-frame to preserve style from the entire site
 *@
+@using Microsoft.AspNetCore.Hosting
 @using dblu.Docs.Models
+@using dblu.Docs.Classi
 @using Microsoft.AspNetCore.Http;
 @using dblu.Portale.Plugin.Docs.Classes
 @using dblu.Portale.Plugin.Docs.Services
+
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachmentsService
-@inject dblu.Portale.Plugin.Docs.Services.DocumentTransformationService _DocumentService
+@inject dblu.Docs.Classi.DocumentTransformationService _DocumentService
 @inject IHttpContextAccessor _HttpContextAccessor
 @inject ILogger<MailHTMLView> _Logger
-
+@inject IHostingEnvironment _environment
 
 <SfSpinner @bind-Visible="IsSpinnerVisible">
 </SfSpinner>
@@ -113,7 +116,7 @@
                 {
                     LastAttach = nAttach;
                     Stopwatch sw = Stopwatch.StartNew();
-                    DocumentManager DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger);
+                    DocumentManager DocManager = new DocumentManager(_AttachmentsService, _DocumentService, _Logger,_environment.WebRootPath);
                     Source= (await DocManager.Load(e_SourceType.Attachment, nAttach.Id.ToString(), false)).AsEmail();                   
                     if (nReadAttachments)
                     {

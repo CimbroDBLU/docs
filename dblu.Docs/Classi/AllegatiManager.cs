@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -1075,6 +1076,35 @@ namespace dblu.Docs.Classi
                 _logger.LogError($"CercaAllegati: {ex.Message}");
             }
             return l;
+        }
+
+        public MemoryStream GetFileFromZip(MemoryStream zip, string NomeFile)
+        {
+            MemoryStream mfile = new MemoryStream();
+            try
+            {
+               using (ZipArchive za = new ZipArchive(zip, ZipArchiveMode.Read)) 
+               {
+                    foreach (ZipArchiveEntry entry in za.Entries)
+                    {
+                        if (string.Compare(entry.Name, NomeFile, true) == 0)
+                        {
+                            using (var unzippedEntryStream = entry.Open())
+                            {
+                                unzippedEntryStream.CopyTo(mfile);
+                                break;
+                            }
+
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($" GetFileFromZip : {ex.Message}");
+            }
+            mfile.Position = 0;
+            return mfile;
         }
 
 
