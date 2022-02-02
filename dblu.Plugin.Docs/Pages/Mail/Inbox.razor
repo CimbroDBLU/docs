@@ -7,6 +7,7 @@
 @page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}"
 @page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}/{nPreselItem}"
 @using Newtonsoft.Json.Linq
+@using Syncfusion.Blazor.PdfViewerServer
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.Services
@@ -88,7 +89,7 @@
                                                     <div>Sposta <b>@AttachSubject</b></div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachMoveInFolder nAttach="@Attach" nSourceServer="@MailBox" OnOperationDone="OnDone" OnAbort="OnAbort"></AttachMoveInFolder>
+                                                    <REG_MoveInFolder nAttach="@Attach" nSourceServer="@MailBox" OnOperationDone="OnDone" OnAbort="OnAbort"></REG_MoveInFolder>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -126,7 +127,7 @@
                                                     <div>Operazioni sulla mail <b>@AttachSubject</b></div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachLogs nAttach="@Attach" OnAbort="OnAbort"></AttachLogs>
+                                                    <REG_Logs nAttach="@Attach" OnAbort="OnAbort"></REG_Logs>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -146,7 +147,7 @@
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachCustomer  Sender="@(Attach?.Mittente??"")"  OnLinkedToCostumer="OnLinkCostumer" OnOpenItems="OnOpenItems" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" ></AttachCustomer>
+                                                    <REG_Customer  Sender="@(Attach?.Mittente??"")"  OnLinkedToCostumer="OnLinkCostumer" OnOpenItems="OnOpenItems" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" ></REG_Customer>
                                                 </ContentTemplate>
 
                                             </AccordionItem>
@@ -164,7 +165,7 @@
                                                     <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachDossierItems nSelectedItem="@nPreselItem" OnRefresh="OnRefreshDossier" nCurrentDocument="@Document" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
+                                                    <REG_DossierItems nSelectedItem="@AutoSel" OnRefresh="OnRefreshDossier" nCurrentDocument="@Document" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></REG_DossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -202,7 +203,7 @@
                                             <HeaderTemplate>
                                                 <div>Anteprima</div>
                                             </HeaderTemplate>
-                                            <ContentTemplate>
+                                            <ContentTemplate>                                                
                                                 <DocViewer @ref="@Viewer" OnDocumentTransformed="OnDocumentTransformedZ" nHeight=700 nSourceType="@PDFSourceType" nDocIdentifier="@PDFSourceId"></DocViewer>
                                             </ContentTemplate>
                                         </AccordionItem>
@@ -256,7 +257,12 @@
     /// Item that has to be preselected
     /// </summary>
     [Parameter]
-    public string nPreselItem { get; set; } = "";
+    public string nPreselItem { get; set; } = null;
+
+    /// <summary>
+    /// Indicate an autoselection of an item
+    /// </summary>
+    private string AutoSel { get; set; } = "";
 
     /// <summary>
     /// Document viewer
@@ -442,17 +448,19 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public void OnSelectAttach(AllegatoEmail e)
+    public async void OnSelectAttach(AllegatoEmail e)
     {
         try
-        {
+        {    
+
             IsCustomerExpand = true;
 
             if (e == null)
             {
                 _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: DeSelecting attach");
-                AttachID = "";
                 DossierID = "";
+
+                AttachID = "";                
                 CustomerCode = "";
                 CostumerDesc = "";
                 PDFSourceId = "";
@@ -461,20 +469,27 @@
             }
 
             _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Id}");
+
+            AutoSel=nPreselItem;     
             Attach = e;
-            PDFSourceId = e.Id.ToString();
-            PDFSourceType = e_SourceType.Attachment;
+            if (e?.Id.ToString() != AttachID)
+            {
+                nPreselItem = null;
+                PDFSourceId = e.Id.ToString();
+                PDFSourceType = e_SourceType.Attachment;
+            }
 
             if (AttachID != e.Id.ToString())
                 AttachID = e.Id.ToString();
 
             if (DossierID != e.IdFascicolo.ToString())
-                DossierID = e.IdFascicolo.ToString();
+                DossierID = e.IdFascicolo.ToString();            
 
+            
             if (CustomerCode != e.Chiave3)
             {
                 CustomerCode = e.Chiave3;           
-                CustomerName = Attach.jAttributi["NomeSoggetto"]?.ToString();                
+                CustomerName = Attach?.jAttributi["NomeSoggetto"]?.ToString();                
             }
             ApplyCustomer();
 
@@ -681,21 +696,23 @@
         IsAnswerDialog = false; IsForwardDialog = false; IsMoveDialog = false; IsShowDialog = false; IsLogsDialog = false;
     }
 
+
+
     /// <summary>
     /// On linking item, refresh the grid and components
     /// </summary>
     /// <param name="data"></param>
     private async void OnLinkToItem((string DossierId, string ItemId) data)
     {        
-        Grid.Refresh();
-        DossierID = data.DossierId;
+        Grid.Refresh();      
+        nPreselItem = data.ItemId;
     }
 
     /// <summary>
     /// Link the costumer to current Attach
     /// </summary>
     /// <param name="Customer">Costumer to link</param>
-    public void OnLinkCostumer(AttachCustomerSearch.CustomerData Customer)
+    public void OnLinkCostumer(REG_CustomerSearch.CustomerData Customer)
     {
         if (Customer.AttachId == Attach.Id.ToString())
         {
@@ -710,12 +727,14 @@
     /// </summary>
     public void ApplyCustomer()
     {
+        CostumerDesc = "";
         if (string.IsNullOrEmpty(Attach.Chiave3))
             CostumerDesc = $"Cliente da selezionare";
         else if (!string.IsNullOrEmpty(CustomerCode))
             CostumerDesc = $"{CustomerCode} - {CustomerName?? ""}";       
         else if (string.IsNullOrEmpty(CustomerCode) && string.IsNullOrEmpty(CustomerName))
-            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";       
+            CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";
+        
     }
 
     /// <summary>
@@ -758,8 +777,11 @@
     /// <param name="Id">Id of the item to load on PDF preview</param>
     public void OnSelectedItem(string Id)
     {
+        if(!string.IsNullOrEmpty(Id))
+        {
         PDFSourceId = Id;
         PDFSourceType = e_SourceType.Item;
+        }
     }
 
 }

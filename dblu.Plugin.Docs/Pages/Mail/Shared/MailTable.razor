@@ -25,7 +25,7 @@
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
-    <GridPageSettings PageSize="10"></GridPageSettings>
+    <GridPageSettings PageSize="20"></GridPageSettings>
     <GridEvents TValue="AllegatoEmail" OnDataBound="OnDataBoundHandler" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
 
     <SfSpinner @bind-Visible="IsSpinnerVisible">
@@ -100,14 +100,14 @@
         <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(AllegatoEmail.Oggetto) HeaderText="Oggetto"></GridColumn>
         <GridColumn AllowEditing="false" TextAlign="TextAlign.Center" Width="120px" AllowSorting="true" Field=@nameof(AllegatoEmail.Data) HeaderText="Data" Format="dd/MM/yyyy HH:mm" Type="ColumnType.Date">
             <Template>
-            @{
+                @{
                     var Attach = (context as AllegatoEmail);
                     @Attach?.Data?.ToShortDateString()
                     <br />
                     @Attach?.Data?.ToShortTimeString()
-            }
+                }
             </Template>
-            </GridColumn>
+        </GridColumn>
         <GridColumn AllowEditing="false" Width="40px" AllowSorting="true" Field=@nameof(AllegatoEmail.LastOp) HeaderText="LastOp">
             <Template>
                 <dblu.Portale.Plugin.Docs.Pages.Docs.Shared.LastOperation nOperation="@((context as AllegatoEmail).LastOp)"></dblu.Portale.Plugin.Docs.Pages.Docs.Shared.LastOperation>
@@ -270,6 +270,11 @@
     private DateTime LastEmailTime { get; set; }
 
     /// <summary>
+    /// List of previous selected indexes on the table
+    /// </summary>
+    private List<double> SelectedIndexes { get; set; } = new();
+
+    /// <summary>
     /// On init , if necessary, start the timer
     /// </summary>
     protected override async void OnInitialized()
@@ -356,14 +361,14 @@
     /// </summary>
     /// <param name="args"></param>
     public void RowSelected(RowSelectEventArgs<AllegatoEmail> args)
-    {        
+    {
         OnSelectAttachment.InvokeAsync(args.Data);
         _Logger.LogDebug($"MailTable.RowSelected: Selected Attach {args.Data.Id}");
     }
 
     public async Task<List<AllegatoEmail>> GetSelected()
     {
-        return  await Grid.GetSelectedRecordsAsync();
+        return await Grid.GetSelectedRecordsAsync();
     }
 
     /// <summary>
@@ -412,50 +417,61 @@
     }
 
 
+
     /// <summary>
     /// Reload the list fo the email and get last email for this folder
     /// </summary>
     public async void Refresh()
     {
-        nMailBoxOld = nMailBox;
-        IsSpinnerVisible=true;
-
-
-       Task.Run(() =>
+        if (nMailBoxOld == nMailBox)
         {
-            //  Grid.DataManager.Url = DataUrl;
-            Stopwatch sw = Stopwatch.StartNew();
-            switch (nType)
-            {
-                case TableType.Inbox:
-                
-                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
-                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
-                    break;
-                case TableType.Sorting:
-                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailDaSmistare("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
-                    _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
-                    break;
-                case TableType.Processed:
-                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailProcessate("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
-                    _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
-                    break;
-                case TableType.Sent:
-                    nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInviate("EMAIL", nMailBox.Nome).OrderByDescending(c => c.DataC));
-                    _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
-                    break;
-            }
-
-
-
-            switch (nType)
-            {
-                case TableType.Inbox: LastEmailTime = _MailService._allMan.GetLastInboxEmailTime("EMAIL", nMailBox.Nome); break;
-                case TableType.Sorting: LastEmailTime = _MailService._allMan.GetLastSortingEmailTime("EMAIL", nMailBox.Nome); break;
-            }
-            NewItems = 0;
-            InvokeAsync(() => { Grid.Refresh(); IsSpinnerVisible = false; });
+            SelectedIndexes.Clear();
+            List<double> T = (await Grid.GetSelectedRowIndexesAsync()).ToList();
+            foreach (var index in T)
+                SelectedIndexes.Add(index);
+            Grid.ClearSelectionAsync();
         }
+        else ClearSelectionAsync();
+        
+        nMailBoxOld = nMailBox;
+        IsSpinnerVisible = true;
+
+
+        Task.Run(async () =>
+         {
+             //  Grid.DataManager.Url = DataUrl;
+             Stopwatch sw = Stopwatch.StartNew();
+
+             switch (nType)
+             {
+                 case TableType.Inbox:
+
+                     nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
+                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                     break;
+                 case TableType.Sorting:
+                     nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailDaSmistare("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
+                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                     break;
+                 case TableType.Processed:
+                     nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailProcessate("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
+                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                     break;
+                 case TableType.Sent:
+                     nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInviate("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
+                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                     break;
+             }
+
+
+             switch (nType)
+             {
+                 case TableType.Inbox: LastEmailTime = _MailService._allMan.GetLastInboxEmailTime("EMAIL", nMailBox.Nome); break;
+                 case TableType.Sorting: LastEmailTime = _MailService._allMan.GetLastSortingEmailTime("EMAIL", nMailBox.Nome); break;
+             }
+             NewItems = 0;
+             InvokeAsync(() => { Grid.Refresh(); IsSpinnerVisible = false; });
+         }
         );
     }
 
@@ -471,7 +487,7 @@
     /// <summary>
     /// Clear the selection
     /// </summary>
-    public async void ClearSelectionAsync()=> Grid.ClearSelectionAsync();
+    public async void ClearSelectionAsync() {SelectedIndexes.Clear(); Grid.ClearSelectionAsync(); }
 
     /// <summary>
     /// On databound check id there is content, to send selection properly
@@ -479,7 +495,10 @@
     public async void DataBoundHandler()
     {
         try
-        {            
+        {
+            foreach (var index in SelectedIndexes)               
+               await Grid.SelectRowAsync(index);
+
             if ((await Grid.GetSelectedRecordsAsync()).Count != 0)
                 return;
             

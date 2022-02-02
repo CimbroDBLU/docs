@@ -181,6 +181,8 @@ namespace dbluMailService
                                         if (message != null)
                                         {
                                             var Nomefile = $"{message.MessageId}.eml";
+                                            if(Nomefile.Length>255)
+                                                Nomefile= Nomefile.Substring(Nomefile.Length-254,254);
 
                                             AllegatoEmail allm = cn.QueryFirstOrDefault<AllegatoEmail>(
                                                $"SELECT * , {AllegatoEmail.SqlAttributi()} FROM Allegati WHERE Tipo=@Tipo and NomeFile = @NomeFile " +
@@ -254,6 +256,7 @@ namespace dbluMailService
                                                 allm.Data = (DateTime?)message.Date.UtcDateTime;
                                                 allm.Oggetto = message.Subject;
                                                 allm.MessageId = message.MessageId;
+
                                                 allm.SetAttributo("CodiceSoggetto", "");
 
                                                 // decodifica cliente
@@ -312,6 +315,8 @@ namespace dbluMailService
                                                         {
                                                             SubmitStartForm ssf = new SubmitStartForm();
                                                             ssf.BusinessKey = message.MessageId;
+                                                            if (ssf.BusinessKey.Length > 255)
+                                                                ssf.BusinessKey = ssf.BusinessKey.Substring(Nomefile.Length - 254, 254);
 
                                                             //tolgo il testo per limitare la variabile jAllegato
                                                             all.Testo = "";

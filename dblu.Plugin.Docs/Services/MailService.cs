@@ -64,6 +64,7 @@ using Syncfusion.Pdf.Graphics;
 using dblu.Portale.Plugin.Docs.Classes;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using BPMClient.DataLayer;
 
 namespace dblu.Portale.Plugin.Docs.Services
 {
@@ -2138,12 +2139,24 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
             return res;
         }
+        
 
-        public bool AvviaProcesso(BPMDocsProcessInfo Info, Elementi el, Dictionary<string, VariableValue> variabili)
+        public bool AvviaProcesso(BPMDocsProcessInfo Info, Elementi el, Dictionary<string, VariableValue> variabili,bool OnlyNotExsisting=false)
         {
             bool res = true;
             try
             {
+                BPMTask tsk = new BPMTask();
+
+                ///Il processo esiste già, esco
+                if (OnlyNotExsisting)
+                    foreach( CAMTask T in _bpm.GetTasksByItemID(el.Id.ToString()))
+                    {                           
+                        BPMTaskDto d = tsk.Get(_bpm._eng, T.ID_);
+                        if (d.processDefinitionId.Contains(el.TipoNavigation.Processo))
+                            return true;
+                    }
+
                 if (!string.IsNullOrEmpty(el.TipoNavigation.Processo))
                 {
 
@@ -2287,7 +2300,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                             var htxt ="";
                             var ttxt = "";
 
-                            htxt = message?.HtmlBody??" ";
+                            
+                            htxt = message?.HtmlBody?? $" ";
                             htxt += "\n" + Firma;
                             string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
                             string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
@@ -2297,7 +2311,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                             htxt = htxt?.Replace("<body>", $"<body><p>{Testo}</p><p><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></p><br>");
 
                             builder.TextBody = ttxt;
-                            builder.HtmlBody = htxt;
+                            ///Aggiungo l'html solo se ho nel messaggio , senno vien fuori male
+                            if(!string.IsNullOrEmpty(message?.HtmlBody))
+                                builder.HtmlBody = htxt;
+
                             Regex.Replace(builder.TextBody, "<.*?>", string.Empty);
                             foreach (MimeEntity att in message.Allegati())
                             {
@@ -2489,7 +2506,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                             }
 
                             builder.TextBody = ttxt;
-                            builder.HtmlBody = htxt;
+                            ///Aggiungo l'html solo se ho nel messaggio , senno vien fuori male
+                            if (!string.IsNullOrEmpty(message?.HtmlBody))
+                                builder.HtmlBody = htxt;
+                            //builder.HtmlBody = htxt;
                             builder.TextBody = Regex.Replace(builder.TextBody, "<.*?>", string.Empty);
                             newmessage.Body = builder.ToMessageBody();
                             await client.SendAsync(newmessage, c);
@@ -3441,8 +3461,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     FILE = await _allMan.SalvaAsync(FILE, Doc, isNewFILE);
 
 
-                    /// 6 ATTIVO PROCESSI
-
+                    /// 6 ATTIVO PROCESSO se non esiste già
                     if (Info != null)
                     {
                         Info.StatoPrec = (int)e.Stato;
@@ -3452,7 +3471,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                         if (!Vars.ContainsKey("IdAllegato"))
                             Vars.Add("IdAllegato", VariableValue.FromObject(AttachID));
 
-                        if (AvviaProcesso(Info, e, Vars))
+                        if (!AvviaProcesso(Info, e, Vars,true))
                             return 3;
                     }
                 }

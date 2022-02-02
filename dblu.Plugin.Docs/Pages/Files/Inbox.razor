@@ -61,7 +61,7 @@
                                                     <div>Sposta <b>@AttachSubject</b></div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachMoveInFolder nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nAttach="@Attach" nSourceServer="@MailBox" OnOperationDone="OnDone" OnAbort="OnAbort"></AttachMoveInFolder>
+                                                    <REG_MoveInFolder nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nAttach="@Attach" nSourceServer="@MailBox" OnOperationDone="OnDone" OnAbort="OnAbort"></REG_MoveInFolder>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -80,7 +80,7 @@
                                                     <div>Operazioni sul file <b>@AttachSubject</b></div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachLogs nAttach="@Attach" OnAbort="OnAbort"></AttachLogs>
+                                                    <REG_Logs nAttach="@Attach" OnAbort="OnAbort"></REG_Logs>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -100,7 +100,7 @@
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachCustomer OnOpenItems="OnOpenItems"  OnLinkedToCostumer="OnLinkCostumer"  nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" nAttachID="@AttachID"></AttachCustomer>
+                                                    <REG_Customer OnOpenItems="OnOpenItems"  OnLinkedToCostumer="OnLinkCostumer"  nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" nAttachID="@AttachID"></REG_Customer>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -117,7 +117,7 @@
                                                     <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <AttachDossierItems OnRefresh="OnRefreshDossier" nSelectedItem="@nPreselItem" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></AttachDossierItems>
+                                                    <REG_DossierItems OnRefresh="OnRefreshDossier" nSelectedItem="@nPreselItem" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></REG_DossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -208,6 +208,11 @@
     /// </summary>
     [Parameter]
     public string nPreselItem { get; set; } = "";
+
+    /// <summary>
+    /// Indicate an autoselection of an item
+    /// </summary>
+    private string AutoSel { get; set; } = "";
 
     /// <summary>
     /// Type of document we need to manage (ZIP,REQ...)
@@ -400,13 +405,15 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public void OnSelectAttach(Allegati e)
+    public async void OnSelectAttach(Allegati e)
     {
         try
-        {
+        {           
+            if(e?.Id.ToString()==AttachID) return;
             if (e == null)
             {
-                _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: DeSelecting attach");
+                _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: DeSelecting attach");              
+
                 AttachID = "";
                 DossierID = "";
                 CustomerCode = "";
@@ -415,10 +422,19 @@
                 PDFSourceType = e_SourceType.Attachment;
                 return;
             }
+            
+
             _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: Selecting attach {e.Id}");
+            
+            AutoSel=nPreselItem;     
             Attach = e;
-            PDFSourceId = e.Id.ToString();
-            PDFSourceType = e_SourceType.Attachment;
+            if (e?.Id.ToString() != AttachID)
+            {
+                nPreselItem = null;
+                PDFSourceId = e.Id.ToString();
+                PDFSourceType = e_SourceType.Attachment;
+            }
+
 
             if (AttachID != e.Id.ToString())
                 AttachID = e.Id.ToString();
@@ -584,16 +600,15 @@
     /// <param name="data"></param>
     private async void OnLinkToItem((string DossierId, string ItemId) data)
     {
-        DossierID = data.DossierId;
-        ItemID = data.ItemId;
-        Grid.Refresh();
+        Grid.Refresh();      
+        nPreselItem = data.ItemId;
     }
 
     /// <summary>
     /// Link the costumer to current Attach
     /// </summary>
     /// <param name="Customer">Costumer to link</param>
-    public void OnLinkCostumer(AttachCustomerSearch.CustomerData Customer)
+    public void OnLinkCostumer(REG_CustomerSearch.CustomerData Customer)
     {
         if (Customer.AttachId == Attach.Id.ToString())
         {
@@ -640,8 +655,11 @@
     /// <param name="Id">Id of the item to load on PDF preview</param>
     public void OnSelectedItem(string Id)
     {
+        if(!string.IsNullOrEmpty(Id))
+        {
         PDFSourceId = Id;
         PDFSourceType = e_SourceType.Item;
+        }
     }
 
 

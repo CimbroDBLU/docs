@@ -1029,7 +1029,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 Notifications = "Impossibile includere il file";
                 _logger.LogError($"DocumentTransformationService.AUX_XlsToPDF: Unable to include file {FileName}. {ex.Message}");
             }
-            return new();
+            return null;
         }
 
         /// <summary>

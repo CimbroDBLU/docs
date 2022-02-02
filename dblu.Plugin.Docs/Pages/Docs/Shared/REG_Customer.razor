@@ -5,9 +5,9 @@
 @using dblu.Portale.Plugin.Docs.Services
 @using dblu.Portale.Plugin.Docs.Pages.Mail.Shared
 @using dblu.Docs.Interfacce
-@using static dblu.Portale.Plugin.Docs.Pages.Docs.Shared.AttachCustomerSearch
+@using static dblu.Portale.Plugin.Docs.Pages.Docs.Shared.REG_CustomerSearch
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
-@inject ILogger<AttachCustomer> _Logger
+@inject ILogger<REG_Customer> _Logger
 
 <div>
 <SfSpinner @bind-Visible="IsLoading">
@@ -24,14 +24,14 @@ else
 {            
     <div class="row">
         <div class="col">       
-            <AttachCustomerSearch nCostumerCode="@nCostumerCode" nCostumerName="@nCostumerName" OnLinkedToCostumer="OnLinkedToCostumer" nReadOnly="@nReadOnly" nAttachID="@nAttachID" ></AttachCustomerSearch>
+            <REG_CustomerSearch nCostumerCode="@nCostumerCode" nCostumerName="@nCostumerName" OnLinkedToCostumer="OnLinkedToCostumer" nReadOnly="@nReadOnly" nAttachID="@nAttachID" ></REG_CustomerSearch>
         </div>
     </div>
     @if (!nReadOnly)
     {
         <div class="row mt-2">
             <div class="col">
-                <AttachOpenItemsTable nCustomerCode="@nCostumerCode" OnOpenItems="OnOpenItems"></AttachOpenItemsTable>
+                <REG_OpenItemsTable nCustomerCode="@nCostumerCode" OnOpenItems="OnOpenItems"></REG_OpenItemsTable>
             </div>
         </div>
     }
@@ -63,7 +63,7 @@ else
     /// Fires when a costumer has been selected
     /// </summary>
     [Parameter]
-    public EventCallback<AttachCustomerSearch.CustomerData> OnLinkedToCostumer { get; set; }
+    public EventCallback<REG_CustomerSearch.CustomerData> OnLinkedToCostumer { get; set; }
 
     /// <summary>
     /// Fires the number on open items loded regarding this costumer
@@ -126,7 +126,7 @@ else
                     IsLoading = true;
                     Stopwatch sw = Stopwatch.StartNew();
                     List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Sender);
-                    _Logger.LogDebug($"AttachCostumer.OnParametersSetAsync: Read {Costumers.Count} costumers in {sw.ElapsedMilliseconds} ms");
+                    _Logger.LogDebug($"REG_Costumer.OnParametersSetAsync: Read {Costumers.Count} costumers in {sw.ElapsedMilliseconds} ms");
                     if (Costumers.Count > 1)
                     {
                         ShowCostumerSelection = true;
