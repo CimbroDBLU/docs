@@ -65,6 +65,7 @@ using dblu.Portale.Plugin.Docs.Classes;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using BPMClient.DataLayer;
+using System.IO.Compression;
 
 namespace dblu.Portale.Plugin.Docs.Services
 {
@@ -3358,7 +3359,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 FILE = await _allMan.SalvaAsync(FILE, nDocument, isNewFILE);
                 /// 9) Salva eventuali allegati segnalati
                 _logger.LogDebug($"MailService.CreateItemDossier : stage 9 incremental {sw.ElapsedMilliseconds} ms");
-                await ExtractAttachments(Allegato, Attachs, Description, tipoAll);
+                await ExtractAttachs(Allegato, Attachs, Description, tipoAll);
 
                 _logger.LogInformation($"MailService.CreateItemDossier : Item created in {sw.ElapsedMilliseconds} ms");
                 return e;
@@ -3413,7 +3414,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     _logMan.PostLog(MailAttach.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato elaborato");
 
                     //2.1) Aggiungo gli allegati che sono selezionati
-                    await ExtractAttachments(MailAttach, Attachs, Description, tipoAll);
+                    await ExtractAttachs(MailAttach, Attachs, Description, tipoAll);
 
                     /// 3) MARCO PDF IN MEMORIA
                     (bool, MemoryStream) T = _TranformationService.SignPDF(Doc, e.elencoAttributi, _appEnvironment.WebRootPath);
@@ -3488,21 +3489,40 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
         /// <summary>
-        /// Extract Attachments from email and save them into Item, if they are selected into attachs
+        /// Extract Attachments from the mail file and save them into Item, if they are selected into attachs list
         /// </summary>
-        /// <param name="AttachID">Id of the Attachment</param>
+        /// <param name="Attach">Attachment</param>
         /// <param name="Attachs">List of attachments</param>
         /// <param name="Description">Description to add to attachments</param>
         /// <param name="AttachTypes">List of attached types</param>
-        private  async Task ExtractAttachments(Allegati AttachID, List<OriginalAttachments> Attachs, string Description, TipiAllegati AttachTypes)
+        private async Task ExtractAttachs(Allegati Attach, List<OriginalAttachments> Attachs, string Description, TipiAllegati AttachTypes)
+        {
+            switch(Attach.Tipo)
+            {
+                case "EMAIL":
+                    await ExtractMailAttachs(Attach, Attachs, Description, AttachTypes);break;
+                case "ZIP":
+                    await ExtractZipAttachs(Attach, Attachs, Description, AttachTypes);break;
+            }
+            return;
+        }
+
+        /// <summary>
+        /// Extract Attachments from email and save them into Item, if they are selected into attachs list
+        /// </summary>
+        /// <param name="Attach">Attachment</param>
+        /// <param name="Attachs">List of attachments</param>
+        /// <param name="Description">Description to add to attachments</param>
+        /// <param name="AttachTypes">List of attached types</param>
+        private  async Task ExtractMailAttachs(Allegati Attach, List<OriginalAttachments> Attachs, string Description, TipiAllegati AttachTypes)
         {
             try
             {
                 Stopwatch sw = Stopwatch.StartNew();
                 using SqlConnection cn = new(_context.Connessione);
 
-                var fileName = $"{AttachID.Id.ToString()}.pdf";
-                var m = await _allMan.GetFileAsync(AttachID.Id.ToString());
+                var fileName = $"{Attach.Id.ToString()}.pdf";
+                var m = await _allMan.GetFileAsync(Attach.Id.ToString());
                 var Messaggio = MimeKit.MimeMessage.Load(m, new CancellationToken());
                 string emailmitt = Messaggio.From.Mailboxes.First().Address;
 
@@ -3530,7 +3550,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     {
                         var all2 = cn.QueryFirstOrDefault<Allegati>(
                             "Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile",
-                            new { IdElemento = AttachID.IdElemento.ToString(), NomeFile = fileName });
+                            new { IdElemento = Attach.IdElemento.ToString(), NomeFile = fileName });
 
                         var isNewAll = false;
 
@@ -3538,13 +3558,13 @@ namespace dblu.Portale.Plugin.Docs.Services
                         {
                             all2 = new Allegati()
                             {
-                                Descrizione = AttachID.Descrizione,
+                                Descrizione = Attach.Descrizione,
                                 NomeFile = fileName,
                                 Tipo = "FILE",
                                 TipoNavigation = AttachTypes,
                                 Stato = StatoAllegato.Attivo,
-                                IdFascicolo = AttachID.IdFascicolo,
-                                IdElemento = AttachID.IdElemento
+                                IdFascicolo = Attach.IdFascicolo,
+                                IdElemento = Attach.IdElemento
                             };
                             isNewAll = true;
                         }
@@ -3553,20 +3573,94 @@ namespace dblu.Portale.Plugin.Docs.Services
                         all2.Descrizione = Description;
                         all2.SetAttributo("Mittente", emailmitt);
                         all2.SetAttributo("Data", Messaggio.Date.UtcDateTime);
-                        all2.SetAttributo("CodiceSoggetto", AttachID.GetAttributo("CodiceSoggetto"));
+                        all2.SetAttributo("CodiceSoggetto", Attach.GetAttributo("CodiceSoggetto"));
                         all2.SetAttributo("Oggetto", Messaggio.Subject);
                         all2.SetAttributo("MessageId", Messaggio.MessageId);
                         all2 = await _allMan.SalvaAsync(all2, m, isNewAll);
                     }
                 }
-                _logger.LogInformation($"MailService.ExtractAttachments: Attach included in {sw.ElapsedMilliseconds} ms");
+                _logger.LogInformation($"MailService.ExtractMailAttachs: Attach included in {sw.ElapsedMilliseconds} ms");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"MailService.ExtractAttachments: {ex.Message}");
+                _logger.LogError($"MailService.ExtractMailAttachs: {ex.Message}");
             }
         }
 
+        /// <summary>
+        /// Extract Attachments from ZIP and save them into Item, if they are selected into attachs list
+        /// </summary>
+        /// <param name="Attach">Attachment</param>
+        /// <param name="Attachs">List of attachments</param>
+        /// <param name="Description">Description to add to attachments</param>
+        /// <param name="AttachTypes">List of attached types</param>
+        private async Task ExtractZipAttachs(Allegati Attach,List<OriginalAttachments> Attachs,string Description, TipiAllegati AttachTypes)
+        {
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                {
+                    if (Attachs != null && Attachs.Count()!=0)
+                    {
+                        //var fileName = NOME_FILE_CONTENUTO_EMAIL ;
+                        var fileName = $"{Attach.Id.ToString()}.pdf";
+                        var m = await _allMan.GetFileAsync(Attach.Id.ToString());
+
+                        var FileZip = new ZipArchive(m, ZipArchiveMode.Read);
+                  
+                        //file da allegare singolarmente
+                        var listafile = Attachs.Where(x => x.IsSelected == true).Select(x => x.Name).ToList();
+
+                        foreach (ZipArchiveEntry entry in FileZip.Entries)
+                            {
+                                fileName = entry.Name;
+
+                                if (listafile.Contains(fileName))
+                                {
+                                    m = new MemoryStream();
+
+                                    var all2 = cn.QueryFirstOrDefault<Allegati>(
+                                        "Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile",
+                                        new { IdElemento = Attach.IdElemento.ToString(), NomeFile = fileName });
+
+                                    var isNewAll = false;
+
+                                    if (all2 == null)
+                                    {
+                                        all2 = new Allegati()
+                                        {
+                                            Descrizione = Attach.Descrizione,
+                                            NomeFile = fileName,
+                                            Tipo = "FILE",
+                                            TipoNavigation = AttachTypes,
+                                            Stato = StatoAllegato.Attivo,
+                                            IdFascicolo = Attach.IdFascicolo,
+                                            IdElemento = Attach.IdElemento
+                                            //,
+                                            //UtenteC = Utente,
+                                            //UtenteUM = Utente
+                                        };
+                                        isNewAll = true;
+                                    }
+
+                                    if (all2.elencoAttributi == null) { all2.elencoAttributi = AttachTypes.Attributi; }
+                                    all2.Descrizione = Description;
+                                    all2.SetAttributo("Data", Attach.DataC);
+                                    all2.SetAttributo("CodiceSoggetto", Attach.GetAttributo("CodiceSoggetto"));
+                                    all2.SetAttributo("NomeSoggetto", Attach.GetAttributo("NomeSoggetto"));
+
+                                    all2 = await _allMan.SalvaAsync(all2, m, isNewAll);
+                                }
+                            }
+                        
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"MailService.ExtractZipAttachs: {ex.Message}");
+            }
+        }
 
     }
 }
