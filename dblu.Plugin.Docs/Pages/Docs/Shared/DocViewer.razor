@@ -101,9 +101,11 @@
                 }
             </ToolbarItems>
         </SfToolbar>                 
+
          <SfPdfViewerServer DocumentPath="" EnableErrorDialog="false" Height="@sHeight" DownloadFileName="" @ref="@Viewer" >     
-             <PdfViewerEvents Created="OnPDFViewerCreated"  DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
+             <PdfViewerEvents Created="OnPDFViewerCreated"   DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
          </SfPdfViewerServer>
+
        
     }
     else if (Doc.DocType == e_DocType.IMAGE)
@@ -162,8 +164,6 @@
 </SfSpinner>
 
 @code {
-
-
     /// <summary>
     /// Type of Attachment to work with
     /// </summary>
@@ -354,13 +354,14 @@
     protected override async void OnParametersSet()
     {        
         //Non e' il caso di aggiornare.
+ 
         if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
             return;
-
-
         IsSpinnerVisible = true;       
-
-        LoadDocument();        
+        lock (this)
+            {
+            LoadDocument();  
+            }
         ApplyDoc();
 
         IsSpinnerVisible = false;
@@ -374,17 +375,17 @@
     protected override async void OnAfterRender(bool first)
     {
         if(first)
-                if(Viewer!=null)
-                    {
-                        Viewer.ToolbarSettings = ToolbarSettings;
-                        Viewer.ArrowSettings = ArrowSettings;
-                        Viewer.InkAnnotationSettings = InkSettings;
-                        Viewer.FreeTextSettings=FreeTextSettings;
-                        Viewer.LineSettings=LineSettings;
-                        Viewer.RectangleSettings=RectangleSettings;
-                        Viewer.CircleSettings=CircleSettings;
-                        Viewer.PolygonSettings = PolygonSettings;
-                    }
+            if(Viewer!=null)
+            {
+                Viewer.ToolbarSettings = ToolbarSettings;
+                Viewer.ArrowSettings = ArrowSettings;
+                Viewer.InkAnnotationSettings = InkSettings;
+                Viewer.FreeTextSettings=FreeTextSettings;
+                Viewer.LineSettings=LineSettings;
+                Viewer.RectangleSettings=RectangleSettings;
+                Viewer.CircleSettings=CircleSettings;
+                Viewer.PolygonSettings = PolygonSettings;
+            }
     }
 
 
@@ -394,15 +395,16 @@
     /// </summary>
     private void ApplyDoc()
     {
-
+         
         if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length != 0)
         {
+            _Logger.LogDebug($"DocViewer.ApplyDoc: Apply {Doc.FileName}");
             lock (this)
             {
                 DownloadFileName = "";
                 string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
      
-                Viewer.LoadAsync("data:application/DocManager;base64," + base64String, null);
+                Viewer.Load("data:application/DocManager;base64," + base64String, null);
             }
         }
 
@@ -431,6 +433,7 @@
         if(Viewer!=null)
             Viewer.DownloadFileName = DownloadFileName;
         OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
+        
     }
 
     /// <summary>
