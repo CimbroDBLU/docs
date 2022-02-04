@@ -142,7 +142,7 @@
                                 <div class="col">
                                     <SfAccordion>
                                         <AccordionItems>
-                                            <AccordionItem Expanded="@IsCustomerExpand">
+                                            <AccordionItem Expanded="@(IsCustomerExpand && !ForceCollapsed)">
                                                 <HeaderTemplate>
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
@@ -160,12 +160,12 @@
                                 <div class="col">
                                     <SfAccordion>
                                         <AccordionItems>
-                                            <AccordionItem Expanded="true">
+                                            <AccordionItem Expanded="@(!ForceCollapsed)">
                                                 <HeaderTemplate>
                                                     <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <REG_DossierItems nSelectedItem="@AutoSel" OnRefresh="OnRefreshDossier" nCurrentDocument="@Document" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></REG_DossierItems>
+                                                    <REG_DossierItems nSelectedItem="@AutoSel" OnRefresh="OnRefreshDossier" nCurrentDocument="@Document" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem" OnBeginReg="OnBeginReg" OnEndReg="OnEndReg"></REG_DossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -179,7 +179,7 @@
                                     <div class="col">
                                         <SfAccordion>
                                             <AccordionItems>
-                                                <AccordionItem Expanded="@IsAttachExpanded">
+                                                <AccordionItem Expanded="@(IsAttachExpanded && !ForceCollapsed)">
                                                     <HeaderTemplate>
                                                         <div>Allegati in Email</div>
                                                     </HeaderTemplate>
@@ -258,6 +258,12 @@
     /// </summary>
     [Parameter]
     public string nPreselItem { get; set; } = null;
+
+    /// <summary>
+    /// Force the collapsing of dossier and costumers
+    /// </summary>
+    [Parameter]
+    public bool ForceCollapsed { get; set; } = false;
 
     /// <summary>
     /// Indicate an autoselection of an item
@@ -485,7 +491,7 @@
             if (DossierID != e.IdFascicolo.ToString())
                 DossierID = e.IdFascicolo.ToString();            
 
-            
+
             if (CustomerCode != e.Chiave3)
             {
                 CustomerCode = e.Chiave3;           
@@ -734,7 +740,7 @@
             CostumerDesc = $"{CustomerCode} - {CustomerName?? ""}";       
         else if (string.IsNullOrEmpty(CustomerCode) && string.IsNullOrEmpty(CustomerName))
             CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";
-        
+
     }
 
     /// <summary>
@@ -779,9 +785,24 @@
     {
         if(!string.IsNullOrEmpty(Id))
         {
-        PDFSourceId = Id;
-        PDFSourceType = e_SourceType.Item;
+            PDFSourceId = Id;
+            PDFSourceType = e_SourceType.Item;
         }
     }
 
+    /// <summary>
+    /// On starting of registration collapse all accordion
+    /// </summary>
+    public async void OnBeginReg()
+    {
+        ForceCollapsed = true;
+    }
+
+    /// <summary>
+    /// On ending of registration release all accordion
+    /// </summary>
+    public async void OnEndReg()
+    {
+         ForceCollapsed = false;
+    }
 }

@@ -95,7 +95,7 @@
                                 <div class="col">
                                     <SfAccordion>
                                         <AccordionItems>
-                                            <AccordionItem Expanded="true">
+                                            <AccordionItem Expanded="@(!ForceCollapsed)">
                                                 <HeaderTemplate>
                                                     <div>@CostumerDesc</div>
                                                 </HeaderTemplate>
@@ -112,12 +112,12 @@
                                 <div class="col">
                                     <SfAccordion>
                                         <AccordionItems>
-                                            <AccordionItem Expanded="true">
+                                            <AccordionItem Expanded="@(!ForceCollapsed)">
                                                 <HeaderTemplate>
                                                     <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <REG_DossierItems OnRefresh="OnRefreshDossier" nSelectedItem="@nPreselItem" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"></REG_DossierItems>
+                                                    <REG_DossierItems OnRefresh="OnRefreshDossier" nSelectedItem="@nPreselItem" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"  OnBeginReg="OnBeginReg" OnEndReg="OnEndReg"></REG_DossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -132,7 +132,7 @@
                                     <div class="col">
                                         <SfAccordion>
                                             <AccordionItems>
-                                                <AccordionItem Expanded="@IsAttachExpanded">
+                                                <AccordionItem Expanded="@(IsAttachExpanded && !ForceCollapsed)">
                                                     <HeaderTemplate>
                                                         <div>Allegati nel file</div>
                                                     </HeaderTemplate>
@@ -208,6 +208,12 @@
     /// </summary>
     [Parameter]
     public string nPreselItem { get; set; } = "";
+
+    /// <summary>
+    /// Force the collapsing of dossier and costumers
+    /// </summary>
+    [Parameter]
+    public bool ForceCollapsed { get; set; } = false;
 
     /// <summary>
     /// Indicate an autoselection of an item
@@ -662,5 +668,20 @@
         }
     }
 
+    /// <summary>
+    /// On starting of registration collapse all accordion
+    /// </summary>
+    public async void OnBeginReg()
+    {
+        ForceCollapsed = true;
+    }
+
+    /// <summary>
+    /// On ending of registration release all accordion
+    /// </summary>
+    public async void OnEndReg()
+    {
+         ForceCollapsed = false;
+    }
 
 }

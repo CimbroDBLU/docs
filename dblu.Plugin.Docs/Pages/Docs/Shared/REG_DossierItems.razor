@@ -13,7 +13,7 @@
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject ILogger<REG_DossierItems> _Logger
 
-<REG_ItemsTable nRecordServer="@nRecordServer" nSelectedItem="@nSelectedItem" nDocumentType="@nDocumentType" @ref="@Table" nAttachID="@nAttachID" nSourceFolder="@nSourceFolder" nDossierID="@nDossierID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode" OnSelectedItem="OnSelectedItemZ" OnLinkedToItem="OnLink" OnComplete="Complete" OnAttachCompleted="OnAttachCompleted" ></REG_ItemsTable>
+<REG_ItemsTable nRecordServer="@nRecordServer" nSelectedItem="@nSelectedItem" nDocumentType="@nDocumentType" @ref="@Table" nAttachID="@nAttachID" nSourceFolder="@nSourceFolder" nDossierID="@nDossierID" nAttachments="@nAttachments" nCurrentDocument="@nCurrentDocument" nCostumerCode="@nCostumerCode" OnSelectedItem="OnSelectedItemZ" OnLinkedToItem="OnLink" OnComplete="Complete" OnAttachCompleted="OnAttachCompleted" OnBeginReg="OnBeginReg" OnEndReg="OnEndReg"></REG_ItemsTable>
 <Toast @ref="ToastCompleteOK" nToastType="Toast.e_ToastType.OK" nTitle="Completa email" nContent="Email completata"></Toast>
 <Toast @ref="ToastCompleteKO" nToastType="Toast.e_ToastType.Fail" nTitle="Completa email" nContent="Completamento non riuscito"></Toast>
 
@@ -84,6 +84,18 @@
     /// </summary>
     [Parameter]
     public EventCallback<Fascicoli> OnRefresh { get; set; }
+
+    /// <summary>
+    /// Fires when a pop up registration has begun
+    /// </summary>
+    [Parameter]
+    public EventCallback OnBeginReg { get; set; }
+
+    /// <summary>
+    /// Fires when a pop up registration has been finished
+    /// </summary>
+    [Parameter]
+    public EventCallback OnEndReg { get; set; }
 
     /// <summary>
     /// Pre-selected Item
