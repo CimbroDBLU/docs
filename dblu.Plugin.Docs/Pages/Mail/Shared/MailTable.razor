@@ -432,15 +432,15 @@
             Grid.ClearSelectionAsync();
         }
         else ClearSelectionAsync();
-        
+
         nMailBoxOld = nMailBox;
         IsSpinnerVisible = true;
 
 
         Task.Run(async () =>
          {
-             //  Grid.DataManager.Url = DataUrl;
-             Stopwatch sw = Stopwatch.StartNew();
+         //  Grid.DataManager.Url = DataUrl;
+         Stopwatch sw = Stopwatch.StartNew();
 
              switch (nType)
              {
@@ -490,18 +490,23 @@
     public async void ClearSelectionAsync() {SelectedIndexes.Clear(); Grid.ClearSelectionAsync(); }
 
     /// <summary>
+    /// Page in witch i am searching th selection (sometimes seems not keep the page so, if i cannot find the item, i search from page 1 to )
+    /// </summary>
+    private int Page{ get; set; } = 1;
+
+    /// <summary>
     /// On databound check id there is content, to send selection properly
     /// </summary>
     public async void DataBoundHandler()
     {
         try
-        {
+        { 
             foreach (var index in SelectedIndexes)               
-               await Grid.SelectRowAsync(index);
+                await Grid.SelectRowAsync(index);
 
             if ((await Grid.GetSelectedRecordsAsync()).Count != 0)
                 return;
-            
+
 
             _Logger.LogDebug("MailTable.DataBoundHandler: Selection empty -> AutoSelection needed");
 
@@ -512,13 +517,22 @@
             }
             else
             {
+
                 if (!string.IsNullOrEmpty(nPreselAttach))
                 {
                     AllegatoEmail e = Grid.CurrentViewData.Where(x => (x as AllegatoEmail).Id == Guid.Parse(nPreselAttach)).FirstOrDefault() as AllegatoEmail;
+
                     var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(Guid.Parse(nPreselAttach));
+                    if(PrimayIndex==-1 && Page < 100 && nEmails.Any(x=>x.Id==Guid.Parse(nPreselAttach)))
+                    {
+                        await Grid.GoToPageAsync(Page++);
+                        return;
+                    }
+                    Page = 1;
+
                     await this.Grid.SelectRow(PrimayIndex);
                     OnSelectAttachment.InvokeAsync(e);
-                    _Logger.LogDebug("MailTable.DataBoundHandler: Select Presel");
+                    _Logger.LogDebug($"MailTable.DataBoundHandler: Select Presel {PrimayIndex}");
                 }
                 else
                 {

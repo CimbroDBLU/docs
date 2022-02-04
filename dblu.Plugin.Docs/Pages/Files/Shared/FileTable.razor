@@ -311,6 +311,7 @@
     /// </summary>
     public void OnSearch()
     {
+        ClearSelectionAsync();
         Grid.SearchAsync(SearchKey);
     }
 
@@ -455,6 +456,12 @@
         SearchKey = Grid.SearchSettings.Key;
     }
 
+
+    /// <summary>
+    /// Page in witch i am searching th selection (sometimes seems not keep the page so, if i cannot find the item, i search from page 1 to )
+    /// </summary>
+    private int Page{ get; set; } = 1;
+
     /// <summary>
     /// On databound check id there is content, to send selection properly
     /// </summary>
@@ -482,6 +489,12 @@
                 {
                     Allegati e = Grid.CurrentViewData.Where(x => (x as Allegati).Id == Guid.Parse(nPreselAttach)).FirstOrDefault() as Allegati;
                     var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(Guid.Parse(nPreselAttach));
+                    if(PrimayIndex==-1 && Page < 100 && nFiles.Any(x=>x.Id==Guid.Parse(nPreselAttach)))
+                    {
+                        await Grid.GoToPageAsync(Page++);
+                        return;
+                    }
+                    Page = 1;
                     await this.Grid.SelectRow(PrimayIndex);
                     OnSelectAttachment.InvokeAsync(e);
                     _Logger.LogDebug("FileTable.DataBoundHandler: Select presel");
