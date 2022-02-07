@@ -411,12 +411,13 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public async void OnSelectAttach(Allegati e)
+    public async void OnSelectAttach((Allegati,bool) e)
     {
         try
-        {           
-            if(e?.Id.ToString()==AttachID) return;
-            if (e == null)
+        {        
+             IsCustomerExpand = true;
+
+            if (e.Item1 == null)
             {
                 _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: DeSelecting attach");              
 
@@ -429,28 +430,27 @@
                 return;
             }
             
-
-            _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: Selecting attach {e.Id}");
-            
             AutoSel=nPreselItem;     
-            Attach = e;
-            if (e?.Id.ToString() != AttachID)
+            Attach = e.Item1;
+            if (e.Item1?.Id.ToString() != AttachID)
             {
-                nPreselItem = null;
-                PDFSourceId = e.Id.ToString();
+                _Logger.LogDebug($"Inbox[FILE].OnSelectAttach: Selecting attach {e.Item1.Id}");
+
+                if(e.Item2)
+                    nPreselItem = null;
+                PDFSourceId = e.Item1.Id.ToString();
                 PDFSourceType = e_SourceType.Attachment;
             }
 
+            if (AttachID != e.Item1.Id.ToString())
+                AttachID = e.Item1.Id.ToString();
 
-            if (AttachID != e.Id.ToString())
-                AttachID = e.Id.ToString();
+            if (DossierID != e.Item1.IdFascicolo.ToString())
+                DossierID = e.Item1.IdFascicolo.ToString();
 
-            if (DossierID != e.IdFascicolo.ToString())
-                DossierID = e.IdFascicolo.ToString();
-
-            if (CustomerCode != e.Chiave3)
+            if (CustomerCode != e.Item1.Chiave3)
             {
-                CustomerCode = e.Chiave3;
+                CustomerCode = e.Item1.Chiave3;
                 CustomerName = Attach.jAttributi["NomeSoggetto"].ToString();
             }
 
@@ -568,7 +568,7 @@
                 ToastOK.Show();
             }
 
-            Grid.Refresh();
+            Grid.RemoveItem(AttachID);
             _Logger.LogInformation($"Inbox[FILE,{nDocType}].OnDeleteConfirmed: File {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
         }
         catch (Exception ex)
@@ -585,7 +585,10 @@
     private async void OnDone(Models.RisultatoAzione RA)
     {
         if (RA.Successo)
-            ToastMoveOK.Show();
+            {
+              ToastMoveOK.Show();
+              Grid.RemoveItem(AttachID);
+            }
         else ToastMoveKO.Show();
         Grid.Refresh();
         OnAbort();
@@ -606,7 +609,8 @@
     /// <param name="data"></param>
     private async void OnLinkToItem((string DossierId, string ItemId) data)
     {
-        Grid.Refresh();      
+        Grid.Refresh();    
+        DossierID = data.DossierId;
         nPreselItem = data.ItemId;
     }
 
@@ -651,8 +655,7 @@
     /// <param name="AttachId"></param>
     public async void OnAttachCompleted(string AttachId)
     {
-        Grid.Refresh();
-        Grid.ClearSelectionAsync(); 
+        Grid.RemoveItem(AttachId);
     }
 
     /// <summary>

@@ -323,9 +323,9 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public async void OnSelectAttach(Allegati e)
+    public async void OnSelectAttach((Allegati,bool) e)
     {
-        if (e == null)
+        if (e.Item1 == null)
         {
             _Logger.LogDebug($"Processed[FILE].OnSelectAttach: DeSelecting attach");
             AttachID = "";
@@ -334,18 +334,18 @@
             CustomerName = "";
             return;
         }
-        _Logger.LogDebug($"Processed[FILE].OnSelectAttach: Selecting attach {e.Id}");
-        Attach = e;
+        _Logger.LogDebug($"Processed[FILE].OnSelectAttach: Selecting attach {e.Item1.Id}");
+        Attach = e.Item1;
 
-        if (AttachID != e.Id.ToString())
-            AttachID = e.Id.ToString();
+        if (AttachID != e.Item1.Id.ToString())
+            AttachID = e.Item1.Id.ToString();
 
-        if (DossierID != e.IdFascicolo.ToString())
-            DossierID = e.IdFascicolo.ToString();
+        if (DossierID != e.Item1.IdFascicolo.ToString())
+            DossierID = e.Item1.IdFascicolo.ToString();
         
-        if (CustomerCode != e.Chiave3)
+        if (CustomerCode != e.Item1.Chiave3)
             {
-                CustomerCode = e.Chiave3;
+                CustomerCode = e.Item1.Chiave3;
                 CustomerName = Attach.jAttributi["NomeSoggetto"].ToString();
             }
 

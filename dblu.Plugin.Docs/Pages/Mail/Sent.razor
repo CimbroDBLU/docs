@@ -298,9 +298,9 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public void OnSelectAttach(AllegatoEmail e)
+    public void OnSelectAttach((AllegatoEmail,bool) e)
     {
-        if (e == null)
+        if (e.Item1 == null)
         {
             AttachID = "";
             DossierID = "";
@@ -309,18 +309,18 @@
             _Logger.LogDebug($"Sent[MAIL].OnSelectAttach: DeSelecting attach");
             return;
         }
-        Attach = e;
-        _Logger.LogDebug($"Sent[MAIL].OnSelectAttach: Selecting attach {e.Id}");
+        Attach = e.Item1;
+        _Logger.LogDebug($"Sent[MAIL].OnSelectAttach: Selecting attach {e.Item1.Id}");
 
-        if (AttachID != e.Id.ToString())
-            AttachID = e.Id.ToString();
+        if (AttachID != e.Item1.Id.ToString())
+            AttachID = e.Item1.Id.ToString();
 
-        if (DossierID != e.IdFascicolo.ToString())
-            DossierID = e.IdFascicolo.ToString();
+        if (DossierID != e.Item1.IdFascicolo.ToString())
+            DossierID = e.Item1.IdFascicolo.ToString();
 
-        if (CustomerCode != e.Chiave3)
+        if (CustomerCode != e.Item1.Chiave3)
         {
-            CustomerCode = e.Chiave3;
+            CustomerCode = e.Item1.Chiave3;
             CustomerName = Attach.jAttributi["NomeSoggetto"]?.ToString();
         }
         ApplyCustomer();
@@ -483,7 +483,7 @@
     public async void OnAttachCompleted(string AttachId)
     {
         Grid.Refresh();
-        OnSelectAttach(null);
+        OnSelectAttach((null,false));
   
     }
 

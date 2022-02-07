@@ -502,14 +502,14 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public void OnSelectAttach(AllegatoEmail e)
+    public void OnSelectAttach((AllegatoEmail,bool) e)
     {
         try
         {
             IsCustomerExpand = true;
             IsExternalComponentShown = false;
 
-            if (e==null)
+            if (e.Item1==null)
             {
                 _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: DeSelecting attach");
                 AttachID = "";
@@ -521,20 +521,20 @@
                 return;
             }
 
-            _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Id}");
-            Attach = e;
-            PDFSourceId = e.Id.ToString();
+            _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Item1.Id}");
+            Attach = e.Item1;
+            PDFSourceId = e.Item1.Id.ToString();
             PDFSourceType = e_SourceType.Attachment;
 
-            if (AttachID != e.Id.ToString())
-                AttachID = e.Id.ToString();
+            if (AttachID != e.Item1.Id.ToString())
+                AttachID = e.Item1.Id.ToString();
 
-            if (DossierID != e.IdFascicolo.ToString())
-                DossierID = e.IdFascicolo.ToString();
+            if (DossierID != e.Item1.IdFascicolo.ToString())
+                DossierID = e.Item1.IdFascicolo.ToString();
 
-            if (CustomerCode != e.Chiave3)
+            if (CustomerCode != e.Item1.Chiave3)
             {
-                CustomerCode = e.Chiave3;
+                CustomerCode = e.Item1.Chiave3;
                 CustomerName = Attach.jAttributi["NomeSoggetto"]?.ToString();
             }
 

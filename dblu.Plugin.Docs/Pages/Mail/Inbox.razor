@@ -454,14 +454,14 @@
     /// On selection of the email,shows and hide panels properly
     /// </summary>
     /// <param name="e"></param>
-    public async void OnSelectAttach(AllegatoEmail e)
+    public async void OnSelectAttach((AllegatoEmail,bool) e)
     {
         try
         {    
 
             IsCustomerExpand = true;
 
-            if (e == null)
+            if (e.Item1 == null)
             {
                 _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: DeSelecting attach");
                 DossierID = "";
@@ -474,27 +474,28 @@
                 return;
             }
 
-            _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Id}");
+            _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Item1.Id}");
 
             AutoSel=nPreselItem;     
-            Attach = e;
-            if (e?.Id.ToString() != AttachID)
+            Attach = e.Item1;
+            if (e.Item1?.Id.ToString() != AttachID)
             {
-                nPreselItem = null;
-                PDFSourceId = e.Id.ToString();
+                if(e.Item2)
+                    nPreselItem = null;
+                PDFSourceId = e.Item1.Id.ToString();
                 PDFSourceType = e_SourceType.Attachment;
             }
 
-            if (AttachID != e.Id.ToString())
-                AttachID = e.Id.ToString();
+            if (AttachID != e.Item1.Id.ToString())
+                AttachID = e.Item1.Id.ToString();
 
-            if (DossierID != e.IdFascicolo.ToString())
-                DossierID = e.IdFascicolo.ToString();            
+            if (DossierID != e.Item1.IdFascicolo.ToString())
+                DossierID = e.Item1.IdFascicolo.ToString();            
 
 
-            if (CustomerCode != e.Chiave3)
+            if (CustomerCode != e.Item1.Chiave3)
             {
-                CustomerCode = e.Chiave3;           
+                CustomerCode = e.Item1.Chiave3;           
                 CustomerName = Attach?.jAttributi["NomeSoggetto"]?.ToString();                
             }
             ApplyCustomer();
@@ -649,8 +650,7 @@
                 ToastOK.Show();
             }
 
-            Grid.Refresh();
-            Grid.ClearSelectionAsync();
+            Grid.RemoveItem(AttachID);
             _Logger.LogInformation($"Inbox[MAIL].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
         }
         catch (Exception ex)
@@ -667,9 +667,12 @@
     private async void OnDone(Models.RisultatoAzione RA)
     {
         if (RA.Successo)
+        {    
             ToastMoveOK.Show();
+            Grid.RemoveItem(AttachID);
+        }
         else ToastMoveKO.Show();
-        Grid.Refresh();
+
         OnAbort();
     }
 
@@ -709,9 +712,10 @@
     /// </summary>
     /// <param name="data"></param>
     private async void OnLinkToItem((string DossierId, string ItemId) data)
-    {        
-        Grid.Refresh();      
-        nPreselItem = data.ItemId;
+    {
+        Grid.Refresh();
+        DossierID = data.DossierId;
+        nPreselItem = data.ItemId;      
     }
 
     /// <summary>
@@ -771,9 +775,7 @@
     /// <param name="AttachId"></param>
     public async void OnAttachCompleted(string AttachId)
     {
-        Grid.Refresh();
-        //Pulendo la selezione , automaticamente seleziona la prima riga disponibile :-)
-        Grid.ClearSelectionAsync();
+        Grid.RemoveItem(AttachId);
     }
 
 

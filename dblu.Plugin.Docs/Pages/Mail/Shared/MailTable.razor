@@ -180,7 +180,7 @@
     /// Fires when an attach is selected
     /// </summary>
     [Parameter]
-    public EventCallback<AllegatoEmail> OnSelectAttachment { get; set; }
+    public EventCallback<(AllegatoEmail,bool)> OnSelectAttachment { get; set; }
 
     /// <summary>
     /// Fires when user request to reply
@@ -312,9 +312,9 @@
     /// Apply the search
     /// </summary>
     public void OnSearch()
-    {
+    {       
+        Grid.Search(SearchKey);
         ClearSelectionAsync();
-        Grid.SearchAsync(SearchKey);
     }
 
     /// <summary>
@@ -357,12 +357,23 @@
     }
 
     /// <summary>
+    /// Remove selected attach from grid and clear the selection
+    /// </summary>
+    /// <param name="AttachId">Id to remove</param>
+    public void RemoveItem(string AttachId)
+    {
+        nEmails.Remove(nEmails.FirstOrDefault(x => x.Id.ToString() == AttachId));
+        ClearSelectionAsync();
+    }
+
+    /// <summary>
     /// On record select forward the selection
     /// </summary>
     /// <param name="args"></param>
     public void RowSelected(RowSelectEventArgs<AllegatoEmail> args)
     {
-        OnSelectAttachment.InvokeAsync(args.Data);
+        
+        OnSelectAttachment.InvokeAsync((args.Data,args.IsInteracted));
         _Logger.LogDebug($"MailTable.RowSelected: Selected Attach {args.Data.Id}");
     }
 
@@ -415,7 +426,6 @@
         else if (args.Item.Id == "ReOpen")
             await OnReOpenAttachment.InvokeAsync(Attach);
     }
-
 
 
     /// <summary>
@@ -487,7 +497,7 @@
     /// <summary>
     /// Clear the selection
     /// </summary>
-    public async void ClearSelectionAsync() {SelectedIndexes.Clear(); Grid.ClearSelectionAsync(); }
+    public  void ClearSelectionAsync() {SelectedIndexes.Clear(); Grid.ClearSelection(); }
 
     /// <summary>
     /// Page in witch i am searching th selection (sometimes seems not keep the page so, if i cannot find the item, i search from page 1 to )
@@ -512,7 +522,7 @@
 
             if (Grid.CurrentViewData.Count() == 0)
             {
-                await OnSelectAttachment.InvokeAsync(null);
+                await OnSelectAttachment.InvokeAsync((null,false));
                 _Logger.LogDebug("MailTable.DataBoundHandler:  Auto Deselect");
             }
             else
@@ -531,7 +541,7 @@
                     Page = 1;
 
                     await this.Grid.SelectRow(PrimayIndex);
-                    OnSelectAttachment.InvokeAsync(e);
+                    OnSelectAttachment.InvokeAsync((e,false));
                     _Logger.LogDebug($"MailTable.DataBoundHandler: Select Presel {PrimayIndex}");
                 }
                 else
@@ -539,7 +549,7 @@
                     AllegatoEmail e = (Grid.CurrentViewData).FirstOrDefault() as AllegatoEmail;
                     var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(e.Id);
                     await this.Grid.SelectRow(PrimayIndex);
-                    OnSelectAttachment.InvokeAsync(e);
+                    OnSelectAttachment.InvokeAsync((e,false));
                     _Logger.LogDebug("MailTable.DataBoundHandler: Select First");
                 }
             }

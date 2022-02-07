@@ -418,22 +418,24 @@ else
     protected override async Task OnParametersSetAsync()
     {
         if (LastAttachId == nAttachID && LastDossierId == nDossierID && LastSelectedItem==nSelectedItem) return;
-        LastDossierId = nDossierID;
-        LastAttachId = nAttachID;
-        LastSelectedItem = nSelectedItem;
-        string ItemS = nSelectedItem;
+
+       
         IsItemSelected = false;
         IsSpinnerVisible = true;
 
-        Stopwatch sw=Stopwatch.StartNew();
+        LastDossierId = nDossierID;
+        LastAttachId = nAttachID;
+        LastSelectedItem = nSelectedItem;        
+        Stopwatch sw = Stopwatch.StartNew();
         nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
         _Logger.LogDebug($"REG_ItemsTable.OnParametersSetAsync: Red Dossier {nDossierID}, all items in {sw.ElapsedMilliseconds} ms");
+        
 
+        string ItemS = nSelectedItem;
         if(!string.IsNullOrEmpty(ItemS))
         {
             int Index = nItems.ToList().FindIndex(d => d.Id == ItemS);
-            _Logger.LogDebug($"REG_ItemsTable.OnParametersSetAsync: Select {Index}");
-
+            _Logger.LogDebug($"REG_ItemsTable.OnParametersSetAsync: Select {Index}");      
             Grid?.SelectRowAsync((double)Index); 
             await OnSelectedItem.InvokeAsync(nItems.FirstOrDefault(d => d.Id == ItemS)); 
 
