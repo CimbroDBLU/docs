@@ -787,8 +787,15 @@
     {
         if(!string.IsNullOrEmpty(Id))
         {
-            PDFSourceId = Id;
-            PDFSourceType = e_SourceType.Item;
+            if (PDFSourceId == Id)
+            {
+                Viewer.ForceReload();
+            }
+            else
+            {
+                PDFSourceId = Id;
+                PDFSourceType = e_SourceType.Item;
+            }
         }
     }
 

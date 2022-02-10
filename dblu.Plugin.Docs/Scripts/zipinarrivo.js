@@ -386,6 +386,7 @@ function ApriElementoGrid(e) {
             type: 'POST',
             data: { IdElemento: elementoItem.Id },
             success: function (data) {
+                CaricaElemento(elementoItem);
                 $("#IdElemento").val(elementoItem.Id);
                 dialog.content(data);
                 dialog.open();

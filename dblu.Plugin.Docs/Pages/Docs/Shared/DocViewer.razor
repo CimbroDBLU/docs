@@ -354,14 +354,14 @@
     protected override async void OnParametersSet()
     {        
         //Non e' il caso di aggiornare.
- 
+
         if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
             return;
         IsSpinnerVisible = true;       
         lock (this)
-            {
+        {
             LoadDocument();  
-            }
+        }
         ApplyDoc();
 
         IsSpinnerVisible = false;
@@ -388,7 +388,17 @@
             }
     }
 
+    public void ForceReload()
+    {
+        IsSpinnerVisible = true;       
+        lock (this)
+        {
+            LoadDocument();  
+        }
+        ApplyDoc();
 
+        IsSpinnerVisible = false; 
+    }
 
     /// <summary>
     /// Copy the pdf on the pdf viewer

@@ -419,7 +419,7 @@ else
     {
         if (LastAttachId == nAttachID && LastDossierId == nDossierID && LastSelectedItem==nSelectedItem) return;
 
-       
+
         IsItemSelected = false;
         IsSpinnerVisible = true;
 
@@ -429,7 +429,7 @@ else
         Stopwatch sw = Stopwatch.StartNew();
         nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
         _Logger.LogDebug($"REG_ItemsTable.OnParametersSetAsync: Red Dossier {nDossierID}, all items in {sw.ElapsedMilliseconds} ms");
-        
+
 
         string ItemS = nSelectedItem;
         if(!string.IsNullOrEmpty(ItemS))
@@ -537,18 +537,29 @@ else
             ComponentName = T.ViewAttributi;
             ///// TODO: TEMPORANEO SANGIACOMO
             if (!ComponentName.Contains("blz:/") && IsMSG())
-                ComponentName = "blz:/Orders/MSG_RegisterOrder";
+                ComponentName = "blz:/dblu.Portale.Plugin.SanGiacomo.Pages.Custom.MSG_RegisterOrderPopUp";
             ////  DA RIMUOVERE
             if (!ComponentName.StartsWith("blz:/"))
                 IsShowUndefined = true;
         }
-        string prev= $"{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}";
-        if (!prev.EndsWith("Inbox"))
-            prev = prev.Substring(0, prev.IndexOf("Inbox")+5);
+        if (ComponentName.EndsWith("PopUp"))
+        {
+            ComponentName = ComponentName.Replace("blz:/", "");
+            LastCreatedItem = _MailService._elmMan.Get(Elem.Id, 0);
+            OnBeginReg.InvokeAsync();
+            OpenAsDialog(LastCreatedItem);
+            StateHasChanged();   
+        }
+        else
+        {
+            string prev = $"{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}";
+            if (!prev.EndsWith("Inbox"))
+                prev = prev.Substring(0, prev.IndexOf("Inbox") + 5);
 
-        await _SessionStore.SetAsync("Referrer", $"/{prev}/{nSourceFolder}/{nAttachID}");
-        string Url = $"{ComponentName.Replace("blz:/", "")}/{Elem.Id}";
-        _NavigationManager.NavigateTo(Url);
+            await _SessionStore.SetAsync("Referrer", $"/{prev}/{nSourceFolder}/{nAttachID}");
+            string Url = $"{ComponentName.Replace("blz:/", "")}/{Elem.Id}";
+            _NavigationManager.NavigateTo(Url);
+        }
     }
 
 
@@ -574,7 +585,7 @@ else
     /// </summary>
     public async void Duplicate()
     {
-        var f = await _MailService.DuplicaElementoAsync(nAttachID, nDossierID, nItem.IdElemento.ToString(), nItem.TipoElemento, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "", null, true, nItem.DscElemento, User);
+        var f = await _MailService.DuplicateItemAsync(nAttachID, nDossierID, nItem.IdElemento.ToString(), nItem.TipoElemento, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "",nAttachments.ToList(),nItem.DscElemento, User);
         if (f != null)
             ToastDupOK.Show();
         else ToastDupKO.Show();
@@ -956,7 +967,7 @@ else
     public async void OnCloseReg(bool Completed)
     {
         IsShowDialog = false;
-        //if(Completed==true)
+        LastSelectedItem = null;
         OnLinkedToItem.InvokeAsync((LastCreatedItem.IdFascicolo.ToString(),LastCreatedItem.Id.ToString()));
         OnEndReg.InvokeAsync();
     }

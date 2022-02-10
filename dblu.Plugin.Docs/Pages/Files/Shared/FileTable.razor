@@ -452,7 +452,11 @@
             case TableType.Inbox: LastFileTime = _ZipService._allMan.GetLastInboxFileTime(nDocumentType.ToString(), nFolder.Cartella); break;
         }
         NewItems = 0;
-        InvokeAsync(() => { Grid.Refresh(); IsSpinnerVisible = false; });
+        InvokeAsync(async() => {                 
+            Grid.Refresh();
+            await Task.Delay(500);
+            IsSpinnerVisible = false;
+        });
         });     
     }
 

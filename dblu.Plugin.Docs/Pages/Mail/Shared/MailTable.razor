@@ -21,7 +21,7 @@
 
 
 
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" DataSource="@nEmails"  AllowGrouping="false" TValue="AllegatoEmail" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true"  DataSource="@nEmails"  AllowGrouping="false" TValue="AllegatoEmail" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
@@ -372,7 +372,7 @@
     /// <param name="args"></param>
     public void RowSelected(RowSelectEventArgs<AllegatoEmail> args)
     {
-        
+
         OnSelectAttachment.InvokeAsync((args.Data,args.IsInteracted));
         _Logger.LogDebug($"MailTable.RowSelected: Selected Attach {args.Data.Id}");
     }
@@ -441,7 +441,8 @@
                 SelectedIndexes.Add(index);
             Grid.ClearSelectionAsync();
         }
-        else ClearSelectionAsync();
+        else 
+            ClearSelectionAsync();
 
         nMailBoxOld = nMailBox;
         IsSpinnerVisible = true;
@@ -449,13 +450,11 @@
 
         Task.Run(async () =>
          {
-         //  Grid.DataManager.Url = DataUrl;
-         Stopwatch sw = Stopwatch.StartNew();
+             Stopwatch sw = Stopwatch.StartNew();
 
              switch (nType)
              {
                  case TableType.Inbox:
-
                      nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
                      _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
                      break;
@@ -480,7 +479,11 @@
                  case TableType.Sorting: LastEmailTime = _MailService._allMan.GetLastSortingEmailTime("EMAIL", nMailBox.Nome); break;
              }
              NewItems = 0;
-             InvokeAsync(() => { Grid.Refresh(); IsSpinnerVisible = false; });
+             InvokeAsync(async() => {                 
+                 Grid.Refresh();
+                 await Task.Delay(500);
+                 IsSpinnerVisible = false;
+             });
          }
         );
     }

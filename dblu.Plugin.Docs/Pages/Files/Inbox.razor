@@ -415,7 +415,7 @@
     {
         try
         {        
-             IsCustomerExpand = true;
+            IsCustomerExpand = true;
 
             if (e.Item1 == null)
             {
@@ -429,7 +429,7 @@
                 PDFSourceType = e_SourceType.Attachment;
                 return;
             }
-            
+
             AutoSel=nPreselItem;     
             Attach = e.Item1;
             if (e.Item1?.Id.ToString() != AttachID)
@@ -585,10 +585,10 @@
     private async void OnDone(Models.RisultatoAzione RA)
     {
         if (RA.Successo)
-            {
-              ToastMoveOK.Show();
-              Grid.RemoveItem(AttachID);
-            }
+        {
+            ToastMoveOK.Show();
+            Grid.RemoveItem(AttachID);
+        }
         else ToastMoveKO.Show();
         Grid.Refresh();
         OnAbort();
@@ -666,8 +666,16 @@
     {
         if(!string.IsNullOrEmpty(Id))
         {
-        PDFSourceId = Id;
-        PDFSourceType = e_SourceType.Item;
+            if (PDFSourceId == Id)
+            {
+                Viewer.ForceReload();
+            }
+            else
+            {
+                PDFSourceId = Id;
+                PDFSourceType = e_SourceType.Item;
+            }
+
         }
     }
 

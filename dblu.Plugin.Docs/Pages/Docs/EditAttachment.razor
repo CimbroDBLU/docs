@@ -13,6 +13,7 @@
 @inject ProtectedSessionStorage _SessionStore
 @inject NavigationManager  _NavigationManager
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
 @inject IJSRuntime _JSRuntime
 
 <PageTitle nTitle="@CardTitle" />
@@ -147,8 +148,11 @@
         if (!string.IsNullOrEmpty(Summary) && Summary.ToLowerInvariant() == "true")
         {
             CardTitle = $"Riepilogo [{Attachment.Descrizione}]";
-
-            MemoryStream M = await _MailService.GetPdfRiepilogo(Id);
+            MemoryStream M = null;
+            if(Attachment.Tipo=="MAIL")
+                M = await _MailService.GetPdfRiepilogo(Id);
+            else
+                M = await _ZipService.GetPdfRiepilogo(Id);
             SummaryDoc = $"SUMMARY-{Id}.PDF;{Convert.ToBase64String(M.ToArray())}";
                 
         }  

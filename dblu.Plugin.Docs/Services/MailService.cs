@@ -1665,6 +1665,109 @@ namespace dblu.Portale.Plugin.Docs.Services
             return null;
         }
 
+        public async Task<Elementi> DuplicateItemAsync(string AttachId,
+                    string DossierId,
+                    string ItemId,
+                    string ItemType,
+                    string CostumerCode,
+                    string Costumer,
+                    List<OriginalAttachments> Attachs,
+                    string Description,
+                    ClaimsPrincipal User)
+        {
+            try
+            {
+                Fascicoli f = null;
+                var cancel = new CancellationToken();
+                string utente = User.Identity.Name == null ? "" : User.Identity.Name;
+
+                var Attach = _allMan.Get(AttachId);
+                if (Description == null)
+                    Description = Attach.Descrizione;
+
+                TipiAllegati AttachType = _allMan.GetTipoAllegato("FILE");
+
+                Attach.SetAttributo("CodiceSoggetto", CostumerCode);
+                Attach.SetAttributo("NomeSoggetto", Costumer);
+                Attach.DataUM = DateTime.Now;
+                if (Attach.IdFascicolo == null && !string.IsNullOrEmpty(DossierId))
+                {
+                    Attach.IdFascicolo = Guid.Parse(DossierId);
+                }
+
+                var isNew = false;
+                if (Attach.IdFascicolo == null)
+                {
+                    return null;
+                }
+                else
+                {
+
+                    f = _fasMan.Get(DossierId);
+                    if (f.elencoAttributi == null)
+                    {
+                        f.elencoAttributi = f.CategoriaNavigation.Attributi;
+                    }
+                }
+                f.CodiceSoggetto = CostumerCode;
+                f.SetAttributo("CodiceSoggetto", CostumerCode);
+                f.SetAttributo("NomeSoggetto", Costumer);
+                if (_fasMan.Salva(f, isNew) == false) return null;
+
+                _logMan.PostLog(f.Id, TipiOggetto.FASCICOLO, (isNew) ? TipoOperazione.Creato : TipoOperazione.Modificato, User.Identity.Name, $"Fascicolo " + ((isNew) ? "creato" : "modificato"));
+
+                var e = new Elementi();
+                e.Tipo = ItemType;
+                e.IdFascicolo = f.Id;
+
+                e.Descrizione = Description;
+
+                isNew = true;
+                e.IdFascicoloNavigation = f;
+                TipiElementi tipoEl = _elmMan.GetTipoElemento(ItemType);
+                e.TipoNavigation = tipoEl;
+                e.elencoAttributi = tipoEl.Attributi;
+
+                Elementi oldEl = _elmMan.Get(ItemId, 0);
+                foreach (Attributo xx in e.elencoAttributi.ToList())
+                {
+                    if (xx.Duplicabile)
+                    {
+                        xx.Valore = oldEl.GetAttributo(xx.Nome);
+                    }
+
+                }
+
+                Attach.IdElemento = e.Id;
+
+                e.SetAttributo("CodiceSoggetto", CostumerCode);
+                e.SetAttributo("NomeSoggetto", Costumer);
+
+                if (_elmMan.Salva(e, isNew) == false) return null;
+
+                _logMan.PostLog(e.Id, TipiOggetto.ELEMENTO, TipoOperazione.Creato, User.Identity.Name, $"Elemento creato");
+
+
+                //var i = await _context.SaveChangesAsync(cancel);
+                Attach.Stato = StatoAllegato.Elaborato;
+                if (_allMan.Salva(Attach, false) == false) return null;
+
+                _logMan.PostLog(Attach.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato elaborato");
+
+
+                //estrae i file dalla mail presenti in lista e li assegna all'elemento                
+                await ExtractAttachs(Attach, Attachs, Description, AttachType);
+
+                return e;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"CreaFascicoloAsync : {ex.Message}");
+            }
+            return null;
+        }
+
+
 
         public async Task<Elementi> DuplicaElementoAsync(string IdAllegato,
             string IdFascicolo,
