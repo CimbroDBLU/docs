@@ -7,6 +7,7 @@
 @page "/Mail/Sorting/{nPreselFolder}/{nPreselAttach}"
 @page "/Mail/Sorting/{nPreselFolder}/{nPreselAttach}/{nPreselItem}"
 @using Microsoft.AspNetCore.Components.CompilerServices
+@using System.Reflection
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.Services
@@ -22,7 +23,7 @@
 @inject ILogger<Inbox> _Logger
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 
-<PageTitle nTitle="Inbox" />
+<PageTitle nTitle="Smistamento" />
 
 <section class="content">
 
@@ -181,8 +182,8 @@
                                     Value = SourceAttach
                                 });
 
-                                var DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == ExternalComponent.ViewAttributi.Replace(@"blz:\", "")) != null)?.GetType(@ExternalComponent.ViewAttributi.Replace(@"blz:\", ""));
-                                if (DynamicContent == null) ToastECKO.Show();
+                                if (DinamicComponent == null) 
+                                    ToastECKO.Show();
                                 else
                                 {
                                 Attr.Add(new DynamicComponent.ComponentAttribute()
@@ -190,10 +191,8 @@
                                     Name = "TipoElemento",
                                     Position = 4,
                                     Value = ExternalComponent
-                                });
-                             //  <form  id=$"form{@ExternalComponent.Codice}" >
-                                <DynamicComponent  nType="@DynamicContent" nAttributes="@Attr"></DynamicComponent>
-                              //  </form>
+                                });                           
+                                <DynamicComponent  nType="@DinamicComponent" nAttributes="@Attr"></DynamicComponent>
                                 }
                             }
                             @*ALLEGATI EMAIL*@
@@ -496,7 +495,7 @@
     public string Body { get; set; }
     private string Modulo { get; set; } = "50.1.5";
 
-
+    public Type DinamicComponent { get; set; } = null;
 
     /// <summary>
     /// On selection of the email,shows and hide panels properly
@@ -548,7 +547,7 @@
     }
 
 
-     /// <summary>
+    /// <summary>
     /// Set Description of the costumer
     /// </summary>
     public void ApplyCustomer()
@@ -849,13 +848,42 @@
         IsSpinnerVisible = true;
         if(item.ViewAttributi.Contains(@"blz:\"))
         {
+            string Name= item.ViewAttributi.Replace(@"blz:\", "");
+            DinamicComponent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == Name) != null)?.GetType(Name);
 
             ExternalComponent = item;
-            //ExternalComponentName = item.ViewAttributi.Replace(@"blz:\", "");
             IsExternalComponentShown = true;
         }
         else
         {
+            if(item.ViewAttributi=="cpbChiarimenti")
+            {
+            string Name= @"dblu.Portale.Plugin.Compab.Pages.CPB_Chiarimenti";
+            DinamicComponent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == Name) != null)?.GetType(Name);
+
+            ExternalComponent = item;
+            IsExternalComponentShown = true;
+                
+            }
+            if(item.ViewAttributi=="cpbAttribOrdine")
+            {
+            string Name= @"dblu.Portale.Plugin.Compab.Pages.CPB_Ordini";
+            DinamicComponent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == Name) != null)?.GetType(Name);
+
+            ExternalComponent = item;
+            IsExternalComponentShown = true;
+                
+            }
+
+            if(item.ViewAttributi=="")
+            {
+            string Name= @"dblu.Portale.Plugin.Compab.Pages.CPB_Sostituzioni";
+            DinamicComponent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == Name) != null)?.GetType(Name);
+
+            ExternalComponent = item;
+            IsExternalComponentShown = true;
+                
+            }
             //errore
         }
 
