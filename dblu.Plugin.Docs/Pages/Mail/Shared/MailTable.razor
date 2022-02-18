@@ -481,8 +481,8 @@
              NewItems = 0;
              InvokeAsync(async() => {                 
                  Grid.Refresh();
-                 await Task.Delay(500);
                  IsSpinnerVisible = false;
+                 await Task.Delay(500);                
              });
          }
         );
