@@ -42,7 +42,7 @@
                     </div>
                     <div class="row ">
                         <div class="col">
-                            <MailTable @ref="@Grid" nMailBox="@MailBox" OnSelectAttachment="OnSelectAttach" OnReplyAttachment="OnReply" OnForwardAttachment="OnForward" OnMoveAttachment="OnMove" OnShowAttachment="OnShow" OnShowLogsAttachment="OnShowLogs" OnDeleteAttachment="OnDelete" nPreselAttach="@nPreselAttach" nType="MailTable.TableType.Inbox"></MailTable>
+                            <MailTable @ref="@Grid" nMailBox="@MailBox" OnSelectAttachment="OnSelectAttach" OnReplyAttachment="OnReply" OnForwardAttachment="OnForward" OnMoveAttachment="OnMove" OnShowAttachment="OnShow" OnShowLogsAttachment="OnShowLogs" OnDeleteAttachment="OnDelete" nPreselAttach="@nPreselAttach" nType="MailTable.TableType.Sorting"></MailTable>
                         </div>
                     </div>
 
@@ -191,8 +191,20 @@
                                     Name = "TipoElemento",
                                     Position = 4,
                                     Value = ExternalComponent
-                                });                           
-                                <DynamicComponent  nType="@DinamicComponent" nAttributes="@Attr"></DynamicComponent>
+                                });           
+                                
+                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                {
+                                    Name = "CustomerName",
+                                    Position = 5,
+                                    Value = CustomerName
+                                });
+                                Attr.Add(new DynamicComponent.ComponentAttribute() {
+                                    Name = "OnTaskCompleted",
+                                    Position = 5,
+                                    Value = EventCallback.Factory.Create<Task>(this, OnExternalComponentTaskCompleted)
+                                 });
+                                    <DynamicComponent  nType="@DinamicComponent" nAttributes="@Attr"></DynamicComponent>
                                 }
                             }
                             @*ALLEGATI EMAIL*@
@@ -840,6 +852,13 @@
         PDFSourceType = e_SourceType.Item;
     }
 
+    /// <summary>
+    ///  On External Component Task Completed refresh the grid
+    /// </summary>
+    public void OnExternalComponentTaskCompleted()
+    {
+        Grid.Refresh();
+    }
     /// <summary>
     /// tipoElemento click button event
     /// </summary>

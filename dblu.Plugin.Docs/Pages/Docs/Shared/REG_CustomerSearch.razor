@@ -179,7 +179,7 @@
                 });
 
         });
-
+        
         }
 
         LastCostumerCode = nCostumerCode;
@@ -193,7 +193,7 @@
     protected override async Task OnParametersSetAsync()
     {
 
-        Description = nCostumerName;
+        Description = nCostumerName??"";
     }
 
     /// <summary>
