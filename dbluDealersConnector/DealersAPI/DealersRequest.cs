@@ -41,7 +41,12 @@ namespace dbluDealersConnector.DealersAPI
         /// <summary>
         /// Replacement
         /// </summary>
-        Sostituzione
+        Sostituzione,
+        /// <summary>
+        /// Order abort
+        /// </summary>
+        Annulla_Ordine
+
     }
 
     /// <summary>

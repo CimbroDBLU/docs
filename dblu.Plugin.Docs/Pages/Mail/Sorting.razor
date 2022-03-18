@@ -204,7 +204,14 @@
                                     Position = 5,
                                     Value = EventCallback.Factory.Create<Task>(this, OnExternalComponentTaskCompleted)
                                  });
-                                    <DynamicComponent  nType="@DinamicComponent" nAttributes="@Attr"></DynamicComponent>
+
+                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                    {
+                                        Name = "Attachs",
+                                        Position = 6,
+                                        Value = (Grid?.GetSelected().Result).Select(x => x.Id.ToString()).ToList() ?? new()
+                                    });
+                                <DynamicComponent  nType="@DinamicComponent" nAttributes="@Attr"></DynamicComponent>
                                 }
                             }
                             @*ALLEGATI EMAIL*@
@@ -246,6 +253,10 @@
                                 </SfAccordion>
                             </div>
                         </div>
+                    }
+                    else
+                    {
+                        <h3 style="display:flex;justify-content: center;">Selezionare una E-Mail a sinistra</h3>
                     }
                 </div>
             </div>
@@ -865,45 +876,13 @@
     private async void NuovoElemento(TipiElementi item)
     {
         IsSpinnerVisible = true;
-        if(item.ViewAttributi.Contains(@"blz:\"))
+        if(item.ViewAttributi.Contains(@"blz:\") || item.ViewAttributi.Contains(@"blz:/"))
         {
-            string Name= item.ViewAttributi.Replace(@"blz:\", "");
+            string Name= item.ViewAttributi.Replace(@"blz:\", "").Replace(@"blz:/", "");
             DinamicComponent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == Name) != null)?.GetType(Name);
 
             ExternalComponent = item;
             IsExternalComponentShown = true;
-        }
-        else
-        {
-            if(item.ViewAttributi=="cpbChiarimenti")
-            {
-            string Name= @"dblu.Portale.Plugin.Compab.Pages.CPB_Chiarimenti";
-            DinamicComponent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == Name) != null)?.GetType(Name);
-
-            ExternalComponent = item;
-            IsExternalComponentShown = true;
-                
-            }
-            if(item.ViewAttributi=="cpbAttribOrdine")
-            {
-            string Name= @"dblu.Portale.Plugin.Compab.Pages.CPB_Ordini";
-            DinamicComponent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == Name) != null)?.GetType(Name);
-
-            ExternalComponent = item;
-            IsExternalComponentShown = true;
-                
-            }
-
-            if(item.ViewAttributi=="")
-            {
-            string Name= @"dblu.Portale.Plugin.Compab.Pages.CPB_Sostituzioni";
-            DinamicComponent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == Name) != null)?.GetType(Name);
-
-            ExternalComponent = item;
-            IsExternalComponentShown = true;
-                
-            }
-            //errore
         }
 
         IsSpinnerVisible = false;

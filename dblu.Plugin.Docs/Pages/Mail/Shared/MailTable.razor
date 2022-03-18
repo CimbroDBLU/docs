@@ -21,8 +21,8 @@
 
 
 
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true"  DataSource="@nEmails"  AllowGrouping="false" TValue="AllegatoEmail" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
-    <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" SelectedRowIndex="0" DataSource="@nEmails"  AllowGrouping="false" TValue="AllegatoEmail" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
+    <GridSelectionSettings PersistSelection="true" Type="@SelType" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSizes="true" PageSize="20"></GridPageSettings>
@@ -124,6 +124,7 @@
     /// Indicates if spinner must be visible
     /// </summary>
     private bool IsSpinnerVisible { get; set; } = false;
+
 
     ///// <summary>
     ///// Url to use to retreive paginated data
@@ -275,6 +276,11 @@
     private List<double> SelectedIndexes { get; set; } = new();
 
     /// <summary>
+    /// Type of selection (single or Multi lines)
+    /// </summary>
+    private Syncfusion.Blazor.Grids.SelectionType SelType { get; set; } = Syncfusion.Blazor.Grids.SelectionType.Single;
+
+    /// <summary>
     /// On init , if necessary, start the timer
     /// </summary>
     protected override async void OnInitialized()
@@ -377,6 +383,10 @@
         _Logger.LogDebug($"MailTable.RowSelected: Selected Attach {args.Data.Id}");
     }
 
+    /// <summary>
+    /// Get the list of selected records
+    /// </summary>
+    /// <returns>List of selected records</returns>
     public async Task<List<AllegatoEmail>> GetSelected()
     {
         return await Grid.GetSelectedRecordsAsync();
@@ -392,11 +402,11 @@
         // Andrea Ghizzo ha paura che gli utente facciano doppio click per selezionare e non vedendo la mail selezionata muoiano.
 
 
-        //if ((await Grid.GetSelectedRecordsAsync()).Count == 0)
-        //{
-        //    _Logger.LogDebug($"MailTable.RowDeselected: Deselected Attach {args.Data.Id}");
-        //    await OnSelectAttachment.InvokeAsync(null);
-        //}
+        if ((await Grid.GetSelectedRecordsAsync()).Count == 0)
+        {
+            _Logger.LogDebug($"MailTable.RowDeselected: Deselected Attach {args.Data.Id}");
+            await OnSelectAttachment.InvokeAsync((null,args.IsInteracted));
+        }
     }
 
     /// <summary>
@@ -459,6 +469,7 @@
                      _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
                      break;
                  case TableType.Sorting:
+                     SelType = Syncfusion.Blazor.Grids.SelectionType.Multiple;
                      nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailDaSmistare("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
                      _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
                      break;
@@ -507,6 +518,7 @@
     /// </summary>
     private int Page{ get; set; } = 1;
 
+
     /// <summary>
     /// On databound check id there is content, to send selection properly
     /// </summary>
@@ -549,11 +561,11 @@
                 }
                 else
                 {
-                    AllegatoEmail e = (Grid.CurrentViewData).FirstOrDefault() as AllegatoEmail;
-                    var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(e.Id);
-                    await this.Grid.SelectRow(PrimayIndex);
-                    OnSelectAttachment.InvokeAsync((e,false));
-                    _Logger.LogDebug("MailTable.DataBoundHandler: Select First");
+                    //AllegatoEmail e = (Grid.CurrentViewData).FirstOrDefault() as AllegatoEmail;
+                    //var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(e.Id);
+                    //await this.Grid.SelectRow(PrimayIndex);
+                    //OnSelectAttachment.InvokeAsync((e,false));
+                    //_Logger.LogDebug("MailTable.DataBoundHandler: Select First");
                 }
             }
         }
