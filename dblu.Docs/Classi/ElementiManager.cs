@@ -555,7 +555,42 @@ namespace dblu.Docs.Classi
             }
             return l;
         }
+        
+        /// <summary>
+        /// Get all elements that includes this attachment
+        /// </summary>
+        /// <param name="IdAllegato"></param>
+        /// <returns></returns>
         public List<Elementi> GetElementiDaAllegato(Guid IdAllegato)
+        {
+
+            //var doc = _context.Allegati.Where(x => x.IdElemento == elemento && x.Tipo == "FILE");
+            List<Elementi> doc = null;
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    doc = cn.Query<Elementi>("SELECT e.* FROM allegati m INNER JOIN elementi e ON e.idfascicolo = m.idfascicolo " +
+                    " INNER JOIN allegati f ON f.idfascicolo = m.idfascicolo and f.idelemento = e.id and f.Tipo = 'FILE' and f.NomeFile = cast(m.id as varchar(50)) + '.pdf' " +
+                    " WHERE m.id = @IdAllegato Order by e.datac ",
+                        new { IdAllegato = IdAllegato.ToString() }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetElementiDaAllegato: {ex.Message}");
+
+            }
+            return doc;
+
+        }
+
+        /// <summary>
+        ///  Get all elements that includes this attachment and all brother elements in same Dossier
+        /// </summary>
+        /// <param name="IdAllegato"></param>
+        /// <returns></returns>
+        public List<Elementi> GetElementiDaAllegatoFull(Guid IdAllegato)
         {
 
             //var doc = _context.Allegati.Where(x => x.IdElemento == elemento && x.Tipo == "FILE");

@@ -21,7 +21,7 @@
 
 
 
-<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" DataSource="@nFiles" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
+<SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" SelectedRowIndex="0" DataSource="@nFiles" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
     <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
@@ -390,11 +390,11 @@
         // Commentata per San Giacomo, anche se secondo me starebbe meglio  de-commentata...
         // Andrea Ghizzo ha paura che gli utente facciano doppio click per selezionare e non vedendo la mail selezionata muoiano.
 
-        //if ((await Grid.GetSelectedRecordsAsync()).Count == 0)
-        //{
-        //    _Logger.LogDebug($"FileTable.RowDeselected: Deselected attach {args.Data.Id}");
-        //    await OnSelectAttachment.InvokeAsync(null);
-        //}        
+        if ((await Grid.GetSelectedRecordsAsync()).Count == 0)
+        {
+            _Logger.LogDebug($"FileTable.RowDeselected: Deselected attach {args.Data.Id}");
+            await OnSelectAttachment.InvokeAsync((null,args.IsInteracted));
+        }        
     }
     /// <summary>
     /// Forward the events on toolbar button press
@@ -523,11 +523,11 @@
                 }
                 else
                 {
-                    Allegati e = (Grid.CurrentViewData).FirstOrDefault() as Allegati;
-                    var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(e.Id);
-                    await this.Grid.SelectRow(PrimayIndex);
-                    OnSelectAttachment.InvokeAsync((e,false));
-                    _Logger.LogDebug("FileTable.DataBoundHandler: Select first");
+                    //Allegati e = (Grid.CurrentViewData).FirstOrDefault() as Allegati;
+                    //var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(e.Id);
+                    //await this.Grid.SelectRow(PrimayIndex);
+                    //OnSelectAttachment.InvokeAsync((e,false));
+                    //_Logger.LogDebug("FileTable.DataBoundHandler: Select first");
                 }
             }
         }

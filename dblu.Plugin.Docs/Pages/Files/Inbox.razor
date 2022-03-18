@@ -6,7 +6,6 @@
 @page "/Files/{nDocType}/Inbox/{nPreselAttach}"
 @page "/Files/{nDocType}/Inbox/{nPreselFolder}/{nPreselAttach}"
 @page "/Files/{nDocType}/Inbox/{nPreselFolder}/{nPreselAttach}/{nPreselItem}"
-
 @using dblu.Docs.Models
 @using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.Services
@@ -34,10 +33,10 @@
         <CardHeader Title="@Title" />
         <CardContent EnableSeperator="true">
             <div class="row form-group">
-                <div class="col-5" style="align-self: auto;">
+               <div  class="col-5" style=@($"align-self: auto;{((ForceCollapsed)?"pointer-events:none;":"")}")>
                     <div class="row form-group">
                         <div class="col">
-                            <ServerCombo nLabel="Cartella" nPresel="@nPreselFolder" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" @bind-nServer="@MailBox"></ServerCombo>
+                            <ServerCombo nEnabled=@(!ForceCollapsed) nLabel="Cartella" nPresel="@nPreselFolder" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" @bind-nServer="@MailBox"></ServerCombo>
                         </div>
                     </div>
                     <div class="row ">
@@ -94,6 +93,7 @@
                             <div class="row form-group">
                                 <div class="col">
                                     <SfAccordion>
+                                        <AccordionEvents Expanding="OnExpanding"></AccordionEvents>
                                         <AccordionItems>
                                             <AccordionItem Expanded="@(!ForceCollapsed)">
                                                 <HeaderTemplate>
@@ -111,13 +111,14 @@
                             <div class="row form-group">
                                 <div class="col">
                                     <SfAccordion>
+                                        <AccordionEvents Expanding="OnExpanding"></AccordionEvents>
                                         <AccordionItems>
                                             <AccordionItem Expanded="@(!ForceCollapsed)">
                                                 <HeaderTemplate>
                                                     <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <REG_DossierItems OnRefresh="OnRefreshDossier" nSelectedItem="@AutoSel" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@Document" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"  OnBeginReg="OnBeginReg" OnEndReg="OnEndReg"></REG_DossierItems>
+                                                    <REG_DossierItems OnRefresh="OnRefreshDossier" nSelectedItem="@AutoSel" nRecordServer="TipiRecordServer.CartellaFile" nDocumentType="@DocType" nCurrentDocument="@LastDocumentFromAttach" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" nSourceFolder="@MailBox.Nome" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem"  OnBeginReg="OnBeginReg" OnEndReg="OnEndReg"></REG_DossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -164,6 +165,10 @@
                             </SfAccordion>
                         </div>
                     </div>
+                    }
+                    else
+                    {
+                        <h3 style="display:flex;justify-content: center;">Selezionare un Documento a sinistra</h3>
                     }
                 </div>
             </div>
@@ -351,6 +356,11 @@
     public MemoryStream Document => Viewer?.Doc?.Payload ?? new();
 
     /// <summary>
+    /// Last document loaded from an attach
+    /// </summary>
+    public MemoryStream LastDocumentFromAttach { get; set; } = new();
+
+    /// <summary>
     /// Show/Hide the dialog for the current selection
     /// </summary>
     private bool ShowCostumerSelection { get; set; } = false;
@@ -415,6 +425,9 @@
     {
         try
         {        
+
+            if (ForceCollapsed) return;
+
             IsCustomerExpand = true;
 
             if (e.Item1 == null)
@@ -489,6 +502,8 @@
             SourceAttach.Clear();
             foreach (OriginalAttachments o in O)
                 SourceAttach.Add(o);
+
+            LastDocumentFromAttach = Document;
 
             IsAttachVisible = (SourceAttach.Count != 0);
             IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
@@ -693,6 +708,12 @@
     public async void OnEndReg()
     {
          ForceCollapsed = false;
+    }
+
+    public void OnExpanding(ExpandEventArgs args)
+    {
+        if (ForceCollapsed)
+            args.Cancel = true;
     }
 
 }

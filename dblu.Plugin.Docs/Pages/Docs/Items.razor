@@ -29,7 +29,7 @@
             <GridEvents TValue="viewElementi" QueryCellInfo="CustomizeCell"  OnRecordDoubleClick="OnDoubleClick"></GridEvents>
             <GridPageSettings PageSize="13"></GridPageSettings>
             <GridSearchSettings Fields=@(new string[] { "DscElemento", "DscElemento","DscTipoElemento", "Campo1", "Campo2","Campo3","Campo4","Campo5","Campo6","Campo7","Campo8","Campo9","Campo10"})></GridSearchSettings>
-            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu">
+            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel">
             </GridFilterSettings>
             <GridColumns>
                 <GridColumn Field=@nameof(viewElementi.IdElemento) Visible="false" HeaderText="ID" IsPrimaryKey="true"></GridColumn>

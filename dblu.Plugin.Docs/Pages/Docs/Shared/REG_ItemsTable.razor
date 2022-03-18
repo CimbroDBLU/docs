@@ -1,6 +1,8 @@
 ﻿@*
     Component for showing a table with all items inside this Dossier
 *@
+@using Microsoft.AspNetCore.Hosting
+@using dblu.Portale.Plugin.Docs.Classes
 @using dblu.Portale.Plugin.Docs.ViewModels
 @using dblu.Docs.Classi
 @using dblu.Portale.Plugin.Docs.Class
@@ -17,6 +19,8 @@
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
+@inject dblu.Docs.Classi.DocumentTransformationService _DocumentService
+@inject IHostingEnvironment _environment
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject ProtectedSessionStorage _SessionStore
@@ -538,6 +542,8 @@ else
             ///// TODO: TEMPORANEO SANGIACOMO
             if (!ComponentName.Contains("blz:/") && IsMSG())
                 ComponentName = "blz:/dblu.Portale.Plugin.SanGiacomo.Pages.Custom.MSG_RegisterOrderPopUp";
+            if (!ComponentName.Contains("blz:/") && !IsMSG())
+                ComponentName = "blz:/Orders/CPB_RegisterOrder";
             ////  DA RIMUOVERE
             if (!ComponentName.StartsWith("blz:/"))
                 IsShowUndefined = true;
@@ -637,6 +643,13 @@ else
             Stopwatch sw = Stopwatch.StartNew();
             TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
 
+            if(nCurrentDocument == null ||nCurrentDocument.Length==0)
+                {
+                    DocumentManager DM=new DocumentManager(_ele, _DocumentService, _Logger,_environment.WebRootPath);
+                    Document Doc = await DM.Load(e_SourceType.Attachment, nAttachID, true);
+                    nCurrentDocument = Doc.Payload;
+                }
+
             //1)aggiungo al fascicolo
             LastCreatedItem = await _MailService.CreateItemDossier(nAttachID, nDossierID, T.Categoria, T.Codice, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "", nAttachments.ToList(), nItem?.DscElemento, User, nCurrentDocument);
             if (LastCreatedItem == null)
@@ -658,10 +671,18 @@ else
             IsSpinnerVisible=true;
             Task.Run(async ()=>
             {
-            Stopwatch sw=Stopwatch.StartNew();
-            TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
+                Stopwatch sw=Stopwatch.StartNew();
+                TipiElementi T = Actions.Where(x => x.Codice == ActionSelected).FirstOrDefault();
 
-            _Logger.LogDebug($"REG_ItemsTable.Register: linq incremental  {sw.ElapsedMilliseconds} ms");
+                _Logger.LogDebug($"REG_ItemsTable.Register: linq incremental  {sw.ElapsedMilliseconds} ms");
+
+                if(nCurrentDocument == null ||nCurrentDocument.Length==0)
+                {
+                    DocumentManager DM=new DocumentManager(_ele, _DocumentService, _Logger,_environment.WebRootPath);
+                    Document Doc = await DM.Load(e_SourceType.Attachment, nAttachID, true);
+                    nCurrentDocument = Doc.Payload;
+                }
+
 
             //1)aggiungo al fascicolo
             Elementi e = await _MailService.CreateItemDossier(nAttachID, nDossierID, T.Categoria, T.Codice, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "",nAttachments.ToList(), nItem?.DscElemento, User, nCurrentDocument);
@@ -951,6 +972,8 @@ else
             ///// TODO: TEMPORANEO SANGIACOMO
             if (!ComponentName.Contains("blz:/") && IsMSG())
                 ComponentName = "blz:/dblu.Portale.Plugin.SanGiacomo.Pages.Custom.MSG_RegisterOrderPopUp";
+            else if (!ComponentName.Contains("blz:/") && !IsMSG())
+                ComponentName = "blz:/Orders/CPB_RegisterOrder";
             ////  DA RIMUOVERE
             if (!ComponentName.StartsWith("blz:/"))
                 IsShowUndefined = true;

@@ -33,18 +33,17 @@
         <CardHeader Title="Email in arrivo" />
         <CardContent EnableSeperator="true">
             <div class="row form-group">
-                <div class="col-5" style="align-self: auto;">
-                    <div class="row form-group">
-                        <div class="col">
-                            <ServerCombo @bind-nServer="@MailBox" nPresel="@nPreselFolder"></ServerCombo>
+                <div  class="col-5" style=@($"align-self: auto;{((ForceCollapsed)?"pointer-events:none;":"")}")>
+                        <div class="row form-group">
+                            <div class="col">
+                                <ServerCombo nEnabled=@(!ForceCollapsed) @bind-nServer="@MailBox" nPresel="@nPreselFolder"></ServerCombo>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row ">
-                        <div class="col">
-                            <MailTable @ref="@Grid" nMailBox="@MailBox" OnSelectAttachment="OnSelectAttach" OnReplyAttachment="OnReply" OnForwardAttachment="OnForward" OnMoveAttachment="OnMove" OnShowAttachment="OnShow" OnShowLogsAttachment="OnShowLogs" OnDeleteAttachment="OnDelete" nPreselAttach="@nPreselAttach"></MailTable>
-                        </div>
-                    </div>
-
+                        <div class="row ">
+                            <div class="col">
+                                <MailTable @ref="@Grid" nMailBox="@MailBox" OnSelectAttachment="OnSelectAttach" OnReplyAttachment="OnReply" OnForwardAttachment="OnForward" OnMoveAttachment="OnMove" OnShowAttachment="OnShow" OnShowLogsAttachment="OnShowLogs" OnDeleteAttachment="OnDelete" nPreselAttach="@nPreselAttach"></MailTable>
+                            </div>
+                        </div>                    
                 </div>
 
                 <div class="col-7" style="align-self: auto;">
@@ -141,6 +140,7 @@
                             <div class="row form-group">
                                 <div class="col">
                                     <SfAccordion>
+                                        <AccordionEvents Expanding="OnExpanding"></AccordionEvents>
                                         <AccordionItems>
                                             <AccordionItem Expanded="@(IsCustomerExpand && !ForceCollapsed)">
                                                 <HeaderTemplate>
@@ -159,13 +159,14 @@
                             <div class="row form-group">
                                 <div class="col">
                                     <SfAccordion>
-                                        <AccordionItems>
+                                         <AccordionEvents Expanding="OnExpanding"></AccordionEvents>
+                                        <AccordionItems>                                           
                                             <AccordionItem Expanded="@(!ForceCollapsed)">
                                                 <HeaderTemplate>
                                                     <div>@DossierDesc</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    <REG_DossierItems nSelectedItem="@AutoSel" OnRefresh="OnRefreshDossier" nCurrentDocument="@Document" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem" OnBeginReg="OnBeginReg" OnEndReg="OnEndReg"></REG_DossierItems>
+                                                    <REG_DossierItems nSelectedItem="@AutoSel" OnRefresh="OnRefreshDossier" nCurrentDocument="@LastDocumentFromAttach" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem" OnBeginReg="OnBeginReg" OnEndReg="OnEndReg"></REG_DossierItems>
                                                 </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
@@ -211,6 +212,10 @@
                                 </SfAccordion>
                             </div>
                         </div>
+                    }
+                    else
+                    {
+                        <h3 style="display:flex;justify-content: center;">Selezionare una E-Mail a sinistra</h3>
                     }
                 </div>
             </div>
@@ -420,6 +425,11 @@
     public MemoryStream Document => Viewer?.Doc?.Payload ?? new();
 
     /// <summary>
+    /// Last document loaded from an attach
+    /// </summary>
+    public MemoryStream LastDocumentFromAttach { get; set; } = new();
+
+    /// <summary>
     /// Show/Hide the dialog for the current selection
     /// </summary>
     private bool ShowCostumerSelection { get; set; } = false;
@@ -457,7 +467,8 @@
     public async void OnSelectAttach((AllegatoEmail,bool) e)
     {
         try
-        {    
+        {
+            if (ForceCollapsed) return;
 
             IsCustomerExpand = true;
 
@@ -521,6 +532,7 @@
             foreach (OriginalAttachments o in O)
                 SourceAttach.Add(o);
 
+            LastDocumentFromAttach = Document;
 
             IsAttachVisible = (SourceAttach.Count != 0);
             IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
@@ -813,5 +825,11 @@
     public async void OnEndReg()
     {
          ForceCollapsed = false;
+    }
+
+   public void OnExpanding(ExpandEventArgs args)
+    {
+        if (ForceCollapsed)
+            args.Cancel = true;
     }
 }

@@ -20,7 +20,7 @@
         @nLabel
     </div>
     <div class="col-9">
-        <SfDropDownList Value="@(nServer?.Nome??"")" TValue="string" AllowFiltering="true" TItem="TranslationServer" DataSource="@TranslationServers">
+        <SfDropDownList Enabled=@nEnabled Value="@(nServer?.Nome??"")" TValue="string" AllowFiltering="true" TItem="TranslationServer" DataSource="@TranslationServers">
                 <DropDownListFieldSettings Text="Description" Value="Code"></DropDownListFieldSettings>            
             <DropDownListEvents TValue="string" TItem="TranslationServer" OnValueSelect="OnValueChange"></DropDownListEvents>
         </SfDropDownList>
@@ -88,6 +88,12 @@
     /// List of available services
     /// </summary>
     private ObservableCollection<TranslationServer> TranslationServers { get; set; }
+
+    /// <summary>
+    /// Enabled
+    /// </summary>
+    [Parameter]
+    public bool nEnabled { get; set; } = true;
 
     /// <summary>
     /// List of availale servers

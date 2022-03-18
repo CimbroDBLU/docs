@@ -149,7 +149,7 @@
         {
             CardTitle = $"Riepilogo [{Attachment.Descrizione}]";
             MemoryStream M = null;
-            if(Attachment.Tipo=="MAIL")
+            if(Attachment.Tipo=="EMAIL")
                 M = await _MailService.GetPdfRiepilogo(Id);
             else
                 M = await _ZipService.GetPdfRiepilogo(Id);

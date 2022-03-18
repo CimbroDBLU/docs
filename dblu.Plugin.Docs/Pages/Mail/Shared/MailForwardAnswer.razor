@@ -200,7 +200,10 @@
             RA= await _MailService.InoltraEmail( nAttach.Id.ToString(), To, string.Join(";", CC), Subject, Body, CloseEmail, User ,UserSign, nSourceServer.Nome);
         
         OnOperationDone.InvokeAsync(RA);
-        _Logger.LogInformation($"MailAnswer.OnSend: Mail {nAttach.Id} sent to {To},{string.Join(";", CC)} ");
+        if(RA.Successo)
+            _Logger.LogInformation($"MailAnswer.OnSend: Mail {nAttach.Id} sent to {To},{string.Join(";", CC)} ");
+        else
+         _Logger.LogError($"MailAnswer.OnSend: Mail {nAttach.Id} to {To} fails {RA.Messaggio} ");
         IsSpinnerVisible = false;
     }
 
