@@ -442,8 +442,7 @@
 
                 Models.RisultatoAzione res = await _MailService.CancellaEmail(Attach.Id.ToString(), nServer, User);
                 _Logger.LogInformation($"Sent[MAIL].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
-                 Grid.Refresh();
-                Grid.ClearSelectionAsync();
+                Grid.RemoveItem(Attach.Id.ToString());
                 ToastOK.Show();
             }
             else
@@ -486,9 +485,7 @@
     /// <param name="AttachId"></param>
     public async void OnAttachCompleted(string AttachId)
     {
-        Grid.Refresh();
-        OnSelectAttach((null,false));
-  
+         Grid.RemoveItem(AttachId);  
     }
 
     /// <summary>

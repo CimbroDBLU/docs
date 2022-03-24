@@ -18,7 +18,7 @@
 @inject IJSRuntime JSRuntime
 @inject IHostingEnvironment _environment
 
-@implements IAsyncDisposable
+@implements IDisposable
 
 <style>
 
@@ -352,11 +352,13 @@
     /// On Set parameter, reload the control
     /// </summary>
     protected override async void OnParametersSet()
-    {        
+    {
         //Non e' il caso di aggiornare.
-
         if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
+        {          
             return;
+        }
+
         IsSpinnerVisible = true;       
         lock (this)
         {
@@ -405,7 +407,7 @@
     /// </summary>
     private void ApplyDoc()
     {
-         
+
         if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length != 0)
         {
             _Logger.LogDebug($"DocViewer.ApplyDoc: Apply {Doc.FileName}");
@@ -413,16 +415,25 @@
             {
                 DownloadFileName = "";
                 string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
-     
+                Viewer.Unload();
                 Viewer.Load("data:application/DocManager;base64," + base64String, null);
             }
         }
 
         if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length == 0)
-            Viewer.UnloadAsync();
-
+            Viewer.Unload();
     }
 
+    public void Dispose()
+    {
+        if (Viewer != null)
+        {
+            Viewer.Unload();
+            Viewer.Dispose();
+            Viewer = null;
+        }
+
+    }
 
     /// <summary>
     /// Open the Document, and once done , redraw
