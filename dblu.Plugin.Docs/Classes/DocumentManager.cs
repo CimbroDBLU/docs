@@ -98,7 +98,18 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// <summary>
         /// The document payload as MemoryStream
         /// </summary>
-        public MemoryStream Payload { get; set; }
+        /// 
+        private MemoryStream _payload;
+        public MemoryStream Payload {
+            get {
+                _payload.Position = 0;
+                return _payload;
+            }
+            set { 
+                _payload = value;
+            }
+        
+        }
 
         /// <summary>
         /// List of origina attachments present in document (if document supports them)

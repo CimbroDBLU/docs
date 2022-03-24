@@ -8,6 +8,7 @@ using dblu.Docs.Classi;
 using System.IO;
 using System.Threading.Tasks;
 using dblu.Docs.Models;
+using Syncfusion.Licensing;
 
 namespace dWorker.Plugin.Docs
 {
@@ -75,10 +76,12 @@ namespace dWorker.Plugin.Docs
         /// </returns>
         public bool Init(IPluginOwner worker)
         {
-             _worker = worker;    
+            SyncfusionLicenseProvider.RegisterLicense("NTU2MjQ2QDMxMzkyZTM0MmUzMEJEcjN2ZVhqR0dXWm8vOUlRdTljbTF0S1B5SzRlYnBpc05aMDh1WStOMEE9; NTU2MjQ3QDMxMzkyZTM0MmUzMGY1TER4VGlCSFdBWEdEemwreHRYQno3cFJsd1lVdSsybzduZUpYNGQreTQ9; NTU2MjQ4QDMxMzkyZTM0MmUzMG04UkVBZXlPK014d2ROT3FDTkJ5TlNOM0U1bWU2MzlKTEJndFNTTjVOT1U9; NTU2MjQ5QDMxMzkyZTM0MmUzMGlRSEtBUnZ2dElOTGZpai9rdkJVYXFLRmZpVjlYcGJSZ3dkWmZNT0NpT3c9");
+            _worker = worker;    
             _logger = worker.logger;
             _conf = worker.conf;
             _docsManager = new(_worker.logger, _worker.conf, "dblu.Docs");
+
             return true;
         }
         /// <summary>
