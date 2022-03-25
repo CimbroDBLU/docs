@@ -445,8 +445,7 @@
 
                 Models.RisultatoAzione res = await _ZipService.CancellaZip(Attach.Id.ToString(), User);
                 _Logger.LogInformation($"Processed[FILE,{nDocType}].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
-                Grid.Refresh();
-                Grid.ClearSelectionAsync(); 
+                Grid.RemoveItem(Attach.Id.ToString());
                 ToastOK.Show();
             }
             else
@@ -478,8 +477,7 @@
     /// <param name="AttachId"></param>
     public async void OnAttachCompleted(string AttachId)
     {
-        Grid.Refresh();
-        Grid.SelectedRow = 0;
+        Grid.RemoveItem(AttachId);
     }
 
 
@@ -496,8 +494,7 @@
             if (R.Successo)
             {
                 ToastReOpenOK.Show();
-                Grid.Refresh();
-                Grid.ClearSelectionAsync(); 
+                Grid.RemoveItem(Attach.Id.ToString());
             }
             else
                 ToastReOpenKO.Show();

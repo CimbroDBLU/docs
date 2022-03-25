@@ -740,10 +740,11 @@
                         Operazione = TipoOperazione.Cancellato
                     };
                 _MailService._logMan.Salva(log, true);
+                Grid.RemoveItem(all.Id.ToString());
                 ToastOK.Show();
             }
 
-            Grid.Refresh();
+            
             _Logger.LogInformation($"Inbox[MAIL].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
         }
         catch (Exception ex)
