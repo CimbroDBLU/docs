@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dWorker.plugin.Docs.Setup", "dWorker.plugin.Docs.Setup.csproj", "{B9A493E3-99D1-40DE-BB7B-C4035131C03C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dWorker.Plugin.Docs", "..\dWorker.Plugin.Docs\dWorker.Plugin.Docs.csproj", "{D08E62A0-60BF-4B70-99A2-37EEB6770FBF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B9A493E3-99D1-40DE-BB7B-C4035131C03C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9A493E3-99D1-40DE-BB7B-C4035131C03C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9A493E3-99D1-40DE-BB7B-C4035131C03C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9A493E3-99D1-40DE-BB7B-C4035131C03C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D08E62A0-60BF-4B70-99A2-37EEB6770FBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D08E62A0-60BF-4B70-99A2-37EEB6770FBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D08E62A0-60BF-4B70-99A2-37EEB6770FBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D08E62A0-60BF-4B70-99A2-37EEB6770FBF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2FE66D2C-7818-4462-9A43-C148982FCBC9}
+	EndGlobalSection
+EndGlobal
