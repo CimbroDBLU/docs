@@ -100,6 +100,10 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// </summary>
         /// 
         private MemoryStream _payload;
+
+        /// <summary>
+        /// The document payload as MemoryStream
+        /// </summary>
         public MemoryStream Payload {
             get {
                 _payload.Position = 0;
@@ -287,10 +291,12 @@ namespace dblu.Portale.Plugin.Docs.Classes
                         break;
                     case e_SourceType.Memory:
                         string[]tok= DocIdentifier.Split(";");
-                        if (tok.Length == 2)           
-                            return new Document($"{tok[0]}",new MemoryStream(Convert.FromBase64String(tok[1])));
-                        throw new Exception("DocIdentier not recognized");
-                        
+                        if (tok.Length == 2)
+                            Doc = new Document($"{tok[0]}", new MemoryStream(Convert.FromBase64String(tok[1])));
+                        else  
+                            throw new Exception("DocIdentier not recognized");
+                        break;
+                       
                 }
                 Logger.LogInformation($"DocumentManager.Load[{LogMarkup}]: Loaded in {SW.ElapsedMilliseconds} ms");               
                 return Doc;
