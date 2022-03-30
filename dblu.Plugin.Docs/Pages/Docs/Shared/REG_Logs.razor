@@ -10,7 +10,6 @@
 @inject IConfiguration _conf
 @inject IApplicationUsersManager  _ApplicationUsersManager
 
-
 <div class="row form-group">
     <div class="col-12">
         <SfGrid SelectedRowIndex="0" Height="500px" DataSource="@nLogs" AllowTextWrap="true" AllowPaging="true">
@@ -71,9 +70,19 @@
     /// </summary>
     protected override async void OnInitialized()
     {
-        LogDocManager LM = new LogDocManager(_DbContext, _Logger,_conf);
-        nLogs = new ObservableCollection<LogDoc>(LM.GetLogOggetto(nAttach.Id, dblu.Docs.Classi.TipiOggetto.ALLEGATO));
-        Users = _ApplicationUsersManager.GetUsers().ToList();
+        try
+        {
+
+            LogDocManager LM = new LogDocManager(_DbContext, _Logger, _conf);
+            nLogs = new ObservableCollection<LogDoc>(LM.GetLogOggetto(nAttach.Id, dblu.Docs.Classi.TipiOggetto.ALLEGATO));
+            Users = _ApplicationUsersManager.GetUsers().ToList();
+
+        }
+        catch (Exception ex)
+        {
+               
+             _Logger.LogError($"REG_Logs.OnParametersSetAsync: Unexpected error {ex}");
+        }
     }
 
     /// <summary>

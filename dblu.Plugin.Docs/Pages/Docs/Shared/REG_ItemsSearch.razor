@@ -98,11 +98,18 @@
     /// </summary>
     protected override async void OnParametersSet()
     {
-        if (LastDossierID != nDossierID && !string.IsNullOrEmpty(nDossierID))
+        try
         {
-            Dossier = _MailService._fasMan.Get(nDossierID);
-            LastDossierID = nDossierID;
+            if (LastDossierID != nDossierID && !string.IsNullOrEmpty(nDossierID))
+            {
+                Dossier = _MailService._fasMan.Get(nDossierID);
+                LastDossierID = nDossierID;
+            }
         }
+        catch (Exception ex)
+        {
+                _Logger.LogError($"REG_ItemsSearch.OnParametersSetAsync: Unexpected error {ex}");
+            }
     }
 
 

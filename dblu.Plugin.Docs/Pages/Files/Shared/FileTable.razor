@@ -118,6 +118,7 @@
                 <LastOperation nOperation="@((context as Allegati).LastOp)"></LastOperation>
             </Template>
         </GridColumn>
+             <GridColumn AllowEditing="false" Visible="false" AllowSorting="false" Field=@nameof(Allegati.Chiave3) ></GridColumn>
     </GridColumns>
 </SfGrid>
 
@@ -462,9 +463,9 @@
         }
         NewItems = 0;
         InvokeAsync(async() => {                 
-            Grid.Refresh();
-            IsSpinnerVisible = false;
-            await Task.Delay(500);
+                 await Task.Delay(500);         
+                 Grid.Refresh();
+                 IsSpinnerVisible = false;   
         });
         });     
     }

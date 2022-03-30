@@ -115,38 +115,52 @@ else
     /// <returns></returns>
     protected override Task OnParametersSetAsync()
     {
-        if (string.IsNullOrEmpty(nCostumerCode))
+        try 
         {
-            if (Sender != PrevSender)
+            if (string.IsNullOrEmpty(nCostumerCode))
             {
-                PrevSender = Sender;
-                string OldID= nAttachID;
-                Task.Run(() =>
+                if (Sender != PrevSender)
                 {
-                    IsLoading = true;
-                    Stopwatch sw = Stopwatch.StartNew();
-                    List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Sender);
-                    _Logger.LogDebug($"REG_Costumer.OnParametersSetAsync: Read {Costumers.Count} costumers in {sw.ElapsedMilliseconds} ms");
-                    if (Costumers.Count > 1)
+                    PrevSender = Sender;
+                    string OldID = nAttachID;
+                    Task.Run(() =>
                     {
-                        ShowCostumerSelection = true;
-                        nCostumers = new ObservableCollection<ISoggetti>(Costumers);
-                    }
-                    else
-                    {
-                        InvokeAsync(() =>
+                        try
                         {
-                            OnLinkedToCostumer.InvokeAsync(new CustomerData(){ Customer=Costumers?.FirstOrDefault(), AttachId=OldID });
-                        });
-                        ShowCostumerSelection = false;
-                    }
+                            IsLoading = true;
+                            Stopwatch sw = Stopwatch.StartNew();
+                            List<ISoggetti> Costumers = _SubjectService.GetSoggettiByMail(Sender);
+                            _Logger.LogDebug($"REG_Costumer.OnParametersSetAsync: Read {Costumers.Count} costumers in {sw.ElapsedMilliseconds} ms");
+                            if (Costumers.Count > 1)
+                            {
+                                ShowCostumerSelection = true;
+                                nCostumers = new ObservableCollection<ISoggetti>(Costumers);
+                            }
+                            else
+                            {
+                                InvokeAsync(() =>
+                                {
+                                    OnLinkedToCostumer.InvokeAsync(new CustomerData() { Customer = Costumers?.FirstOrDefault(), AttachId = OldID });
+                                });
+                                ShowCostumerSelection = false;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _Logger.LogError($"REG_Costumer.OnParametersSetAsync(1): Unexpected error {ex}");
+                        }
 
-                    InvokeAsync(() => { IsLoading = false;StateHasChanged(); });
-                });
+                        InvokeAsync(() => { IsLoading = false; StateHasChanged(); });
+                    });
+                }
             }
+            else
+            { ShowCostumerSelection = false; PrevSender = Sender; }
         }
-        else
-        { ShowCostumerSelection = false; PrevSender = Sender; }
+        catch (Exception ex)
+        {
+          _Logger.LogError($"REG_Costumer.OnParametersSetAsync: Unexpected error {ex}");  
+        }
         return base.OnParametersSetAsync();
     }
 

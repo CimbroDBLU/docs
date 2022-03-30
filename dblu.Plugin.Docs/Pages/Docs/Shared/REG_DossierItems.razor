@@ -151,21 +151,28 @@
     {
         Task.Run(() =>
         {
-            if (LastDossierID != nDossierID && !string.IsNullOrEmpty(nDossierID))
+            try
             {
-                Dossier = _MailService._fasMan.Get(nDossierID);
-                LastDossierID = nDossierID;
-
-                InvokeAsync(() => { OnRefresh.InvokeAsync(Dossier); });
-            }
-            else if (string.IsNullOrEmpty(nDossierID))
-            {
-                Dossier = null;
-                if (LastDossierID != nDossierID)
+                if (LastDossierID != nDossierID && !string.IsNullOrEmpty(nDossierID))
                 {
-                    InvokeAsync(() => { OnRefresh.InvokeAsync(null); });
+                    Dossier = _MailService._fasMan.Get(nDossierID);
                     LastDossierID = nDossierID;
+
+                    InvokeAsync(() => { OnRefresh.InvokeAsync(Dossier); });
                 }
+                else if (string.IsNullOrEmpty(nDossierID))
+                {
+                    Dossier = null;
+                    if (LastDossierID != nDossierID)
+                    {
+                        InvokeAsync(() => { OnRefresh.InvokeAsync(null); });
+                        LastDossierID = nDossierID;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _Logger.LogError($"REG_DossierItems.OnParametersSetAsync(1): Unexpected error {ex}");
             }
         });
 

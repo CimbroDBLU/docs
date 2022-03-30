@@ -113,6 +113,7 @@
                 <dblu.Portale.Plugin.Docs.Pages.Docs.Shared.LastOperation nOperation="@((context as AllegatoEmail).LastOp)"></dblu.Portale.Plugin.Docs.Pages.Docs.Shared.LastOperation>
             </Template>
         </GridColumn>
+        <GridColumn AllowEditing="false" Visible="false" AllowSorting="false" Field=@nameof(AllegatoEmail.Chiave3) ></GridColumn>
     </GridColumns>
 </SfGrid>
 
@@ -339,7 +340,7 @@
 
         if (tmp != NewItems)
             InvokeAsync(() =>
-            {
+            {                
                 StateHasChanged();
             });
     }
@@ -398,10 +399,6 @@
     /// <param name="args"></param>
     public async void RowDeselected(RowDeselectEventArgs<AllegatoEmail> args)
     {
-        // Commentata per San Giacomo, anche se secondo me starebbe meglio  de-commentata...
-        // Andrea Ghizzo ha paura che gli utente facciano doppio click per selezionare e non vedendo la mail selezionata muoiano.
-
-
         if ((await Grid.GetSelectedRecordsAsync()).Count == 0)
         {
             _Logger.LogDebug($"MailTable.RowDeselected: Deselected Attach {args.Data.Id}");
@@ -490,10 +487,10 @@
                  case TableType.Sorting: LastEmailTime = _MailService._allMan.GetLastSortingEmailTime("EMAIL", nMailBox.Nome); break;
              }
              NewItems = 0;
-             InvokeAsync(async() => {                 
+             InvokeAsync(async() => {  
+                 await Task.Delay(500);         
                  Grid.Refresh();
-                 IsSpinnerVisible = false;
-                 await Task.Delay(500);                
+                 IsSpinnerVisible = false;                       
              });
          }
         );

@@ -421,30 +421,38 @@ else
     /// </summary>
     protected override async Task OnParametersSetAsync()
     {
-        if (LastAttachId == nAttachID && LastDossierId == nDossierID && LastSelectedItem==nSelectedItem) return;
-
-
-        IsItemSelected = false;
-        IsSpinnerVisible = true;
-
-        LastDossierId = nDossierID;
-        LastAttachId = nAttachID;
-        LastSelectedItem = nSelectedItem;        
-        Stopwatch sw = Stopwatch.StartNew();
-        nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
-        _Logger.LogDebug($"REG_ItemsTable.OnParametersSetAsync: Red Dossier {nDossierID}, all items in {sw.ElapsedMilliseconds} ms");
-
-
-        string ItemS = nSelectedItem;
-        if(!string.IsNullOrEmpty(ItemS))
+        try
         {
-            int Index = nItems.ToList().FindIndex(d => d.Id == ItemS);
-            _Logger.LogDebug($"REG_ItemsTable.OnParametersSetAsync: Select {Index}");      
-            Grid?.SelectRowAsync((double)Index); 
-            await OnSelectedItem.InvokeAsync(nItems.FirstOrDefault(d => d.Id == ItemS)); 
+            if (LastAttachId == nAttachID && LastDossierId == nDossierID && LastSelectedItem==nSelectedItem) return;
 
+
+            IsItemSelected = false;
+            IsSpinnerVisible = true;
+
+            LastDossierId = nDossierID;
+            LastAttachId = nAttachID;
+            LastSelectedItem = nSelectedItem;        
+            Stopwatch sw = Stopwatch.StartNew();
+            nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
+            _Logger.LogDebug($"REG_ItemsTable.OnParametersSetAsync: Red Dossier {nDossierID}, all items in {sw.ElapsedMilliseconds} ms");
+
+
+            string ItemS = nSelectedItem;
+            if(!string.IsNullOrEmpty(ItemS))
+            {
+                int Index = nItems.ToList().FindIndex(d => d.Id == ItemS);
+                _Logger.LogDebug($"REG_ItemsTable.OnParametersSetAsync: Select {Index}");      
+                Grid?.SelectRowAsync((double)Index); 
+                await OnSelectedItem.InvokeAsync(nItems.FirstOrDefault(d => d.Id == ItemS)); 
+
+            }
+            IsSpinnerVisible = false;
         }
-        IsSpinnerVisible = false;
+        catch (Exception ex)
+            {
+                IsSpinnerVisible = false;
+                _Logger.LogError($"REG_ItemsTable.OnParametersSetAsync: Unexpected error {ex}");
+            }
     }
 
     /// <summary>
@@ -453,8 +461,17 @@ else
     /// <param name="firstRender"></param>
     protected override void OnAfterRender(bool firstRender)
     {
+        try
+        {
         if (string.IsNullOrEmpty(ActionSelected))
             ActionSelected = ActionsCombo?.ActionsList?.FirstOrDefault()?.Item ?? "";
+        }
+        catch (Exception ex)
+            {
+                IsSpinnerVisible = false;
+                _Logger.LogError($"REG_ItemsTable.OnAfterRender: Unexpected error {ex}");
+            }
+
         base.OnAfterRender(firstRender);
     }
 
@@ -465,7 +482,7 @@ else
     {
         LastAttachId = "-";
         OnParametersSetAsync();
-        Grid.Refresh();
+        Grid?.Refresh();
     }
 
 

@@ -59,24 +59,42 @@
     /// </summary>
     protected override Task OnParametersSetAsync()
     {
-        if (string.IsNullOrEmpty(nCustomerCode)) { nItems = new(); OldCustomerCode = ""; return base.OnParametersSetAsync(); }
-
-        if (OldCustomerCode == nCustomerCode) {  return base.OnParametersSetAsync(); }
-        OldCustomerCode = nCustomerCode;
-
-        Task.Run(async () =>
+        try
         {
-            IsSpinnerVisible = true;
-            Stopwatch SW = Stopwatch.StartNew();
-            nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)));
-            _Logger.LogInformation($"REG_OpenItemsTable.OnParametersSetAsync: Retreived {nItems.Count} related items for {nCustomerCode} in {SW.ElapsedMilliseconds} ms");
-            IsSpinnerVisible = false;  
-            InvokeAsync(async () =>
+            if (string.IsNullOrEmpty(nCustomerCode)) { nItems = new(); OldCustomerCode = ""; return base.OnParametersSetAsync(); }
+
+            if (OldCustomerCode == nCustomerCode) { return base.OnParametersSetAsync(); }
+            OldCustomerCode = nCustomerCode;
+
+            Task.Run(async () =>
             {
-                OnOpenItems.InvokeAsync(nItems?.Count ?? 0);
-            });
-                              
-        }).ContinueWith(T => IsSpinnerVisible = false);
+                try
+                {
+
+                    IsSpinnerVisible = true;
+                    Stopwatch SW = Stopwatch.StartNew();
+                    nItems = new ObservableCollection<ISoggettoElementiAperti>((await _MailService._soggetti.GetElementiAperti(nCustomerCode)));
+                    _Logger.LogInformation($"REG_OpenItemsTable.OnParametersSetAsync: Retreived {nItems.Count} related items for {nCustomerCode} in {SW.ElapsedMilliseconds} ms");
+                    IsSpinnerVisible = false;
+                    InvokeAsync(async () =>
+                    {
+                        OnOpenItems.InvokeAsync(nItems?.Count ?? 0);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    IsSpinnerVisible = false;
+                    _Logger.LogError($"REG_OpenItemsTable.OnParametersSetAsync: Unexpected error {ex}");
+                }
+
+            }).ContinueWith(T => IsSpinnerVisible = false);
+           
+        }
+        catch (Exception ex)
+        {
+                IsSpinnerVisible = false;
+                _Logger.LogError($"REG_OpenItemsTable.OnParametersSetAsync: Unexpected error {ex}");
+        }
         return base.OnParametersSetAsync();
     }
 

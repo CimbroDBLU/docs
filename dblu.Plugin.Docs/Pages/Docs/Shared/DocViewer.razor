@@ -353,20 +353,27 @@
     /// </summary>
     protected override async void OnParametersSet()
     {
-        //Non e' il caso di aggiornare.
-        if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
-        {          
-            return;
-        }
-
-        IsSpinnerVisible = true;       
-        lock (this)
+        try
         {
-            LoadDocument();  
-        }
-        ApplyDoc();
+            //Non e' il caso di aggiornare.
+            if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
+            {
+                return;
+            }
 
-        IsSpinnerVisible = false;
+            IsSpinnerVisible = true;
+            lock (this)
+            {
+                LoadDocument();
+            }
+            ApplyDoc();
+
+            IsSpinnerVisible = false;
+        }
+        catch(Exception ex)
+        {
+            _Logger.LogError($"DocViewer.OnParametersSet: Unpected error {ex}");
+        }
 
     }
 
@@ -376,6 +383,8 @@
     /// <param name="first"></param>
     protected override async void OnAfterRender(bool first)
     {
+        try
+        {
         if(first)
             if(Viewer!=null)
             {
@@ -388,8 +397,16 @@
                 Viewer.CircleSettings=CircleSettings;
                 Viewer.PolygonSettings = PolygonSettings;
             }
+         }
+        catch(Exception ex)
+        {
+            _Logger.LogError($"DocViewer.OnAfterRender: Unpected error {ex}");
+        }
     }
 
+    /// <summary>
+    /// Fore reload the document, even not changed
+    /// </summary>
     public void ForceReload()
     {
         IsSpinnerVisible = true;       
@@ -408,31 +425,51 @@
     private void ApplyDoc()
     {
 
-        if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length != 0)
+        try
         {
-            _Logger.LogDebug($"DocViewer.ApplyDoc: Apply {Doc.FileName}");
+            if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length != 0)
+            {
+                _Logger.LogDebug($"DocViewer.ApplyDoc: Apply {Doc.FileName}");
+                lock (this)
+                {
+                    DownloadFileName = "";
+                    string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
+                    Viewer.Unload();
+                    Viewer.Load("data:application/DocManager;base64," + base64String, null);
+                }
+            }
+
             lock (this)
             {
-                DownloadFileName = "";
-                string base64String = Convert.ToBase64String(Doc.Payload.ToArray());
-                Viewer.Unload();
-                Viewer.Load("data:application/DocManager;base64," + base64String, null);
+                if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length == 0)
+                    Viewer.Unload();
             }
+        }catch(Exception ex)
+        {
+            _Logger.LogError($"DocViewer.ApplyDoc: Unpected error {ex}");
         }
-
-        if (Viewer != null && Doc != null && Doc.Payload != null && Doc.Payload.Length == 0)
-            Viewer.Unload();
     }
 
+    /// <summary>
+    /// Dispose
+    /// </summary>
     public void Dispose()
     {
-        if (Viewer != null)
+        lock (this)
         {
-            Viewer.Unload();
-            Viewer.Dispose();
-            Viewer = null;
+            try
+            {
+                if (Viewer != null)
+                {
+                    Viewer.Unload();
+                    Viewer.Dispose();
+                    Viewer = null;
+                }
+            }catch(Exception ex)
+            {
+            _Logger.LogWarning($"DocViewer.Dispose: Unpected error on dispose {ex}");
+            }
         }
-
     }
 
     /// <summary>
@@ -440,7 +477,13 @@
     /// </summary>
     private async void LoadDocument()
     {
-        Doc = await DocManager.Load(nSourceType, nDocIdentifier);       
+        try
+        {
+            Doc = await DocManager.Load(nSourceType, nDocIdentifier);
+        }catch(Exception ex)
+        {
+            _Logger.LogError($"DocViewer.LoadDocument: Unpected error {ex}");
+        }
     }
 
     /// <summary>
