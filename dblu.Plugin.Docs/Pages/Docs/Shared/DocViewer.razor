@@ -75,15 +75,9 @@
 <div @onkeydown="@OnKeyDown" class="@((IsFullscreen)?"fullscreen":"sized") ">
 
 
-
-
-    @if (Doc is null)
+    @if (Doc is null || (Doc !=null && Doc.DocType == e_DocType.PDF))
     {
-        <div class="mt-2 mb-2" style=" text-align: center; ">@*<h3>Loading ... </h3>*@</div>
-
-    }
-    else if (Doc.DocType == e_DocType.PDF)
-    {
+        <div class="m-0 p-0" style=@((Doc is null)?"display: none;":"")>
             <SfToolbar>
             <ToolbarItems>
                 <ToolbarItem PrefixIcon=@((IsFullscreen)?"e-exit-full-screen e-icons":"e-full-screen e-icons") TooltipText="Fullscreen" OnClick="Fullscreen"></ToolbarItem>
@@ -105,6 +99,7 @@
          <SfPdfViewerServer DocumentPath="" EnableErrorDialog="false" Height="@sHeight" DownloadFileName="" @ref="@Viewer" >     
              <PdfViewerEvents Created="OnPDFViewerCreated"   DocumentLoaded="OnDocumentLoaded"></PdfViewerEvents>
          </SfPdfViewerServer>
+         </div>
 
        
     }
@@ -364,6 +359,10 @@
             IsSpinnerVisible = true;
             lock (this)
             {
+                if(string.IsNullOrEmpty(nDocIdentifier))
+                {
+                    Viewer?.Unload();
+                }
                 LoadDocument();
             }
             ApplyDoc();
@@ -385,19 +384,19 @@
     {
         try
         {
-        if(first)
-            if(Viewer!=null)
-            {
-                Viewer.ToolbarSettings = ToolbarSettings;
-                Viewer.ArrowSettings = ArrowSettings;
-                Viewer.InkAnnotationSettings = InkSettings;
-                Viewer.FreeTextSettings=FreeTextSettings;
-                Viewer.LineSettings=LineSettings;
-                Viewer.RectangleSettings=RectangleSettings;
-                Viewer.CircleSettings=CircleSettings;
-                Viewer.PolygonSettings = PolygonSettings;
-            }
-         }
+            if(first)
+                if(Viewer!=null)
+                {
+                    Viewer.ToolbarSettings = ToolbarSettings;
+                    Viewer.ArrowSettings = ArrowSettings;
+                    Viewer.InkAnnotationSettings = InkSettings;
+                    Viewer.FreeTextSettings=FreeTextSettings;
+                    Viewer.LineSettings=LineSettings;
+                    Viewer.RectangleSettings=RectangleSettings;
+                    Viewer.CircleSettings=CircleSettings;
+                    Viewer.PolygonSettings = PolygonSettings;
+                }
+        }
         catch(Exception ex)
         {
             _Logger.LogError($"DocViewer.OnAfterRender: Unpected error {ex}");
@@ -467,7 +466,7 @@
                 }
             }catch(Exception ex)
             {
-            _Logger.LogWarning($"DocViewer.Dispose: Unpected error on dispose {ex}");
+                _Logger.LogWarning($"DocViewer.Dispose: Unpected error on dispose {ex}");
             }
         }
     }
@@ -491,13 +490,20 @@
     /// </summary>
     private void OnDocumentLoaded()
     {
-        DownloadFileName = Doc.FileName;
-        if(!DownloadFileName.ToLower().EndsWith(".pdf"))
-            DownloadFileName = Doc.FileName+".pdf";
-        if(Viewer!=null)
-            Viewer.DownloadFileName = DownloadFileName;
-        OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
-        
+        try
+        {
+            if (Doc is null) return;
+            DownloadFileName = Doc.FileName;
+            if (!DownloadFileName.ToLower().EndsWith(".pdf"))
+                DownloadFileName = Doc.FileName + ".pdf";
+            if (Viewer != null)
+                Viewer.DownloadFileName = DownloadFileName;
+
+            OnDocumentTransformed.InvokeAsync(Doc.SourceAttachments);
+        }
+        catch(Exception Ex)
+        { _Logger.LogError($"DocViewer.OnDocumentLoaded: Unpected error {Ex}");}
+
     }
 
     /// <summary>

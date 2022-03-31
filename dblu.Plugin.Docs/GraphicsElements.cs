@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using System;
+using dbluTools.Licenses;
 
 namespace dblu.Portale.Plugin.Documenti
 {
@@ -14,7 +15,18 @@ namespace dblu.Portale.Plugin.Documenti
     public class ExtensionMetadata : ExtensionBase, IExtensionMetadata
     {
 
-        const string MODULE_ID = "50";
+        /// <summary>
+        /// ID of the hosting site
+        /// </summary>
+        public const string HOST_ID = "1000";
+
+        /// <summary>
+        /// ID of the module
+        /// </summary>
+        public const string MODULE_ID = "50";
+
+
+
         public override string Description => "Modulo Documenti";
         public override string Name => "Documenti";
         public override string Version => "1.0.0";
@@ -23,10 +35,24 @@ namespace dblu.Portale.Plugin.Documenti
 
         public string ModuleID { get { return MODULE_ID; } }
 
+        /// <summary>
+        /// Indicates if the module is licensed or not
+        /// </summary>
+        public static bool? IsLicensed { get; set; } = null;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public ExtensionMetadata()
+        {
+            if(IsLicensed==null)
+                IsLicensed = (new dbluLic()).ControllaModulo($"{HOST_ID}.{MODULE_ID}");
+        }
 
         public IEnumerable<ModuleItem> ModuleList()
         {
+            if (!(bool)IsLicensed) return new List<ModuleItem>();
+
             List<ModuleItem> ml = new List<ModuleItem>
             {
                 new ModuleItem( "50", "Plugin.Docs" ),
@@ -47,6 +73,8 @@ namespace dblu.Portale.Plugin.Documenti
         {
             get
             {
+                if (!(bool)IsLicensed) return new List<MenuItem>();
+
                 ///Since i cannot inject IConfiguration, i'll use these lines below to read the conf once again and understand 
                 ///if i have to show beta funcionalities
                 ///
@@ -114,6 +142,8 @@ namespace dblu.Portale.Plugin.Documenti
         {
             get
             {
+                if (!(bool)IsLicensed) return new List<IndexItem>();
+
                 // MAIL
                 var myMail = new IndexItem("50.1.3", 2, "", "Mail", "MailDash", "");
                 myMail.Size = new System.Drawing.Size(2, 6);
@@ -173,6 +203,8 @@ namespace dblu.Portale.Plugin.Documenti
         {
             get
             {
+                if (!(bool)IsLicensed) return new List<MenuGroupItem>();
+
                 return new MenuGroupItem[]
                 {
                     

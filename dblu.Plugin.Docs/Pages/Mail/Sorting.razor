@@ -235,29 +235,29 @@
                                 </div>
                             }
                         }
-
-                        @*PDF VIEWER*@
-                        <div class="row form-group">
-                            <div class="col">
-                                <SfAccordion>
-                                    <AccordionItems>
-                                        <AccordionItem Expanded="true">
-                                            <HeaderTemplate>
-                                                <div>Anteprima</div>
-                                            </HeaderTemplate>
-                                            <ContentTemplate>
-                                                <DocViewer @ref="@Viewer" OnDocumentTransformed="OnDocumentTransformedZ" nHeight=700 nSourceType="@PDFSourceType" nDocIdentifier="@PDFSourceId"></DocViewer>
-                                            </ContentTemplate>
-                                        </AccordionItem>
-                                    </AccordionItems>
-                                </SfAccordion>
-                            </div>
-                        </div>
                     }
                     else
                     {
                         <h3 style="display:flex;justify-content: center;">Selezionare una E-Mail a sinistra</h3>
                     }
+
+                                            @*PDF VIEWER*@
+                <div class="row form-group" style=@((string.IsNullOrEmpty(AttachID))?"display: none;":"")>
+                    <div class="col">
+                        <SfAccordion>
+                            <AccordionItems>
+                                <AccordionItem Expanded="true">
+                                    <HeaderTemplate>
+                                        <div>Anteprima</div>
+                                    </HeaderTemplate>
+                                    <ContentTemplate>
+                                        <DocViewer @ref="@Viewer" OnDocumentTransformed="OnDocumentTransformedZ" nHeight=700 nSourceType="@PDFSourceType" nDocIdentifier="@PDFSourceId"></DocViewer>
+                                    </ContentTemplate>
+                                </AccordionItem>
+                            </AccordionItems>
+                        </SfAccordion>
+                    </div>
+                </div>
                 </div>
             </div>
         </CardContent>

@@ -148,7 +148,13 @@
                             }
                         }
                         @*PDF VIEWER*@
-                    <div class="row form-group">
+
+                    }
+                    else
+                    {
+                        <h3 style="display:flex;justify-content: center;">Selezionare un Documento a sinistra</h3>
+                    }
+                    <div class="row form-group" style=@((string.IsNullOrEmpty(AttachID))?"display: none;":"")>
                         <div class="col">
                             <SfAccordion>
                                 <AccordionItems>
@@ -165,11 +171,6 @@
                             </SfAccordion>
                         </div>
                     </div>
-                    }
-                    else
-                    {
-                        <h3 style="display:flex;justify-content: center;">Selezionare un Documento a sinistra</h3>
-                    }
                 </div>
             </div>
         </CardContent>
