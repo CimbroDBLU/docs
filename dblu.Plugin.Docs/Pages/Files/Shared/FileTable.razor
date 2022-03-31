@@ -22,7 +22,7 @@
 
 
 <SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" SelectedRowIndex="0" DataSource="@nFiles" TValue="Allegati" AllowGrouping="false" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
-    <GridSelectionSettings PersistSelection="true" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+    <GridSelectionSettings PersistSelection="false" Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSizes="true" PageSize="20"></GridPageSettings>
@@ -332,18 +332,24 @@
     /// <param name="e"></param>
     private void NotifyTimerElapsed(object source, ElapsedEventArgs e)
     {
-        int tmp = NewItems;
-        switch (nType)
+        try
         {
-            case TableType.Inbox:
-                NewItems = _ZipService._allMan.GetNewInboxFiles (nDocumentType.ToString(), nFolder?.Nome??"", LastFileTime);
-                break;
-        }
-        if(tmp!=NewItems)
-            InvokeAsync(() =>
+            int tmp = NewItems;
+            switch (nType)
             {
-                StateHasChanged();
-            });
+                case TableType.Inbox:
+                    NewItems = _ZipService._allMan.GetNewInboxFiles (nDocumentType.ToString(), nFolder?.Nome??"", LastFileTime);
+                    break;
+            }
+            if(tmp!=NewItems)
+                InvokeAsync(() =>
+                {
+                    StateHasChanged();
+                });
+        }catch(Exception ex)
+        {
+            _Logger.LogError($"FileTable.NotifyTimerElapsed: Unexpcted error  {ex}");
+        }
     }
 
     /// <summary>
@@ -368,8 +374,14 @@
     /// <param name="AttachId">Id to remove</param>
     public void RemoveItem(string AttachId)
     {
-        nFiles.Remove(nFiles.FirstOrDefault(x => x.Id.ToString() == AttachId));
-        ClearSelectionAsync();
+        try
+        {
+            nFiles.Remove(nFiles.FirstOrDefault(x => x.Id.ToString() == AttachId));
+            ClearSelectionAsync();
+        }catch(Exception ex)
+        {
+            _Logger.LogError($"FileTable.RemoveItem: Unexpcted error  {ex}");
+        }
     }
 
     /// <summary>
@@ -388,9 +400,6 @@
     /// <param name="args"></param>
     public async void RowDeselected(RowDeselectEventArgs<Allegati> args)
     {
-        // Commentata per San Giacomo, anche se secondo me starebbe meglio  de-commentata...
-        // Andrea Ghizzo ha paura che gli utente facciano doppio click per selezionare e non vedendo la mail selezionata muoiano.
-
         if ((await Grid.GetSelectedRecordsAsync()).Count == 0)
         {
             _Logger.LogDebug($"FileTable.RowDeselected: Deselected attach {args.Data.Id}");
@@ -430,44 +439,58 @@
     /// </summary>
     public async void Refresh()
     {
-        if(nFolderOld == nFolder)
+        try
         {
-            SelectedIndexes.Clear();
-            List<double> T = (await Grid.GetSelectedRowIndexesAsync()).ToList();
-            foreach (var index in T)
-                SelectedIndexes.Add(index);
-            Grid.ClearSelectionAsync();
-        }
-        else ClearSelectionAsync();
-        nFolderOld = nFolder;
-        IsSpinnerVisible=true;
-        //Grid.DataManager.Url = DataUrl;
-        Task.Run(async () =>
-        {
-        Stopwatch sw = Stopwatch.StartNew();
-        switch(nType)
-        {
-           case TableType.Inbox:
-                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetZipInArrivo(nDocumentType.ToString(), nFolder.Cartella).OrderBy(c => c.DataC));
-                _Logger.LogInformation($"InFiles.Refresh[{TableType.Inbox},{nFolder.Nome},{nDocumentType}]: {nFiles.Count} files detected in {sw.ElapsedMilliseconds} ms");
-           break;
-           case TableType.Processed:
-                nFiles= new ObservableCollection<Allegati>(_ZipService._allMan.GetEmailProcessate(nDocumentType.ToString(), nFolder.Cartella).OrderBy(c => c.DataC));
-                _Logger.LogInformation($"InFiles.Refresh[{TableType.Processed},{nFolder.Nome},{nDocumentType}]: {nFiles.Count} files detected in {sw.ElapsedMilliseconds} ms");
-           break;
-        }
 
-        switch (nType)
+            if(nFolderOld == nFolder)
+            {
+                SelectedIndexes.Clear();
+                List<double> T = (await Grid.GetSelectedRowIndexesAsync()).ToList();
+                foreach (var index in T)
+                    SelectedIndexes.Add(index);
+                Grid.ClearSelectionAsync();
+            }
+            else ClearSelectionAsync();
+            nFolderOld = nFolder;
+            IsSpinnerVisible=true;
+            //Grid.DataManager.Url = DataUrl;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    Stopwatch sw = Stopwatch.StartNew();
+                    switch (nType)
+                    {
+                        case TableType.Inbox:
+                            nFiles = new ObservableCollection<Allegati>(_ZipService._allMan.GetZipInArrivo(nDocumentType.ToString(), nFolder.Cartella).OrderBy(c => c.DataC));
+                            _Logger.LogInformation($"InFiles.Refresh[{TableType.Inbox},{nFolder.Nome},{nDocumentType}]: {nFiles.Count} files detected in {sw.ElapsedMilliseconds} ms");
+                            break;
+                        case TableType.Processed:
+                            nFiles = new ObservableCollection<Allegati>(_ZipService._allMan.GetEmailProcessate(nDocumentType.ToString(), nFolder.Cartella).OrderBy(c => c.DataC));
+                            _Logger.LogInformation($"InFiles.Refresh[{TableType.Processed},{nFolder.Nome},{nDocumentType}]: {nFiles.Count} files detected in {sw.ElapsedMilliseconds} ms");
+                            break;
+                    }
+
+                    switch (nType)
+                    {
+                        case TableType.Inbox: LastFileTime = _ZipService._allMan.GetLastInboxFileTime(nDocumentType.ToString(), nFolder.Cartella); break;
+                    }
+                    NewItems = 0;
+                    InvokeAsync(async () =>
+                    {
+                        await Task.Delay(500);
+                        Grid.Refresh();
+                        IsSpinnerVisible = false;
+                    });
+                }catch(Exception ex)
+                    {
+                        _Logger.LogError($"FileTable.Refresh(1): Unexpcted error  {ex}");
+                    }
+            });   
+        }catch(Exception ex)
         {
-            case TableType.Inbox: LastFileTime = _ZipService._allMan.GetLastInboxFileTime(nDocumentType.ToString(), nFolder.Cartella); break;
+            _Logger.LogError($"FileTable.Refresh: Unexpcted error  {ex}");
         }
-        NewItems = 0;
-        InvokeAsync(async() => {                 
-                 await Task.Delay(500);         
-                 Grid.Refresh();
-                 IsSpinnerVisible = false;   
-        });
-        });     
     }
 
     /// <summary>

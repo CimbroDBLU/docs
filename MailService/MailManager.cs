@@ -97,7 +97,7 @@ namespace dbluMailService
                                         //inbox = client.GetFolder(s.Cartella, cancel);
                                         try
                                         {
-                                            IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0], true, cancel);
+                                            IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0], false, cancel);
                                             //
                                             inbox = mf.Where(c => c.Name.ToLower() == s.Cartella.ToLower()).FirstOrDefault();
                                             if (inbox == null)
@@ -139,7 +139,11 @@ namespace dbluMailService
                                         {
                                             IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0], false, cancel);
                                             //
-                                            archivio = mf.Where(c => c.Name.ToLower() == s.CartellaArchivio.ToLower()).FirstOrDefault();
+                                            if(mf.Where(c => c.Name.ToLower() == s.CartellaArchivio.ToLower()).Count()>1)
+                                                archivio = mf.Where(c => c.Name.ToLower() == s.CartellaArchivio.ToLower() && c.FullName.StartsWith($"{s.Cartella}")).FirstOrDefault();
+                                            else
+                                                archivio = mf.Where(c => c.Name.ToLower() == s.CartellaArchivio.ToLower()).FirstOrDefault();
+
                                             if (archivio == null)
                                             {
                                                 mf = inbox.GetSubfolders(true, cancel);

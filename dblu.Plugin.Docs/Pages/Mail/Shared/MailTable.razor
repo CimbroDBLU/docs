@@ -22,7 +22,7 @@
 
 
 <SfGrid @ref="@Grid" ID="@Id" EnablePersistence="true" SelectedRowIndex="0" DataSource="@nEmails"  AllowGrouping="false" TValue="AllegatoEmail" AllowTextWrap="true" AllowPaging="true" AllowSorting="true">
-    <GridSelectionSettings PersistSelection="true" Type="@SelType" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+    <GridSelectionSettings PersistSelection="false" Type="@SelType" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSizes="true" PageSize="20"></GridPageSettings>
@@ -312,7 +312,6 @@
     public void OnSearchCreated()
     {
         this.SearchText.AddIcon("append", "e-icons e-search");
-
     }
 
     /// <summary>
@@ -331,6 +330,8 @@
     /// <param name="e"></param>
     private void NotifyTimerElapsed(object source, ElapsedEventArgs e)
     {
+        try
+        {
         int tmp = NewItems;
         switch (nType)
         {
@@ -343,6 +344,10 @@
             {                
                 StateHasChanged();
             });
+        }catch(Exception ex)
+        {
+            _Logger.LogError($"MailTable.NotifyTimerElapsed: Unexpcted error  {ex}");
+        }
     }
 
     /// <summary>
@@ -369,8 +374,14 @@
     /// <param name="AttachId">Id to remove</param>
     public void RemoveItem(string AttachId)
     {
-        nEmails.Remove(nEmails.FirstOrDefault(x => x.Id.ToString() == AttachId));
-        ClearSelectionAsync();
+        try
+        {
+            nEmails.Remove(nEmails.FirstOrDefault(x => x.Id.ToString() == AttachId));
+            ClearSelectionAsync();        
+        }catch(Exception ex)
+        {
+            _Logger.LogError($"MailTable.RemoveItem: Unexpcted error  {ex}");
+        }
     }
 
     /// <summary>
@@ -440,60 +451,75 @@
     /// </summary>
     public async void Refresh()
     {
-        if (nMailBoxOld == nMailBox)
+        try
         {
-            SelectedIndexes.Clear();
-            List<double> T = (await Grid.GetSelectedRowIndexesAsync()).ToList();
-            foreach (var index in T)
-                SelectedIndexes.Add(index);
-            Grid.ClearSelectionAsync();
+
+            if (nMailBoxOld == nMailBox)
+            {
+                SelectedIndexes.Clear();
+                List<double> T = (await Grid.GetSelectedRowIndexesAsync()).ToList();
+                foreach (var index in T)
+                    SelectedIndexes.Add(index);
+                Grid.ClearSelectionAsync();
+            }
+            else
+                ClearSelectionAsync();
+
+            nMailBoxOld = nMailBox;
+            IsSpinnerVisible = true;
+
+
+            Task.Run(async () =>
+             {
+                 try
+                 {
+                     Stopwatch sw = Stopwatch.StartNew();
+
+                     switch (nType)
+                     {
+                         case TableType.Inbox:
+                             nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
+                             _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                             break;
+                         case TableType.Sorting:
+                             SelType = Syncfusion.Blazor.Grids.SelectionType.Multiple;
+                             nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailDaSmistare("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
+                             _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                             break;
+                         case TableType.Processed:
+                             nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailProcessate("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
+                             _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                             break;
+                         case TableType.Sent:
+                             nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInviate("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
+                             _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
+                             break;
+                     }
+
+
+                     switch (nType)
+                     {
+                         case TableType.Inbox: LastEmailTime = _MailService._allMan.GetLastInboxEmailTime("EMAIL", nMailBox.Nome); break;
+                         case TableType.Sorting: LastEmailTime = _MailService._allMan.GetLastSortingEmailTime("EMAIL", nMailBox.Nome); break;
+                     }
+                     NewItems = 0;
+                     InvokeAsync(async () =>
+                     {
+                         await Task.Delay(500);
+                         Grid.Refresh();
+                         IsSpinnerVisible = false;
+                     });
+                 }
+                 catch (Exception ex)
+                 {
+                     _Logger.LogError($"MailTable.Refresh(1): Unexpcted error  {ex}");
+                 }
+             }
+            );
+        }catch(Exception ex)
+        {
+            _Logger.LogError($"MailTable.Refresh: Unexpcted error  {ex}");
         }
-        else 
-            ClearSelectionAsync();
-
-        nMailBoxOld = nMailBox;
-        IsSpinnerVisible = true;
-
-
-        Task.Run(async () =>
-         {
-             Stopwatch sw = Stopwatch.StartNew();
-
-             switch (nType)
-             {
-                 case TableType.Inbox:
-                     nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
-                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
-                     break;
-                 case TableType.Sorting:
-                     SelType = Syncfusion.Blazor.Grids.SelectionType.Multiple;
-                     nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailDaSmistare("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
-                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
-                     break;
-                 case TableType.Processed:
-                     nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailProcessate("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
-                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
-                     break;
-                 case TableType.Sent:
-                     nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInviate("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
-                     _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
-                     break;
-             }
-
-
-             switch (nType)
-             {
-                 case TableType.Inbox: LastEmailTime = _MailService._allMan.GetLastInboxEmailTime("EMAIL", nMailBox.Nome); break;
-                 case TableType.Sorting: LastEmailTime = _MailService._allMan.GetLastSortingEmailTime("EMAIL", nMailBox.Nome); break;
-             }
-             NewItems = 0;
-             InvokeAsync(async() => {  
-                 await Task.Delay(500);         
-                 Grid.Refresh();
-                 IsSpinnerVisible = false;                       
-             });
-         }
-        );
     }
 
     /// <summary>
@@ -508,7 +534,17 @@
     /// <summary>
     /// Clear the selection
     /// </summary>
-    public  void ClearSelectionAsync() {SelectedIndexes.Clear(); Grid.ClearSelection(); }
+    public  void ClearSelectionAsync() 
+    {
+        try
+        {
+            SelectedIndexes.Clear(); Grid.ClearSelection();
+        }
+        catch(Exception ex)
+        {
+             _Logger.LogError($"MailTable.ClearSelectionAsync: Unexpcted error  {ex}");
+        }
+    }
 
     /// <summary>
     /// Page in witch i am searching th selection (sometimes seems not keep the page so, if i cannot find the item, i search from page 1 to )

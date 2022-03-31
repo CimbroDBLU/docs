@@ -526,16 +526,23 @@
     /// <param name="O"></param>
     public async void OnDocumentTransformedZ(List<OriginalAttachments> O)
     {
-        if (PDFSourceType == e_SourceType.Attachment)
+        try
         {
-            SourceAttach.Clear();
-            foreach (OriginalAttachments o in O)
-                SourceAttach.Add(o);
+            if (PDFSourceType == e_SourceType.Attachment)
+            {
+                SourceAttach.Clear();
+                foreach (OriginalAttachments o in O)
+                    SourceAttach.Add(o);
 
-            LastDocumentFromAttach = Document;
+                LastDocumentFromAttach = Document;
 
-            IsAttachVisible = (SourceAttach.Count != 0);
-            IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
+                IsAttachVisible = (SourceAttach.Count != 0);
+                IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
+            }
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"Inbox[MAIL].OnDocumentTransformedZ: Unexpected error on OnDocumentTransformedZ {ex}");
         }
     }
 
