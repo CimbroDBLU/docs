@@ -255,7 +255,7 @@ namespace dblu.Portale.Plugin.Docs.Classes
         public async Task<Document> Load(e_SourceType nType, string nContent, bool IsTransformationEnable = true)
         {
 
-            if (string.IsNullOrEmpty(nContent)) return null;
+            if (string.IsNullOrEmpty(nContent)) { DocIdentifier = "";  return null; }
             try
             {
                 Stopwatch SW = Stopwatch.StartNew();

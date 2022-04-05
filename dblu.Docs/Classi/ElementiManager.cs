@@ -427,8 +427,28 @@ namespace dblu.Docs.Classi
                 _logger.LogError($"GetAllegatiElemento: {ex.Message}");
 
             }
+            return doc;        
+        }
+
+        public List<Allegati> GetAllegatiDaChiave5(string Chiave5)
+        {
+            //var doc = _context.Allegati.Where(x => x.IdElemento == elemento && x.Tipo == "FILE");
+            List<Allegati> doc = null;
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    doc = cn.Query<Allegati>("select a.* from elementi e inner join Allegati a on e.id=a.IDElemento and e.Chiave5 like @chiave5",
+                        new { chiave5 = Chiave5.ToString() }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetAllegatiDaChiave5: {ex.Message}");
+
+            }
             return doc;
-        
+
         }
 
         public bool Cancella(string Id, short Revisione)

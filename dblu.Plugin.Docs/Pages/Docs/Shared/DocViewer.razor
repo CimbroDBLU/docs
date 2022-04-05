@@ -352,9 +352,8 @@
         {
             //Non e' il caso di aggiornare.
             if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
-            {
                 return;
-            }
+            
 
             IsSpinnerVisible = true;
             lock (this)
@@ -449,6 +448,10 @@
         }
     }
 
+    public async Task ZoomAsync(int Zoom)
+    {
+            await Viewer.ZoomAsync(Zoom);
+    }
     /// <summary>
     /// Dispose
     /// </summary>
@@ -460,6 +463,7 @@
             {
                 if (Viewer != null)
                 {
+                    
                     Viewer.Unload();
                     Viewer.Dispose();
                     Viewer = null;
