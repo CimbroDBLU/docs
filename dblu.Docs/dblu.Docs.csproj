@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper.Contrib" Version="2.0.78" />
+    <PackageReference Include="dWorkerInterface" Version="1.0.5" />
     <PackageReference Include="Innofactor.EfCoreJsonValueConverter" Version="2.0.2" />
     <PackageReference Include="MailKit" Version="2.11.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="2.2.0" />
@@ -28,7 +29,6 @@
 	  <PackageReference Include="Telerik.Reporting" Version="15.1.21.616" />
 	  <PackageReference Include="System.Linq" Version="4.3.0" />
     <PackageReference Include="RtfPipe" Version="2.0.7677.4303" />
-	<PackageReference Include="dbluTools" Version="1.2.7" />
   </ItemGroup>
 
 </Project>
