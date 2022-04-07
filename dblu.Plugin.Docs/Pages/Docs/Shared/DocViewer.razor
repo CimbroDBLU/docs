@@ -72,6 +72,8 @@
 
 </style>
 
+
+
 <div @onkeydown="@OnKeyDown" class="@((IsFullscreen)?"fullscreen":"sized") ">
 
 
@@ -92,6 +94,11 @@
                     <ToolbarItem PrefixIcon="e-refresh e-icons" TooltipText="Ricarica" OnClick="@(async ()=>{LoadDocument(); ApplyDoc(); Viewer?.SetAnnotationModeAsync(AnnotationType.None);Viewer?.Refresh();})"></ToolbarItem>
                         <ToolbarItem PrefixIcon="e-save e-icons" TooltipText="Salva" OnClick="OnSave"></ToolbarItem>
                     <ToolbarItem Text="@Doc?.Description" TooltipText="Documento generato" Align=ItemAlign.Right></ToolbarItem>                    
+
+                   foreach(InstantNote In in nInstantNotes)
+                        {
+                        <ToolbarItem PrefixIcon="@In.Icon" TooltipText="@In.ToolTip" OnClick="@(()=>OnInstantNote(In))" ></ToolbarItem>
+                        }
                 }
             </ToolbarItems>
         </SfToolbar>                 
@@ -159,6 +166,75 @@
 </SfSpinner>
 
 @code {
+
+    /// <summary>
+    /// Instant note type
+    /// </summary>
+    public enum e_InstantNoteType
+    {
+        /// <summary>
+        /// Text Note
+        /// </summary>
+        TextNote
+    }
+
+    /// <summary>
+    /// Describe an instant not in control
+    /// </summary>
+    public class InstantNote
+    {
+        /// <summary>
+        /// Instan note type
+        /// </summary>
+        public e_InstantNoteType Type { get; set; } = e_InstantNoteType.TextNote;
+
+        /// <summary>
+        /// Icon to show inheritdoc toolbar
+        /// </summary>
+        public string Icon { get; set; } = "e-stamp";
+
+        /// <summary>
+        /// Tooltip to show in toolbar
+        /// </summary>
+        public string ToolTip { get; set; } = "";
+
+        /// <summary>
+        /// Text to show
+        /// </summary>
+        public string Text { get; set; } = "";
+
+        /// <summary>
+        /// Color fo the annotation inheritdoc html style
+        /// </summary>
+        public string Color { get; set; } = "#00FF00";
+
+        /// <summary>
+        /// X location
+        /// </summary>
+        public float X { get; set; } = 50;
+
+        /// <summary>
+        /// Y location
+        /// </summary>
+        public float Y { get; set; } = 250;
+
+        /// <summary>
+        /// Width of the text area
+        /// </summary>
+        public float Width { get; set; } = 200;
+
+        /// <summary>
+        /// Height of the text area
+        /// </summary>
+        public float Height { get; set; } = 20;
+
+        /// <summary>
+        /// Font size of the text area
+        /// </summary>
+        public int FontSize { get; set; } = 16;
+
+    }
+
     /// <summary>
     /// Type of Attachment to work with
     /// </summary>
@@ -196,6 +272,12 @@
     public EventCallback<List<OriginalAttachments>> OnDocumentTransformed { get; set; }
 
     /// <summary>
+    /// list of Instant note that must be inserted
+    /// </summary>
+    [Parameter]
+    public List<InstantNote> nInstantNotes { get; set; } = new();
+
+    /// <summary>
     /// PDF viewer object
     /// </summary>
     public SfPdfViewerServer Viewer;
@@ -220,6 +302,9 @@
     /// </summary>
     private bool IsSpinnerVisible { get; set; }
 
+    /// <summary>
+    /// Height of the control
+    /// </summary>
     private string sHeight
     { 
         get 
@@ -353,7 +438,7 @@
             //Non e' il caso di aggiornare.
             if (DocManager != null && DocManager.DocIdentifier == nDocIdentifier && DocManager.SourceType == nSourceType)
                 return;
-            
+
 
             IsSpinnerVisible = true;
             lock (this)
@@ -448,10 +533,15 @@
         }
     }
 
+    /// <summary>
+    /// Zoom the document
+    /// </summary>
+    /// <param name="Zoom">Zoom to set</param>
     public async Task ZoomAsync(int Zoom)
     {
-            await Viewer.ZoomAsync(Zoom);
+        await Viewer.ZoomAsync(Zoom);
     }
+
     /// <summary>
     /// Dispose
     /// </summary>
@@ -463,7 +553,7 @@
             {
                 if (Viewer != null)
                 {
-                    
+
                     Viewer.Unload();
                     Viewer.Dispose();
                     Viewer = null;
@@ -571,7 +661,7 @@
         {
             var module = await Module;
             await module.InvokeVoidAsync("enable_scroll");
-            
+
             ApplyDoc(); Viewer?.SetAnnotationModeAsync(AnnotationType.None);
             Viewer?.Refresh();
         }
@@ -611,6 +701,21 @@
         {
             var module = await _module;
             module.DisposeAsync();
+        }
+    }
+
+    /// <summary>
+    /// Add an instant note on the pdf
+    /// </summary>
+    /// <param name="In">The note to add in current page </param>   
+    private async Task OnInstantNote(InstantNote In)
+    {
+        await Viewer.SetAnnotationModeAsync(AnnotationType.None);
+        if (In.Type == e_InstantNoteType.TextNote)
+        {
+            MemoryStream IN = new MemoryStream(await Viewer.GetDocument());
+            Doc = await DocManager.AddTextNote((Viewer.CurrentPageNumber==0)?1:Viewer.CurrentPageNumber, In.Text,In.Color,In.X,In.Y,In.Width,In.Height,In.FontSize,IN);
+            ApplyDoc();
         }
     }
 

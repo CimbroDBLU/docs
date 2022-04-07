@@ -1,7 +1,5 @@
 ﻿using dblu.Docs.Classi;
 using dblu.Docs.Extensions;
-//using dblu.Portale.Plugin.Docs.ViewModels;
-//using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MimeKit;
@@ -26,7 +24,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Telerik.Reporting;
 using Telerik.Reporting.Processing;
-//using Telerik.Windows.Documents.Model;
 using ExportImageFormat = Syncfusion.OfficeChart.ExportImageFormat;
 
 namespace dblu.Docs.Classi
@@ -146,14 +143,17 @@ namespace dblu.Docs.Classi
         public DocumentTransformationService(IConfiguration config, ILoggerFactory loggerFactory)//, IWebHostEnvironment appEnvironment)
         {
             _config = config;
-           // _appEnvironment = appEnvironment;
             _logger = loggerFactory.CreateLogger("DocumentService");
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="config">Injected configuration</param>
+        /// <param name="logger">Injected logger </param>
         public DocumentTransformationService(IConfiguration config, ILogger logger)
         {
-            _config = config;
-            // _appEnvironment = appEnvironment;
+            _config = config;            
             _logger = logger;
         }
 
@@ -216,7 +216,6 @@ namespace dblu.Docs.Classi
                                 + htxt.Substring(bodye + 1);
                         }
 
-                        //string baseUrl = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
                         string baseUrl = Path.Combine(FileRootPath, "_tmp");
 
                         settings.WebKitPath = _config["Docs:PercorsoWebKit"];

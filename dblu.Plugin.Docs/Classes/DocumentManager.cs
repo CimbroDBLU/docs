@@ -225,6 +225,9 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// </summary>
         private Document Doc { get; set; }
 
+        /// <summary>
+        /// Path where pdf files are
+        /// </summary>
         private string FileRootPath { get; set; }
 
         /// <summary>
@@ -481,6 +484,56 @@ namespace dblu.Portale.Plugin.Docs.Classes
             }catch(Exception ex)
             {
                 Logger.LogError($"DocumentManager.RotateRight[{LogMarkup}]: Unexpected error in {ex}");
+            }
+            return Doc;
+        }
+
+        /// <summary>
+        /// Add a text annotation
+        /// </summary>
+        /// <param name="Page">Page in witch add the annotation</param>
+        /// <param name="Text">Text to Add</param>
+        /// <param name="Color">Color in html css format</param>
+        /// <param name="X">X location</param>
+        /// <param name="Y">Y Location</param>
+        /// <param name="Width">Width area</param>
+        /// <param name="Height">Height area</param>
+        /// <param name="FontSize">Size of the font</param>
+        /// <param name="stream">Document to edit, if different from last one</param>
+        /// <returns>The current changed document</returns>
+        public async Task<Document> AddTextNote(int Page,string Text,string Color="#ff0000",float X=50, float Y=250,float Width=200,float Height=20,int FontSize=16, MemoryStream stream = null)
+        {
+            if (Doc.DocType != e_DocType.PDF) return Doc;
+
+            if (Page == 0) return Doc;
+
+            try
+            {
+                Stopwatch SW = Stopwatch.StartNew();
+                if (stream == null) stream = Doc.Payload;
+
+                if (stream != null && stream.Length != 0)
+                {
+                    MemoryStream M = new MemoryStream();
+                    PdfLoadedDocument loadedDocument = new PdfLoadedDocument(stream);
+                    PdfPageBase page = loadedDocument.Pages[Page - 1] as PdfPageBase;
+
+                    PdfFreeTextAnnotation Ann =new PdfFreeTextAnnotation(new RectangleF(X,Y, Width, Height));
+                    Ann.Text = Text;
+                    Ann.TextMarkupColor = Syncfusion.Drawing.ColorTranslator.FromHtml(Color);
+                    Ann.Font = new PdfStandardFont(PdfFontFamily.Courier, FontSize);
+                    Ann.Border = new PdfAnnotationBorder(0);
+                    page.Annotations.Add(Ann);
+                
+                    loadedDocument.Save(M);
+                    Doc.Payload = M;
+                    Logger.LogInformation($"DocumentManager.AddTextNote[{LogMarkup}]: Done in {SW.ElapsedMilliseconds} ms");
+                    return Doc;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"DocumentManager.AddTextNote[{LogMarkup}]: Unexpected error in {ex}");
             }
             return Doc;
         }
