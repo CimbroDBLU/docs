@@ -9,6 +9,10 @@ using System.IO;
 using System.Threading.Tasks;
 using dblu.Docs.Models;
 using Syncfusion.Licensing;
+using dWorkerDatabase;
+using Syncfusion.Blazor.Data;
+using System.Linq;
+using System.Diagnostics;
 
 namespace dWorker.Plugin.Docs
 {
@@ -53,10 +57,22 @@ namespace dWorker.Plugin.Docs
             switch (Operation.operation_type)
             {
                 case "print_attach":
-                    string AttachID=Operation.parameters["AttachID"].ToString();
+                    string AttachID = Operation.parameters["AttachID"].ToString();
                     string Printer = Operation.printer_name;
                     _logger.LogInformation($"DocsPlugIn.Execute: Request print of attachment {AttachID}");
                     res = PrintAttach(AttachID, Printer);
+                    break;
+                case "resume_suspended":
+                    using (dWorkerContext dwDB = new(_conf[$"ConnectionStrings:{Operation.connection_name}"]))
+                    {
+                        Stopwatch SW = Stopwatch.StartNew();
+                       List<dWorkerTask> Tsks= dwDB.Tasks.Where(x=>x.Status== e_dWorkerStatus.Suspended).ToList();
+                        _logger.LogInformation($"DocsPlugIn.Execute: Request activation of {Tsks.Count} suspended tasks");
+                        foreach (dWorkerTask Tsk in Tsks)
+                            Tsk.Status = e_dWorkerStatus.Inserted;
+                        dwDB.SaveChanges();
+                        _logger.LogInformation($"DocsPlugIn.Execute: Activated {Tsks.Count} in {SW.ElapsedMilliseconds} ms");
+                    }
                     break;
                 case "email_capture":
                     ProcessaPostaInArrivo(Operation, OperationKey);
@@ -90,7 +106,7 @@ namespace dWorker.Plugin.Docs
         /// <returns></returns>
         public List<string> OperationNames()
         {
-            return new List<string>() { "print_attach", "email_capture" };
+            return new List<string>() { "print_attach", "email_capture", "resume_suspended" };
         }
 
         /// <summary>
