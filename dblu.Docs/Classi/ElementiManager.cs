@@ -430,7 +430,7 @@ namespace dblu.Docs.Classi
             return doc;        
         }
 
-        public List<Allegati> GetAllegatiDaChiave5(string Chiave5)
+        public List<Allegati> GetAllegatiDaChiave5(string Chiave5,int Anno)
         {
             //var doc = _context.Allegati.Where(x => x.IdElemento == elemento && x.Tipo == "FILE");
             List<Allegati> doc = null;
@@ -438,8 +438,8 @@ namespace dblu.Docs.Classi
             {
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
-                    doc = cn.Query<Allegati>("select a.* from elementi e inner join Allegati a on e.id=a.IDElemento and e.Chiave5 like @chiave5",
-                        new { chiave5 = Chiave5.ToString() }).ToList();
+                    doc = cn.Query<Allegati>("select a.* from elementi e inner join Allegati a on e.id=a.IDElemento where e.Chiave5 like @chiave5 and  JSON_VALUE(e.Attributi,'$.AnnoProtocollo') = @Anno",
+                        new { chiave5 = Chiave5.ToString(),Anno=Anno }).ToList();
                 }
             }
             catch (Exception ex)

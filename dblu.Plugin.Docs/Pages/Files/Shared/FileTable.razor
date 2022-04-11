@@ -103,6 +103,7 @@
                 }
             </Template>
         </GridColumn>
+
         <GridColumn AllowEditing="false" TextAlign="TextAlign.Center" Width="120px" AllowSorting="true" Field=@nameof(Allegati.DataC) HeaderText="Data" Format="dd/MM/yyyy HH:mm" Type="ColumnType.Date">
             <Template>
                 @{
@@ -118,8 +119,10 @@
                 <LastOperation nOperation="@((context as Allegati).LastOp)"></LastOperation>
             </Template>
         </GridColumn>
-             <GridColumn AllowEditing="false" Visible="false" AllowSorting="false" Field=@nameof(Allegati.Chiave3) ></GridColumn>
-    </GridColumns>
+        <GridColumn AllowEditing="false" Visible="false" AllowSorting="false" Field=@nameof(Allegati.Chiave3) ></GridColumn>
+        <GridColumn AllowEditing="false" Visible="false" AllowSorting="false" Field=@nameof(Allegati.Chiave4) ></GridColumn>
+        <GridColumn AllowEditing="false" Visible="false" AllowSorting="false" Field=@nameof(Allegati.Chiave5) ></GridColumn>
+   </GridColumns>
 </SfGrid>
 
 
@@ -149,7 +152,7 @@
         /// </summary>
         Processed
     };
-
+    
     /// <summary>
     /// Id of the table
     /// </summary>
@@ -280,7 +283,16 @@
     /// <summary>
     /// Clear the selection
     /// </summary>
-    public  void ClearSelectionAsync() {SelectedIndexes.Clear(); Grid.ClearSelection(); }
+    public  void ClearSelectionAsync()    {
+        try
+        {
+            SelectedIndexes.Clear(); Grid.ClearSelection();
+        }
+        catch(Exception ex)
+        {
+             _Logger.LogError($"FileTable.ClearSelectionAsync: Unexpcted error  {ex}");
+        }
+    }
 
     /// <summary>
     /// On init , if necessary, start the timer
@@ -321,8 +333,8 @@
     /// </summary>
     public void OnSearch()
     {
+        Grid.Search(SearchKey);
         ClearSelectionAsync();
-        Grid.SearchAsync(SearchKey);
     }
 
     /// <summary>
