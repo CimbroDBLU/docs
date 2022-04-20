@@ -272,9 +272,9 @@
     private DateTime LastEmailTime { get; set; }
 
     /// <summary>
-    /// List of previous selected indexes on the table
+    /// List of previous selected attach on the table, AttachID and Page inheritdoc witch it is(was)
     /// </summary>
-    private List<double> SelectedIndexes { get; set; } = new();
+    private List<(string,int)> SelectedIndexes { get; set; } = new();
 
     /// <summary>
     /// Type of selection (single or Multi lines)
@@ -332,18 +332,18 @@
     {
         try
         {
-        int tmp = NewItems;
-        switch (nType)
-        {
-            case TableType.Inbox: NewItems = _MailService._allMan.GetNewInboxEmail("EMAIL", nMailBox.Nome, LastEmailTime); break;
-            case TableType.Sorting: NewItems = _MailService._allMan.GetNewSortingEmail("EMAIL", nMailBox.Nome, LastEmailTime); break;
-        }
+            int tmp = NewItems;
+            switch (nType)
+            {
+                case TableType.Inbox: NewItems = _MailService._allMan.GetNewInboxEmail("EMAIL", nMailBox.Nome, LastEmailTime); break;
+                case TableType.Sorting: NewItems = _MailService._allMan.GetNewSortingEmail("EMAIL", nMailBox.Nome, LastEmailTime); break;
+            }
 
-        if (tmp != NewItems)
-            InvokeAsync(() =>
-            {                
-                StateHasChanged();
-            });
+            if (tmp != NewItems)
+                InvokeAsync(() =>
+                {                
+                    StateHasChanged();
+                });
         }catch(Exception ex)
         {
             _Logger.LogError($"MailTable.NotifyTimerElapsed: Unexpcted error  {ex}");
@@ -457,10 +457,10 @@
             if (nMailBoxOld == nMailBox)
             {
                 SelectedIndexes.Clear();
-                List<double> T = (await Grid.GetSelectedRowIndexesAsync()).ToList();
+                List<string> T = (await Grid.GetSelectedRecordsAsync()).Select(c=>c.Id.ToString()).ToList();
                 foreach (var index in T)
-                    SelectedIndexes.Add(index);
-                Grid.ClearSelectionAsync();
+                    SelectedIndexes.Add((index,Grid.PageSettings.CurrentPage));
+                await Grid.ClearSelectionAsync();
             }
             else
                 ClearSelectionAsync();
@@ -542,7 +542,7 @@
         }
         catch(Exception ex)
         {
-             _Logger.LogError($"MailTable.ClearSelectionAsync: Unexpcted error  {ex}");
+            _Logger.LogError($"MailTable.ClearSelectionAsync: Unexpcted error  {ex}");
         }
     }
 
@@ -559,8 +559,17 @@
     {
         try
         { 
-            foreach (var index in SelectedIndexes)               
-                await Grid.SelectRowAsync(index);
+            foreach (var index in SelectedIndexes)    
+            {
+                if(Grid.PageSettings.CurrentPage!= index.Item2)
+                {
+                    await Grid.GoToPageAsync(index.Item2);
+                    return;
+                }
+                var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(Guid.Parse(index.Item1));
+                if(PrimayIndex!=-1)
+                    await Grid.SelectRowAsync(PrimayIndex);
+            }
 
             if ((await Grid.GetSelectedRecordsAsync()).Count != 0)
                 return;
