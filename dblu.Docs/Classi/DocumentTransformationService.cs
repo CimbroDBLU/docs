@@ -1087,7 +1087,7 @@ namespace dblu.Docs.Classi
             float myWidth = image.Width;
             float myHeight = image.Height;
 
-            if(IgnoreSmallImages && myWidth <= 100 && myHeight<=100)
+            if(IgnoreSmallImages && myWidth <= 300 && myHeight<=300)
                 {
                     Notifications = "Immagine di dimensioni ridotte";
                     return null;
