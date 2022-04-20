@@ -323,7 +323,7 @@
     /// <summary>
     /// InkSettings
     /// </summary>
-    PdfViewerInkAnnotationSettings InkSettings = new PdfViewerInkAnnotationSettings { Thickness=3, StrokeColor="#b71c1c" };
+    PdfViewerInkAnnotationSettings InkSettings = new PdfViewerInkAnnotationSettings { Thickness=2, StrokeColor="#b71c1c" };
 
     /// <summary>
     /// Line Settings
@@ -614,13 +614,18 @@
     /// </summary>
     private async Task OnSave()
     {
+        await Save();
+    }
+
+    public async Task Save(bool Flatten=false)
+    {
         IsSpinnerVisible = true;
         await Viewer.SetAnnotationModeAsync(AnnotationType.None);
 
         Doc = await DocManager.Save(new MemoryStream(await Viewer.GetDocument()));
         ApplyDoc();
 
-        IsSpinnerVisible = false;
+        IsSpinnerVisible = false;   
     }
 
     /// <summary>

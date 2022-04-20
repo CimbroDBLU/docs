@@ -372,7 +372,7 @@ namespace dblu.Portale.Plugin.Docs.Classes
         /// <returns>
         /// The current saved document
         /// </returns>
-        public async Task<Document> Save(MemoryStream stream=null)
+        public async Task<Document> Save(MemoryStream stream=null,bool Flatten=false)
         {
             if (Doc.DocType != e_DocType.PDF) return Doc;
 
@@ -386,7 +386,10 @@ namespace dblu.Portale.Plugin.Docs.Classes
                 {
                     MemoryStream Optimized = new();
                     PdfLoadedDocument loadedDocument = new PdfLoadedDocument(stream);
-
+                    if(Flatten)
+                    foreach (PdfLoadedPage P in loadedDocument.Pages)
+                        foreach (PdfLoadedAnnotation A in P.Annotations)
+                            A.Flatten = true;
                     loadedDocument.Save(Optimized);
                     if (!Doc.IsTransformation)
                     {
