@@ -772,7 +772,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     var txt = Allegato.Testo;
                     var DataZip = Allegato.elencoAttributi.Get("Data") == null ? Allegato.DataC.ToString() : Allegato.elencoAttributi.Get("Data");
 
-                    Testo = $"Da: {mittente} \nOggetto: {oggetto} \ndel: {DataZip}\n\n {txt} ";
+                    Testo = $"Da: {mittente} \nOggetto: {oggetto} \ndel: {DataZip.ToString("dd/MM/yyyy")}\n\n {txt} ";
                     if (Allegato.Tipo == "REQ")
                         Testo = $"Da: {mittente} \nOggetto: {oggetto} del: {DataZip}\nRiferimento: {Allegato.elencoAttributi.Get("Riferimento")}\nTipo: {Allegato.elencoAttributi.Get("Tipo")} \n\n {txt} ";
                     
