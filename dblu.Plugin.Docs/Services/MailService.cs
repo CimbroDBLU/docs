@@ -2706,10 +2706,10 @@ namespace dblu.Portale.Plugin.Docs.Services
                     all = _allMan.Get(IdAllegato);
                     OldSource = all.Origine;
                     all.Origine = NomeServer;
-                    if (all.Stato == StatoAllegato.DaSmistare)
-                    {
-                        all.Stato = StatoAllegato.Attivo;
-                    }
+                    //if (all.Stato == StatoAllegato.DaSmistare)
+                    //{
+                    //    all.Stato = StatoAllegato.Attivo;
+                    //}
                     if (_allMan.Salva(all, false, false))
                     //if (n > 0)
                     {
