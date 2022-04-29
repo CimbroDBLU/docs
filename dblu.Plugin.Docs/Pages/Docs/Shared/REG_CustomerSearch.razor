@@ -41,7 +41,7 @@
      </div>
         @if (IsShowDialog)
         {
-            <DynamicComponent nType="@DynamicContent" nAttributes="@DynamicAttributes"></DynamicComponent>
+            <dblu.Portale.Core.UI.DynamicComponent nType="@DynamicContent" nAttributes="@DynamicAttributes"></dblu.Portale.Core.UI.DynamicComponent>
         }
 
 @code {
@@ -210,21 +210,21 @@
             DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
 
 
-            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
             {
                 Name = "nComponentName",
                 Position = 1,
                 Value = nComponent
             });
 
-            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
             {
                 Name = "IsShowDialog",
                 Position = 1,
                 Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
             });
 
-            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
             {
                 Name = "IsShowDialogChanged",
                 Position = 2,
@@ -259,28 +259,28 @@
                 return;
             }
 
-            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
             {
                 Name = "nAttachID",
                 Position = 1,
                 Value = nAttachID??""
             });
 
-            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
             {
                 Name = "nCostumerCode",
                 Position = 2,
                 Value = nCostumerCode??""
             });
 
-            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
             {
                 Name = "IsShowDialog",
                 Position = 3,
                 Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
             });
 
-            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
             {
                 Name = "IsShowDialogChanged",
                 Position = 4,
@@ -289,7 +289,7 @@
                     RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
             });
 
-            DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
             {
                 Name = "OnSelectedCustomer",
                 Position = 5,

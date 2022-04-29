@@ -22,7 +22,7 @@
     @if (nDisplayComplete)
     {
         <SfButton CssClass="e-primary mt-1 mr-1" OnClick="OnComplete">Completa</SfButton>
-        <DynamicComponent nType="@DynamicContent" nAttributes="@DynamicAttributes"></DynamicComponent>
+        <dblu.Portale.Core.UI.DynamicComponent nType="@DynamicContent" nAttributes="@DynamicAttributes"></dblu.Portale.Core.UI.DynamicComponent>
     }
 </div>
 
@@ -152,28 +152,28 @@
 
         DynamicAttributes.Clear();
 
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
         {
             Name = "nAttachID",
             Position = 1,
             Value = nAttachID
         });
 
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
         {
             Name = "nCostumerCode",
             Position = 2,
             Value = nCostumerCode
         });
 
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
         {
             Name = "nDossierID",
             Position = 3,
             Value = nDossierID
         });
 
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
         {
             Name = "nCurrentDocument",
             Position = 4,
@@ -181,14 +181,14 @@
         });
 
 
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
         {
             Name = "nAttachments",
             Position = 5,
             Value = nAttachments
         });
 
-        DynamicAttributes.Add(new DynamicComponent.ComponentAttribute()
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
         {
             Name = "OnAttachCompleted",
             Position = 6,

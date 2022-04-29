@@ -31,10 +31,10 @@ namespace dblu.Portale.Plugin.Docs.Action
         /// <param name="serviceProvider">Service provider of this program</param>
         public void Execute(IApplicationBuilder applicationBuilder, IServiceProvider serviceProvider)
         {
-            applicationBuilder.UseEndpoints(endpoints =>
-            {
-              endpoints.MapODataRoute("ODATA", "ODATA", GetEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand(); 
-            });
+            //applicationBuilder.UseEndpoints(endpoints =>
+            //{
+            //  endpoints.MapODataRoute("ODATA", "ODATA", GetEDMModel()).Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand(); 
+            //});
         }
 
 

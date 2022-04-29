@@ -191,6 +191,7 @@ namespace dblu.Docs.Classi
                     {
                         PdfPage page = document.Pages.Add();
                         PdfGraphics graphics = page.Graphics;
+                        graphics.ColorSpace = PdfColorSpace.GrayScale;
                         PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \ndel: {Message.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm")} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
                         textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
                         document.Save(pdfstream);
@@ -319,6 +320,7 @@ namespace dblu.Docs.Classi
                     // Aggiungo pagina riepilogo
                     PdfPage page = document.Pages.Add();
                     PdfGraphics graphics = page.Graphics;
+                    graphics.ColorSpace = PdfColorSpace.GrayScale;
                     PdfTextElement textElement = new PdfTextElement($"Da: {mittente} \nOggetto: {oggetto} \n\n {txt} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
                     textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
                     document.Save(pdfstream);
@@ -440,6 +442,7 @@ namespace dblu.Docs.Classi
                     PdfPage page = document.Pages.Add();
 
                     PdfGraphics graphics = page.Graphics;
+                    graphics.ColorSpace = PdfColorSpace.GrayScale;
                     PdfTextElement textElement = new PdfTextElement(Text, new PdfStandardFont(PdfFontFamily.Helvetica, 10));
                     textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
                     document.Save(pdfstream);
@@ -503,6 +506,7 @@ namespace dblu.Docs.Classi
                     // Aggiungo la pagina di intestazione
                     PdfPage page = document.Pages.Add();
                     PdfGraphics graphics = page.Graphics;
+                    graphics.ColorSpace = PdfColorSpace.GrayScale;
                     PdfTextElement textElement = new PdfTextElement($"Nome del file: {Filename} ", new PdfStandardFont(PdfFontFamily.Helvetica, 10));
                     textElement.Draw(page, new Syncfusion.Drawing.RectangleF(0, 0, page.GetClientSize().Width, page.GetClientSize().Height));
                     document.Save(pdfstream);
@@ -692,7 +696,7 @@ namespace dblu.Docs.Classi
                             posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 5 };
                             Syncfusion.Pdf.PdfLoadedPage loadedPage = pdfEti.Pages[0] as Syncfusion.Pdf.PdfLoadedPage;
                             template = loadedPage.CreateTemplate();
-
+                            
                             graphics.DrawPdfTemplate(template, posizione,
                                 new Syncfusion.Drawing.SizeF(loadedPage.Size.Width, loadedPage.Size.Height));
                             pdfEti.Close();

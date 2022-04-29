@@ -23,7 +23,7 @@
 @inject ILogger<Inbox> _Logger
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 
-<PageTitle nTitle="Smistamento" />
+<dblu.Portale.Core.UI.PageTitle nTitle="Smistamento" />
 
 <section class="content">
 
@@ -162,20 +162,20 @@
 
                             @if(IsExternalComponentShown)
                             {
-                                ObservableCollection<DynamicComponent.ComponentAttribute> Attr = new();
-                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> Attr = new();
+                                Attr.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
                                 {
                                     Name = "AttachID",
                                     Position = 1,
                                     Value = Attach.Id.ToString()
                                 });
-                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                Attr.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
                                 {
                                     Name = "CustomerCode",
                                     Position = 2,
                                     Value = CustomerCode
                                 });
-                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                Attr.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
                                 {
                                     Name = "nAttach",
                                     Position = 3,
@@ -186,32 +186,32 @@
                                     ToastECKO.Show();
                                 else
                                 {
-                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                Attr.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
                                 {
                                     Name = "TipoElemento",
                                     Position = 4,
                                     Value = ExternalComponent
                                 });           
                                 
-                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                Attr.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
                                 {
                                     Name = "CustomerName",
                                     Position = 5,
                                     Value = CustomerName
                                 });
-                                Attr.Add(new DynamicComponent.ComponentAttribute() {
+                                Attr.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute() {
                                     Name = "OnTaskCompleted",
                                     Position = 5,
                                     Value = EventCallback.Factory.Create<Task>(this, OnExternalComponentTaskCompleted)
                                  });
 
-                                Attr.Add(new DynamicComponent.ComponentAttribute()
+                                Attr.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
                                     {
                                         Name = "Attachs",
                                         Position = 6,
                                         Value = (Grid?.GetSelected().Result).Select(x => x.Id.ToString()).ToList() ?? new()
                                     });
-                                <DynamicComponent  nType="@DinamicComponent" nAttributes="@Attr"></DynamicComponent>
+                                <dblu.Portale.Core.UI.DynamicComponent  nType="@DinamicComponent" nAttributes="@Attr"></dblu.Portale.Core.UI.DynamicComponent>
                                 }
                             }
                             @*ALLEGATI EMAIL*@

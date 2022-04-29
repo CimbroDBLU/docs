@@ -1673,7 +1673,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     string Costumer,
                     List<OriginalAttachments> Attachs,
                     string Description,
-                    ClaimsPrincipal User)
+                    ClaimsPrincipal User, MemoryStream nDocument)
         {
             try
             {
@@ -1748,11 +1748,37 @@ namespace dblu.Portale.Plugin.Docs.Services
                 _logMan.PostLog(e.Id, TipiOggetto.ELEMENTO, TipoOperazione.Creato, User.Identity.Name, $"Elemento creato");
 
 
+
                 //var i = await _context.SaveChangesAsync(cancel);
                 Attach.Stato = StatoAllegato.Elaborato;
                 if (_allMan.Salva(Attach, false) == false) return null;
 
                 _logMan.PostLog(Attach.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato elaborato");
+
+                TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
+                var fileName = $"{Attach.Id.ToString()}.pdf";
+                Allegati FILE = new Allegati()
+                {
+                    Descrizione = Attach.Descrizione,
+                    NomeFile = fileName,
+                    Tipo = "FILE",
+                    TipoNavigation = tipoAll,
+                    Stato = StatoAllegato.Attivo,
+                    IdFascicolo = Attach.IdFascicolo,
+                    IdElemento = Attach.IdElemento,
+                    jNote = Attach.jNote,
+                    UtenteC = User.Identity.Name,
+                    UtenteUM = User.Identity.Name,
+                };
+                if (FILE.elencoAttributi == null) { FILE.elencoAttributi = tipoAll.Attributi; }
+
+                FILE.SetAttributo("Mittente", Attach.GetAttributo("Mittente"));
+                FILE.SetAttributo("Data", Attach.GetAttributo("Data"));
+                FILE.SetAttributo("CodiceSoggetto", Attach.GetAttributo("CodiceSoggetto"));
+                FILE.SetAttributo("NomeSoggetto", Attach.GetAttributo("NomeSoggetto"));
+                FILE.SetAttributo("Oggetto", Attach.GetAttributo("Oggetto"));
+                FILE.SetAttributo("MessageId", Attach.GetAttributo("MessageId"));
+                FILE = await _allMan.SalvaAsync(FILE, nDocument, true);
 
 
                 //estrae i file dalla mail presenti in lista e li assegna all'elemento                
