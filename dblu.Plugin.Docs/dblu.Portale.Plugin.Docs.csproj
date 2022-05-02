@@ -40,8 +40,8 @@
   
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="10.1.1" />
-    <PackageReference Include="ExtCore.Mvc.Infrastructure" Version="6.0.0" />
+    <PackageReference Include="AutoMapper" Version="11.0.1" />
+    <PackageReference Include="ExtCore.Mvc.Infrastructure" Version="7.0.1" />
     <PackageReference Include="Telerik.DataSource" Version="2.0.9" />
     <PackageReference Include="Telerik.Documents.Core" Version="2021.1.222" />
     <PackageReference Include="Telerik.Documents.Fixed" Version="2021.1.222" />

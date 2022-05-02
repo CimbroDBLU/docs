@@ -25,7 +25,6 @@ using Microsoft.AspNetCore.Authorization;
 using dblu.Portale.Core.Infrastructure;
 using dblu.Docs.Extensions;
 using dblu.Portale.Plugin.Docs.Models;
-using AspNetCore;
 using BPMClient;
 using dblu.Portale.Plugin.Docs.Class;
 

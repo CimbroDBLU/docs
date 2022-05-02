@@ -10,14 +10,14 @@
   <ItemGroup>
     <PackageReference Include="Dapper.Contrib" Version="2.0.78" />
     <PackageReference Include="dWorkerInterface" Version="1.0.5" />
-    <PackageReference Include="Innofactor.EfCoreJsonValueConverter" Version="2.0.2" />
-    <PackageReference Include="MailKit" Version="2.11.1" />
+    <PackageReference Include="Innofactor.EfCoreJsonValueConverter" Version="6.0.0" />
+    <PackageReference Include="MailKit" Version="3.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="4.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.7.2" />
     <PackageReference Include="Syncfusion.DocIO.Net.Core" Version="19.4.0.40" />
     <PackageReference Include="Syncfusion.DocIORenderer.Net.Core" Version="19.4.0.40" />

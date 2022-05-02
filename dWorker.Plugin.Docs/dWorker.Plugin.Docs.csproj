@@ -11,10 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="dWorkerInterface" Version="1.0.5" />
     <PackageReference Include="Syncfusion.Blazor.PdfViewerServer.Windows" Version="19.3.0.45" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\d.worker\dWorkerDatabase\dWorkerDatabase.csproj" />
     <ProjectReference Include="..\..\dblubpm\dblu.CamundaClient\dblu.CamundaClient.csproj" />
     <ProjectReference Include="..\dblu.Docs\dblu.Docs.csproj" />
   </ItemGroup>
