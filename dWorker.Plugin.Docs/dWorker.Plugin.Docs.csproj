@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="dWorkerInterface" Version="1.0.5" />
+    <PackageReference Include="dWorkerInterface" Version="1.1.0" />
     <PackageReference Include="Syncfusion.Blazor.PdfViewerServer.Windows" Version="19.3.0.45" />
   </ItemGroup>
 

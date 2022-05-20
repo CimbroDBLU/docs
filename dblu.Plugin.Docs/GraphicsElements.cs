@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using System;
-using dbluTools.Licenses;
+//using dbluTools.Licenses;
 
 namespace dblu.Portale.Plugin.Documenti
 {

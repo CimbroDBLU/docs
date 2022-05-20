@@ -2403,7 +2403,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                             InternetAddressList listind = new InternetAddressList();
                             foreach (string ind in Indirizzi.Replace(";", ",").Split(","))
                             {
-                                listind.Add(new MailboxAddress(ind));
+                                listind.Add(new MailboxAddress(ind,ind));
                             }
 
                             var newmessage = new MimeMessage();
