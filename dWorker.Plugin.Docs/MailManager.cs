@@ -46,7 +46,7 @@ namespace dWorker.Plugin.Docs
         {
             try
             {
-
+                _logger.LogInformation($"MailManager.ProcessaEmail: Processing {elencoServer}...");
                 using (SqlConnection cn = new SqlConnection(Connessione))
                 {
                     var serverIn = cn.Query<EmailServer>($"select * from EmailServer where Attivo<>0 and InUscita =0 and TipoRecord in ({(int)TipiRecordServer.CartellaMail},{(int)TipiRecordServer.CartellaAltreMail})").ToList();
@@ -87,10 +87,10 @@ namespace dWorker.Plugin.Docs
                                         {
                                             IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0], true, cancel);
                                             inbox = mf.Where(c => c.Name.ToLower() == s.Cartella.ToLower()).FirstOrDefault();
+
                                             if (inbox == null)
                                             {
-                                                mf = inbox.GetSubfolders(true, cancel);
-                                                inbox = mf.Where(c => c.Name.ToLower() == s.Cartella.ToLower()).FirstOrDefault();
+                                                inbox = mf.FirstOrDefault();
                                             }
                                             else
                                             {
@@ -126,7 +126,10 @@ namespace dWorker.Plugin.Docs
                                         {
                                             IList<IMailFolder> mf = client.GetFolders(client.PersonalNamespaces[0], false, cancel);
                                             //
-                                            archivio = mf.Where(c => c.Name.ToLower() == s.CartellaArchivio.ToLower()).FirstOrDefault();
+                                            if (mf.Where(c => c.Name.ToLower() == s.CartellaArchivio.ToLower()).Count() > 1)
+                                                archivio = mf.Where(c => c.Name.ToLower() == s.CartellaArchivio.ToLower() && c.FullName.StartsWith($"{s.Cartella}")).FirstOrDefault();
+                                            else
+                                                archivio = mf.Where(c => c.Name.ToLower() == s.CartellaArchivio.ToLower()).FirstOrDefault();
                                             if (archivio == null)
                                             {
                                                 mf = inbox.GetSubfolders(true, cancel);
@@ -168,11 +171,17 @@ namespace dWorker.Plugin.Docs
                                         if (message != null)
                                         {
                                             var Nomefile = $"{message.MessageId}.eml";
+                                            DateTime? T = null;
+                                            if (message.Date.UtcDateTime != DateTime.MinValue)
+                                                T = message.Date.UtcDateTime;
+                                            if (Nomefile.Length > 255)
+                                                Nomefile = Nomefile.Substring(Nomefile.Length - 254, 254);
 
                                             AllegatoEmail allm = cn.QueryFirstOrDefault<AllegatoEmail>(
                                                $"SELECT * , {AllegatoEmail.SqlAttributi()} FROM Allegati WHERE Tipo=@Tipo and NomeFile = @NomeFile " +
-                                                 "  AND CASE WHEN isdate(JSON_VALUE(Attributi,'$.Data'))>0 THEN JSON_VALUE(Attributi,'$.Data') ELSE NULL END = @Data ",
-                                                new { Tipo = tipo.Codice, NomeFile = Nomefile, Data = message.Date.UtcDateTime });
+                                                 " AND ( Folder IS NULL OR Folder = @DestFolder) " +
+                                                 " AND CASE WHEN isdate(JSON_VALUE(Attributi,'$.Data'))>0 THEN JSON_VALUE(Attributi,'$.Data') ELSE NULL END = @Data ",
+                                                new { Tipo = tipo.Codice, NomeFile = Nomefile, Data = T,DestFolder=s.Cartella });
                                             var flIgnora = false;
                                             if (allm != null)
                                             {
@@ -235,6 +244,7 @@ namespace dWorker.Plugin.Docs
                                                 allm.Data = (DateTime?)message.Date.UtcDateTime;
                                                 allm.Oggetto = message.Subject;
                                                 allm.MessageId = message.MessageId;
+                                                allm.Folder = s.Nome;
                                                 allm.SetAttributo("CodiceSoggetto", "");
 
                                                 // decodifica cliente
@@ -275,8 +285,10 @@ namespace dWorker.Plugin.Docs
                                                         }
                                                         else
                                                         {
-                                                            SubmitStartForm ssf = new SubmitStartForm();
+                                                            SubmitStartForm ssf = new SubmitStartForm();  
                                                             ssf.BusinessKey = message.MessageId;
+                                                            if (ssf.BusinessKey.Length > 255)
+                                                                ssf.BusinessKey = ssf.BusinessKey.Substring(Nomefile.Length - 254, 254);
 
                                                             //tolgo il testo per limitare la variabile jAllegato
                                                             all.Testo = "";
