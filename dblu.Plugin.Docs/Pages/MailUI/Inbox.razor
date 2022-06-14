@@ -2,10 +2,11 @@
     Page that manage the inbox and its interaction with Dossiers and Items
 *@
 
-@page "/Mail/Inbox"
-@page "/Mail/Inbox/{nPreselAttach}"
-@page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}"
-@page "/Mail/Inbox/{nPreselFolder}/{nPreselAttach}/{nPreselItem}"
+@page "/MailUI/Inbox"
+@page "/MailUI/Inbox/{nPreselAttach}"
+@page "/MailUI/Inbox/{nPreselFolder}/{nPreselAttach}"
+@page "/MailUI/Inbox/{nPreselFolder}/{nPreselAttach}/{nPreselItem}"
+@using Microsoft.AspNetCore.Components.CompilerServices
 @using Newtonsoft.Json.Linq
 @using Syncfusion.Blazor.PdfViewerServer
 @using dblu.Docs.Models
@@ -21,6 +22,7 @@
 @inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
 @inject IHttpContextAccessor _HttpContextAccessor
 @inject ILogger<Inbox> _Logger
+@inject NavigationManager  _NavigationManager
 
 <dblu.Portale.Core.UI.PageTitle nTitle="Inbox" />
 
@@ -41,7 +43,7 @@
                         </div>
                         <div class="row ">
                             <div class="col">
-                                <MailTable @ref="@Grid" nMailBox="@MailBox" OnSelectAttachment="OnSelectAttach" OnReplyAttachment="OnReply" OnForwardAttachment="OnForward" OnMoveAttachment="OnMove" OnShowAttachment="OnShow" OnShowLogsAttachment="OnShowLogs" OnDeleteAttachment="OnDelete" nPreselAttach="@nPreselAttach"></MailTable>
+                                <MailTable @ref="@Grid" nType=MailTable.TableType.InboxSel nMailBox="@MailBox" OnSelectAttachment="OnSelectAttach" OnReplyAttachment="OnReply" OnForwardAttachment="OnForward" OnMoveAttachment="OnMove" OnShowAttachment="OnShow" OnShowLogsAttachment="OnShowLogs" OnDeleteAttachment="OnDelete" nPreselAttach="@nPreselAttach" OnRegisterAttachment="OnRegisterAttachment"></MailTable>
                             </div>
                         </div>                    
                 </div>
@@ -95,26 +97,7 @@
                                     </SfAccordion>
                                 </div>
                             </div>
-                        }
-                        else if (IsShowDialog)
-                        {
-                            <div class="row form-group">
-                                <div class="col">
-                                    <SfAccordion>
-                                        <AccordionItems>
-                                            <AccordionItem Expanded="true">
-                                                <HeaderTemplate>
-                                                    <div>Struttura di <b>@AttachSubject</b></div>
-                                                </HeaderTemplate>
-                                                <ContentTemplate>
-                                                    <MailHTMLView nAttach="@Attach" OnAbort="OnAbort"></MailHTMLView>
-                                                </ContentTemplate>
-                                            </AccordionItem>
-                                        </AccordionItems>
-                                    </SfAccordion>
-                                </div>
-                            </div>
-                        }
+                        }                       
                         else if (IsLogsDialog)
                         {
                             <div class="row form-group">
@@ -136,45 +119,40 @@
                         }
                         else
                         {
-                            @*CLIENTE*@
-                            <div class="row form-group">
-                                <div class="col">
-                                    <SfAccordion>
-                                        <AccordionEvents Expanding="OnExpanding"></AccordionEvents>
-                                        <AccordionItems>
-                                            <AccordionItem Expanded="@(IsCustomerExpand && !ForceCollapsed)">
-                                                <HeaderTemplate>
-                                                    <div>@CostumerDesc</div>
-                                                </HeaderTemplate>
-                                                <ContentTemplate>
-                                                    <REG_Customer  Sender="@(Attach?.Mittente??"")"  OnLinkedToCostumer="OnLinkCostumer" OnOpenItems="OnOpenItems" nAttachID="@AttachID" nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" ></REG_Customer>
-                                                </ContentTemplate>
+                        <div class="row form-group">
+                            <div class="col">
+                                <OperationList nDisplayManage="true" OnRegisterAttachment="OnRegisterAttach" nRecordServer=TipiRecordServer.CartellaMail nDocumentType=TipiDocumentiFile.ZIP OnLinkItemPressed="OnLinkItemPressed"></OperationList>
+                            </div>
+                        </div>
+                        }
+                    }
 
-                                            </AccordionItem>
-                                        </AccordionItems>
-                                    </SfAccordion>
-                                </div>
-                            </div>
-                            @*FASCICOLI*@
-                            <div class="row form-group">
-                                <div class="col">
-                                    <SfAccordion>
-                                         <AccordionEvents Expanding="OnExpanding"></AccordionEvents>
-                                        <AccordionItems>                                           
-                                            <AccordionItem Expanded="@(!ForceCollapsed)">
-                                                <HeaderTemplate>
-                                                    <div>@DossierDesc</div>
-                                                </HeaderTemplate>
-                                                <ContentTemplate>
-                                                    <REG_DossierItems nSelectedItem="@AutoSel" OnRefresh="OnRefreshDossier" nCurrentDocument="@LastDocumentFromAttach" nAttachID="@AttachID" nSourceFolder="@MailBox.Nome" nCostumerCode="@CustomerCode" nDossierID="@DossierID" nAttachments="@SourceAttach" OnAttachCompleted="OnAttachCompleted" OnLinkedToItem="OnLinkToItem" OnSelectedItem="OnSelectedItem" OnBeginReg="OnBeginReg" OnEndReg="OnEndReg"></REG_DossierItems>
-                                                </ContentTemplate>
-                                            </AccordionItem>
-                                        </AccordionItems>
-                                    </SfAccordion>
-                                </div>
-                            </div>
-                            @*ALLEGATI EMAIL*@
-                            @if (@IsAttachVisible)
+                    else
+                    {
+                        <h3 style="display:flex;justify-content: center;">Selezionare una E-Mail a sinistra</h3>
+                    }
+
+
+                    <div class="row form-group" style=@((string.IsNullOrEmpty(AttachID))?"display: none;":"")>
+                        <div class="col">
+                            <SfAccordion>
+                                <AccordionItems>
+                                    <AccordionItem Expanded="true">
+                                        <HeaderTemplate>
+                                            <div>Anteprima</div>
+                                        </HeaderTemplate>
+                                        <ContentTemplate>        
+                                                <MailHTMLView nShowBack="false" nAttach="@Attach" OnDocumentLoaded="OnDocumentTransformedZ" nReadAttachments="true" nHeight="600"></MailHTMLView>
+                                                        
+                                        </ContentTemplate>
+                                    </AccordionItem>
+                                </AccordionItems>
+                            </SfAccordion>
+                        </div>
+                    </div>
+
+                        @*ALLEGATI EMAIL*@
+                            @if (@IsAttachVisible && !string.IsNullOrEmpty(AttachID))
                             {
                                 <div class="row form-group">
                                     <div class="col">
@@ -192,33 +170,7 @@
                                         </SfAccordion>
                                     </div>
                                 </div>
-                            }
-               
-                        }
-                    }
-                    else
-                    {
-                        <h3 style="display:flex;justify-content: center;">Selezionare una E-Mail a sinistra</h3>
-                    }
-
-                    @*PDF VIEWER*@
-                     <div class="row form-group" style=@((string.IsNullOrEmpty(AttachID))?"display: none;":"")>
-                                    <div class="col">
-                                        <SfAccordion>
-                                            <AccordionItems>
-                                                <AccordionItem Expanded="true">
-                                                    <HeaderTemplate>
-                                                        <div>Anteprima</div>
-                                                    </HeaderTemplate>
-                                                    <ContentTemplate>                                                
-                                                        <DocViewer @ref="@Viewer" OnDocumentTransformed="OnDocumentTransformedZ" nHeight=700 nSourceType="@PDFSourceType" nDocIdentifier="@PDFSourceId"></DocViewer>
-                                                    </ContentTemplate>
-                                                </AccordionItem>
-                                            </AccordionItems>
-                                        </SfAccordion>
-                                    </div>
-                              </div>
-
+                            }               
                  </div>
             </div>
         </CardContent>
@@ -244,6 +196,14 @@
 
     <Toast @ref="ToastAnswerOK" nToastType="Toast.e_ToastType.OK" nTitle="Rispondi a email" nContent="Email inviata correttamente"></Toast>
     <Toast @ref="ToastAnswerKO" nToastType="Toast.e_ToastType.Fail" nTitle="Rispondi a email" nContent="Invio NON riuscito"></Toast>
+
+    <Toast @ref="ToastAttachOK" nToastType="Toast.e_ToastType.OK" nTitle="Allega a fascicolo\elemento" nContent="@LinkDescription"></Toast>
+
+    @if (IsShowDialog)
+    {
+    <dblu.Portale.Core.UI.DynamicComponent nType="@DynamicContent" nAttributes="@DynamicAttributes"></dblu.Portale.Core.UI.DynamicComponent>
+    }
+
 </section>
 
 @code
@@ -416,6 +376,8 @@
     /// </summary>
     private Toast ToastAnswerKO { get; set; }
 
+    private Toast ToastAttachOK { get; set; }
+
     /// <summary>
     /// List of current Attach source Attachments
     /// </summary>
@@ -461,6 +423,17 @@
     /// </summary>
     private bool IsCustomerExpand { get; set; } = true;
 
+    /// <summary>
+    /// Dinamic component to load
+    /// </summary>
+    private Type DynamicContent { get; set; } = null;
+
+    /// <summary>
+    /// Attributes of the dynamic compponent
+    /// </summary>
+    private ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> DynamicAttributes = new();
+
+    private string LinkDescription{ get; set; }
 
     /// <summary>
     /// On selection of the email,shows and hide panels properly
@@ -555,7 +528,6 @@
     public async void OnMailboxChanged(EmailServer e)
     {
         MailBox = e;
-
     }
 
     /// <summary>
@@ -603,6 +575,19 @@
 
         IsMoveDialog = !IsMoveDialog;
     }
+
+    public async void OnRegisterAttachment(AllegatoEmail e)
+    {
+        if(e!=null)
+        _NavigationManager.NavigateTo($"/Mail/Register/{e.Id.ToString()}");
+    }
+
+    public async void OnRegisterAttach()
+    {
+
+        _NavigationManager.NavigateTo($"/Mail/Register/{AttachID}");
+    }
+
 
     /// <summary>
     /// Activate HTML panel
@@ -726,17 +711,13 @@
         IsAnswerDialog = false; IsForwardDialog = false; IsMoveDialog = false; IsShowDialog = false; IsLogsDialog = false;
     }
 
-
-
     /// <summary>
     /// On linking item, refresh the grid and components
     /// </summary>
     /// <param name="data"></param>
     private async void OnLinkToItem((string DossierId, string ItemId) data)
-    {
-        Grid.Refresh();
-        DossierID = data.DossierId;
-        nPreselItem = data.ItemId;      
+    { 
+        ToastAttachOK.Show();
     }
 
     /// <summary>
@@ -790,55 +771,143 @@
         DossierDesc = (Dossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {Dossier?.Descrizione} [{Dossier?.Id}]";
     }
 
-    /// <summary>
-    /// On completed attach, i refresh the grid
-    /// </summary>
-    /// <param name="AttachId"></param>
-    public async void OnAttachCompleted(string AttachId)
+
+    public void OnLinkItemPressed(TipiElementi ElemType)
     {
-        Grid.RemoveItem(AttachId);
+        if (ElemType.AggregaAElemento)
+        {
+            LinkDescription = $"L'Email stata allegata come [{ElemType.Descrizione}]";
+            OnLink(ElemType);
+        }
+        else
+        if (!string.IsNullOrEmpty(AttachID))
+            _NavigationManager.NavigateTo($"/Mail/Register/{AttachID}/{ElemType.Codice}");            
     }
 
 
     /// <summary>
-    /// On selected Item, Reload the PDF from the item
+    /// Open the component for linking the email to an element
     /// </summary>
-    /// <param name="Id">Id of the item to load on PDF preview</param>
-    public void OnSelectedItem(string Id)
+    public async void OnLink(TipiElementi ElemType)
     {
-        if(!string.IsNullOrEmpty(Id))
+        try
         {
-            if (PDFSourceId == Id)
+            string component = "dblu.Portale.Plugin.SanGiacomo.Pages.Custom.MSG_CustomLinktoItem";// _SubjectService.UrlServizioRicercaElementi(_NavigationManager.Uri);
+            DynamicAttributes.Clear();
+
+            IsShowDialog = true;
+
+            DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+
+            if (!component.StartsWith("dblu.Portale") || DynamicContent == null)
             {
-                Viewer.ForceReload();
+                UndefinedComponent(component);
+                return;
             }
-            else
+
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
             {
-                PDFSourceId = Id;
-                PDFSourceType = e_SourceType.Item;
-            }
+                Name = "nAttachID",
+                Position = 1,
+                Value = AttachID
+            });
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "nCostumerCode",
+                Position = 2,
+                Value = CustomerCode
+            });
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "nItemType",
+                Position = 6,
+                Value = ElemType
+            });
+            
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "nAttachments",
+                Position = 7,
+                Value = SourceAttach
+
+            });
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialog",
+                Position = 3,
+                Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
+            });
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialogChanged",
+                Position = 4,
+                Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
+                EventCallback.Factory.Create<bool>(this,
+                    RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
+            });
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "OnLinkedToItem",
+                Position = 5,
+                Value = EventCallback.Factory.Create<(string, string)>(this, OnLinkToItem)
+            });
+
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"REG_ItemsTable.OnLink: Unexpected error {ex}");
         }
     }
 
     /// <summary>
-    /// On starting of registration collapse all accordion
+    /// Display the Undefined component, using dynmic loading
     /// </summary>
-    public async void OnBeginReg()
+    /// <param name="nComponent">Name of the component</param>
+    public void UndefinedComponent(string nComponent)
     {
-        ForceCollapsed = true;
+        try
+        {
+            IsShowDialog = true;
+            DynamicAttributes.Clear();
+            string component = "dblu.Portale.Plugin.Docs.Pages.Custom.UndefinedComponentPopUp";
+            DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "nComponentName",
+                Position = 1,
+                Value = nComponent
+            });
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialog",
+                Position = 1,
+                Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
+            });
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "IsShowDialogChanged",
+                Position = 2,
+                Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
+                EventCallback.Factory.Create<bool>(this,
+                    RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
+            });
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"AttachCostumerSearch.UndefinedComponent: Unexpected error {ex}");
+        }
     }
 
-    /// <summary>
-    /// On ending of registration release all accordion
-    /// </summary>
-    public async void OnEndReg()
-    {
-         ForceCollapsed = false;
-    }
 
-   public void OnExpanding(ExpandEventArgs args)
-    {
-        if (ForceCollapsed)
-            args.Cancel = true;
-    }
+
 }

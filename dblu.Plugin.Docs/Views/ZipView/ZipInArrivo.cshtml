@@ -489,7 +489,7 @@
                                                 <div class="grid-container">
                                                     @foreach (dblu.Docs.Models.TipiElementi item in ListaTipiElementi)
                                                     {
-                                                        @if (item.AggregaAElemento == false)
+                                                       @if (item.AggregaAElemento == false && item.Abilita)
                                                         {
                                                             <div class="grid-item">
                                                                 <button id="@item.Codice" type="button" onclick="NuovoElemento(this, '@item.Categoria', '@item.Codice')" class="b btn btn-info">@item.Descrizione </button>

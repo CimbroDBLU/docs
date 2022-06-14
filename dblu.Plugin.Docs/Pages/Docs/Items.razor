@@ -25,7 +25,7 @@
 <SfCard>
     <CardHeader Title="Lista Elementi" />
     <CardContent EnableSeperator="true">
-        <SfGrid Height="615" SelectedRowIndex="0" ID="ODATA_Items"  DataSource="@ItemsData" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewElementi" Toolbar=@Tool>          
+        <SfGrid Height="615" SelectedRowIndex="0" ID="Items"  DataSource="@ItemsData" EnablePersistence="true" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewElementi" Toolbar=@Tool>          
             <GridEvents TValue="viewElementi" QueryCellInfo="CustomizeCell"  OnRecordDoubleClick="OnDoubleClick"></GridEvents>
             <GridPageSettings PageSize="13"></GridPageSettings>
             <GridSearchSettings Fields=@(new string[] { "DscElemento", "DscElemento","DscTipoElemento", "Campo1", "Campo2","Campo3","Campo4","Campo5","Campo6","Campo7","Campo8","Campo9","Campo10"})></GridSearchSettings>

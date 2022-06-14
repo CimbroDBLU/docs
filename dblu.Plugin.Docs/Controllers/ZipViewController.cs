@@ -149,9 +149,16 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
                 //var x = _mailService.MarcaAllegati(e);
                 e.IdFascicoloNavigation = _zipsvc._fasMan.Get(e.IdFascicolo);
 
-                if (!string.IsNullOrEmpty(e.TipoNavigation.ViewAttributi))
+                string s = e.TipoNavigation.ViewAttributi;
+                if (!string.IsNullOrEmpty(s))
                 {
-                    NomeView = e.TipoNavigation.ViewAttributi;
+                    if (s.Contains(";"))
+                    {
+                        string[] Urls = s.Split(";");
+                        if (Urls.Count() > 0)
+                            NomeView = Urls[0];
+                    }
+                    else NomeView = s;
                 }
             }
             return PartialView(NomeView, e);

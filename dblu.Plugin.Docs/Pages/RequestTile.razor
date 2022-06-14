@@ -1,11 +1,12 @@
 ﻿@*
     Component for displaying a Tile with the incoming request
 *@
-
+@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
 @inject AuthenticationStateProvider _AuthenticationStateProvider
 @inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
 @inject ILogger<RequestTile> _Logger
-@inject IConfiguration _conf
+@inject IApplicationUsersManager _ApplicationUserManager
 
 
 <Tile nTitle="@Number"
@@ -25,7 +26,7 @@
     /// <summary>
     /// Link to Open
     /// </summary>
-    public string Link => string.IsNullOrEmpty(_conf["Beta"]) ? "ZipView/ZipInArrivo" : "Files/REQ/Inbox";
+    public string Link { get; set; }
 
     /// <summary>
     /// On Init component
@@ -36,6 +37,12 @@
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         Number = _ZipService.CountZipInArrivo("REQ", user.Claims).ToString();
+
+         ApplicationUser AU = _ApplicationUserManager.GetUser(user.Identity.Name);
+        string Version=AU.Properties["VERSION"]?.ToString() ?? "STANDARD";
+        Link="Files/REQ/Inbox";
+        if(Version=="BETA") Link="Files/REQ/Inbox";
+        if(Version=="LEGACY") Link="ZipView/ZipInArrivo?Tipo=REQ";
         _Logger.LogDebug($"RequestTile.OnInitialized: {Number} requests in {SW.ElapsedMilliseconds} ms");
     }
 }

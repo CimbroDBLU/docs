@@ -113,7 +113,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             _fasMan = new FascicoliManager(_context.Connessione, _logger);
             _elmMan = new ElementiManager(_context.Connessione, _logger);
             _serMan = new ServerEmailManager(_context.Connessione, _logger);
-            _logMan = new LogDocManager(_context, _logger,config);
+            _logMan = new LogDocManager(_context, _logger, config);
             _TranformationService = documentTransformation;
             //            _sggMan = new SoggettiManager(_context, _logger);
             _config = config;
@@ -725,7 +725,7 @@ namespace dblu.Portale.Plugin.Docs.Services
             {
                 try
                 {
-                    res=_TranformationService.SummaryReport(NomePdf, Messaggio, _appEnvironment.WebRootPath);
+                    res = _TranformationService.SummaryReport(NomePdf, Messaggio, _appEnvironment.WebRootPath);
                 }
                 catch (Exception ex)
                 {
@@ -1536,8 +1536,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                 f.SetAttributo("NomeSoggetto", NomeSoggetto);
                 if (_fasMan.Salva(f, isNew) == false) return null;
 
-                _logMan.PostLog(f.Id, TipiOggetto.FASCICOLO, (isNew) ? TipoOperazione.Creato : TipoOperazione.Modificato, User.Identity.Name, $"Fascicolo "+ ((isNew)?"creato":"modificato"));
-                
+                _logMan.PostLog(f.Id, TipiOggetto.FASCICOLO, (isNew) ? TipoOperazione.Creato : TipoOperazione.Modificato, User.Identity.Name, $"Fascicolo " + ((isNew) ? "creato" : "modificato"));
+
                 //if (Allegato.IdElemento == null)
                 //{
                 //crea nuovo elemento e e assegna alla mail ?
@@ -1582,7 +1582,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 e.SetAttributo("DataRichiesta", e.GetAttributo("Data"));
                 if (_elmMan.Salva(e, isNew) == false) return null;
 
-                _logMan.PostLog(e.Id, TipiOggetto.ELEMENTO,  TipoOperazione.Creato, User.Identity.Name, $"Elemento creato");
+                _logMan.PostLog(e.Id, TipiOggetto.ELEMENTO, TipoOperazione.Creato, User.Identity.Name, $"Elemento creato");
 
                 //var i = await _context.SaveChangesAsync(cancel);
                 Allegato.Stato = StatoAllegato.Elaborato;
@@ -2269,9 +2269,9 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
             return res;
         }
-        
 
-        public bool AvviaProcesso(BPMDocsProcessInfo Info, Elementi el, Dictionary<string, VariableValue> variabili,bool OnlyNotExsisting=false)
+
+        public bool AvviaProcesso(BPMDocsProcessInfo Info, Elementi el, Dictionary<string, VariableValue> variabili, bool OnlyNotExsisting = false)
         {
             bool res = true;
             try
@@ -2280,8 +2280,8 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 ///Il processo esiste già, esco
                 if (OnlyNotExsisting)
-                    foreach( CAMTask T in _bpm.GetTasksByItemID(el.Id.ToString()))
-                    {                           
+                    foreach (CAMTask T in _bpm.GetTasksByItemID(el.Id.ToString()))
+                    {
                         BPMTaskDto d = tsk.Get(_bpm._eng, T.ID_);
                         if (d.processDefinitionId.Contains(el.TipoNavigation.Processo))
                             return true;
@@ -2332,11 +2332,11 @@ namespace dblu.Portale.Plugin.Docs.Services
         }
 
         public async Task<RisultatoAzione> InoltraEmail(
-            string IdAllegato, 
+            string IdAllegato,
             string Indirizzi,
             string cc,
             string Oggetto,
-            string Testo,       
+            string Testo,
             bool chiudi,
             ClaimsPrincipal User,
             string Firma,
@@ -2403,16 +2403,16 @@ namespace dblu.Portale.Plugin.Docs.Services
                             InternetAddressList listind = new InternetAddressList();
                             foreach (string ind in Indirizzi.Replace(";", ",").Split(","))
                             {
-                                listind.Add(new MailboxAddress(ind,ind));
+                                listind.Add(new MailboxAddress(ind, ind));
                             }
 
                             var newmessage = new MimeMessage();
                             newmessage.From.Add(new MailboxAddress(srv.Nome, srv.Email));
                             newmessage.ReplyTo.Add(new MailboxAddress(srv.Nome, srv.Email));
                             newmessage.To.AddRange(listind);
-                            if(string.IsNullOrEmpty(Oggetto))
+                            if (string.IsNullOrEmpty(Oggetto))
                                 Oggetto = "FWD: " + message.Subject;
-                            newmessage.Subject = Oggetto; 
+                            newmessage.Subject = Oggetto;
 
                             listind.Clear();
                             if (!string.IsNullOrEmpty(cc))
@@ -2427,22 +2427,22 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                             // now to create our body...
                             var builder = new BodyBuilder();
-                            var htxt ="";
+                            var htxt = "";
                             var ttxt = "";
 
-                            
-                            htxt = message?.HtmlBody?? $" ";
+
+                            htxt = message?.HtmlBody ?? $" ";
                             htxt += "\n" + Firma;
                             string sfrom = System.Web.HttpUtility.HtmlEncode(message.From);
                             string sTo = System.Web.HttpUtility.HtmlEncode(message.To);
-                            if (!string.IsNullOrEmpty(htxt) && !htxt.Contains("<body>"))htxt = $"<body>{htxt}</body>";
+                            if (!string.IsNullOrEmpty(htxt) && !htxt.Contains("<body>")) htxt = $"<body>{htxt}</body>";
 
                             ttxt = $"{Testo}\n\n\n\nDa : {message.From}\nA : {message.To}\nInviato : {message.Date.DateTime}\nOggetto: {message.Subject}\n\n{message.TextBody}";
                             htxt = htxt?.Replace("<body>", $"<body><p>{Testo}</p><p><b>Da : </b>{sfrom}<br><b>A: </b>{sTo}<br><b>Inviato : </b>{message.Date.DateTime}<br><b>Oggetto : </b>{message.Subject}<br><br></p><br>");
 
                             builder.TextBody = ttxt;
                             ///Aggiungo l'html solo se ho nel messaggio , senno vien fuori male
-                            if(!string.IsNullOrEmpty(message?.HtmlBody))
+                            if (!string.IsNullOrEmpty(message?.HtmlBody))
                                 builder.HtmlBody = htxt;
 
                             Regex.Replace(builder.TextBody, "<.*?>", string.Empty);
@@ -2453,7 +2453,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                             newmessage.Body = builder.ToMessageBody();
                             await client.SendAsync(newmessage, c);
 
-                            _logMan.PostLog(al.Id, TipiOggetto.ALLEGATO, TipoOperazione.Inoltrato, User.Identity.Name,$"Inoltrata email {Oggetto}",new dbluTools.Extensions.ExtAttributes() { { "to", Indirizzi }, { "cc", cc } });
+                            _logMan.PostLog(al.Id, TipiOggetto.ALLEGATO, TipoOperazione.Inoltrato, User.Identity.Name, $"Inoltrata email {Oggetto}", new dbluTools.Extensions.ExtAttributes() { { "to", Indirizzi }, { "cc", cc } });
 
                             Allegati newall = new Allegati()
                             {
@@ -2516,6 +2516,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
 
 
+
         public async Task<RisultatoAzione> RispondiEmail(
             string IdAllegato,
             string NomeServer,
@@ -2562,7 +2563,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     srv.Ssl = true;
                     srv.Utente = "jobaid@dblu.it";
                     srv.Password = "j0b41d!";
-                    
+
 
 #endif
 
@@ -3102,7 +3103,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 Allegati al = _allMan.Get(IdAllegato);
                 if (EliminaDaServer)
                 {
-              
+
 
                     MemoryStream eml = new MemoryStream();
                     eml = await _allMan.GetFileAsync(al.Id.ToString());
@@ -3352,7 +3353,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         /// <returns>
         ///     The Item created
         /// </returns>
-        public async Task<Elementi> CreateItemDossier(string AttachID, string DossierID,string Category,string ItemType,string CostumerCode,string CustomerName, List<OriginalAttachments> Attachs, string Description,  ClaimsPrincipal User, MemoryStream nDocument)
+        public async Task<Elementi> CreateItemDossier(string AttachID, string DossierID, string Category, string ItemType, string CostumerCode, string CustomerName, List<OriginalAttachments> Attachs, string Description, ClaimsPrincipal User, MemoryStream nDocument)
         {
             try
             {
@@ -3431,7 +3432,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 e.SetAttributo("CodiceSoggetto", CostumerCode);
                 e.SetAttributo("NomeSoggetto", CustomerName);
-                e.SetAttributo("DataRichiesta", e.GetAttributo("Data"));
+
                 if (_elmMan.Salva(e, isNew) == false) return null;
 
                 ///4) LOGGO
@@ -3440,6 +3441,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 ///5) SALVO ALLEGATO COME ELABORATO
                 _logger.LogDebug($"MailService.CreateItemDossier : stage 5 incremental {sw.ElapsedMilliseconds} ms");
+                Allegato.SetAttributo("Categoria", GetCategoryFromCode(e.Tipo));
                 Allegato.Stato = StatoAllegato.Elaborato;
                 if (_allMan.Salva(Allegato, false) == false) return null;
 
@@ -3500,6 +3502,8 @@ namespace dblu.Portale.Plugin.Docs.Services
             return null;
         }
 
+
+
         /// <summary>
         /// Attach an  attachment to an Elmennt
         /// </summary>
@@ -3515,20 +3519,20 @@ namespace dblu.Portale.Plugin.Docs.Services
         /// <returns>
         /// True if attachment has be done
         /// </returns>
-        public async Task<int> AttachToItem(string AttachID, string DossierID, string ItemID, string Description, MemoryStream Doc, List<OriginalAttachments> Attachs, ClaimsPrincipal User,BPMDocsProcessInfo Info, Dictionary<string, VariableValue> Vars)
+        public async Task<int> AttachToItem(string AttachID, string DossierID, string ItemID, string Description, MemoryStream Doc, List<OriginalAttachments> Attachs, ClaimsPrincipal User, BPMDocsProcessInfo Info, Dictionary<string, VariableValue> Vars)
         {
             try
-            { 
+            {
 
-            Stopwatch sw = Stopwatch.StartNew();
+                Stopwatch sw = Stopwatch.StartNew();
 
-            Allegati MailAttach = _allMan.Get(AttachID);
-            if (string.IsNullOrEmpty(Description)) Description = MailAttach.Descrizione;
-            TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
-            Fascicoli f = _fasMan.Get(DossierID);
-            Elementi e = _elmMan.Get(ItemID, 0);
+                Allegati MailAttach = _allMan.Get(AttachID);
+                if (string.IsNullOrEmpty(Description)) Description = MailAttach.Descrizione;
+                TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
+                Fascicoli f = _fasMan.Get(DossierID);
+                Elementi e = _elmMan.Get(ItemID, 0);
 
-           if (tipoAll != null && f != null & e != null)
+                if (tipoAll != null && f != null & e != null)
                 {
                     /// 1) MARCO LA MAIL COM PROCESSATA
                     MailAttach.SetAttributo("CodiceSoggetto", f.GetAttributo("CodiceSoggetto"));
@@ -3585,6 +3589,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     FILE.SetAttributo("NomeSoggetto", MailAttach.GetAttributo("NomeSoggetto"));
                     FILE.SetAttributo("Oggetto", MailAttach.GetAttributo("Oggetto"));
                     FILE.SetAttributo("MessageId", MailAttach.GetAttributo("MessageId"));
+                    FILE.SetAttributo("Categoria", GetCategoryFromCode(e.Tipo));
 
 
                     /// 5) SALVO SUL TIPO FILE IL PDF
@@ -3601,14 +3606,14 @@ namespace dblu.Portale.Plugin.Docs.Services
                         if (!Vars.ContainsKey("IdAllegato"))
                             Vars.Add("IdAllegato", VariableValue.FromObject(AttachID));
 
-                        if (!AvviaProcesso(Info, e, Vars,true))
+                        if (!AvviaProcesso(Info, e, Vars, true))
                             return 3;
                     }
                 }
-            else
-                return 2;
-            _logger.LogInformation($"MailService.AttachToItem : Item attached in {sw.ElapsedMilliseconds} ms");
-            return 0;
+                else
+                    return 2;
+                _logger.LogInformation($"MailService.AttachToItem : Item attached in {sw.ElapsedMilliseconds} ms");
+                return 0;
             }
             catch (Exception ex)
             {
@@ -3626,15 +3631,17 @@ namespace dblu.Portale.Plugin.Docs.Services
         /// <param name="AttachTypes">List of attached types</param>
         private async Task ExtractAttachs(Allegati Attach, List<OriginalAttachments> Attachs, string Description, TipiAllegati AttachTypes)
         {
-            switch(Attach.Tipo)
+            switch (Attach.Tipo)
             {
                 case "EMAIL":
-                    await ExtractMailAttachs(Attach, Attachs, Description, AttachTypes);break;
+                    await ExtractMailAttachs(Attach, Attachs, Description, AttachTypes); break;
                 case "ZIP":
-                    await ExtractZipAttachs(Attach, Attachs, Description, AttachTypes);break;
+                    await ExtractZipAttachs(Attach, Attachs, Description, AttachTypes); break;
             }
             return;
         }
+
+
 
         /// <summary>
         /// Extract Attachments from email and save them into Item, if they are selected into attachs list
@@ -3643,7 +3650,7 @@ namespace dblu.Portale.Plugin.Docs.Services
         /// <param name="Attachs">List of attachments</param>
         /// <param name="Description">Description to add to attachments</param>
         /// <param name="AttachTypes">List of attached types</param>
-        private  async Task ExtractMailAttachs(Allegati Attach, List<OriginalAttachments> Attachs, string Description, TipiAllegati AttachTypes)
+        private async Task ExtractMailAttachs(Allegati Attach, List<OriginalAttachments> Attachs, string Description, TipiAllegati AttachTypes)
         {
             try
             {
@@ -3723,65 +3730,65 @@ namespace dblu.Portale.Plugin.Docs.Services
         /// <param name="Attachs">List of attachments</param>
         /// <param name="Description">Description to add to attachments</param>
         /// <param name="AttachTypes">List of attached types</param>
-        private async Task ExtractZipAttachs(Allegati Attach,List<OriginalAttachments> Attachs,string Description, TipiAllegati AttachTypes)
+        private async Task ExtractZipAttachs(Allegati Attach, List<OriginalAttachments> Attachs, string Description, TipiAllegati AttachTypes)
         {
             try
             {
                 using (SqlConnection cn = new SqlConnection(_context.Connessione))
                 {
-                    if (Attachs != null && Attachs.Count()!=0)
+                    if (Attachs != null && Attachs.Count() != 0)
                     {
                         //var fileName = NOME_FILE_CONTENUTO_EMAIL ;
                         var fileName = $"{Attach.Id.ToString()}.pdf";
                         var m = await _allMan.GetFileAsync(Attach.Id.ToString());
 
                         var FileZip = new ZipArchive(m, ZipArchiveMode.Read);
-                  
+
                         //file da allegare singolarmente
                         var listafile = Attachs.Where(x => x.IsSelected == true).Select(x => x.Name).ToList();
 
                         foreach (ZipArchiveEntry entry in FileZip.Entries)
+                        {
+                            fileName = entry.Name;
+
+                            if (listafile.Contains(fileName))
                             {
-                                fileName = entry.Name;
+                                m = new MemoryStream();
 
-                                if (listafile.Contains(fileName))
+                                var all2 = cn.QueryFirstOrDefault<Allegati>(
+                                    "Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile",
+                                    new { IdElemento = Attach.IdElemento.ToString(), NomeFile = fileName });
+
+                                var isNewAll = false;
+
+                                if (all2 == null)
                                 {
-                                    m = new MemoryStream();
-
-                                    var all2 = cn.QueryFirstOrDefault<Allegati>(
-                                        "Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile",
-                                        new { IdElemento = Attach.IdElemento.ToString(), NomeFile = fileName });
-
-                                    var isNewAll = false;
-
-                                    if (all2 == null)
+                                    all2 = new Allegati()
                                     {
-                                        all2 = new Allegati()
-                                        {
-                                            Descrizione = Attach.Descrizione,
-                                            NomeFile = fileName,
-                                            Tipo = "FILE",
-                                            TipoNavigation = AttachTypes,
-                                            Stato = StatoAllegato.Attivo,
-                                            IdFascicolo = Attach.IdFascicolo,
-                                            IdElemento = Attach.IdElemento
-                                            //,
-                                            //UtenteC = Utente,
-                                            //UtenteUM = Utente
-                                        };
-                                        isNewAll = true;
-                                    }
-
-                                    if (all2.elencoAttributi == null) { all2.elencoAttributi = AttachTypes.Attributi; }
-                                    all2.Descrizione = Description;
-                                    all2.SetAttributo("Data", Attach.DataC);
-                                    all2.SetAttributo("CodiceSoggetto", Attach.GetAttributo("CodiceSoggetto"));
-                                    all2.SetAttributo("NomeSoggetto", Attach.GetAttributo("NomeSoggetto"));
-
-                                    all2 = await _allMan.SalvaAsync(all2, m, isNewAll);
+                                        Descrizione = Attach.Descrizione,
+                                        NomeFile = fileName,
+                                        Tipo = "FILE",
+                                        TipoNavigation = AttachTypes,
+                                        Stato = StatoAllegato.Attivo,
+                                        IdFascicolo = Attach.IdFascicolo,
+                                        IdElemento = Attach.IdElemento
+                                        //,
+                                        //UtenteC = Utente,
+                                        //UtenteUM = Utente
+                                    };
+                                    isNewAll = true;
                                 }
+
+                                if (all2.elencoAttributi == null) { all2.elencoAttributi = AttachTypes.Attributi; }
+                                all2.Descrizione = Description;
+                                all2.SetAttributo("Data", Attach.DataC);
+                                all2.SetAttributo("CodiceSoggetto", Attach.GetAttributo("CodiceSoggetto"));
+                                all2.SetAttributo("NomeSoggetto", Attach.GetAttributo("NomeSoggetto"));
+
+                                all2 = await _allMan.SalvaAsync(all2, m, isNewAll);
                             }
-                        
+                        }
+
                     }
                 }
             }
@@ -3791,5 +3798,168 @@ namespace dblu.Portale.Plugin.Docs.Services
             }
         }
 
+        private string GetCategoryFromCode(string s)
+        {
+            return s switch
+            {
+                "OFF" => "OFFERTA",
+                "ORD" => "ORDINE",
+                "SOS" => "SOSTITUZIONE",
+                "MOD" => "MODIFICA",
+                "CON" => "CONFERMA",
+                "FER" => "RICHIESTA FERRAMENTA",
+                _ => "Document",
+            };
+        }
+
+        public async Task<Elementi> CreateItemDossier2(Elementi Item, string AttachID, string DossierID, string Category, string ItemType, string CostumerCode, string CustomerName, List<OriginalAttachments> Attachs, string Description, ClaimsPrincipal User, MemoryStream nDocument)
+        {
+            try
+            {
+
+                Stopwatch sw = Stopwatch.StartNew();
+
+                ///RICARICA ALLEGATO
+                Fascicoli f = null;
+                var Allegato = _allMan.Get(AttachID);
+                if (Description == null)
+                    Description = Allegato.Descrizione;
+
+                TipiAllegati tipoAll = _allMan.GetTipoAllegato("FILE");
+                Allegato.SetAttributo("CodiceSoggetto", CostumerCode);
+                Allegato.SetAttributo("NomeSoggetto", CustomerName);
+                Allegato.DataUM = DateTime.Now;
+                if (Allegato.IdFascicolo == null && !string.IsNullOrEmpty(DossierID))
+                    Allegato.IdFascicolo = Guid.Parse(DossierID);
+
+                ///1) CREO FASCICOLO SE MANCA 
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 1 incremental {sw.ElapsedMilliseconds} ms");
+                var isNew = false;
+                if (Allegato.IdFascicolo == null)
+                {
+                    //CreaFascicolo nuovo fascicolo e assegna alla mail
+                    f = new Fascicoli();
+                    f.Categoria = Category;
+                    f.CategoriaNavigation = _fasMan.GetCategoria(Category);
+                    f.elencoAttributi = f.CategoriaNavigation.Attributi;
+                    isNew = true;
+                    Allegato.IdFascicolo = f.Id;
+                    f.Descrizione = Description;
+                }
+                else
+                {
+                    f = _fasMan.Get(DossierID);
+                    if (f.elencoAttributi == null)
+                    {
+                        f.elencoAttributi = f.CategoriaNavigation.Attributi;
+                    }
+                }
+                f.CodiceSoggetto = CostumerCode;
+                f.SetAttributo("CodiceSoggetto", CostumerCode);
+                f.SetAttributo("NomeSoggetto", CustomerName);
+                if (_fasMan.Salva(f, isNew) == false) return null;
+
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 2 incremental {sw.ElapsedMilliseconds} ms");
+
+                ///2) LOGGO
+                _logMan.PostLog(f.Id, TipiOggetto.FASCICOLO, (isNew) ? TipoOperazione.Creato : TipoOperazione.Modificato, User.Identity.Name, $"Fascicolo " + ((isNew) ? "creato" : "modificato"));
+
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 3 incremental {sw.ElapsedMilliseconds} ms");
+                ///3) ELEMENTO
+                Elementi e = Item;
+                e.Tipo = ItemType;
+                e.IdFascicolo = f.Id;
+                e.Descrizione = Description;
+                isNew = true;
+                e.IdFascicoloNavigation = f;
+
+                TipiElementi tipoEl = _elmMan.GetTipoElemento(ItemType);
+                e.TipoNavigation = tipoEl;
+                if (e.elencoAttributi == null)
+                {
+                    e.elencoAttributi = e.TipoNavigation.Attributi;
+                }
+
+                Allegato.IdElemento = e.Id;
+                var kk = Allegato.elencoAttributi.Nomi();
+                foreach (var att in e.elencoAttributi.ToList())
+                {
+                    if (att.Duplicabile && kk.Contains(att.Nome))
+                    {
+                        e.SetAttributo(att.Nome, Allegato.GetAttributo(att.Nome));
+                    }
+                }
+
+                e.SetAttributo("CodiceSoggetto", CostumerCode);
+                e.SetAttributo("NomeSoggetto", CustomerName);
+
+                if (_elmMan.Salva(e, isNew) == false) return null;
+
+                ///4) LOGGO
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 4 incremental {sw.ElapsedMilliseconds} ms");
+                _logMan.PostLog(e.Id, TipiOggetto.ELEMENTO, TipoOperazione.Cancellato, User.Identity.Name, $"Elemento creato");
+
+                ///5) SALVO ALLEGATO COME ELABORATO
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 5 incremental {sw.ElapsedMilliseconds} ms");
+                Allegato.SetAttributo("Categoria", GetCategoryFromCode(e.Tipo));
+                Allegato.Stato = StatoAllegato.Elaborato;
+                if (_allMan.Salva(Allegato, false) == false) return null;
+
+                ///6) LOGGO
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 6 incremental {sw.ElapsedMilliseconds} ms");
+                _logMan.PostLog(Allegato.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato elaborato");
+
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 7 incremental {sw.ElapsedMilliseconds} ms");
+                /// 7) CREO UNA ALLEGATO DI TIPO FILE 
+                var fileName = $"{Allegato.Id.ToString()}.pdf";
+                Allegati FILE = null;
+                using (SqlConnection cn = new SqlConnection(_context.Connessione))
+                { FILE = cn.QueryFirstOrDefault<Allegati>("Select * from Allegati WHERE tipo ='FILE' and IdElemento= @IdElemento and NomeFile=@NomeFile", new { IdElemento = Allegato.IdElemento.ToString(), NomeFile = fileName }); }
+
+                bool isNewFILE = false;
+                if (FILE == null)
+                {
+                    FILE = new Allegati()
+                    {
+                        Descrizione = Allegato.Descrizione,
+                        NomeFile = fileName,
+                        Tipo = "FILE",
+                        TipoNavigation = tipoAll,
+                        Stato = StatoAllegato.Attivo,
+                        IdFascicolo = Allegato.IdFascicolo,
+                        IdElemento = Allegato.IdElemento,
+                        jNote = Allegato.jNote,
+                        UtenteC = User.Identity.Name,
+                        UtenteUM = User.Identity.Name,
+                    };
+                    isNewFILE = true;
+                }
+                else { FILE.Descrizione = Description; };
+
+                if (FILE.elencoAttributi == null) { FILE.elencoAttributi = tipoAll.Attributi; }
+
+                FILE.SetAttributo("Mittente", Allegato.GetAttributo("Mittente"));
+                FILE.SetAttributo("Data", Allegato.GetAttributo("Data"));
+                FILE.SetAttributo("CodiceSoggetto", Allegato.GetAttributo("CodiceSoggetto"));
+                FILE.SetAttributo("NomeSoggetto", Allegato.GetAttributo("NomeSoggetto"));
+                FILE.SetAttributo("Oggetto", Allegato.GetAttributo("Oggetto"));
+                FILE.SetAttributo("MessageId", Allegato.GetAttributo("MessageId"));
+
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 8 incremental {sw.ElapsedMilliseconds} ms");
+                /// 8) SALVO SUL TIPO FILE IL PDF
+                FILE = await _allMan.SalvaAsync(FILE, nDocument, isNewFILE);
+                /// 9) Salva eventuali allegati segnalati
+                _logger.LogDebug($"MailService.CreateItemDossier : stage 9 incremental {sw.ElapsedMilliseconds} ms");
+                await ExtractAttachs(Allegato, Attachs, Description, tipoAll);
+
+                _logger.LogInformation($"MailService.CreateItemDossier : Item created in {sw.ElapsedMilliseconds} ms");
+                return e;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"MailService.CreateItemDossier : Unexpected exception {ex.Message}");
+            }
+            return null;
+        }
     }
 }

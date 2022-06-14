@@ -643,9 +643,11 @@ namespace dblu.Portale.Plugin.Docs.Class
                             float etiHeight = page.Size.Height * .05F + 5;
 
 
-                            Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = etiHeight + 1 };
+                            Syncfusion.Drawing.PointF posizione = new Syncfusion.Drawing.PointF() { X = 0+lptmp.MediaBox.X, Y = etiHeight + 1+lptmp.MediaBox.Y };
+                            
 
                             Syncfusion.Drawing.SizeF pDest = CalcolaProporzioni(lptmp.Size.Width, lptmp.Size.Height, page.Size.Width * 0.95F, page.Size.Height - etiHeight);
+                            
 
                             switch (lptmp.Rotation)
                             {
@@ -688,7 +690,9 @@ namespace dblu.Portale.Plugin.Docs.Class
                                         graphics.RotateTransform(-90);
                                         posizione = new Syncfusion.Drawing.PointF() { X = 0, Y = 0 };
                                     }
+                                    
                                     graphics.DrawPdfTemplate(template, posizione, pDest);
+                                   
 
                                     if (pDest.Height < pDest.Width)
                                     {

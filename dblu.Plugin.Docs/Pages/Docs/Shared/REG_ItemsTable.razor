@@ -412,7 +412,7 @@ else
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         Cols = _ele.GetColonne("vELEMENTO");
-        Actions = GetActions();
+        Actions = GetActions().OrderBy(c=>c.Posizione).ToList();
         ActionSelected = Actions.Where(x => x.AggregaAElemento == false).FirstOrDefault()?.Codice; 
     }
 
@@ -556,12 +556,19 @@ else
         if (T != null)
         {
             ComponentName = T.ViewAttributi;
-            ///// TODO: TEMPORANEO SANGIACOMO
-            if (!ComponentName.Contains("blz:/") && IsMSG())
-                ComponentName = "blz:/dblu.Portale.Plugin.SanGiacomo.Pages.Custom.MSG_RegisterOrderPopUp";
-            if (!ComponentName.Contains("blz:/") && !IsMSG())
-                ComponentName = "blz:/Orders/CPB_RegisterOrder";
-            ////  DA RIMUOVERE
+
+            string s =  T.ViewAttributi;
+            if (!string.IsNullOrEmpty(s))
+            {
+                if (s.Contains(";"))
+                {
+                    string[] Urls = s.Split(";");
+                    if (Urls.Count() > 1)
+                        ComponentName = Urls[1];
+                }
+                else ComponentName = s;
+            }
+
             if (!ComponentName.StartsWith("blz:/"))
                 IsShowUndefined = true;
         }
@@ -643,9 +650,7 @@ else
         ShowDossierConfirm = false;
     }
 
-    /////// TODO: TEMPORANEO SANGIACOMO
-    private bool IsMSG() => AppDomain.CurrentDomain.GetAssemblies().ToList().Any(Q => Q.GetName().Name.Contains("SanGiacomo"));
-    ////  DA RIMUOVERE
+
 
     /// <summary>
     /// Open the customized page for the specific element type
@@ -746,11 +751,11 @@ else
             {
 
                 var ListaRuoliServ = _MailService.getRuoli(ListaRuoli, ListaServer);
-                return _MailService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.AggregaAElemento == false).ToList();
+                return _MailService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.AggregaAElemento == false && z.Abilita).ToList();
             }
             else
             {
-                return ListaTipiElementi.Where(z => z.AggregaAElemento == false).ToList();
+                return ListaTipiElementi.Where(z => z.AggregaAElemento == false && z.Abilita).ToList();
             }
         }
         else
@@ -762,11 +767,11 @@ else
             {
 
                 var ListaRuoliServ = _ZipService.getRuoli(ListaRuoli, ListaServer[0].Nome);
-                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.AggregaAElemento == false).ToList();
+                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.AggregaAElemento == false && z.Abilita).ToList();
             }
             else
             {
-                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoli).Where(z => z.AggregaAElemento == false).ToList();
+                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoli).Where(z => z.AggregaAElemento == false && z.Abilita).ToList();
             }
         }
 
@@ -986,12 +991,19 @@ else
         if (T != null)
         {
             ComponentName = T.ViewAttributi;
-            ///// TODO: TEMPORANEO SANGIACOMO
-            if (!ComponentName.Contains("blz:/") && IsMSG())
-                ComponentName = "blz:/dblu.Portale.Plugin.SanGiacomo.Pages.Custom.MSG_RegisterOrderPopUp";
-            else if (!ComponentName.Contains("blz:/") && !IsMSG())
-                ComponentName = "blz:/Orders/CPB_RegisterOrder";
-            ////  DA RIMUOVERE
+            string s =  T.ViewAttributi;
+            if (!string.IsNullOrEmpty(s))
+            {
+                if (s.Contains(";"))
+                {
+                    string[] Urls = s.Split(";");
+                    if (Urls.Count() > 1)
+                        ComponentName = Urls[1];
+                }
+                else ComponentName = s;
+            }
+
+            
             if (!ComponentName.StartsWith("blz:/"))
                 IsShowUndefined = true;
         }
@@ -1001,7 +1013,6 @@ else
             ActionSelected = T.Codice;
             ShowDossierConfirm = true;
         }
-
     }
 
     public async void OnCloseReg(bool Completed)

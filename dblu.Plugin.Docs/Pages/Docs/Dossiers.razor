@@ -25,7 +25,7 @@
 <SfCard>
     <CardHeader Title="Lista Fascicoli" />
     <CardContent EnableSeperator="true">
-        <SfGrid Height="615" SelectedRowIndex="0" ID="ODATA_Dossiers" DataSource="@DossiersData" EnablePersistence="false" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewFascicoli" Toolbar=@Tool>
+        <SfGrid Height="615" SelectedRowIndex="0" ID="Dossiers" DataSource="@DossiersData" EnablePersistence="true" AllowFiltering="true" AllowPaging="true" AllowSorting="true" TValue="viewFascicoli" Toolbar=@Tool>
             <GridEvents TValue="viewFascicoli" QueryCellInfo="CustomizeCell"  OnRecordDoubleClick="OnDoubleClick"></GridEvents>
             <GridPageSettings   PageSize="13"></GridPageSettings>
             <GridSearchSettings Fields=@(new string[] { "DscFascicolo", "DscCategoria","DscCategoria", "Campo1", "Campo2","Campo3","Campo4","Campo5","Campo6","Campo7","Campo8","Campo9","Campo10"})></GridSearchSettings>

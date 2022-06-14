@@ -134,7 +134,7 @@
                         <ItemsTable nItems="@Items" OnOpenItem="OnEditItem" OnSelectItem="OnSelItem"></ItemsTable>
                     </div>
                     <div style="align-self: auto;" class="col-6">
-                        <AttachmentsTable @ref="@AttGrid" nEnableRemove="@IsAdmin" OnAddRequested="OnAddAttach" OnRemoveAttachment="OnRemoveAttach" nItem="@Item" OnOpenAttachment="OnEditAttach" OnSelectAttachment="OnSelAttach" nEnableDownload="false"></AttachmentsTable>
+                        <AttachmentsTable @ref="@AttGrid" nEnableRemove="@IsAdmin"  OnAddRequested="OnAddAttach" OnRemoveAttachment="OnRemoveAttach" nItem="@Item" OnOpenAttachment="OnEditAttach" OnSelectAttachment="OnSelAttach" OnDownloadAttachment="OnDownloadAttach" nEnableDownload="true"></AttachmentsTable>
                     </div>
                 </div>
             </CardContent>
@@ -261,6 +261,15 @@
     {
         await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");        
         _NavigationManager.NavigateTo($"/Docs/Attachment/{Attach.IdAllegato.ToString()}");
+    }
+
+     /// <summary>
+    /// Download the attachment using Mailview controller
+    /// </summary>
+    /// <param name="Attach"></param>
+    public async void OnDownloadAttach(viewAllegati Attach)
+    {        
+        _NavigationManager.NavigateTo($"/MailView/DownloadFile?IdAllegato={Attach.IdAllegato}&NomeFile={Attach.NomeFile}", true);
     }
 
     /// <summary>

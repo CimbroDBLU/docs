@@ -18,13 +18,27 @@
     <SfCard>
         <CardHeader Title="Lista Tipi Elementi" />
         <CardContent EnableSeperator="true">
-            <SfGrid @ref="@Grid" ID="ItemsTypesGrid" EnablePersistence="true" DataSource="@nItems" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" Toolbar="@Tool">
+            <SfGrid @ref="@Grid" ID="ItemsTypesGrid" EnablePersistence="false" DataSource="@nItems" SelectedRowIndex="0" AllowPaging="true" AllowSorting="true" >
+                    <SfToolbar >
+                        <ToolbarEvents Clicked=OnToolbarClick></ToolbarEvents> 
+                        <ToolbarItems>
+                            <ToolbarItem Text="Nuovo" Id="New" TooltipText="Nuovo" PrefixIcon="e-add"></ToolbarItem>
+                            <ToolbarItem Text="Modifica" Id="Edit" TooltipText="Modifica" PrefixIcon="e-edit"></ToolbarItem>
+                            <ToolbarItem Text="Elimina" Id="Delete" TooltipText="Elimina" PrefixIcon="e-delete"></ToolbarItem>
+                            <ToolbarItem Text="Duplica" Id="Duplicate" TooltipText="Duplica" PrefixIcon="e-icons e-copy"></ToolbarItem>
+                            <ToolbarItem OnClick="OnUp" Text="Sù" Id="Up" TooltipText="Sposta in sù" PrefixIcon="e-icons e-arrow-up"></ToolbarItem>
+                            <ToolbarItem OnClick="OnDown" Text="Giù" Id="Down" TooltipText="Sposta in giù" PrefixIcon="e-icons e-arrow-down"></ToolbarItem>  
+                            <ToolbarItem OnClick="OnApply" Text="Applica posizione" Id="Apply" TooltipText="Applica posizionamento corrente" PrefixIcon="e-icons e-reapply"></ToolbarItem>
+                        </ToolbarItems>
+                    </SfToolbar>
                 <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Normal"></GridEditSettings>
                 <GridPageSettings PageSize="20"></GridPageSettings>
-                <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick" OnToolbarClick="OnToolbarClick" TValue="TipiElementi"></GridEvents>
+                <GridEvents OnActionBegin="OnActionBegin" OnActionComplete="OnActionEnd" OnRecordDoubleClick="OnDoubleClick"  TValue="TipiElementi"></GridEvents>
                 <GridColumns>
                     <GridColumn IsPrimaryKey="true" AllowEditing="true" AllowSorting="true" Field=@nameof(TipiElementi.Codice) HeaderText="Codice"></GridColumn>
                     <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(TipiElementi.Descrizione) HeaderText="Descrizione"></GridColumn>
+                    <GridColumn AllowEditing="true" AllowSorting="true" EditType="EditType.BooleanEdit" DisplayAsCheckBox="true" Field=@nameof(TipiElementi.Abilita) HeaderText="Abilita"></GridColumn>
+                    <GridColumn AllowEditing="false" AllowSorting="true" Field=@nameof(EmailServer.Posizione) HeaderText="Posizione"></GridColumn>
                     <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(TipiElementi.ViewAttributi) HeaderText="Attributi"></GridColumn>
                     <GridColumn AllowEditing="true" AllowSorting="true" Field=@nameof(TipiElementi.Processo) HeaderText="Processo"></GridColumn>
                     <GridColumn AllowEditing="true" AllowSorting="true" EditType="EditType.BooleanEdit" DisplayAsCheckBox="true" Field=@nameof(TipiElementi.AggregaAElemento) HeaderText="Aggrega a elemento"></GridColumn>
@@ -63,20 +77,10 @@
     /// </summary>
     protected override void OnInitialized()
     {
-        ItemsMan = new ElementiManager(_DbContext.Connessione, _Logger);
-        nItems = new ObservableCollection<TipiElementi>(ItemsMan.GetAllTipiElementi());
+        Refresh();
     }
 
-    /// <summary>
-    /// List of the buttons on toolbar of the grid
-    /// </summary>
-    private List<Object> Tool = new List<Object>()
-{
-            new ItemModel(){ Id="New",Text="Nuovo", TooltipText="Nuovo", PrefixIcon="e-add" } ,
-            new ItemModel(){ Id="Edit",Text="Modifica", TooltipText="Modifica", PrefixIcon="e-edit" } ,
-            new ItemModel(){ Id="Delete",Text="Elimina", TooltipText="Elimina", PrefixIcon="e-delete" },
-            new ItemModel(){ Id="Duplicate",Text="Duplica", TooltipText="Duplica", PrefixIcon="e-icons e-copy" }
-        };
+
 
     /// <summary>
     /// Show/Hide the dialog for deleting items
@@ -94,6 +98,11 @@
     private SfGrid<TipiElementi> Grid;
 
     /// <summary>
+    /// Identifies current selected lines (for keeping it during row movements)
+    /// </summary>
+    private int CurrSel { get; set; }=0;
+
+    /// <summary>
     /// When the grid do something, show the spinner
     /// </summary>
     private void OnActionBegin()
@@ -104,9 +113,10 @@
     /// <summary>
     /// When the grid stop doing something, hide the spinner
     /// </summary>
-    private void OnActionEnd()
+    private async  void OnActionEnd()
     {
         IsSpinnerVisible = false;
+        await Grid.SelectRow(CurrSel, true);
     }
     /// <summary>
     /// On double click edit the selected category
@@ -203,7 +213,68 @@
             IsSpinnerVisible = false;
         }
     }
+    
+    /// <summary>
+    /// Muove up current selected row
+    /// </summary>
+    public async void OnUp()
+    {      
+        int i=(int)(await Grid.GetSelectedRowIndexes()).FirstOrDefault();
+        if (i > 0)
+        {
+            nItems.Move(i, i - 1);
+            CurrSel = i - 1;
+        }
+    }
 
+    /// <summary>
+    /// Apply the current order into db
+    /// </summary>
+    public async void OnApply()
+    {
+        int Position = 0;
+        foreach (TipiElementi srv in nItems)
+        {
+            srv.Posizione = Position++;
+            ItemsMan.SalvaTipoElemento(srv);
+        }
+        Refresh();
+    }
+
+    /// <summary>
+    /// Move down current selected wor
+    /// </summary>
+    public async void OnDown()
+    {
+        int i = (int)(await Grid.GetSelectedRowIndexes()).FirstOrDefault();
+        if (i < nItems.Count - 1)
+        {
+            nItems.Move(i, i + 1);
+            CurrSel = i + 1;
+        }
+
+    }
+    
+    /// <summary>
+    /// On parameter set, refresh the grif
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        Refresh();
+    }
+
+
+    /// <summary>
+    /// Reload info from DB
+    /// </summary>
+    public void Refresh()
+    {
+        IsSpinnerVisible = true;
+        ItemsMan = new ElementiManager(_DbContext.Connessione, _Logger);
+        nItems = new ObservableCollection<TipiElementi>(ItemsMan.GetAllTipiElementi().OrderBy(c=>c.Posizione));
+        IsSpinnerVisible = false;
+
+    }
 
 }
 

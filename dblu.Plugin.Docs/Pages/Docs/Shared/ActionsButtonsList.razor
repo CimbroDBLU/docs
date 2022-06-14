@@ -15,13 +15,13 @@
     {
         @foreach (ActionTranslation A in ActionsList)
         {
-            <SfButton CssClass="e-primary mt-1 mr-1" OnClick="@(() => OnLinkItem(A.Item))">@A.Desc</SfButton>
+            <SfButton CssClass="e-primary ml-1 mb-1" OnClick="@(() => OnLinkItem(A.Item))">@A.Desc</SfButton>
         }
     }
-    <SfButton CssClass="e-primary mt-1 mr-1" OnClick="OnLink">Associa</SfButton>
+    <SfButton CssClass="e-primary ml-1 mb-1" OnClick="OnLink">Associa</SfButton>
     @if (nDisplayComplete)
     {
-        <SfButton CssClass="e-primary mt-1 mr-1" OnClick="OnComplete">Completa</SfButton>
+        <SfButton CssClass="e-success ml-1 mb-1" OnClick="OnComplete">Completa</SfButton>
         <dblu.Portale.Core.UI.DynamicComponent nType="@DynamicContent" nAttributes="@DynamicAttributes"></dblu.Portale.Core.UI.DynamicComponent>
     }
 </div>

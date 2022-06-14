@@ -264,7 +264,7 @@
     </SfCard>
 
     <QuestionDialog nTitle="Conferma"
-                    nText="Rimuovo l'email selezionata?"
+                    nText="Rimuovo le email selezionate?"
                     OnExitPressed="OnCloseDialog"
                     OnNoPressed="OnCloseDialog"
                     OnYesPressed="OnDeleteConfirmed"
@@ -516,7 +516,10 @@
     /// Body of the email
     /// </summary>
     public string Body { get; set; }
+
     private string Modulo { get; set; } = "50.1.5";
+
+    public List<AllegatoEmail> ToRemove { get; set; } = new();
 
     public Type DinamicComponent { get; set; } = null;
 
@@ -697,13 +700,13 @@
         IsLogsDialog = !IsLogsDialog;
     }
 
-    public string ciao { get; set; }
     /// <summary>
     /// Ask deletion confirm
     /// </summary>
     /// <param name="e"></param>
-    public async void OnDelete(AllegatoEmail e)
+    public async void OnDelete(List<AllegatoEmail> e)
     {
+        ToRemove = e;
         ShowConfirm = true;
     }
 
@@ -725,8 +728,9 @@
             Stopwatch sw = Stopwatch.StartNew();
             ShowConfirm = false;
             var User = _HttpContextAccessor.HttpContext.User;
-
-            var all = _MailService._allMan.Get(Attach.Id.ToString());
+            foreach(var att in ToRemove )
+            {
+            var all = _MailService._allMan.Get(att.Id.ToString());
             if (all != null)
             {
                 all.Stato = StatoAllegato.Annullato;
@@ -742,10 +746,9 @@
                 _MailService._logMan.Salva(log, true);
                 Grid.RemoveItem(all.Id.ToString());
                 ToastOK.Show();
-            }
-
-            
+            }            
             _Logger.LogInformation($"Inbox[MAIL].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
+            }
         }
         catch (Exception ex)
         {

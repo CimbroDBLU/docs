@@ -599,13 +599,20 @@ namespace dblu.Portale.Plugin.Documenti.Controllers
             string NomeView = @"/Pages/Action/Partials/Form/EditElemento.cshtml";
             var e = _mailService._elmMan.Get(IdElemento, 0);
             if (e != null) {
-                //var x = _mailService.MarcaAllegati(e);
+
                 e.IdFascicoloNavigation = _mailService._fasMan.Get(e.IdFascicolo);
-                
-                if (! string.IsNullOrEmpty(e.TipoNavigation.ViewAttributi)){
-                    NomeView = e.TipoNavigation.ViewAttributi;
+
+                string s = e.TipoNavigation.ViewAttributi;
+                if (!string.IsNullOrEmpty(s))
+                {
+                    if (s.Contains(";"))
+                    {
+                        string[] Urls = s.Split(";");
+                        if(Urls.Count()>0)
+                            NomeView = Urls[0];
+                    }
+                    else NomeView = s;
                 }
-               // HttpContext.Session.SetString("editDettaglioElemento", JsonConvert.SerializeObject(e));
             }
             return PartialView(NomeView, e);
         }

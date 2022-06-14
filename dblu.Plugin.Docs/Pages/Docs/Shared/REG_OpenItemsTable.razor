@@ -11,10 +11,10 @@
     <div>
         <SfSpinner @bind-Visible="IsSpinnerVisible">
         </SfSpinner>
-        <SfGrid SelectedRowIndex="0" DataSource="@nItems" AllowSorting="true" AllowFiltering="true" AllowTextWrap="false" AllowPaging="true">
+        <SfGrid Height="@nHeight" SelectedRowIndex="0" DataSource="@nItems" AllowSorting="true" AllowFiltering="true" AllowTextWrap="false" AllowPaging="true">
             <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
             <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
-            <GridPageSettings PageSize="5"></GridPageSettings>
+            <GridPageSettings PageSize="@nPageSize"></GridPageSettings>
             <GridColumns>
                 <GridColumn Field=@nameof(ISoggettoElementiAperti.Numero) IsPrimaryKey="true" HeaderText="Numero"></GridColumn>
                 <GridColumn Field=@nameof(ISoggettoElementiAperti.Riferimento) HeaderText="Riferimento"></GridColumn>
@@ -38,6 +38,17 @@
     [Parameter]
     public EventCallback<int> OnOpenItems { get; set; }
 
+    /// <summary>
+    /// Height of the grid in pixels
+    /// </summary>
+    [Parameter]
+    public string nHeight { get; set; } = "";
+
+    /// <summary>
+    /// Number of elements per page
+    /// </summary>
+    [Parameter]
+    public int nPageSize { get; set; } = 5;
 
     /// <summary>
     /// Previously Customer code, to avoid reloading same events

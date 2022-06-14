@@ -26,7 +26,7 @@
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSizes="true" PageSize="20"></GridPageSettings>
-    <GridEvents TValue="Allegati" OnDataBound="OnDataBoundHandler" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
+    <GridEvents TValue="Allegati" OnDataBound="OnDataBoundHandler" OnActionBegin="OnActionBegin" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
 
     <SfSpinner @bind-Visible="IsSpinnerVisible">
     </SfSpinner>
@@ -151,7 +151,7 @@
         /// </summary>
         Processed
     };
-    
+
     /// <summary>
     /// Id of the table
     /// </summary>
@@ -275,9 +275,9 @@
     private DateTime LastFileTime { get; set; }
 
     /// <summary>
-    /// List of previous selected attach on the table, AttachID and Page inheritdoc witch it is(was)
+    /// List of previous selected attach on the table
     /// </summary>
-    private List<(string,int)> SelectedIndexes { get; set; } = new();
+    private List<string> SelectedIndexes { get; set; } = new();
 
     /// <summary>
     /// Clear the selection
@@ -289,7 +289,7 @@
         }
         catch(Exception ex)
         {
-             _Logger.LogError($"FileTable.ClearSelectionAsync: Unexpcted error  {ex}");
+            _Logger.LogError($"FileTable.ClearSelectionAsync: Unexpcted error  {ex}");
         }
     }
 
@@ -458,7 +458,7 @@
                 SelectedIndexes.Clear();
                 List<string> T = (await Grid.GetSelectedRecordsAsync()).Select(c=>c.Id.ToString()).ToList();
                 foreach (var index in T)
-                    SelectedIndexes.Add((index,Grid.PageSettings.CurrentPage));
+                    SelectedIndexes.Add(index);
                 await Grid.ClearSelectionAsync();
             }
             else ClearSelectionAsync();
@@ -494,9 +494,9 @@
                         IsSpinnerVisible = false;
                     });
                 }catch(Exception ex)
-                    {
-                        _Logger.LogError($"FileTable.Refresh(1): Unexpcted error  {ex}");
-                    }
+                {
+                    _Logger.LogError($"FileTable.Refresh(1): Unexpcted error  {ex}");
+                }
             });   
         }catch(Exception ex)
         {
@@ -513,6 +513,15 @@
         SearchKey = Grid.SearchSettings.Key;
     }
 
+    /// <summary>
+    /// On change page, allow to change selection
+    /// </summary>
+    /// <param name="args"></param>
+    public void OnActionBegin(ActionEventArgs<Allegati> args)
+    {
+        if (args.RequestType == Syncfusion.Blazor.Grids.Action.Paging)
+                SelectedIndexes.Clear();
+    }
 
     /// <summary>
     /// Page in witch i am searching th selection (sometimes seems not keep the page so, if i cannot find the item, i search from page 1 to )
@@ -526,17 +535,21 @@
     {
         try
         {
+
             foreach (var index in SelectedIndexes)    
             {
-                if(Grid.PageSettings.CurrentPage!= index.Item2)
+                Allegati e = Grid.CurrentViewData.Where(x => (x as Allegati).Id == Guid.Parse(index)).FirstOrDefault() as Allegati;
+                var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(Guid.Parse(index));
+                if(PrimayIndex==-1 && Page < 100 && nFiles.Any(x=>x.Id==Guid.Parse(index)))
                 {
-                    await Grid.GoToPageAsync(index.Item2);
+                    await Grid.GoToPageAsync(Page++);
                     return;
                 }
-                var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(Guid.Parse(index.Item1));
-                if(PrimayIndex!=-1)
-                    await Grid.SelectRowAsync(PrimayIndex);
+                Page = 1;
+                await Grid.SelectRowAsync(PrimayIndex);     
+                OnSelectAttachment.InvokeAsync((e,false));                                             
             }
+
 
             _Logger.LogDebug("FileTable.DataBoundHandler: Selection empty -> AutoSelection needed");
 

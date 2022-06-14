@@ -18,6 +18,10 @@ using System.Reflection;
 
 namespace dblu.Portale.Plugin.Docs.Actions
 {
+    public static class DocLayer
+    {
+        public static IServiceProvider ServiceProvider { get; set; }
+    }
     /// <summary>
     /// Class for register services of this plug in
     /// </summary>
@@ -35,6 +39,8 @@ namespace dblu.Portale.Plugin.Docs.Actions
         /// <param name="serviceProvider">Service provider of the service</param>
         public void Execute(IServiceCollection services, IServiceProvider serviceProvider)
         {
+            DocLayer.ServiceProvider=serviceProvider;
+
             services.AddDbContext<dbluDocsContext>();
             services.AddTransient<ISoggettiService, SoggettiService>();
             services.AddScoped<AllegatiService>();

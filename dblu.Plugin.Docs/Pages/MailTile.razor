@@ -1,10 +1,12 @@
-﻿@*
+﻿@using dblu.Portale.Core.Infrastructure.Identity.Classes
+@using dblu.Portale.Core.Infrastructure.Identity.Services
+@*
     Component for displaying a Tile with the incoming emails
     MailView/InArrivo
 *@
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
 @inject AuthenticationStateProvider _AuthenticationStateProvider
-@inject IConfiguration _conf
+@inject IApplicationUsersManager _ApplicationUserManager
 @inject ILogger<MailTile> _Logger
 
 
@@ -24,7 +26,7 @@
     /// <summary>
     /// Link to Open
     /// </summary>
-    public string Link => string.IsNullOrEmpty(_conf["Beta"]) ? "MailView/InArrivo" : "Mail/Inbox";
+    public string Link { get; set; }
 
     /// <summary>
     /// On Init component
@@ -34,6 +36,13 @@
         Stopwatch SW = Stopwatch.StartNew();
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
+
+        ApplicationUser AU = _ApplicationUserManager.GetUser(user.Identity.Name);
+        string Version=AU.Properties["VERSION"]?.ToString() ?? "STANDARD";
+        Link="/Mail/Inbox";
+        if(Version=="BETA") Link="/MailUI/Inbox";
+        if(Version=="LEGACY") Link="/MailView/InArrivo";
+
         Number = _MailService.CountEmailInArrivo("EMAIL", user.Claims).ToString();
         _Logger.LogDebug($"MailTile.OnInitialized: {Number} emails in {SW.ElapsedMilliseconds} ms");
 

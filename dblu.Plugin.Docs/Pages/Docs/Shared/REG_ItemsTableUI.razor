@@ -1,0 +1,455 @@
+﻿@*
+    Component for showing a table with all items inside this Dossier
+*@
+@using Microsoft.AspNetCore.Hosting
+@using dblu.Portale.Plugin.Docs.Classes
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Class
+@using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Models
+@using dblu.Portale.Plugin.Docs.Services
+@using System.Security.Claims
+@using System.IO
+@using Microsoft.AspNetCore.Components.CompilerServices
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using dblu.Portale.Plugin.Docs.Pages.Custom
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using dblu.Docs.Interfacce
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _ele
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
+@inject dblu.Docs.Classi.DocumentTransformationService _DocumentService
+@inject IHostingEnvironment _environment
+@inject dblu.Docs.Interfacce.ISoggettiService _SubjectService
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+@inject ProtectedSessionStorage _SessionStore
+@inject NavigationManager  _NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ILogger<REG_ItemsTable> _Logger
+
+<style>
+
+    .smallb {
+        width: 50px;
+    }
+
+    .e-toolbar .e-dblu .e-icons {
+        background-color: Highlight;
+        color: white;
+        font-weight: bold;
+    }
+
+    .e-toolbar.e-toolbar-items .e-toolbar-item.e-dblu,
+    .e-toolbar.e-toolbar-items .e-toolbar-item.e-dblu button {
+        background-color: Highlight;
+        color: white;
+        font-weight: bold;
+    }
+
+        .e-toolbar .e-toolbar-items .e-toolbar-item.e-dblu .e-tbar-btn-text,
+        .e-toolbar .e-toolbar-items .e-toolbar-item.e-dblu .e-tbar-btn.e-btn,
+        .e-toolbar .e-toolbar-items .e-toolbar-item.e-dblu .e-tbar-btn.e-icons,
+        .e-toolbar .e-toolbar-items.e-dblu .e-toolbar-item.e-dblu .e-tbar-btn.e-btn:hover,
+        .e-toolbar .e-toolbar-items .e-toolbar-item.e-dblu .e-tbar-btn.e-btn:active,
+        .e-toolbar.e-toolbar-items .e-toolbar-item.e-dblu .e-tbar-btn.e-btn:focus {
+            background-color: Highlight;
+            color: white;
+            font-weight: bold;
+        }
+</style>
+
+@if (nItems != null && nItems.Count != 0)
+{
+    <SfSpinner @bind-Visible="IsSpinnerVisible">
+    </SfSpinner>
+
+    <SfGrid @ref="@Grid" DataSource="@nItems" AllowTextWrap="false" AllowPaging="true">
+        <SfToolbar>
+            <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
+            <ToolbarItems>
+                <ToolbarItem Id="Open" PrefixIcon="e-icons e-folder-open" TooltipText="Apri" Disabled="@(!IsItemSelected)"></ToolbarItem>
+                  
+                <ToolbarItem Id="Duplicate" PrefixIcon="e-icons e-copy" TooltipText="Duplica" Disabled="@(!IsItemSelected)"></ToolbarItem>
+                <ToolbarItem Id="Print" CssClass="e-dblu" PrefixIcon="e-icons e-print" Disabled="@(!(IsItemSelected && IsSummaryActive))"></ToolbarItem>
+                <ToolbarItem Id="Delete" PrefixIcon="e-delete" TooltipText="Elimina" Disabled="@(!IsItemSelected)"></ToolbarItem>
+                <ToolbarItem Align=ItemAlign.Right Id="SearchItem" Type="ItemType.Input">
+                    <Template>
+                        <SfTextBox @ref="@SearchText" ID="SearchItemText" EnablePersistence="false"  Autocomplete="AutoComplete.On"  @bind-Value="@SearchKey" @onchange="OnSearch" Placeholder="Ricerca" Created="@OnSearchCreated"></SfTextBox>
+                    </Template>
+                </ToolbarItem>
+            </ToolbarItems>
+        </SfToolbar>
+        <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
+        <GridEvents TValue="EmailElementi" RowSelected="OnRecordSelect" RowDeselected="OnRecordDeselected" OnRecordDoubleClick="OnDoubleClick"></GridEvents>
+        <GridPageSettings PageSize="4"></GridPageSettings>
+        <GridColumns>
+            <GridColumn Field=@nameof(EmailElementi.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
+            <GridColumn Width="40px" Field=@nameof(EmailElementi.IsUltimo) HeaderText="Ult"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.DscTipoElemento) HeaderText="Tipo"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.DscElemento) HeaderText="Descrizione"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo1) HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo2) HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo3) HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo4) HeaderText="@Cols[3].Des" Visible="@Cols[3].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo5) HeaderText="@Cols[4].Des" Visible="@Cols[4].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Stato) HeaderText="Stato"></GridColumn>
+
+            <GridColumn Width="40px" AllowSorting="true" Field=@nameof(EmailElementi.LastOp) HeaderText="Last">
+                <Template>
+                    <LastOperation nOperation="@((context as EmailElementi).LastOp)"></LastOperation>
+                </Template>
+            </GridColumn>
+        </GridColumns>
+    </SfGrid>
+}
+<Toast @ref="ToastDupOK" nToastType="Toast.e_ToastType.OK" nTitle="Duplica elemento" nContent="Elemento duplicato"></Toast>
+<Toast @ref="ToastDupKO" nToastType="Toast.e_ToastType.Fail" nTitle="Duplica elemento" nContent="Duplicazione non riuscita"></Toast>
+<Toast @ref="ToastDelOK" nToastType="Toast.e_ToastType.OK" nTitle="Rimuovi elemento" nContent="Elemento rimosso"></Toast>
+<Toast @ref="ToastDelKO" nToastType="Toast.e_ToastType.Fail" nTitle="Rimuovi elemento" nContent="Rimozione non riuscita"></Toast>
+
+<AlertDialog nShowDialog="ShowAlertNoDelete" nText="Non è possibile eliminare un elemento già processato." OnOKPressed="()=> { ShowAlertNoDelete = false; }" OnClose="()=> { ShowAlertNoDelete = false; }"></AlertDialog>
+<QuestionDialog nShowDialog="ShowDeleteConfirm" nText="Sei sicuro di eliminare completamente l'elemento?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Delete"></QuestionDialog>
+
+<QuestionDialog nShowDialog="ShowDuplicateConfirm" nText="Confermi la creazione di un nuovo elemento nel fascicolo corrente?" nTitle="Conferma" OnClose="CloseDialog" OnNoPressed="CloseDialog" OnExitPressed="CloseDialog" OnYesPressed="Duplicate"></QuestionDialog>
+
+@code {
+
+    /// <summary>
+    /// Id of the current attachment
+    /// </summary>
+    [Parameter]
+    public string nAttachID { get; set; }
+
+    /// <summary>
+    /// Id of the current Dossier
+    /// </summary>
+    [Parameter]
+    public string nDossierID { get; set; }
+
+    /// <summary>
+    /// The costumer code of this dossier
+    /// </summary>
+    [Parameter]
+    public string nCostumerCode { get; set; }
+
+    /// <summary>
+    /// The list of the attachments related to this email attach
+    /// </summary>
+    [Parameter]
+    public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
+
+    /// <summary>
+    /// The current documetn in memory
+    /// </summary>
+    [Parameter]
+    public MemoryStream nCurrentDocument { get; set; }
+
+    /// <summary>
+    /// Fires when the Dossier has be changed
+    /// </summary>
+    [Parameter]
+    public EventCallback<Fascicoli> OnRefresh { get; set; }
+
+    /// <summary>
+    /// Inidicate id the toolbar button for printing the summary is enable or not
+    /// </summary>
+    public bool IsSummaryActive => (nItems?.Where(x => (int)x.Stato > 1).FirstOrDefault() == null) ? false : true;
+
+    /// <summary>
+    /// Indicates if item has been selected
+    /// </summary>
+    public bool IsItemSelected { get; set; } = false;
+
+    /// <summary>
+    /// Current User
+    /// </summary>
+    private ClaimsPrincipal User { get; set; }
+
+    /// <summary>
+    /// Last attach ID showed
+    /// </summary>
+    public string LastAttachId { get; set; }
+
+    /// <summary>
+    /// Last dossier Id
+    /// </summary>
+    public string LastDossierId { get; set; }
+
+    /// <summary>
+    /// List of items
+    /// </summary>
+    public ObservableCollection<EmailElementi> nItems { get; set; } = new();
+
+    /// <summary>
+    /// Show the alert fon notify that an item cannot be deleted
+    /// </summary>
+    private bool ShowAlertNoDelete { get; set; } = false;
+
+    /// <summary>
+    /// Show the delete confirmation
+    /// </summary>
+    private bool ShowDeleteConfirm { get; set; } = false;
+
+    /// <summary>
+    /// Reference to the grid
+    /// </summary>
+    private SfGrid<EmailElementi> Grid { get; set; }
+
+    /// <summary>
+    /// Idnicates is undefined component has to be showed or not
+    /// </summary>
+    private bool IsShowUndefined { get; set; } = false;
+
+    /// <summary>
+    /// List of custom columns of the items
+    /// </summary>
+    private List<Colonna> Cols { get; set; } = new List<Colonna>();
+
+    /// <summary>
+    /// Spinner that will be shown wile document loading
+    /// </summary>
+    private bool IsSpinnerVisible { get; set; }
+
+    /// <summary>
+    /// Text box for seaching
+    /// </summary>
+    private SfTextBox SearchText { get; set; }
+
+    /// <summary>
+    /// The key text type inside search box
+    /// </summary>
+    private string SearchKey { get; set; } = "";
+
+    /// <summary>
+    /// Pre-selected Item
+    /// </summary>
+    [Parameter]
+    public string nSelectedItem{  get;  set; }
+
+    /// <summary>
+    /// Last last selected item
+    /// </summary>
+    public string LastSelectedItem{  get;  set; }
+
+    /// <summary>
+    /// Item selected for an operation 
+    /// </summary>
+    private EmailElementi nItem;
+
+    /// <summary>
+    /// Show /hide the duplicate confirmation
+    /// </summary>
+    private bool ShowDuplicateConfirm { get; set; } = false;
+
+    /// <summary>
+    /// Toast for a positive duplication
+    /// </summary>
+    private Toast ToastDupOK { get; set; }
+
+    /// <summary>
+    /// Toast for a negative duplication
+    /// </summary>
+    private Toast ToastDupKO { get; set; }
+
+    /// <summary>
+    /// Toast for a positive deletion
+    /// </summary>
+    private Toast ToastDelOK { get; set; }
+
+    /// <summary>
+    /// Toast for a negative deletion
+    /// </summary>
+    private Toast ToastDelKO { get; set; }
+
+    /// <summary>
+    /// On initialize load all data
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+        User = authState.User;
+        Cols = _ele.GetColonne("vELEMENTO");
+    }
+
+    /// <summary>
+    /// Close dialogs
+    /// </summary>
+    public async void CloseDialog()
+    {
+        ShowDuplicateConfirm = false;
+    }
+
+    /// <summary>
+    /// Duplicate current Item
+    /// </summary>
+    public async void Duplicate()
+    {
+        var f = await _MailService.DuplicateItemAsync(nAttachID, nDossierID, nItem.IdElemento.ToString(), nItem.TipoElemento, nCostumerCode, _MailService._soggetti.GetSoggetto(nCostumerCode)?.Nome ?? "",nAttachments.ToList(),nItem.DscElemento, User,nCurrentDocument);
+        if (f != null)
+            ToastDupOK.Show();
+        else ToastDupKO.Show();
+
+        ShowDuplicateConfirm = false;
+        OnOpen(new EmailElementi() { IdElemento = f.Id, TipoElemento = f.Tipo });
+    }
+
+    /// <summary>
+    /// On parameter setted relof the grid if necessary
+    /// </summary>
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            if (LastAttachId == nAttachID && LastDossierId == nDossierID && LastSelectedItem==nSelectedItem) return;
+
+
+
+            IsSpinnerVisible = true;
+
+            LastDossierId = nDossierID;
+            LastAttachId = nAttachID;
+            LastSelectedItem = nSelectedItem;        
+            Stopwatch sw = Stopwatch.StartNew();
+            nItems = new ObservableCollection<EmailElementi>(_MailService.ListaElementiEmail(nDossierID, nAttachID));
+            _Logger.LogDebug($"REG_ItemsTable.OnParametersSetAsync: Red Dossier {nDossierID}, all items in {sw.ElapsedMilliseconds} ms");
+
+
+            string ItemS = nSelectedItem;
+            if(!string.IsNullOrEmpty(ItemS))
+            {
+                int Index = nItems.ToList().FindIndex(d => d.Id == ItemS);
+                _Logger.LogDebug($"REG_ItemsTable.OnParametersSetAsync: Select {Index}");      
+                Grid?.SelectRowAsync((double)Index);              
+
+            }
+            Fascicoli Dossier = _MailService._fasMan.Get(nDossierID);
+            InvokeAsync(() => { OnRefresh.InvokeAsync(Dossier); });
+
+            IsSpinnerVisible = false;
+        }
+        catch (Exception ex)
+        {
+            IsSpinnerVisible = false;
+            _Logger.LogError($"REG_ItemsTable.OnParametersSetAsync: Unexpected error {ex}");
+        }
+    }
+
+    /// <summary>
+    /// Refresh the grid
+    /// </summary>
+    public void Refresh()
+    {
+        LastAttachId = "-";
+        OnParametersSetAsync();
+        Grid?.Refresh();
+    }
+
+    /// <summary>
+    /// On record select forward the selection
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnRecordSelect(RowSelectEventArgs<EmailElementi> args)
+    {
+        IsItemSelected =  (await Grid.GetSelectedRecords()).Any();       
+    }
+
+    /// <summary>
+    /// On record deselected
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnRecordDeselected(RowDeselectEventArgs<EmailElementi> args)
+    {
+        IsItemSelected =  (await Grid.GetSelectedRecords()).Any();
+
+    }
+
+    /// <summary>
+    /// On toolbar click, do the requested operation
+    /// </summary>
+    /// <param name="args"></param>
+    public async void OnToolbarClick(Syncfusion.Blazor.Navigations.ClickEventArgs args)
+    {
+        EmailElementi Elem = (await Grid.GetSelectedRecords()).FirstOrDefault();
+        string z = _NavigationManager.Uri;
+        if (Elem == null) return;
+        nItem = Elem;
+
+        switch (args.Item.Id)
+        {
+            case "Open":
+                OnOpen(Elem);
+                break;
+             case "Duplicate":
+                ShowDuplicateConfirm = true;
+                break;
+            case "Delete":
+                if (((int)nItem.Stato) > 1)
+                    ShowAlertNoDelete = true;
+                else
+                    ShowDeleteConfirm = true;
+                break;
+            case "Print":
+                if (((int)nItem.Stato) > 1)
+                {
+                    await _SessionStore.SetAsync("Referrer", $"/{ _NavigationManager.Uri.Replace(_NavigationManager.BaseUri, "")}/{nAttachID}");
+                    string url = $"/Docs/Attachment/{nAttachID}/{"false"}/{"true"}";
+                    JSRuntime.InvokeAsync<object>("open", url, "_blank");
+                }
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Delete selected item
+    /// </summary>
+    public async void Delete()
+    {
+        RisultatoAzione RA = _MailService.CancellaElemento(nItem.IdElemento.ToString(), (short)0, User);
+
+        if (RA.Successo)
+            ToastDelOK.Show();
+        else ToastDelKO.Show();
+
+        ShowDeleteConfirm = false;
+        Refresh();
+    }
+
+    /// <summary>
+    /// Open the selected element
+    /// </summary>
+    /// <param name="Elem"></param>
+    public async void OnOpen(EmailElementi Elem)
+    {
+        _NavigationManager.NavigateTo($"/Mail/EditRegister/{Elem.Id}");
+    }
+
+
+    /// <summary>
+    /// Add the search icon to the text box
+    /// </summary>
+    public void OnSearchCreated()
+    {
+        this.SearchText.AddIcon("append", "e-icons e-search");
+    }
+
+    /// <summary>
+    /// Apply the search
+    /// </summary>
+    public void OnSearch()
+    {
+        Grid.SearchAsync(SearchKey);
+    }
+
+    
+
+    /// <summary>
+    /// On double click open the Dossier
+    /// </summary>
+    /// <param name="args"></param>
+    public void OnDoubleClick(RecordDoubleClickEventArgs<EmailElementi> args)
+    {
+       OnOpen(args.RowData);
+    }
+
+}

@@ -1,0 +1,620 @@
+﻿
+@page "/Mail/Register/{nAttach}"
+@page "/Mail/Register/{nAttach}/{nType}"
+@page "/Mail/EditRegister/{nItemId}"
+
+@using Microsoft.AspNetCore.Components.CompilerServices
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using System.IO
+@using dblu.Docs.Classi
+@using dblu.Docs.Interfacce
+@using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject ProtectedSessionStorage _SessionStore
+@inject NavigationManager  _NavigationManager
+@inject IJSRuntime _JSRuntime
+@inject ILogger<Register> _Logger
+@inject ISoggettiService _SubjectService
+
+<dblu.Portale.Core.UI.PageTitle nTitle="Inbox" />
+
+<section class="content">
+        <SfCard>
+        <CardHeader Title=@((!IsNewItem)?$"Gestici l\'email [{@Attach.Chiave5}] da {@Attach.Chiave4}":$"Registra l\'email [{@Attach.Chiave5}] come {@EditItemType?.Descrizione}") />
+        <CardContent EnableSeperator="true">
+            <div class="row">
+                
+                <div class="col-5" style="align-self: auto;">     
+                    @if(!IsNewItem)
+                    {
+                    @*SUMMARY*@
+                    <div class="row form-group">
+                       <div class="col">
+                         <SfAccordion>
+                            <AccordionItems>
+                                <AccordionItem Expanded=true>
+                                    <HeaderTemplate>
+                                        <div>@Attach.Chiave5</div>
+                                    </HeaderTemplate>
+                                        <ContentTemplate>
+                                        <AttachDetail nAttach=@Attach />
+                                </ContentTemplate>
+                                </AccordionItem>
+                            </AccordionItems>
+                         </SfAccordion>
+                        </div>
+                    </div>
+                   
+                    @*RECENTI*@
+                    <div class="row form-group">
+                        <div class="col">
+                            <SfAccordion>
+                                <AccordionItems>
+                                    <AccordionItem Expanded=@IsCustomerExpand>
+                                        <HeaderTemplate>
+                                            <div>Ordini recenti</div>
+                                        </HeaderTemplate>
+                                        <ContentTemplate>
+                                            <REG_OpenItemsTable nHeight="125px" nPageSize="5" nCustomerCode="@Attach.Chiave3"  OnOpenItems=OnOpenItems></REG_OpenItemsTable>
+                                        </ContentTemplate>
+                                    </AccordionItem>
+                                </AccordionItems>
+                            </SfAccordion>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <SfAccordion>
+                                <AccordionItems>
+                                    <AccordionItem Expanded=true>
+                                        <HeaderTemplate>
+                                           <div>@DossierDesc</div>
+                                        </HeaderTemplate>
+                                        <ContentTemplate>   
+                                             <REG_ItemsTableUI @ref="ItemsTable" nAttachID="@nAttach" nCostumerCode="@(Attach.Chiave3)" nDossierID=@(Attach.IdFascicolo.ToString()) nAttachments="@SourceAttach" nCurrentDocument=@LastDocumentFromAttach OnRefresh=OnRefreshDossier></REG_ItemsTableUI>
+                                        </ContentTemplate>
+                                    </AccordionItem>
+                                </AccordionItems>
+                            </SfAccordion>
+                        </div>
+                    </div>
+
+
+                    }
+                    else
+                    {
+                     @*REGISTRAZIONE*@
+                     <div class="row">
+                        <div class="col">
+                            <SfAccordion>
+                                <AccordionItems>
+                                    <AccordionItem Expanded=true>
+                                        <HeaderTemplate>
+                                            <div>Registra @EditItemType?.Descrizione</div>
+                                        </HeaderTemplate>
+                                        <ContentTemplate>
+                                            <dblu.Portale.Core.UI.DynamicComponent nType="@DynamicContent" nAttributes="@DynamicAttributes"></dblu.Portale.Core.UI.DynamicComponent>
+                                        </ContentTemplate>
+                                    </AccordionItem>
+                                </AccordionItems>
+                            </SfAccordion>
+                        </div>
+                    </div>
+                    }
+                        
+                </div>
+   
+                <div class="col-7" style="align-self: auto;">
+                @*LISTA BOTTONI*@
+                @if(!IsNewItem)
+                    {
+                    <div class="row form-group">
+                        <div class="col">
+                            <OperationList nAttach=Attach nRecordServer=TipiRecordServer.CartellaMail nDocumentType=TipiDocumentiFile.ZIP OnLinkItemPressed="OnNewItem" nDisplayComplete=@(ItemsTable?.IsSummaryActive??false) nDossierID=@(Attach.IdFascicolo.ToString()) nAttachments="@SourceAttach" OnAttachCompleted="OnCompleted" nCurrentDocument=@LastDocumentFromAttach></OperationList>
+                       </div>
+                    </div>
+                    }
+
+                @*PDF VIEWER*@
+                <div class="row form-group">
+                    <div class="col">
+                        <SfAccordion>
+                            <AccordionItems>
+                                <AccordionItem Expanded="true">
+                                    <HeaderTemplate>
+                                        <div>Anteprima</div>
+                                    </HeaderTemplate>
+                                    <ContentTemplate>                                                
+                                        <DocViewer nHeight=570 @ref="@Viewer"  nSourceType="Classes.e_SourceType.Attachment" OnDocumentTransformed=OnDocumentTransformedZ nDocIdentifier="@Attach.Id.ToString()"></DocViewer>
+                                    </ContentTemplate>
+                                </AccordionItem>
+                            </AccordionItems>
+                        </SfAccordion>
+                    </div>
+                </div>
+
+                @*ALLEGATI EMAIL*@
+                <div class="row">
+                    <div class="col">
+                        <SfAccordion>
+                            <AccordionItems>
+                                <AccordionItem Expanded="@(IsAttachExpanded)">
+                                    <HeaderTemplate>
+                                        <div>Allegati in Email</div>
+                                    </HeaderTemplate>
+                                    <ContentTemplate>
+                                        <OriginalAttachsTable nAttachID="@nAttach" nAttachments="@SourceAttach"></OriginalAttachsTable>
+                                    </ContentTemplate>
+                                </AccordionItem>
+                            </AccordionItems>
+                        </SfAccordion>
+                    </div>
+                </div>
+                    
+            </div>
+        </div>
+                        <div class="row">
+                    <div class="col-12">
+                    <SfButton CssClass="mt-2 e-primary" OnClick="GoBack">Indietro</SfButton>
+                    </div>
+                </div>
+        </CardContent>
+
+
+
+    </SfCard>
+
+     <Toast @ref="ToastAttachOK" nToastType="Toast.e_ToastType.OK" nTitle="Allega a fascicolo\elemento" nContent="@LinkDescription"></Toast>
+
+    @if (IsShowDialog)
+    {
+    <dblu.Portale.Core.UI.DynamicComponent nType="@DynamicContentDialog" nAttributes="@DynamicAttributesDialog"></dblu.Portale.Core.UI.DynamicComponent>
+    }
+</section>
+
+@code 
+{
+    [Parameter]
+    public string nAttach { get; set; } = "";
+
+    [Parameter]
+    public string nType { get; set; } = "";
+
+    [Parameter]
+    public string nItemId { get; set; } = "";
+
+    /// <summary>
+    /// Document viewer
+    /// </summary>
+    private DocViewer Viewer { get; set; }
+
+    public Allegati Attach{ get; set; }
+
+    public bool IsNewItem { get; set; } = false;
+
+    public TipiElementi EditItemType { get; set; } = null;
+
+    private REG_ItemsTableUI ItemsTable{ get; set; }
+
+    /// <summary>
+    /// List of current Attach source Attachments
+    /// </summary>
+    private ObservableCollection<OriginalAttachments> SourceAttach { get; set; } = new();
+
+    /// <summary>
+    /// Indicates if Mail attachments panel is visible
+    /// </summary>
+    private bool IsAttachVisible { get; set; } = false;
+
+    /// <summary>
+    /// Indicates if Mail attachments panel has has to be expanded
+    /// </summary>
+    private bool IsAttachExpanded { get; set; } = false;
+
+    /// <summary>
+    /// Indicateds if costumer block has to be expanded
+    /// </summary>
+    private bool IsCustomerExpand { get; set; } = true;
+
+    private bool IsOpenItemsVisible { get; set; } = false;
+
+
+    private string DossierDesc { get; set; }  = "Fascicolo da selezionare";
+
+    /// <summary>
+    /// Dinamic component to load
+    /// </summary>
+    private Type DynamicContent { get; set; } = null;
+
+    /// <summary>
+    /// Attributes of the dynamic compponent
+    /// </summary>
+    private ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> DynamicAttributes = new();
+
+
+    /// <summary>
+    /// Dinamic component to load
+    /// </summary>
+    private Type DynamicContentDialog { get; set; } = null;
+
+    /// <summary>
+    /// Attributes of the dynamic compponent
+    /// </summary>
+    private ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> DynamicAttributesDialog = new();
+
+    /// <summary>
+    /// Last document loaded from an attach
+    /// </summary>
+    public MemoryStream LastDocumentFromAttach { get; set; } = new();
+
+    private Toast ToastAttachOK { get; set; }
+
+    private bool IsShowDialog { get; set; } = false;
+
+    private Elementi nItem { get; set; } = null;
+    private string LinkDescription{ get; set; }
+
+    public bool DisplayComplete { get; set; } = false;
+
+    protected override async void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(nItemId))
+        {
+            nItem = _MailService._elmMan.Get(nItemId, 0);
+            EditItemType =_MailService._elmMan.GetTipoElemento(nItem.Tipo);
+            // Carico componente dinamico
+            LoadDynamicComponent(EditItemType);
+            Attach=_MailService._elmMan.GetAllAllegatiElemento(nItem.Id).Where(x => x.Tipo == "FILE").OrderByDescending(x => x.DataC).FirstOrDefault();
+            nAttach = Attach.Id.ToString();
+            Attach = _MailService._allMan.Get(Attach.Id);
+            _Logger.LogInformation($"RegisterAttach.OnInitialized: Init as EDIT {nAttach}");
+        }
+        else
+        {
+            Attach = _MailService._allMan.Get(nAttach);
+            _Logger.LogInformation($"RegisterAttach.OnInitialized: Init as NEW {nAttach}");
+        }
+    }
+
+    protected override async void OnParametersSet()
+    {
+        if (!string.IsNullOrEmpty(nItemId))
+        {
+            IsNewItem = true;
+            nItem = _MailService._elmMan.Get(nItemId, 0);
+            EditItemType =_MailService._elmMan.GetTipoElemento(nItem.Tipo);
+            // Carico componente dinamico
+            LoadDynamicComponent(EditItemType); 
+            Attach=_MailService._elmMan.GetAllAllegatiElemento(nItem.Id).Where(x => x.Tipo == "FILE").OrderByDescending(x => x.DataC).FirstOrDefault();            
+            nAttach =Attach.Id.ToString();
+            Attach = _MailService._allMan.Get(Attach.Id);
+
+            _Logger.LogInformation($"RegisterAttach.OnParametersSet: Init as EDIT {nAttach}");
+
+        }
+        else if (!string.IsNullOrEmpty(nType))
+        {
+            IsNewItem = true;
+            EditItemType =_MailService._elmMan.GetTipoElemento(nType);
+            DisplayComplete = false;
+
+            // Carico componente dinamico
+            LoadDynamicComponent(EditItemType);
+            _Logger.LogInformation($"RegisterAttach.OnParametersSet: Init as NEW {nAttach}");
+        }
+        else
+            IsNewItem = false;
+    }
+
+
+
+
+    public void UndefinedComponent(string nComponent)
+    {
+        try
+        {
+            DynamicAttributes.Clear();
+            string component = "dblu.Portale.Plugin.Docs.Pages.Custom.UndefinedComponent";
+            DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "nComponentName",
+                    Position = 1,
+                    Value = nComponent
+                });
+
+        }
+        catch (Exception ex)
+        {
+            // _Logger.LogError($"AttachCostumerSearch.UndefinedComponent: Unexpected error {ex}");
+        }
+    }
+
+    public void UndefinedComponentDialog(string nComponent)
+    {
+        try
+        {
+            DynamicAttributesDialog.Clear();
+            string component = "dblu.Portale.Plugin.Docs.Pages.Custom.UndefinedComponentPopUp";
+            DynamicContentDialog = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+
+
+            DynamicAttributesDialog.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "nComponentName",
+                    Position = 1,
+                    Value = nComponent
+                });
+
+        }
+        catch (Exception ex)
+        {
+            // _Logger.LogError($"AttachCostumerSearch.UndefinedComponent: Unexpected error {ex}");
+        }
+    }
+
+    private void LoadDynamicComponent(TipiElementi E)
+    {
+        try
+        {
+            string component = null;
+            if (E.AggregaAElemento && nItem is null)
+            {
+                component = _SubjectService.UrlServizioRicercaElementi(_NavigationManager.Uri);
+                DynamicAttributesDialog.Clear();
+
+                IsShowDialog = true;
+                LinkDescription = $"L'Email stata allegata come [{E.Descrizione}]";
+
+                DynamicContentDialog = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+
+                if (!component.StartsWith("dblu.Portale") || DynamicContentDialog == null)
+                {
+                    UndefinedComponent(component);
+                    return;
+                }
+
+
+                DynamicAttributesDialog.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "nAttachID",
+                    Position = 1,
+                    Value = Attach.Id.ToString()
+                });
+
+                DynamicAttributesDialog.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "nCostumerCode",
+                    Position = 2,
+                    Value = Attach.Chiave3.ToString()
+                });
+
+                DynamicAttributesDialog.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "nItemType",
+                    Position = 6,
+                    Value = E
+                });
+
+
+                DynamicAttributesDialog.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "nAttachments",
+                    Position = 7,
+                    Value = SourceAttach
+
+                });
+                DynamicAttributesDialog.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "IsShowDialog",
+                    Position = 3,
+                    Value = RuntimeHelpers.TypeCheck<bool>(IsShowDialog)
+                });
+
+                DynamicAttributesDialog.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "IsShowDialogChanged",
+                    Position = 4,
+                    Value = RuntimeHelpers.TypeCheck<EventCallback<bool>>(
+                    EventCallback.Factory.Create<bool>(this,
+                        RuntimeHelpers.CreateInferredEventCallback(this, __value => IsShowDialog = __value, IsShowDialog)))
+                });
+
+                DynamicAttributesDialog.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "OnLinkedToItem",
+                    Position = 5,
+                    Value = EventCallback.Factory.Create<(string, string)>(this, OnLinkToItem)
+                });
+
+                DynamicAttributesDialog.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "nIncludeEmail",
+                    Position = 6,
+                    Value = RuntimeHelpers.TypeCheck<bool>(false)
+                });
+
+                if (!component.StartsWith("dblu.Portale") || DynamicContentDialog == null)
+                {
+                    UndefinedComponentDialog(component);
+                    return;
+                }
+            }
+            else
+            {
+                IsNewItem = true;
+
+                string s =  E.ViewAttributi;
+                if (!string.IsNullOrEmpty(s))
+                {
+                    if (s.Contains(";"))
+                    {
+                        string[] Urls = s.Split(";");
+                        if (Urls.Count() > 2)
+                            component = Urls[2];
+                    }
+                    else component = s;
+                }
+                component = component.Replace("blz:/", "");              
+                DynamicAttributes.Clear();
+
+                DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                    {
+                        Name = "nItemType",
+                        Position = 1,
+                        Value = E
+                    });
+
+                DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                    {
+                        Name = "nAttach",
+                        Position = 2,
+                        Value = Attach
+                    });
+
+                DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "nDocument",
+                    Position = 3,
+                    Value = LastDocumentFromAttach
+
+                 });
+                if (nItem is not null)
+                {
+                    DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                        {
+                            Name = "nItem",
+                            Position = 5,
+                            Value = nItem
+
+                        });
+                }
+
+                DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "nAttachments",
+                    Position = 4,
+                    Value = SourceAttach
+
+                 });
+
+                DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+
+
+                if (!component.StartsWith("dblu.Portale") || DynamicContent == null)
+                {
+                    UndefinedComponent(component);
+                    return;
+                }
+            }
+
+        }
+        catch (Exception ex)
+        {
+            //_Logger.LogError($"REG_ItemsTable.OnLink: Unexpected error {ex}");
+        }
+    }
+
+
+    public void OnOpenItems(int Items)
+    {
+
+        if (Items == 0 && !string.IsNullOrEmpty(Attach?.Chiave3 ?? ""))
+        {
+            IsCustomerExpand = false;
+
+        }
+        else
+        {
+            IsCustomerExpand = true;
+
+        }
+    }
+
+    /// <summary>
+    /// On linking item, refresh the grid and components
+    /// </summary>
+    /// <param name="data"></param>
+    private async void OnLinkToItem((string DossierId, string ItemId) data)
+    { 
+        ToastAttachOK.Show();
+        IsShowDialog = false;
+        IsNewItem = false;
+        //TODO:  Rinfrescare  dossiers, e visione pdf
+    }
+
+    /// <summary>
+    /// Go back to the caller
+    /// </summary>
+    private async void GoBack()
+    {
+        if (IsNewItem)
+            IsNewItem = false;
+        else
+        {
+            string back = (await _SessionStore.GetAsync<string>("Referrer")).Value;
+            if (string.IsNullOrEmpty(back))
+                _NavigationManager.NavigateTo($"/MailUI/Inbox");
+            else
+            {
+
+                await _JSRuntime.InvokeVoidAsync("BlazorSetHREF", back);
+                //_NavigationManager.NavigateTo(back);
+                await _SessionStore.DeleteAsync("Referrer");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Once a document has been loaded, refresh the source attachment
+    /// </summary>
+    /// <param name="O"></param>
+    public async void OnDocumentTransformedZ(List<OriginalAttachments> O)
+    {
+        try
+        {
+
+            SourceAttach.Clear();
+            foreach (OriginalAttachments o in O)
+                SourceAttach.Add(o);
+
+            LastDocumentFromAttach = Viewer?.Doc?.Payload;
+
+            IsAttachVisible = (SourceAttach.Count != 0);
+            IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
+
+        }
+        catch (Exception ex)
+        {
+            // _Logger.LogError($"Inbox[MAIL].OnDocumentTransformedZ: Unexpected error on OnDocumentTransformedZ {ex}");
+        }
+    }
+
+    public async void OnNewItem(TipiElementi E)
+    {
+        EditItemType = E;
+
+        LoadDynamicComponent(EditItemType);
+
+    }
+
+    public async void OnCompleted()
+    {
+        GoBack();
+    }
+
+    /// <summary>
+    /// On Dossier loaded, set the descrition on the accordion
+    /// </summary>
+    /// <param name="Dossier">Fossier currently opened</param>
+    public void OnRefreshDossier(Fascicoli Dossier)
+    {
+        DossierDesc = (Dossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {Dossier?.Descrizione} [{Dossier?.Id}]";
+    }
+
+}

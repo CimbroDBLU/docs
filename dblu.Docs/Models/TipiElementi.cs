@@ -22,11 +22,13 @@ namespace dblu.Docs.Models
         [ExplicitKey]
         public string Codice { get; set; }
         public string Descrizione { get; set; }
-
+        public int Posizione { get; set; }
         public string Processo { get; set; }
         public string RuoliCandidati { get; set; }
         public string UtentiCandidati { get; set; }
         public bool AggregaAElemento { get; set; }
+
+        public bool Abilita { get; set; }
 
         public string ListaCancellazioni { get; set; }
 

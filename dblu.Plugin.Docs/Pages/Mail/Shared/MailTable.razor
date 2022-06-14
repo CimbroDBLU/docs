@@ -26,7 +26,7 @@
     <GridTextWrapSettings WrapMode="WrapMode.Content"></GridTextWrapSettings>
     <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false" Mode="EditMode.Batch"></GridEditSettings>
     <GridPageSettings PageSizes="true" PageSize="20"></GridPageSettings>
-    <GridEvents TValue="AllegatoEmail" OnDataBound="OnDataBoundHandler" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
+    <GridEvents TValue="AllegatoEmail" OnDataBound="OnDataBoundHandler" OnActionBegin="OnActionBegin" DataBound="DataBoundHandler" OnToolbarClick="OnToolbarClick" RowSelected="RowSelected" RowDeselected="RowDeselected"></GridEvents>
 
     <SfSpinner @bind-Visible="IsSpinnerVisible">
     </SfSpinner>
@@ -34,7 +34,11 @@
     <SfToolbar>
         <ToolbarEvents Clicked="OnToolbarClick"></ToolbarEvents>
         <ToolbarItems>
-            @if (nType == TableType.Inbox || nType == TableType.Processed)
+            @if(nType == TableType.InboxSel)
+            {
+                 <ToolbarItem Id="New"  PrefixIcon="e_fa far fa-mail-bulk" TooltipText="Gestisci"></ToolbarItem>
+            }
+            @if (nType == TableType.Inbox || nType == TableType.Processed || nType == TableType.InboxSel)
             {
                 <ToolbarItem Id="Answer" PrefixIcon="e-icons e-undo" TooltipText="Rispondi"></ToolbarItem>
                 <ToolbarItem Id="Forward" PrefixIcon="e-icons e-redo" TooltipText="Inoltra"></ToolbarItem>
@@ -54,7 +58,7 @@
                 </Template>
             </ToolbarItem>
 
-            @if (nType == TableType.Inbox || nType == TableType.Sorting)
+            @if (nType == TableType.Inbox || nType == TableType.Sorting || nType == TableType.InboxSel)
             {
                 <ToolbarItem Id="Move" PrefixIcon="e-icons e-folder" TooltipText="Sposta"></ToolbarItem>
             }
@@ -152,7 +156,12 @@
         /// <summary>
         /// Sorting of emails
         /// </summary>
-        Sorting
+        Sorting,
+        /// <summary>
+        /// Inbox email with manage button 
+        /// </summary>
+        InboxSel
+
     };
 
     /// <summary>
@@ -209,6 +218,12 @@
     public EventCallback<AllegatoEmail> OnShowAttachment { get; set; }
 
     /// <summary>
+    /// Fires when user request to move an item
+    /// </summary>
+    [Parameter]
+    public EventCallback<AllegatoEmail> OnRegisterAttachment { get; set; }
+
+    /// <summary>
     /// Fires when user request to see operative logs
     /// </summary>
     [Parameter]
@@ -218,7 +233,7 @@
     /// Fires when user request to delete an email
     /// </summary>
     [Parameter]
-    public EventCallback<AllegatoEmail> OnDeleteAttachment { get; set; }
+    public EventCallback<List<AllegatoEmail>> OnDeleteAttachment { get; set; }
 
     /// <summary>
     /// Fires when user request to re-opem an email
@@ -272,9 +287,9 @@
     private DateTime LastEmailTime { get; set; }
 
     /// <summary>
-    /// List of previous selected attach on the table, AttachID and Page inheritdoc witch it is(was)
+    /// List of previous selected attach on the table
     /// </summary>
-    private List<(string,int)> SelectedIndexes { get; set; } = new();
+    private List<string> SelectedIndexes { get; set; } = new();
 
     /// <summary>
     /// Type of selection (single or Multi lines)
@@ -440,9 +455,11 @@
         else if (args.Item.Id == "Log")
             await OnShowLogsAttachment.InvokeAsync(Attach);
         else if (args.Item.Id == "Delete")
-            await OnDeleteAttachment.InvokeAsync(Attach);
+            await OnDeleteAttachment.InvokeAsync((await Grid.GetSelectedRecords()).ToList());
         else if (args.Item.Id == "ReOpen")
             await OnReOpenAttachment.InvokeAsync(Attach);
+        else if (args.Item.Id == "New")
+            await OnRegisterAttachment.InvokeAsync(Attach);
     }
 
 
@@ -459,7 +476,7 @@
                 SelectedIndexes.Clear();
                 List<string> T = (await Grid.GetSelectedRecordsAsync()).Select(c=>c.Id.ToString()).ToList();
                 foreach (var index in T)
-                    SelectedIndexes.Add((index,Grid.PageSettings.CurrentPage));
+                    SelectedIndexes.Add(index);
                 await Grid.ClearSelectionAsync();
             }
             else
@@ -478,6 +495,7 @@
                      switch (nType)
                      {
                          case TableType.Inbox:
+                         case TableType.InboxSel:
                              nEmails = new ObservableCollection<AllegatoEmail>(_MailService._allMan.GetEmailInArrivo("EMAIL", nMailBox.Nome).OrderBy(c => c.DataC));
                              _Logger.LogInformation($"Inbox.Refresh[{TableType.Inbox},{nMailBox.Nome}]: {nEmails.Count} emails detected in {sw.ElapsedMilliseconds} ms");
                              break;
@@ -505,9 +523,9 @@
                      NewItems = 0;
                      InvokeAsync(async () =>
                      {
-                         await Task.Delay(500);
-                         Grid.Refresh();
-                         IsSpinnerVisible = false;
+                        await Task.Delay(500);
+                        Grid.Refresh();
+                        IsSpinnerVisible = false;                       
                      });
                  }
                  catch (Exception ex)
@@ -532,13 +550,24 @@
     }
 
     /// <summary>
+    /// On change page, allow to change selection
+    /// </summary>
+    /// <param name="args"></param>
+    public void OnActionBegin(ActionEventArgs<AllegatoEmail> args)
+    {
+        if (args.RequestType == Syncfusion.Blazor.Grids.Action.Paging)
+            SelectedIndexes.Clear();
+    }
+
+
+    /// <summary>
     /// Clear the selection
     /// </summary>
     public  void ClearSelectionAsync() 
     {
         try
         {
-            SelectedIndexes.Clear(); Grid.ClearSelection();
+            SelectedIndexes.Clear(); Grid?.ClearSelection();
         }
         catch(Exception ex)
         {
@@ -552,23 +581,28 @@
     private int Page{ get; set; } = 1;
 
 
+
     /// <summary>
     /// On databound check id there is content, to send selection properly
     /// </summary>
     public async void DataBoundHandler()
     {
         try
-        { 
+        {
+
             foreach (var index in SelectedIndexes)    
             {
-                if(Grid.PageSettings.CurrentPage!= index.Item2)
+
+                AllegatoEmail e = Grid.CurrentViewData.Where(x => (x as AllegatoEmail).Id == Guid.Parse(index)).FirstOrDefault() as AllegatoEmail;
+                var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(Guid.Parse(index));
+                if(PrimayIndex==-1 && Page < 100 && nEmails.Any(x=>x.Id==Guid.Parse(index)))
                 {
-                    await Grid.GoToPageAsync(index.Item2);
+                    await Grid.GoToPageAsync(Page++);
                     return;
                 }
-                var PrimayIndex = await this.Grid.GetRowIndexByPrimaryKey(Guid.Parse(index.Item1));
-                if(PrimayIndex!=-1)
-                    await Grid.SelectRowAsync(PrimayIndex);
+                Page = 1;
+                await Grid.SelectRowAsync(PrimayIndex);     
+                OnSelectAttachment.InvokeAsync((e,false));                                             
             }
 
             if ((await Grid.GetSelectedRecordsAsync()).Count != 0)
@@ -616,4 +650,5 @@
             _Logger.LogWarning("MailTable.DataBoundHandler: Items changed during loading...");
         }
     }
+
 }

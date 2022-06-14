@@ -1,0 +1,24 @@
+﻿@using dblu.Docs.Models
+<div class="row">
+    <div class="col-5" style="overflow-wrap: break-word;">
+         <b>@nAttach.Chiave3 - @nAttach.Chiave4 </b><br />
+         @nAttach.GetAttributo("Mittente")
+    </div>
+    <div class="col-5" style="text-align: start;overflow-wrap: break-word;">
+        <b> @nAttach.Chiave5</b><br />
+        
+    </div>
+    <div class="col-2" style="text-align: end;overflow-wrap: break-word;">
+        @{
+            DateTime t = nAttach.GetAttributo("Data");
+        }
+       @t.ToShortDateString()<br />
+       @t.ToShortTimeString()
+    </div>
+</div>
+    
+
+@code {
+    [Parameter]
+    public Allegati nAttach{ get; set; }
+}

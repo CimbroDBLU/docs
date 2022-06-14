@@ -1,0 +1,294 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@using System.IO
+@using dblu.Portale.Plugin.Docs.Classes
+@using dblu.Portale.Plugin.Docs.ViewModels
+@using dblu.Docs.Classi
+@using dblu.Portale.Plugin.Docs.Class
+@using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Models
+@using dblu.Portale.Plugin.Docs.Services
+@using System.Security.Claims
+@using dblu.Portale.Plugin.Docs.Pages.Custom
+@using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
+@using dblu.Docs.Interfacce
+@using Syncfusion.Blazor.SplitButtons
+@inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
+@inject dblu.Portale.Plugin.Docs.Services.ZipService _ZipService
+@inject ILogger<OperationList> _Logger
+@inject IConfiguration _conf
+@inject AuthenticationStateProvider _AuthenticationStateProvider
+
+<style>
+    .btng
+    {display: flex;flex-wrap: wrap;}
+</style>
+ <div>
+    <SfButtonGroup CssClass="btng">
+    @if(nDisplayManage)
+        {
+            <ButtonGroupButton  CssClass="e-success ml-1 mb-1" @onclick="@(() => OnRegisterAttachment.InvokeAsync())">Gestisci</ButtonGroupButton>
+        }
+    @foreach (TipiElementi A in ActionsList)
+        {
+            <ButtonGroupButton  CssClass="e-primary ml-1 mb-1" @onclick="@(() => OnLinkItem(A.Codice))">@A.Descrizione</ButtonGroupButton>
+        }
+    @if (nDisplayComplete)
+    {
+        <ButtonGroupButton CssClass="e-success ml-1 mb-1" @onclick="OnComplete">Completa</ButtonGroupButton>
+         <dblu.Portale.Core.UI.DynamicComponent nType="@DynamicContent" nAttributes="@DynamicAttributes"></dblu.Portale.Core.UI.DynamicComponent>
+    }
+    </SfButtonGroup>
+    <Toast @ref="ToastCompleteOK" nToastType="Toast.e_ToastType.OK" nTitle="Completa email" nContent="Email completata"></Toast>
+    <Toast @ref="ToastCompleteKO" nToastType="Toast.e_ToastType.Fail" nTitle="Completa email" nContent="Completamento non riuscito"></Toast>
+  </div>
+
+@code 
+{
+    [Parameter]
+    public Allegati nAttach{ get; set; }
+
+    /// <summary>
+    /// Display Complete button
+    /// </summary>
+    [Parameter]
+    public bool nDisplayComplete { get; set; } = false;
+
+    [Parameter]
+    public bool nDisplayManage { get; set; } = false;
+
+    /// <summary>
+    /// Fires when an attach has been completed
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> OnAttachCompleted { get; set; }
+
+    /// <summary>
+    /// If we are processing document specify witch type
+    /// </summary>
+    [Parameter]
+    public TipiDocumentiFile nDocumentType { get; set; } = TipiDocumentiFile.ZIP;
+
+    /// <summary>
+    /// Type of the attachment wwe are processing
+    /// </summary>
+    [Parameter]
+    public TipiRecordServer nRecordServer { get; set; } = TipiRecordServer.CartellaMail;
+
+        /// <summary>
+    /// Id of the current Dossier
+    /// </summary>
+    [Parameter]
+    public string nDossierID { get; set; }
+
+    /// <summary>
+    /// The current documetn in memory
+    /// </summary>
+    [Parameter]
+    public MemoryStream nCurrentDocument { get; set; }
+
+    /// <summary>
+    /// The list of the attachments related to this email attach
+    /// </summary>
+    [Parameter]
+    public ObservableCollection<OriginalAttachments> nAttachments { get; set; }
+
+    /// <summary>
+    /// Fires when a costumer has been selected
+    /// </summary>
+    [Parameter]
+    public EventCallback<TipiElementi> OnLinkItemPressed { get; set; }
+
+    /// <summary>
+    /// Fires when user request to move an item
+    /// </summary>
+    [Parameter]
+    public EventCallback OnRegisterAttachment { get; set; }
+
+    /// <summary>
+    /// Current User
+    /// </summary>
+    private ClaimsPrincipal User { get; set; }
+
+    /// <summary>
+    /// List of available actions
+    /// </summary>
+    public List<TipiElementi> ActionsList { get; set; } = new();
+
+    /// <summary>
+    /// Dinamic component to load
+    /// </summary>
+    private Type DynamicContent { get; set; } = null;
+
+    /// <summary>
+    /// Attributes of the dynamic compponent
+    /// </summary>
+    private ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> DynamicAttributes = new();
+
+    /// <summary>
+    /// Toast for a positive Complete action
+    /// </summary>
+    private Toast ToastCompleteOK { get; set; }
+
+    /// <summary>
+    /// Toast for a negative Complete action
+    /// </summary>
+    private Toast ToastCompleteKO { get; set; }
+
+    /// <summary>
+    /// Forward the complete event
+    /// </summary>
+    public async void OnComplete()
+    {
+
+        try
+        {
+            Stopwatch sw = Stopwatch.StartNew();
+            var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var User = authState.User;
+
+            var all = _MailService._allMan.Get(nAttach.Id);
+            if (all != null)
+            {
+                all.Stato = StatoAllegato.Chiuso;
+                _MailService._allMan.Salva(all, false);
+
+                _MailService._logMan.PostLog(nAttach.Id, TipiOggetto.ALLEGATO, TipoOperazione.Chiuso, User.Identity.Name, $"Allegato chiuso");
+                ToastCompleteOK.Show();
+                OnAttachCompleted.InvokeAsync(nAttach.Id.ToString());
+                _Logger.LogInformation($"REG_DossierItems.Complete: Attach {nAttach.Id} has been completed in {sw.ElapsedMilliseconds} ms");
+                return;
+            }
+            ToastCompleteKO.Show();
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"REG_DossierItems.Complete: Complete fails, {ex}");
+            ToastCompleteKO.Show();
+        }
+    }
+
+
+    
+
+
+    /// <summary>
+    /// On initialize load all data
+    /// </summary>
+    protected override async void OnInitialized()
+    {
+
+        var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
+        User = authState.User;
+        ActionsList = GetActions().OrderBy(c=>c.Posizione).ToList();
+
+
+    }
+
+    protected override async void OnParametersSet()
+    {
+
+
+        if (nDisplayComplete)
+        {
+            DynamicAttributes.Clear();
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "nAttachID",
+                    Position = 1,
+                    Value = nAttach.Id.ToString()
+                });
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "nCostumerCode",
+                    Position = 2,
+                    Value = nAttach.Chiave3
+                });
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "nDossierID",
+                Position = 3,
+                Value = nDossierID
+            });
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "nCurrentDocument",
+                Position = 4,
+                Value = nCurrentDocument
+            });
+
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+            {
+                Name = "nAttachments",
+                Position = 5,
+                Value = nAttachments
+            });
+
+            DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "OnAttachCompleted",
+                    Position = 6,
+                    Value = EventCallback.Factory.Create<string>(this, OnAttachCompleted)
+                });
+
+            string component = _conf["Docs:CustomAction"];
+            DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+        }
+    }
+
+    /// <summary>
+    /// Forward the item pressed
+    /// </summary>
+    /// <param name="Code"></param>
+    public async void OnLinkItem(string Code)
+    {
+        await OnLinkItemPressed.InvokeAsync(ActionsList.FirstOrDefault(c => c.Codice == Code));
+    }
+
+    /// <summary>
+    /// Load the List of alla available actions
+    /// </summary>
+    /// <returns></returns>
+    public List<TipiElementi> GetActions()
+    {
+        if (nRecordServer == TipiRecordServer.CartellaMail)
+        {
+
+            List<string> ListaRuoli = _MailService.getRuoli(User.Claims, "");
+            List<TipiElementi> ListaTipiElementi = _MailService._elmMan.GetAllTipiElementi(ListaRuoli);
+            List<EmailServer> ListaServer = _MailService._serMan.GetServersEmailinRoles(ListaRuoli, nRecordServer);
+
+            if (ListaServer != null && ListaServer.Count > 0)
+            {
+
+                var ListaRuoliServ = _MailService.getRuoli(ListaRuoli, ListaServer);
+                return _MailService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.Abilita/* && !z.AggregaAElemento*/).ToList();
+            }
+            else
+            {
+                return ListaTipiElementi.Where(z => z.Abilita/* && !z.AggregaAElemento*/).ToList();
+            }
+        }
+        else
+        {
+            List<string> ListaRuoli = _ZipService.GetRuoliTipoAll(User.Claims, (nDocumentType == TipiDocumentiFile.ZIP) ? "ZIP" : "REQ");
+            List<EmailServer> ListaServer = _ZipService._serMan.GetServersEmailinRoles(ListaRuoli, TipiRecordServer.CartellaFile);
+
+            if (ListaServer != null && ListaServer.Count > 0)
+            {
+
+                var ListaRuoliServ = _ZipService.getRuoli(ListaRuoli, ListaServer[0].Nome);
+                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.Abilita/* && !z.AggregaAElemento*/).ToList();
+            }
+            else
+            {
+                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoli).Where(z => z.Abilita/*&& !z.AggregaAElemento*/).ToList();
+            }
+        }
+    }
+
+}

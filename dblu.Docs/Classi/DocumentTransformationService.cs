@@ -174,7 +174,7 @@ namespace dblu.Docs.Classi
             if (Quality < 0 || Quality > 100) Quality = 50;
             try
             {         
-                var mittente = $"{Message.From.Mailboxes.First().Name} ({Message.From.Mailboxes.First().Address})";
+                var mittente = $"{Message.From.Mailboxes?.First().Name} ({Message.From.Mailboxes?.First().Address})";
                 var oggetto = Message.Subject;
                 var txt = Message.TextBody == null ? "" : Message.TextBody;
                 var htxt = Message.ToHtml();
@@ -182,9 +182,10 @@ namespace dblu.Docs.Classi
                 var ListaPdf = new List<MemoryStream>();
 
                 PdfDocument document = new PdfDocument();
+               
                 HtmlToPdfConverter htmlConverter = new HtmlToPdfConverter(HtmlRenderingEngine.WebKit);
                 WebKitConverterSettings settings = new WebKitConverterSettings();
-
+              
                 if (htxt == "")
                 {
                     if (txt != null)
@@ -221,7 +222,7 @@ namespace dblu.Docs.Classi
 
                         settings.WebKitPath = _config["Docs:PercorsoWebKit"];
                         settings.EnableJavaScript = false;
-                        settings.EnableHyperLink = false;
+                        settings.EnableHyperLink = true;
                         settings.EnableOfflineMode = true;
                         settings.SplitTextLines = true;
                         settings.SplitImages = true;
@@ -797,7 +798,7 @@ namespace dblu.Docs.Classi
 
                         settings.WebKitPath = _config["Docs:PercorsoWebKit"];
                         settings.EnableJavaScript = false;
-                        settings.EnableHyperLink = false;
+                        settings.EnableHyperLink = true;
                         settings.EnableOfflineMode = true;
                         settings.SplitTextLines = true;
                         settings.SplitImages = true;

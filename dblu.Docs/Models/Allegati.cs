@@ -45,6 +45,8 @@ namespace dblu.Docs.Models
         public string Origine { get; set; }
         public string Testo { get; set; }
 
+        public string Folder { get; set; }
+
         //[NotMapped]
         [JsonIgnore]
         //[Write(false)]
