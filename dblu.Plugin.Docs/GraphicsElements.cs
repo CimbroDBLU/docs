@@ -63,7 +63,7 @@ namespace dblu.Portale.Plugin.Documenti
 
                 var User = _httpContextAccessor.HttpContext.User.Identity.Name;
                 ApplicationUser AU = _ApplicationUserManager.GetUser(User);
-                string Version=AU.Properties["VERSION"]?.ToString() ?? "STANDARD";
+                string Version=AU?.Properties["VERSION"]?.ToString() ?? "STANDARD";
 
                 var subItemT = new MenuItem[]
                 {
