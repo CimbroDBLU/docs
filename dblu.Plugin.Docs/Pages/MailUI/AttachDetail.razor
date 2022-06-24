@@ -1,4 +1,8 @@
-﻿@using dblu.Docs.Models
+﻿@*
+    Show a summary panel for an Attachment
+*@
+@using dblu.Docs.Models
+
 <div class="row">
     <div class="col-5" style="overflow-wrap: break-word;">
          <b>@nAttach.Chiave3 - @nAttach.Chiave4 </b><br />
@@ -19,6 +23,9 @@
     
 
 @code {
+    /// <summary>
+    /// Attach to summarize
+    /// </summary>
     [Parameter]
     public Allegati nAttach{ get; set; }
 }

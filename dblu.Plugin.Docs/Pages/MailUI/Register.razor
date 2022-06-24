@@ -1,7 +1,10 @@
-﻿
+﻿@*
+    Page for register or show a registration
+*@
 @page "/Mail/Register/{nAttach}"
 @page "/Mail/Register/{nAttach}/{nType}"
 @page "/Mail/EditRegister/{nItemId}"
+@page "/Mail/EditRegister/{nItemId}/{nOriginalAttach}"
 
 @using Microsoft.AspNetCore.Components.CompilerServices
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
@@ -22,12 +25,12 @@
 
 <section class="content">
         <SfCard>
-        <CardHeader Title=@((!IsNewItem)?$"Gestici l\'email [{@Attach.Chiave5}] da {@Attach.Chiave4}":$"Registra l\'email [{@Attach.Chiave5}] come {@EditItemType?.Descrizione}") />
+        <CardHeader Title=@CardTitle />
         <CardContent EnableSeperator="true">
             <div class="row">
                 
                 <div class="col-5" style="align-self: auto;">     
-                    @if(!IsNewItem)
+                    @if(!IsEditingItem)
                     {
                     @*SUMMARY*@
                     <div class="row form-group">
@@ -52,7 +55,7 @@
                         <div class="col">
                             <SfAccordion>
                                 <AccordionItems>
-                                    <AccordionItem Expanded=@IsCustomerExpand>
+                                    <AccordionItem Expanded=@IsOpenOrdersExpand>
                                         <HeaderTemplate>
                                             <div>Ordini recenti</div>
                                         </HeaderTemplate>
@@ -92,8 +95,15 @@
                             <SfAccordion>
                                 <AccordionItems>
                                     <AccordionItem Expanded=true>
-                                        <HeaderTemplate>
-                                            <div>Registra @EditItemType?.Descrizione</div>
+                                        <HeaderTemplate>                                            
+                                                @if(_NavigationManager.Uri.Contains("EditRegister"))
+                                                   {
+                                                       <div>Dettagli @EditItemType?.Descrizione</div>
+                                                   }
+                                                else
+                                                {
+                                                    <div>Registra @EditItemType?.Descrizione</div>
+                                                }                                                                                       
                                         </HeaderTemplate>
                                         <ContentTemplate>
                                             <dblu.Portale.Core.UI.DynamicComponent nType="@DynamicContent" nAttributes="@DynamicAttributes"></dblu.Portale.Core.UI.DynamicComponent>
@@ -109,7 +119,7 @@
    
                 <div class="col-7" style="align-self: auto;">
                 @*LISTA BOTTONI*@
-                @if(!IsNewItem)
+                @if(!IsEditingItem)
                     {
                     <div class="row form-group">
                         <div class="col">
@@ -156,15 +166,12 @@
                     
             </div>
         </div>
-                        <div class="row">
-                    <div class="col-12">
-                    <SfButton CssClass="mt-2 e-primary" OnClick="GoBack">Indietro</SfButton>
-                    </div>
-                </div>
+        <div class="row">
+            <div class="col-12">
+                <SfButton CssClass="mt-2 e-primary" OnClick="GoBack">Indietro</SfButton>
+            </div>
+        </div>
         </CardContent>
-
-
-
     </SfCard>
 
      <Toast @ref="ToastAttachOK" nToastType="Toast.e_ToastType.OK" nTitle="Allega a fascicolo\elemento" nContent="@LinkDescription"></Toast>
@@ -177,27 +184,70 @@
 
 @code 
 {
+    /// <summary>
+    /// Attach ID that we are going to register
+    /// </summary>
     [Parameter]
     public string nAttach { get; set; } = "";
 
+    /// <summary>
+    /// Type of element we are going to create as code
+    /// </summary>
     [Parameter]
     public string nType { get; set; } = "";
 
+    /// <summary>
+    /// Item Id to show, if Item has been already created
+    /// </summary>
     [Parameter]
     public string nItemId { get; set; } = "";
+
+    /// <summary>
+    /// Original Attach that has generate current item
+    /// </summary>
+    [Parameter]
+    public string nOriginalAttach { get; set; } = "";
 
     /// <summary>
     /// Document viewer
     /// </summary>
     private DocViewer Viewer { get; set; }
 
+    /// <summary>
+    /// Attach that we are going to register
+    /// </summary>
     public Allegati Attach{ get; set; }
 
-    public bool IsNewItem { get; set; } = false;
+    /// <summary>
+    /// Indicates if we are editing an exsisting Item or we are creating a new one
+    /// </summary>
+    public bool IsEditingItem { get; set; } = false;
 
+    /// <summary>
+    /// Type of element we are going to create (loaded using code defined from parameters)
+    /// </summary>
     public TipiElementi EditItemType { get; set; } = null;
 
+    /// <summary>
+    /// Reference to the already created elements for this customer
+    /// </summary>
     private REG_ItemsTableUI ItemsTable{ get; set; }
+
+    /// <summary>
+    /// Title of the card depending of current situation
+    /// </summary>
+    private string CardTitle
+    {
+        get
+        {
+            if (!IsEditingItem)
+                return $"Gestici l\'email [{Attach.Chiave5}] da {Attach.Chiave4}";
+            else if (_NavigationManager.Uri.Contains("EditRegister") && !string.IsNullOrEmpty(nItem.Chiave5))
+                return $"Protocollo {nItem.Chiave5}, Cliente {nItem.Chiave4}";
+            else
+                return $"Registra l\'email [{Attach.Chiave5}] come {EditItemType?.Descrizione}";
+        }
+    }
 
     /// <summary>
     /// List of current Attach source Attachments
@@ -217,11 +267,11 @@
     /// <summary>
     /// Indicateds if costumer block has to be expanded
     /// </summary>
-    private bool IsCustomerExpand { get; set; } = true;
+    private bool IsOpenOrdersExpand { get; set; } = true;
 
-    private bool IsOpenItemsVisible { get; set; } = false;
-
-
+    /// <summary>
+    /// Description of the Dossiers table
+    /// </summary>
     private string DossierDesc { get; set; }  = "Fascicolo da selezionare";
 
     /// <summary>
@@ -234,7 +284,6 @@
     /// </summary>
     private ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> DynamicAttributes = new();
 
-
     /// <summary>
     /// Dinamic component to load
     /// </summary>
@@ -246,19 +295,38 @@
     private ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> DynamicAttributesDialog = new();
 
     /// <summary>
-    /// Last document loaded from an attach
+    ///  document loaded from current attach
     /// </summary>
     public MemoryStream LastDocumentFromAttach { get; set; } = new();
 
+    /// <summary>
+    /// Toast showed when an attach has been completed
+    /// </summary>
     private Toast ToastAttachOK { get; set; }
 
+    /// <summary>
+    /// Show/Hide the Link element dialog
+    /// </summary>
     private bool IsShowDialog { get; set; } = false;
 
+    /// <summary>
+    /// Current Loaded item if any
+    /// </summary>
     private Elementi nItem { get; set; } = null;
+
+    /// <summary>
+    /// Description into the Link attach Toast
+    /// </summary>
     private string LinkDescription{ get; set; }
 
+    /// <summary>
+    /// Display the complete buttons
+    /// </summary>
     public bool DisplayComplete { get; set; } = false;
 
+    /// <summary>
+    /// On Initialized, load the Attach and items...
+    /// </summary>
     protected override async void OnInitialized()
     {
         if (!string.IsNullOrEmpty(nItemId))
@@ -266,52 +334,67 @@
             nItem = _MailService._elmMan.Get(nItemId, 0);
             EditItemType =_MailService._elmMan.GetTipoElemento(nItem.Tipo);
             // Carico componente dinamico
-            LoadDynamicComponent(EditItemType);
-            Attach=_MailService._elmMan.GetAllAllegatiElemento(nItem.Id).Where(x => x.Tipo == "FILE").OrderByDescending(x => x.DataC).FirstOrDefault();
+            LoadDynamicComponent(EditItemType);            
+            Attach=_MailService._elmMan.GetAllAllegatiElemento(nItem.Id).Where(x => x.Tipo == "FILE" && x.NomeFile.ToLower().EndsWith(".pdf")).OrderByDescending(x => x.DataC).FirstOrDefault();
             nAttach = Attach.Id.ToString();
             Attach = _MailService._allMan.Get(Attach.Id);
-            _Logger.LogInformation($"RegisterAttach.OnInitialized: Init as EDIT {nAttach}");
+            _Logger.LogInformation($"RegisterAttach.OnInitialized: Init as EDIT {nItemId}");
+        }
+        else if (!string.IsNullOrEmpty(nType))
+        {
+            Attach = _MailService._allMan.Get(nAttach);
+            _Logger.LogInformation($"RegisterAttach.OnInitialized: Init as NEW {nAttach} -> {nType}");
         }
         else
         {
             Attach = _MailService._allMan.Get(nAttach);
-            _Logger.LogInformation($"RegisterAttach.OnInitialized: Init as NEW {nAttach}");
+            _Logger.LogInformation($"RegisterAttach.OnParametersSet: Init as MAN for {nAttach}");
         }
     }
 
+    /// <summary>
+    /// On OnParametersSet, load the Attach and items...
+    /// </summary>
     protected override async void OnParametersSet()
     {
         if (!string.IsNullOrEmpty(nItemId))
         {
-            IsNewItem = true;
+            IsEditingItem = true;
             nItem = _MailService._elmMan.Get(nItemId, 0);
             EditItemType =_MailService._elmMan.GetTipoElemento(nItem.Tipo);
             // Carico componente dinamico
             LoadDynamicComponent(EditItemType); 
-            Attach=_MailService._elmMan.GetAllAllegatiElemento(nItem.Id).Where(x => x.Tipo == "FILE").OrderByDescending(x => x.DataC).FirstOrDefault();            
-            nAttach =Attach.Id.ToString();
-            Attach = _MailService._allMan.Get(Attach.Id);
+            Attach=_MailService._elmMan.GetAllAllegatiElemento(nItem.Id).Where(x => x.Tipo == "FILE" && x.NomeFile.ToLower().EndsWith(".pdf")).OrderByDescending(x => x.DataC).FirstOrDefault();            
+            nAttach =Attach?.Id.ToString()??"";
 
-            _Logger.LogInformation($"RegisterAttach.OnParametersSet: Init as EDIT {nAttach}");
+            if(Attach is not null)
+                Attach = _MailService._allMan.Get(Attach.Id);
+
+            _Logger.LogInformation($"RegisterAttach.OnParametersSet: Init as EDIT {nItemId}");
 
         }
         else if (!string.IsNullOrEmpty(nType))
         {
-            IsNewItem = true;
+            IsEditingItem = true;
             EditItemType =_MailService._elmMan.GetTipoElemento(nType);
             DisplayComplete = false;
 
             // Carico componente dinamico
             LoadDynamicComponent(EditItemType);
-            _Logger.LogInformation($"RegisterAttach.OnParametersSet: Init as NEW {nAttach}");
+            _Logger.LogInformation($"RegisterAttach.OnParametersSet: Init as NEW {nAttach} -> {nType}");
         }
         else
-            IsNewItem = false;
+        {
+            IsEditingItem = false;         
+            _Logger.LogInformation($"RegisterAttach.OnParametersSet: Init as MAN for {nAttach}");
+        }
+
     }
 
-
-
-
+    /// <summary>
+    /// Load the undefined component
+    /// </summary>
+    /// <param name="nComponent"></param>
     public void UndefinedComponent(string nComponent)
     {
         try
@@ -335,6 +418,10 @@
         }
     }
 
+    /// <summary>
+    /// Load the undefined dialog
+    /// </summary>
+    /// <param name="nComponent"></param>
     public void UndefinedComponentDialog(string nComponent)
     {
         try
@@ -358,6 +445,10 @@
         }
     }
 
+    /// <summary>
+    /// Load the dynamic component following the ElementType
+    /// </summary>
+    /// <param name="E">ElemenType</param>
     private void LoadDynamicComponent(TipiElementi E)
     {
         try
@@ -409,6 +500,9 @@
                     Value = SourceAttach
 
                 });
+
+
+
                 DynamicAttributesDialog.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
                 {
                     Name = "IsShowDialog",
@@ -436,7 +530,7 @@
                 {
                     Name = "nIncludeEmail",
                     Position = 6,
-                    Value = RuntimeHelpers.TypeCheck<bool>(false)
+                    Value = RuntimeHelpers.TypeCheck<bool>(true)
                 });
 
                 if (!component.StartsWith("dblu.Portale") || DynamicContentDialog == null)
@@ -447,7 +541,7 @@
             }
             else
             {
-                IsNewItem = true;
+                IsEditingItem = true;
 
                 string s =  E.ViewAttributi;
                 if (!string.IsNullOrEmpty(s))
@@ -481,7 +575,7 @@
                 {
                     Name = "nDocument",
                     Position = 3,
-                    Value = LastDocumentFromAttach
+                    Value =  LastDocumentFromAttach
 
                  });
                 if (nItem is not null)
@@ -494,6 +588,13 @@
 
                         });
                 }
+
+                DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+                {
+                    Name = "OnRegistrationCompleted",
+                    Position = 6,
+                    Value = EventCallback.Factory.Create<string>(this, OnRegistrationCompleted)
+                });
 
                 DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
                 {
@@ -520,18 +621,17 @@
         }
     }
 
-
     public void OnOpenItems(int Items)
     {
 
         if (Items == 0 && !string.IsNullOrEmpty(Attach?.Chiave3 ?? ""))
         {
-            IsCustomerExpand = false;
+            IsOpenOrdersExpand = false;
 
         }
         else
         {
-            IsCustomerExpand = true;
+            IsOpenOrdersExpand = true;
 
         }
     }
@@ -544,8 +644,8 @@
     { 
         ToastAttachOK.Show();
         IsShowDialog = false;
-        IsNewItem = false;
-        //TODO:  Rinfrescare  dossiers, e visione pdf
+        IsEditingItem = false;
+        _NavigationManager.NavigateTo($"/Mail/EditRegister/{data.ItemId}/{Attach.Id.ToString()}");
     }
 
     /// <summary>
@@ -553,8 +653,23 @@
     /// </summary>
     private async void GoBack()
     {
-        if (IsNewItem)
-            IsNewItem = false;
+        if (_NavigationManager.Uri.Contains("EditRegister") && IsEditingItem  && !string.IsNullOrEmpty(nOriginalAttach))
+        {
+            IsEditingItem = false;
+            nAttach = nOriginalAttach;
+            Attach = _MailService._allMan.Get(nOriginalAttach);
+            nItemId="";
+            nItem = null;
+            _NavigationManager.NavigateTo($"/Mail/Register/{nAttach}");
+        }
+        else 
+        if (!_NavigationManager.Uri.Contains("EditRegister") &&IsEditingItem)
+        {
+            IsEditingItem = false;
+            nItemId="";
+            nItem = null;
+            _NavigationManager.NavigateTo($"/Mail/Register/{nAttach}");
+        }
         else
         {
             string back = (await _SessionStore.GetAsync<string>("Referrer")).Value;
@@ -564,10 +679,19 @@
             {
 
                 await _JSRuntime.InvokeVoidAsync("BlazorSetHREF", back);
-                //_NavigationManager.NavigateTo(back);
+                _NavigationManager.NavigateTo(back);
                 await _SessionStore.DeleteAsync("Referrer");
             }
         }
+    }
+
+    /// <summary>
+    /// On registration complete, re-load the attach to show the bar codes
+    /// </summary>
+    /// <param name="Item"></param>
+    public void OnRegistrationCompleted(string Item)
+    {
+        Viewer.ForceReload();
     }
 
     /// <summary>
@@ -578,23 +702,27 @@
     {
         try
         {
-
             SourceAttach.Clear();
             foreach (OriginalAttachments o in O)
                 SourceAttach.Add(o);
 
             LastDocumentFromAttach = Viewer?.Doc?.Payload;
-
+            if(DynamicAttributes.FirstOrDefault(x => x.Name == "nDocument")!=null)
+                DynamicAttributes.FirstOrDefault(x => x.Name == "nDocument").Value = LastDocumentFromAttach;
             IsAttachVisible = (SourceAttach.Count != 0);
             IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
 
         }
         catch (Exception ex)
         {
-            // _Logger.LogError($"Inbox[MAIL].OnDocumentTransformedZ: Unexpected error on OnDocumentTransformedZ {ex}");
+            _Logger.LogError($"InboxUI[MAIL].OnDocumentTransformedZ: Unexpected error on OnDocumentTransformedZ {ex}");
         }
     }
 
+    /// <summary>
+    /// On new item requested, open the correct dynamic component
+    /// </summary>
+    /// <param name="E"></param>
     public async void OnNewItem(TipiElementi E)
     {
         EditItemType = E;
@@ -603,6 +731,9 @@
 
     }
 
+    /// <summary>
+    /// On completed email, goes to previous page
+    /// </summary>
     public async void OnCompleted()
     {
         GoBack();

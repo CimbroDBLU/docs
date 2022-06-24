@@ -1,4 +1,9 @@
-﻿@using Microsoft.AspNetCore.Hosting
+﻿@*
+    Show button for all operations that can be done on an email, Registrations, Links and Complete. 
+    Add also custom actions
+*@
+
+@using Microsoft.AspNetCore.Hosting
 @using System.IO
 @using dblu.Portale.Plugin.Docs.Classes
 @using dblu.Portale.Plugin.Docs.ViewModels
@@ -44,6 +49,9 @@
 
 @code 
 {
+    /// <summary>
+    /// Current Attach
+    /// </summary>
     [Parameter]
     public Allegati nAttach{ get; set; }
 
@@ -53,6 +61,9 @@
     [Parameter]
     public bool nDisplayComplete { get; set; } = false;
 
+    /// <summary>
+    /// Display manage email button
+    /// </summary>
     [Parameter]
     public bool nDisplayManage { get; set; } = false;
 
@@ -74,7 +85,7 @@
     [Parameter]
     public TipiRecordServer nRecordServer { get; set; } = TipiRecordServer.CartellaMail;
 
-        /// <summary>
+    /// <summary>
     /// Id of the current Dossier
     /// </summary>
     [Parameter]
@@ -167,27 +178,21 @@
         }
     }
 
-
-    
-
-
     /// <summary>
     /// On initialize load all data
     /// </summary>
     protected override async void OnInitialized()
     {
-
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
         User = authState.User;
         ActionsList = GetActions().OrderBy(c=>c.Posizione).ToList();
-
-
     }
 
+    /// <summary>
+    /// On parameters set, Redraws the button list properly
+    /// </summary>
     protected override async void OnParametersSet()
     {
-
-
         if (nDisplayComplete)
         {
             DynamicAttributes.Clear();
@@ -266,11 +271,11 @@
             {
 
                 var ListaRuoliServ = _MailService.getRuoli(ListaRuoli, ListaServer);
-                return _MailService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.Abilita/* && !z.AggregaAElemento*/).ToList();
+                return _MailService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.Abilita).ToList();
             }
             else
             {
-                return ListaTipiElementi.Where(z => z.Abilita/* && !z.AggregaAElemento*/).ToList();
+                return ListaTipiElementi.Where(z => z.Abilita).ToList();
             }
         }
         else
@@ -282,11 +287,11 @@
             {
 
                 var ListaRuoliServ = _ZipService.getRuoli(ListaRuoli, ListaServer[0].Nome);
-                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.Abilita/* && !z.AggregaAElemento*/).ToList();
+                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoliServ).Where(z => z.Abilita).ToList();
             }
             else
             {
-                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoli).Where(z => z.Abilita/*&& !z.AggregaAElemento*/).ToList();
+                return _ZipService._elmMan.GetAllTipiElementi(ListaRuoli).Where(z => z.Abilita).ToList();
             }
         }
     }
