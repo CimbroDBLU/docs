@@ -566,8 +566,6 @@ namespace dblu.Portale.Plugin.Docs.Class
             bool res = true;
             try
             {
-
-
                 string rpt = _config["Docs:EtichettaProtocollo"];
                 if (string.IsNullOrEmpty(rpt))
                     return true;
@@ -579,7 +577,6 @@ namespace dblu.Portale.Plugin.Docs.Class
                     _logger.LogError("etichetta inesistente");
                     return false;
                 }
-                //MemoryStream msOutputStream = new MemoryStream();
 
                 Telerik.Reporting.Report eti;
                 var reportPackager = new ReportPackager();
@@ -600,16 +597,7 @@ namespace dblu.Portale.Plugin.Docs.Class
                     }
                 }
 
-                string NomePdf = Path.Combine(_appEnvironment.WebRootPath, "_tmp");
-                if (!Directory.Exists(NomePdf))
-                {
-                    Directory.CreateDirectory(NomePdf);
-                }
-                NomePdf = Path.Combine(NomePdf, $"{all.Id.ToString()}.pdf");
-                if (File.Exists(NomePdf))
-                    File.Delete(NomePdf);
-
-                var pdfstream = await _allMan.GetFileAsync(all.Id.ToString());
+                var pdfstream = await _allMan.GetFileAsync($"{all.Id.ToString()}");
                 Telerik.Documents.Primitives.Size A4 = PaperTypeConverter.ToSize(PaperTypes.A4);
 
                 if (pdfstream != null)
@@ -629,13 +617,9 @@ namespace dblu.Portale.Plugin.Docs.Class
                     int i = 0;
                     foreach (Syncfusion.Pdf.PdfLoadedPage lptmp in pdftmp.Pages)
                     {
-
-                        //Syncfusion.Pdf.PdfSection section = document.Sections.Add();
-                        //section.PageSettings.Rotate = lptmp.Rotation;
                         try
                         {
 
-                            // .CreateTemplate() va in errore con formati documento molto particolari
                             Syncfusion.Pdf.Graphics.PdfTemplate template = lptmp.CreateTemplate();
                             Syncfusion.Pdf.PdfPage page = document.Pages.Add();
 
@@ -726,30 +710,13 @@ namespace dblu.Portale.Plugin.Docs.Class
                     }
                     pdftmp.Close();
 
-                    //using (FileStream fileMarchiato = new FileStream(NomePdf, FileMode.CreateNew, FileAccess.ReadWrite))
-                    //{
-                    //    //salvataggio e chiusura
 
-                    //    document.Save(fileMarchiato);
-                    //}
-
-                    //MemoryStream mpdf = new MemoryStream();
-                    //using (FileStream fileStream = File.OpenRead(NomePdf))
-                    //{
-                    //    mpdf.SetLength(fileStream.Length);
-                    //    //read file to MemoryStream
-                    //    fileStream.Read(mpdf.GetBuffer(), 0, (int)fileStream.Length);
-                    //}
-                    //mpdf.Position = 0;
                     using (MemoryStream mpdf = new MemoryStream())
                     {
 
                         document.Save(mpdf);
                         mpdf.Position = 0;
                         var al = await _allMan.SalvaAsync(all, mpdf, false);
-                        if (File.Exists(NomePdf))
-                            File.Delete(NomePdf);
-
                     }
                     document.Close();
 
