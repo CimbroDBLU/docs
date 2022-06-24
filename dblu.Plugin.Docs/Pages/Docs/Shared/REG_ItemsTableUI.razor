@@ -303,8 +303,6 @@
         {
             if (LastAttachId == nAttachID && LastDossierId == nDossierID && LastSelectedItem==nSelectedItem) return;
 
-
-
             IsSpinnerVisible = true;
 
             LastDossierId = nDossierID;
@@ -421,9 +419,8 @@
     /// <param name="Elem"></param>
     public async void OnOpen(EmailElementi Elem)
     {
-        _NavigationManager.NavigateTo($"/Mail/EditRegister/{Elem.Id}");
+        _NavigationManager.NavigateTo($"/Mail/EditRegister/{Elem.Id}/{nAttachID}");
     }
-
 
     /// <summary>
     /// Add the search icon to the text box
@@ -440,8 +437,6 @@
     {
         Grid.SearchAsync(SearchKey);
     }
-
-    
 
     /// <summary>
     /// On double click open the Dossier
