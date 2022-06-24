@@ -181,7 +181,7 @@ namespace dWorker.Plugin.Docs
                                                $"SELECT * , {AllegatoEmail.SqlAttributi()} FROM Allegati WHERE Tipo=@Tipo and NomeFile = @NomeFile " +
                                                  " AND ( Folder IS NULL OR Folder = @DestFolder) " +
                                                  " AND CASE WHEN isdate(JSON_VALUE(Attributi,'$.Data'))>0 THEN JSON_VALUE(Attributi,'$.Data') ELSE NULL END = @Data ",
-                                                new { Tipo = tipo.Codice, NomeFile = Nomefile, Data = T,DestFolder=s.Cartella });
+                                                new { Tipo = tipo.Codice, NomeFile = Nomefile, Data = T,DestFolder=s.Nome });
                                             var flIgnora = false;
                                             if (allm != null)
                                             {
