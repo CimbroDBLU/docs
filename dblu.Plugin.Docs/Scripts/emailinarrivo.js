@@ -135,6 +135,7 @@ function CaricaElemento(elemento) {
 
   
     $('#IdFascicolo').val(elemento.IdFascicolo);
+   
     $('#IdElemento').val(elemento.Id);
     IdNuovoElemento = elemento.Id;
     $('#DescrizioneElemento').val(elemento.Descrizione);
@@ -143,13 +144,14 @@ function CaricaElemento(elemento) {
     $("#CollapseFascicolo").prop("disabled", false);
     $("#CollapseFascicolo").click();
 
+  
+
     var dialog = $("#detElemento").data("kendoWindow");
     $.ajax({
         url: UrlActions.MailView_editDettaglioElemento,
         type: 'POST',
         data: { IdElemento: $("#IdElemento").val() },
         success: function (data) {
-            $("#IdElemento").val(data.Id);
             dialog.content(data);
             dialog.open();
 
@@ -1019,17 +1021,18 @@ function ApriDettaglioOnClick(e) {
 
         //}
         // });*@
-       //  alert($("#IdElemento").val());
+        console.log("Load Element " + $('#IdElemento').val());
 
-        //MostraPdfCompleto();
-        //$('#gridemailElementi').data('kendoGrid').dataSource.read();
 
-        //$('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.read();
+        MostraPdfCompleto($("#IdElemento").val());
+        $('#gridemailElementi').data('kendoGrid').dataSource.read();
+
+        $('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.read();
 
         var grid = $("#gridEmail").data("kendoGrid");
         var rows = grid.select();
 
-        grid.select(rows[0]);
+        grid.select(rows);
 }
 
 function wCercaElementiClose(e) {

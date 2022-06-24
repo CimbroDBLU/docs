@@ -604,10 +604,20 @@ function detElementoClose(e) {
     $("#divFascicolo").CardWidget("expand");
     $("#divAllegati").CardWidget("expand");
 
-    var grid = $("#gridZip").data("kendoGrid"),
-        rows = grid.select();
 
-    grid.select(rows[0]);
+
+    console.log("Load Element " + $('#IdElemento').val());
+
+
+    MostraPdfCompleto($("#IdElemento").val());
+    $('#gridZipElementi').data('kendoGrid').dataSource.read();
+
+    $('#gridSoggettoElementiAperti').data('kendoGrid').dataSource.read();
+
+    var grid = $("#gridZip").data("kendoGrid");
+    var rows = grid.select();
+
+    grid.select(rows);
 
 }
 
