@@ -1,5 +1,6 @@
 ﻿@*
     Page that manage the inbox and its interaction with Dossiers and Items
+    Third version, using MSG suggestions
 *@
 
 @page "/MailUI/Inbox"
@@ -376,6 +377,9 @@
     /// </summary>
     private Toast ToastAnswerKO { get; set; }
 
+    /// <summary>
+    /// Toast for a positive attaqch on an email
+    /// </summary>
     private Toast ToastAttachOK { get; set; }
 
     /// <summary>
@@ -433,6 +437,9 @@
     /// </summary>
     private ObservableCollection<dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute> DynamicAttributes = new();
 
+    /// <summary>
+    /// Description to show when an email has been attached
+    /// </summary>
     private string LinkDescription{ get; set; }
 
     /// <summary>
@@ -576,12 +583,19 @@
         IsMoveDialog = !IsMoveDialog;
     }
 
+    /// <summary>
+    /// On request a registration, open it as preview
+    /// </summary>
+    /// <param name="e">Attachent to open </param>
     public async void OnRegisterAttachment(AllegatoEmail e)
     {
         if(e!=null)
-        _NavigationManager.NavigateTo($"/Mail/Register/{e.Id.ToString()}");
+            _NavigationManager.NavigateTo($"/Mail/Register/{e.Id.ToString()}");
     }
 
+    /// <summary>
+    /// Register current selected attach
+    /// </summary>
     public async void OnRegisterAttach()
     {
 
@@ -720,19 +734,6 @@
         ToastAttachOK.Show();
     }
 
-    /// <summary>
-    /// Link the costumer to current Attach
-    /// </summary>
-    /// <param name="Customer">Costumer to link</param>
-    public void OnLinkCostumer(REG_CustomerSearch.CustomerData Customer)
-    {
-        if (Customer.AttachId == Attach.Id.ToString())
-        {
-            CustomerCode = Customer.Customer?.Codice ?? "";
-            CustomerName = Customer.Customer?.Nome ?? "";
-            ApplyCustomer();
-        }
-    }
 
     /// <summary>
     /// Set Description of the costumer
@@ -746,32 +747,12 @@
             CostumerDesc = $"{CustomerCode} - {CustomerName?? ""}";       
         else if (string.IsNullOrEmpty(CustomerCode) && string.IsNullOrEmpty(CustomerName))
             CostumerDesc = $"Cliente con codice [{Attach.Chiave3}] non trovato";
-
     }
 
     /// <summary>
-    /// On getting open items , fires out the number of items detected
+    /// On request to link, link or create the registration
     /// </summary>
-    /// <param name="Items"></param>
-
-    public void OnOpenItems(int Items)
-    {
-        if (Items == 0 && !string.IsNullOrEmpty(Attach?.Chiave3 ?? ""))
-            IsCustomerExpand = false;
-        else
-            IsCustomerExpand = true;
-    }
-
-    /// <summary>
-    /// On Dossier loaded, set the descrition on the accordion
-    /// </summary>
-    /// <param name="Dossier">Fossier currently opened</param>
-    public void OnRefreshDossier(Fascicoli Dossier)
-    {
-        DossierDesc = (Dossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {Dossier?.Descrizione} [{Dossier?.Id}]";
-    }
-
-
+    /// <param name="ElemType"></param>
     public void OnLinkItemPressed(TipiElementi ElemType)
     {
         if (ElemType.AggregaAElemento)
@@ -784,7 +765,6 @@
             _NavigationManager.NavigateTo($"/Mail/Register/{AttachID}/{ElemType.Codice}");            
     }
 
-
     /// <summary>
     /// Open the component for linking the email to an element
     /// </summary>
@@ -792,7 +772,7 @@
     {
         try
         {
-            string component = "dblu.Portale.Plugin.SanGiacomo.Pages.Custom.MSG_CustomLinktoItem";// _SubjectService.UrlServizioRicercaElementi(_NavigationManager.Uri);
+            string component =  _SubjectService.UrlServizioRicercaElementi(_NavigationManager.Uri);
             DynamicAttributes.Clear();
 
             IsShowDialog = true;
