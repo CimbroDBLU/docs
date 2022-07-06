@@ -120,11 +120,25 @@
                         }
                         else
                         {
-                        <div class="row form-group">
-                            <div class="col">
-                                <OperationList nDisplayManage="true" OnRegisterAttachment="OnRegisterAttach" nRecordServer=TipiRecordServer.CartellaMail nDocumentType=TipiDocumentiFile.ZIP OnLinkItemPressed="OnLinkItemPressed"></OperationList>
-                            </div>
-                        </div>
+                            if (!string.IsNullOrEmpty(Attach.Chiave3))
+                            {
+                                <div class="row form-group">
+                                    <div class="col">
+                                       <OperationList nDisplayManage="true" OnRegisterAttachment="OnRegisterAttach" nRecordServer=TipiRecordServer.CartellaMail nDocumentType=TipiDocumentiFile.ZIP OnLinkItemPressed="OnLinkItemPressed"></OperationList>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="row form-group">
+                                    <div class="col-10">
+                                        <REG_CustomerSearch nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="false" nAttachID="@Attach.Chiave3" ></REG_CustomerSearch>                                
+                                    </div>
+                                    <div class="col-2">
+                                        <SfButton CssClass="e-success" Content="Applica" OnClick="ApplyCostumer"></SfButton>                                            
+                                    </div>
+                                </div>  
+                            }
                         }
                     }
 
@@ -442,6 +456,7 @@
     /// </summary>
     private string LinkDescription{ get; set; }
 
+
     /// <summary>
     /// On selection of the email,shows and hide panels properly
     /// </summary>
@@ -461,13 +476,14 @@
 
                 AttachID = "";                
                 CustomerCode = "";
+                CustomerName = "";
                 CostumerDesc = "";
                 PDFSourceId = "";
                 PDFSourceType = e_SourceType.Attachment;
                 return;
             }
 
-            _Logger.LogDebug($"Inbox[MAIL].OnSelectAttach: Selecting attach {e.Item1.Id}");
+            _Logger.LogDebug($"Inbox[UI].OnSelectAttach: Selecting attach {e.Item1.Id}");
 
             AutoSel=nPreselItem;     
             Attach = e.Item1;
@@ -497,7 +513,7 @@
         }
         catch (Exception ex)
         {
-            _Logger.LogError($"Inbox[MAIL].OnSelectAttach: Unexpected errro on selecting attach {ex}");
+            _Logger.LogError($"Inbox[UI].OnSelectAttach: Unexpected errro on selecting attach {ex}");
         }
     }
 
@@ -524,7 +540,7 @@
         }
         catch (Exception ex)
         {
-            _Logger.LogError($"Inbox[MAIL].OnDocumentTransformedZ: Unexpected error on OnDocumentTransformedZ {ex}");
+            _Logger.LogError($"Inbox[UI].OnDocumentTransformedZ: Unexpected error on OnDocumentTransformedZ {ex}");
         }
     }
 
@@ -598,7 +614,6 @@
     /// </summary>
     public async void OnRegisterAttach()
     {
-
         _NavigationManager.NavigateTo($"/Mail/Register/{AttachID}");
     }
 
@@ -671,11 +686,11 @@
             }
 
             Grid.RemoveItem(AttachID);
-            _Logger.LogInformation($"Inbox[MAIL].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
+            _Logger.LogInformation($"Inbox[UI].OnDeleteConfirmed: Mail {Attach.Id} deleted in {sw.ElapsedMilliseconds} ms");
         }
         catch (Exception ex)
         {
-            _Logger.LogError($"Inbox[MAIL].OnDeleteConfirmed: Unexpeted error deleting {Attach.Id}, {ex}");
+            _Logger.LogError($"Inbox[UI].OnDeleteConfirmed: Unexpeted error deleting {Attach.Id}, {ex}");
             ToastKO.Show();
         }
     }
@@ -730,8 +745,10 @@
     /// </summary>
     /// <param name="data"></param>
     private async void OnLinkToItem((string DossierId, string ItemId) data)
-    { 
-        ToastAttachOK.Show();
+    {
+        // ToastAttachOK.Show();
+        _NavigationManager.NavigateTo($"/Mail/RegisterEND/{AttachID}/{data.ItemId}");
+
     }
 
 
@@ -806,7 +823,7 @@
                 Position = 6,
                 Value = ElemType
             });
-            
+
             DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
             {
                 Name = "nAttachments",
@@ -841,7 +858,7 @@
         }
         catch (Exception ex)
         {
-            _Logger.LogError($"REG_ItemsTable.OnLink: Unexpected error {ex}");
+            _Logger.LogError($"Inbox[UI].OnLink: Unexpected error {ex}");
         }
     }
 
@@ -884,10 +901,33 @@
         }
         catch (Exception ex)
         {
-            _Logger.LogError($"AttachCostumerSearch.UndefinedComponent: Unexpected error {ex}");
+            _Logger.LogError($"Inbox[UI].UndefinedComponent: Unexpected error {ex}");
         }
     }
 
+    public async void OnLinkCostumer(REG_CustomerSearch.CustomerData Customer)
+    {
+        CustomerCode = Customer?.Customer?.Codice ?? "";
+        CustomerName=Customer?.Customer?.Nome ?? "";
+    }
 
+    public void ApplyCostumer()
+    {
+        try
+        {
+        if(Attach!=null)
+        {
+            Allegati A = _MailService._allMan.Get(AttachID);
+            A.SetAttributo("CodiceSoggetto", CustomerCode);
+            A.SetAttributo("NomeSoggetto", CustomerName);            
+            _MailService._allMan.Salva(A,false);
+            Grid.Refresh();
+        }
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"Inbox[UI].ApplyCostumer: Unexpected error {ex}");
+        }
+    }
 
 }

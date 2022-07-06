@@ -67,7 +67,7 @@
                                                             caption = "Inoltra ";
                                                             sub = @AttachSubject;
                                                         } 
-                                                        <div>@caption<b>@sub</b></div>
+                                                                <div>@caption<b>@sub</b></div>
                                                     }
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
@@ -148,10 +148,13 @@
                                                     <div>Tipo attività</div>
                                                 </HeaderTemplate>
                                                 <ContentTemplate>
-                                                    @foreach(TipiElementi item in SourceTipiElementi)
+                                                    @{
+                                                    foreach(TipiElementi item in SourceTipiElementi)
                                                     {
-                                                    <SfButton Content="@item.Descrizione" OnClick="@(()=> { NuovoElemento(item); })"></SfButton>
-
+                                                            <SfButton Content="@item.Descrizione" OnClick="@(()=> { NuovoElemento(item); })"></SfButton>
+                                                    }
+                                                    if(SourceTipiElementi.Count==1)
+                                                        NuovoElemento(SourceTipiElementi[0]); 
                                                     }
                                                 </ContentTemplate>
                                             </AccordionItem>

@@ -3,15 +3,18 @@
 *@
 @page "/Mail/Register/{nAttach}"
 @page "/Mail/Register/{nAttach}/{nType}"
+@page "/Mail/RegisterEND/{nAttach}/{nPreviewItemId}"
 @page "/Mail/EditRegister/{nItemId}"
 @page "/Mail/EditRegister/{nItemId}/{nOriginalAttach}"
 
 @using Microsoft.AspNetCore.Components.CompilerServices
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using System.IO
+@using Microsoft.AspNetCore.Hosting
 @using dblu.Docs.Classi
 @using dblu.Docs.Interfacce
 @using dblu.Docs.Models
+@using dblu.Portale.Plugin.Docs.Classes
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
 
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
@@ -20,6 +23,9 @@
 @inject IJSRuntime _JSRuntime
 @inject ILogger<Register> _Logger
 @inject ISoggettiService _SubjectService
+@inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachmentsService
+@inject dblu.Docs.Classi.DocumentTransformationService _DocumentService
+@inject IHostingEnvironment _environment
 
 <dblu.Portale.Core.UI.PageTitle nTitle="Inbox" />
 
@@ -137,9 +143,16 @@
                                     <HeaderTemplate>
                                         <div>Anteprima</div>
                                     </HeaderTemplate>
-                                    <ContentTemplate>                                                
-                                        <DocViewer nHeight=570 @ref="@Viewer"  nSourceType="Classes.e_SourceType.Attachment" OnDocumentTransformed=OnDocumentTransformedZ nDocIdentifier="@Attach.Id.ToString()"></DocViewer>
-                                    </ContentTemplate>
+                                    <ContentTemplate>  
+                                            @if (string.IsNullOrEmpty(nPreviewItemId))
+                                            {
+                                                <DocViewer nHeight=570 @ref="@Viewer"  nSourceType="Classes.e_SourceType.Attachment" OnDocumentTransformed=OnDocumentTransformedZ nDocIdentifier="@Attach.Id.ToString()"></DocViewer>
+                                            }
+                                            else
+                                            {
+                                                <DocViewer nHeight=570 @ref="@Viewer"  nSourceType="Classes.e_SourceType.Item" OnDocumentTransformed=OnDocumentTransformedZ nDocIdentifier="@nPreviewItemId.ToString()"></DocViewer>
+                                            }
+                                        </ContentTemplate>
                                 </AccordionItem>
                             </AccordionItems>
                         </SfAccordion>
@@ -203,6 +216,12 @@
     public string nItemId { get; set; } = "";
 
     /// <summary>
+    /// Item Id to show, if Item has been already created, but we are still in registration
+    /// </summary>
+    [Parameter]
+    public string nPreviewItemId { get; set; } = "";
+
+    /// <summary>
     /// Original Attach that has generate current item
     /// </summary>
     [Parameter]
@@ -232,6 +251,8 @@
     /// Reference to the already created elements for this customer
     /// </summary>
     private REG_ItemsTableUI ItemsTable{ get; set; }
+
+
 
     /// <summary>
     /// Title of the card depending of current situation
@@ -350,6 +371,8 @@
             Attach = _MailService._allMan.Get(nAttach);
             _Logger.LogInformation($"RegisterAttach.OnParametersSet: Init as MAN for {nAttach}");
         }
+
+
     }
 
     /// <summary>
@@ -388,6 +411,9 @@
             IsEditingItem = false;         
             _Logger.LogInformation($"RegisterAttach.OnParametersSet: Init as MAN for {nAttach}");
         }
+
+
+
 
     }
 
@@ -645,7 +671,8 @@
         ToastAttachOK.Show();
         IsShowDialog = false;
         IsEditingItem = false;
-        _NavigationManager.NavigateTo($"/Mail/EditRegister/{data.ItemId}/{Attach.Id.ToString()}");
+        _NavigationManager.NavigateTo($"/Mail/RegisterEND/{nAttach}/{data.ItemId}");
+
     }
 
     /// <summary>
@@ -702,15 +729,39 @@
     {
         try
         {
-            SourceAttach.Clear();
-            foreach (OriginalAttachments o in O)
-                SourceAttach.Add(o);
 
-            LastDocumentFromAttach = Viewer?.Doc?.Payload;
-            if(DynamicAttributes.FirstOrDefault(x => x.Name == "nDocument")!=null)
-                DynamicAttributes.FirstOrDefault(x => x.Name == "nDocument").Value = LastDocumentFromAttach;
-            IsAttachVisible = (SourceAttach.Count != 0);
-            IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
+
+            if(string.IsNullOrEmpty(nPreviewItemId))
+            {
+                SourceAttach.Clear();
+                foreach (OriginalAttachments o in O)
+                    SourceAttach.Add(o);
+
+                LastDocumentFromAttach = Viewer?.Doc?.Payload;
+                if(DynamicAttributes.FirstOrDefault(x => x.Name == "nDocument")!=null)
+                    DynamicAttributes.FirstOrDefault(x => x.Name == "nDocument").Value = LastDocumentFromAttach;
+
+                IsAttachVisible = (SourceAttach.Count != 0);
+                IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
+            }
+            else
+            {
+                DocumentManager DocManager=  new DocumentManager(_AttachmentsService, _DocumentService, _Logger,_environment.WebRootPath);
+                Document Doc = await DocManager.Load(e_SourceType.Attachment, nAttach,true);
+
+                SourceAttach.Clear();
+                foreach (OriginalAttachments o in Doc.SourceAttachments)
+                    SourceAttach.Add(o);
+
+                LastDocumentFromAttach = Doc?.Payload;
+                if(DynamicAttributes.FirstOrDefault(x => x.Name == "nDocument")!=null)
+                    DynamicAttributes.FirstOrDefault(x => x.Name == "nDocument").Value = LastDocumentFromAttach;
+
+                IsAttachVisible = (SourceAttach.Count != 0);
+                IsAttachExpanded = (SourceAttach.Count != 0 && (SourceAttach.Any(x => !string.IsNullOrEmpty(x.Warning)) || SourceAttach.Any(x => x.IsIncluded == false)));
+
+            }
+
 
         }
         catch (Exception ex)
@@ -726,7 +777,7 @@
     public async void OnNewItem(TipiElementi E)
     {
         EditItemType = E;
-
+        nPreviewItemId = "";
         LoadDynamicComponent(EditItemType);
 
     }
