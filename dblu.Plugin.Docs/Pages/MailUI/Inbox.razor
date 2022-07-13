@@ -120,25 +120,11 @@
                         }
                         else
                         {
-                            if (!string.IsNullOrEmpty(Attach.Chiave3))
-                            {
                                 <div class="row form-group">
                                     <div class="col">
-                                       <OperationList nDisplayManage="true" OnRegisterAttachment="OnRegisterAttach" nRecordServer=TipiRecordServer.CartellaMail nDocumentType=TipiDocumentiFile.ZIP OnLinkItemPressed="OnLinkItemPressed"></OperationList>
+                                       <OperationList nDisplayManage="true" nDisplayOperations="@(!string.IsNullOrEmpty(Attach.Chiave3))" OnRegisterAttachment="OnRegisterAttach" nRecordServer=TipiRecordServer.CartellaMail nDocumentType=TipiDocumentiFile.ZIP OnLinkItemPressed="OnLinkItemPressed"></OperationList>
                                     </div>
                                 </div>
-                            }
-                            else
-                            {
-                                <div class="row form-group">
-                                    <div class="col-10">
-                                        <REG_CustomerSearch nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="false" nAttachID="@Attach.Chiave3" ></REG_CustomerSearch>                                
-                                    </div>
-                                    <div class="col-2">
-                                        <SfButton CssClass="e-success" Content="Applica" OnClick="ApplyCostumer"></SfButton>                                            
-                                    </div>
-                                </div>  
-                            }
                         }
                     }
 
@@ -902,31 +888,6 @@
         catch (Exception ex)
         {
             _Logger.LogError($"Inbox[UI].UndefinedComponent: Unexpected error {ex}");
-        }
-    }
-
-    public async void OnLinkCostumer(REG_CustomerSearch.CustomerData Customer)
-    {
-        CustomerCode = Customer?.Customer?.Codice ?? "";
-        CustomerName=Customer?.Customer?.Nome ?? "";
-    }
-
-    public void ApplyCostumer()
-    {
-        try
-        {
-        if(Attach!=null)
-        {
-            Allegati A = _MailService._allMan.Get(AttachID);
-            A.SetAttributo("CodiceSoggetto", CustomerCode);
-            A.SetAttributo("NomeSoggetto", CustomerName);            
-            _MailService._allMan.Salva(A,false);
-            Grid.Refresh();
-        }
-        }
-        catch (Exception ex)
-        {
-            _Logger.LogError($"Inbox[UI].ApplyCostumer: Unexpected error {ex}");
         }
     }
 

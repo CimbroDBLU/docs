@@ -659,6 +659,8 @@ else
     {
         if (ComponentName.EndsWith("PopUp"))
         {
+            OnBeginReg.InvokeAsync();
+
             ComponentName = ComponentName.Replace("blz:/", "");
             ShowDossierConfirm = false;
 
@@ -682,7 +684,7 @@ else
             _Logger.LogDebug($"REG_ItemsTable.Register: CreateItemDossier incremental  {sw.ElapsedMilliseconds} ms");
             Stopwatch sw1 = Stopwatch.StartNew();
 
-            OnBeginReg.InvokeAsync();
+           
 
             OpenAsDialog(LastCreatedItem);
             StateHasChanged();

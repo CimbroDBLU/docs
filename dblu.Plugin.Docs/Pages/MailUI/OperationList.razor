@@ -33,10 +33,13 @@
         {
             <ButtonGroupButton  CssClass="e-success ml-1 mb-1" @onclick="@(() => OnRegisterAttachment.InvokeAsync())">Gestisci</ButtonGroupButton>
         }
-    @foreach (TipiElementi A in ActionsList)
+    @if(nDisplayOperations)
+    {
+    foreach (TipiElementi A in ActionsList)
         {
             <ButtonGroupButton  CssClass="e-primary ml-1 mb-1" @onclick="@(() => OnLinkItem(A.Codice))">@A.Descrizione</ButtonGroupButton>
         }
+    }
     @if (nDisplayComplete)
     {
         <ButtonGroupButton CssClass="e-success ml-1 mb-1" @onclick="OnComplete">Completa</ButtonGroupButton>
@@ -66,6 +69,12 @@
     /// </summary>
     [Parameter]
     public bool nDisplayManage { get; set; } = false;
+
+    /// <summary>
+    /// Display the operations (or not)
+    /// </summary>
+    [Parameter]
+    public bool nDisplayOperations { get; set; } = true;
 
     /// <summary>
     /// Fires when an attach has been completed

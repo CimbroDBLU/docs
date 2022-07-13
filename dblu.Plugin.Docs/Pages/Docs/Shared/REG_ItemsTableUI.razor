@@ -85,21 +85,33 @@
         <GridPageSettings PageSize="4"></GridPageSettings>
         <GridColumns>
             <GridColumn Field=@nameof(EmailElementi.Id) IsPrimaryKey="true" Visible="false"></GridColumn>
-            <GridColumn Width="40px" Field=@nameof(EmailElementi.IsUltimo) HeaderText="Ult"></GridColumn>
-            <GridColumn Field=@nameof(EmailElementi.DscTipoElemento) HeaderText="Tipo"></GridColumn>
-            <GridColumn Field=@nameof(EmailElementi.DscElemento) HeaderText="Descrizione"></GridColumn>
-            <GridColumn Field=@nameof(EmailElementi.Campo1) HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible"></GridColumn>
-            <GridColumn Field=@nameof(EmailElementi.Campo2) HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible"></GridColumn>
-            <GridColumn Field=@nameof(EmailElementi.Campo3) HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible"></GridColumn>
-            <GridColumn Field=@nameof(EmailElementi.Campo4) HeaderText="@Cols[3].Des" Visible="@Cols[3].Visible"></GridColumn>
-            <GridColumn Field=@nameof(EmailElementi.Campo5) HeaderText="@Cols[4].Des" Visible="@Cols[4].Visible"></GridColumn>
-            <GridColumn Field=@nameof(EmailElementi.Stato) HeaderText="Stato"></GridColumn>
-
-            <GridColumn Width="40px" AllowSorting="true" Field=@nameof(EmailElementi.LastOp) HeaderText="Last">
+            <GridColumn Width="40px"  Field=@nameof(EmailElementi.IsUltimo)  HeaderText="Ult">
+                <Template>
+                    @{
+                        if(((context as EmailElementi).IsUltimo.ToString())=="Si")
+                        {
+                        <center>
+                        <i class="fas fa-check"></i>
+                        </center>    
+                        }
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn AllowSorting="true" Width="40px" Field=@nameof(EmailElementi.LastOp) HeaderText="Op">
                 <Template>
                     <LastOperation nOperation="@((context as EmailElementi).LastOp)"></LastOperation>
                 </Template>
             </GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.DscTipoElemento) AutoFit="true" HeaderText="Tipo"></GridColumn>
+           <GridColumn Field=@nameof(EmailElementi.DscElemento)  AutoFit="true" HeaderText="Descrizione"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo1) AutoFit="true" HeaderText="@Cols[0].Des" Visible="@Cols[0].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo2) AutoFit="true" HeaderText="@Cols[1].Des" Visible="@Cols[1].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo3) AutoFit="true" HeaderText="@Cols[2].Des" Visible="@Cols[2].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo4) AutoFit="true" HeaderText="@Cols[3].Des" Visible="@Cols[3].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Campo5) AutoFit="true" HeaderText="@Cols[4].Des" Visible="@Cols[4].Visible"></GridColumn>
+            <GridColumn Field=@nameof(EmailElementi.Stato) HeaderText="Stato"></GridColumn>
+
+
         </GridColumns>
     </SfGrid>
 }

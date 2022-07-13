@@ -138,30 +138,37 @@
                         }
                         else
                         {
-                        @*TIPI ATTIVITA'*@
-                            <div class="row form-group">
-                                <div class="col">
-                                    <SfAccordion>
-                                        <AccordionItems>
-                                            <AccordionItem Expanded="@IsCustomerExpand">
-                                                <HeaderTemplate>
-                                                    <div>Tipo attività</div>
-                                                </HeaderTemplate>
-                                                <ContentTemplate>
-                                                    @{
-                                                    foreach(TipiElementi item in SourceTipiElementi)
-                                                    {
-                                                            <SfButton Content="@item.Descrizione" OnClick="@(()=> { NuovoElemento(item); })"></SfButton>
-                                                    }
-                                                    if(SourceTipiElementi.Count==1)
-                                                        NuovoElemento(SourceTipiElementi[0]); 
-                                                    }
-                                                </ContentTemplate>
+                            @*TIPI ATTIVITA'*@
+                            if (SourceTipiElementi.Count == 1)
+                            {
+                                ShowSortOption(SourceTipiElementi[0]);
+                            }
+                            else
+                            {
+                                <div class="row form-group">
+                                    <div class="col">
+                                        <SfAccordion>
+                                            <AccordionItems>
+                                                <AccordionItem Expanded="@IsCustomerExpand">
+                                                    <HeaderTemplate>
+                                                        <div>Tipo attività</div>
+                                                    </HeaderTemplate>
+                                                    <ContentTemplate>
+                                                        @{
+                                                            foreach (TipiElementi item in SourceTipiElementi)
+                                                            {
+                                                                <SfButton Content="@item.Descrizione" OnClick="@(()=> { ShowSortOption(item); })"></SfButton>
+                                                            }
+                                                            if (SourceTipiElementi.Count == 1)
+                                                                ShowSortOption(SourceTipiElementi[0]);
+                                                        }
+                                                    </ContentTemplate>
                                             </AccordionItem>
                                         </AccordionItems>
                                     </SfAccordion>
+                                    </div>
                                 </div>
-                            </div>
+                            }
 
                             @if(IsExternalComponentShown)
                             {
@@ -214,7 +221,11 @@
                                         Position = 6,
                                         Value = (Grid?.GetSelected().Result).Select(x => x.Id.ToString()).ToList() ?? new()
                                     });
-                                <dblu.Portale.Core.UI.DynamicComponent  nType="@DinamicComponent" nAttributes="@Attr"></dblu.Portale.Core.UI.DynamicComponent>
+                                <div class="row form-group">
+                                    <div class="col">
+                                        <dblu.Portale.Core.UI.DynamicComponent  nType="@DinamicComponent" nAttributes="@Attr"></dblu.Portale.Core.UI.DynamicComponent>
+                                    </div>
+                                </div>
                                 }
                             }
                             @*ALLEGATI EMAIL*@
@@ -254,7 +265,8 @@
                                         <div>Anteprima</div>
                                     </HeaderTemplate>
                                     <ContentTemplate>
-                                        <DocViewer @ref="@Viewer" OnDocumentTransformed="OnDocumentTransformedZ" nHeight=700 nSourceType="@PDFSourceType" nDocIdentifier="@PDFSourceId"></DocViewer>
+                                         <MailHTMLView nShowBack="false" nAttach="@Attach" OnDocumentLoaded="OnDocumentTransformedZ" nReadAttachments="true" nHeight="700"></MailHTMLView>
+                                            
                                     </ContentTemplate>
                                 </AccordionItem>
                             </AccordionItems>
@@ -505,12 +517,16 @@
     /// </summary>
     private bool IsCustomerExpand { get; set; } = true;
 
-
     /// <summary>
     /// Indicates the Cpb_chiarimenti visibility
     /// </summary>
     public bool IsExternalComponentShown { get; set; } = false;
+
+    /// <summary>
+    /// Type of current selected Operation
+    /// </summary>
     public TipiElementi ExternalComponent { get; set; } = new TipiElementi();
+
     /// <summary>
     /// Additional receivers
     /// </summary>
@@ -520,10 +536,19 @@
     /// </summary>
     public string Body { get; set; }
 
-    private string Modulo { get; set; } = "50.1.5";
+    /// <summary>
+    /// Module that controll this operations
+    /// </summary>
+    private string Module { get; set; } = "50.1.5";
 
+    /// <summary>
+    /// Indicates the list of selected items
+    /// </summary>
     public List<AllegatoEmail> ToRemove { get; set; } = new();
 
+    /// <summary>
+    /// Type of the Dynamu component
+    /// </summary>
     public Type DinamicComponent { get; set; } = null;
 
     /// <summary>
@@ -595,7 +620,7 @@
     protected async override void OnParametersSet()
     {
         var authState = await _AuthenticationStateProvider.GetAuthenticationStateAsync();
-        ListaRuoli = _MailService.getRuoli(Modulo,"");
+        ListaRuoli = _MailService.getRuoli(Module,"");
         SourceTipiElementi = new ObservableCollection<TipiElementi>(_MailService._elmMan.GetAllTipiElementi(ListaRuoli));
     }
 
@@ -877,10 +902,11 @@
     {
         Grid.Refresh();
     }
+
     /// <summary>
-    /// tipoElemento click button event
+    /// Show the selected sorting option
     /// </summary>
-    private async void NuovoElemento(TipiElementi item)
+    private async void ShowSortOption(TipiElementi item)
     {
         IsSpinnerVisible = true;
         if(item.ViewAttributi.Contains(@"blz:\") || item.ViewAttributi.Contains(@"blz:/"))
@@ -895,22 +921,5 @@
         IsSpinnerVisible = false;
     }
 
-
-    /// <summary>
-    /// Invia chiarimento button's click
-    /// </summary>
-    private async void chiarInviaChiarimento()
-    {
-
-
-    }
-    /// <summary>
-    /// PopUp OnLinkedTo Item Callback Event
-    /// </summary>
-    public async void OnLinkedToItem((string, string)  data)
-    {
-        
-
-    }
 
 }

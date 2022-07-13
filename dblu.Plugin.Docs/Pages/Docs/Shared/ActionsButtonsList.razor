@@ -149,7 +149,57 @@
     protected override async void OnInitialized()
     {
         ActionsList.AddRange(nItemTypes.Where(x => x.AggregaAElemento == false).Select(t => new ActionTranslation(t.Codice, t.Descrizione)).ToList());
+     
+        string component = _conf["Docs:CustomAction"];
+        DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
+                DynamicAttributes.Clear();
 
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+        {
+            Name = "nAttachID",
+            Position = 1,
+            Value = nAttachID
+        });
+
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+        {
+            Name = "nCostumerCode",
+            Position = 2,
+            Value = nCostumerCode
+        });
+
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+        {
+            Name = "nDossierID",
+            Position = 3,
+            Value = nDossierID
+        });
+
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+        {
+            Name = "nCurrentDocument",
+            Position = 4,
+            Value = nCurrentDocument
+        });
+
+
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+        {
+            Name = "nAttachments",
+            Position = 5,
+            Value = nAttachments
+        });
+
+        DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
+        {
+            Name = "OnAttachCompleted",
+            Position = 6,
+            Value = EventCallback.Factory.Create<string>(this, OnAttachCompleted)
+        });
+    }
+
+    protected override async void OnParametersSet()
+    {
         DynamicAttributes.Clear();
 
         DynamicAttributes.Add(new dblu.Portale.Core.UI.DynamicComponent.ComponentAttribute()
@@ -194,9 +244,6 @@
             Position = 6,
             Value = EventCallback.Factory.Create<string>(this, OnAttachCompleted)
         });
-
-        string component = _conf["Docs:CustomAction"];
-        DynamicContent = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetTypes().FirstOrDefault(y => y.FullName == component) != null)?.GetType(component);
 
     }
 

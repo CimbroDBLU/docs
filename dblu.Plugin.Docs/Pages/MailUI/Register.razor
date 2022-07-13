@@ -43,9 +43,9 @@
                        <div class="col">
                          <SfAccordion>
                             <AccordionItems>
-                                <AccordionItem Expanded=true>
+                                <AccordionItem Expanded=false>
                                     <HeaderTemplate>
-                                        <div>@Attach.Chiave5</div>
+                                        <div>EMail: @Attach.Chiave5</div>
                                     </HeaderTemplate>
                                         <ContentTemplate>
                                         <AttachDetail nAttach=@Attach />
@@ -55,6 +55,59 @@
                          </SfAccordion>
                         </div>
                     </div>
+
+                     @*CLIENTE*@
+                     if (string.IsNullOrEmpty(@Attach.Chiave3))
+                        {
+                            <div class="row form-group">
+                                <div class="col">
+                         <SfAccordion>
+                            <AccordionItems>
+                                <AccordionItem Expanded=true>
+                                    <HeaderTemplate>
+                                        <div>Seleziona cliente</div>
+                                    </HeaderTemplate>
+                                        <ContentTemplate>
+                                            <div class="row"> 
+                                                <div class="col">
+                                                    <REG_CustomerSearch nCostumerCode="@CustomerCode" nCostumerName="@CustomerName" OnLinkedToCostumer="OnLinkCostumer" nReadOnly="false" nAttachID="@Attach.Chiave3"  ></REG_CustomerSearch>                                
+                                                 </div>
+                                                 <div>
+                                                    <SfButton CssClass="e-success" Content="Applica" OnClick="ApplyCostumer" ></SfButton>                                            
+                                                </div>
+                                         </div> 
+                                </ContentTemplate>
+                                </AccordionItem>
+                            </AccordionItems>
+                         </SfAccordion>
+                       </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="row form-group">
+                                <div class="col">
+                                    <SfAccordion>
+                                    <AccordionItems>
+                                        <AccordionItem Expanded=false>
+                                            <HeaderTemplate>
+                                                <div>Cliente: @Attach.Chiave4</div>
+                                            </HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <div class="row">                                     
+                                                 <div class="col">
+                                                    <SfButton CssClass="e-success" Content="Rimuovi cliente" OnClick="RemoveCostumer" ></SfButton>                                            
+                                                 </div>
+                                                 </div> 
+                                        </ContentTemplate>
+                                        </AccordionItem>
+                                    </AccordionItems>
+                                 </SfAccordion>
+                                </div>
+                            </div>
+                        }
+
+
                    
                     @*RECENTI*@
                     <div class="row form-group">
@@ -63,10 +116,10 @@
                                 <AccordionItems>
                                     <AccordionItem Expanded=@IsOpenOrdersExpand>
                                         <HeaderTemplate>
-                                            <div>Ordini recenti</div>
+                                            <div>Ordini recenti:</div>
                                         </HeaderTemplate>
                                         <ContentTemplate>
-                                            <REG_OpenItemsTable nHeight="125px" nPageSize="5" nCustomerCode="@Attach.Chiave3"  OnOpenItems=OnOpenItems></REG_OpenItemsTable>
+                                            <REG_OpenItemsTable nHeight="125px" nPageSize="4" nCustomerCode="@Attach.Chiave3"  OnOpenItems=OnOpenItems></REG_OpenItemsTable>
                                         </ContentTemplate>
                                     </AccordionItem>
                                 </AccordionItems>
@@ -125,11 +178,11 @@
    
                 <div class="col-7" style="align-self: auto;">
                 @*LISTA BOTTONI*@
-                @if(!IsEditingItem)
+                @if(!IsEditingItem && !string.IsNullOrEmpty(Attach.Chiave3))
                     {
                     <div class="row form-group">
                         <div class="col">
-                            <OperationList nAttach=Attach nRecordServer=TipiRecordServer.CartellaMail nDocumentType=TipiDocumentiFile.ZIP OnLinkItemPressed="OnNewItem" nDisplayComplete=@(ItemsTable?.IsSummaryActive??false) nDossierID=@(Attach.IdFascicolo.ToString()) nAttachments="@SourceAttach" OnAttachCompleted="OnCompleted" nCurrentDocument=@LastDocumentFromAttach></OperationList>
+                            <OperationList nAttach=Attach  nDisplayOperations="@(!string.IsNullOrEmpty(Attach.Chiave3))" nRecordServer=TipiRecordServer.CartellaMail nDocumentType=TipiDocumentiFile.ZIP OnLinkItemPressed="OnNewItem" nDisplayComplete=@(ItemsTable?.IsSummaryActive??false) nDossierID=@(Attach.IdFascicolo.ToString()) nAttachments="@SourceAttach" OnAttachCompleted="OnCompleted" nCurrentDocument=@LastDocumentFromAttach></OperationList>
                        </div>
                     </div>
                     }
@@ -252,7 +305,19 @@
     /// </summary>
     private REG_ItemsTableUI ItemsTable{ get; set; }
 
+    /// <summary>
+    /// Costumer Code
+    /// </summary>
+    private string CustomerCode
+    {
+        get;
+        set;
+    }
 
+    /// <summary>
+    /// Costumer Name
+    /// </summary>
+    private string CustomerName { get; set; } = "";
 
     /// <summary>
     /// Title of the card depending of current situation
@@ -718,6 +783,7 @@
     /// <param name="Item"></param>
     public void OnRegistrationCompleted(string Item)
     {
+        Attach = _MailService._allMan.Get(Attach.Id);
         Viewer.ForceReload();
     }
 
@@ -777,6 +843,7 @@
     public async void OnNewItem(TipiElementi E)
     {
         EditItemType = E;
+
         nPreviewItemId = "";
         LoadDynamicComponent(EditItemType);
 
@@ -797,6 +864,62 @@
     public void OnRefreshDossier(Fascicoli Dossier)
     {
         DossierDesc = (Dossier == null) ? "Fascicolo da selezionare" : $"Fascicolo: {Dossier?.Descrizione} [{Dossier?.Id}]";
+    }
+
+    /// <summary>
+    /// Link a costumer (update visual data)
+    /// </summary>
+    /// <param name="Customer"></param>
+    public async void OnLinkCostumer(REG_CustomerSearch.CustomerData Customer)
+    {
+        CustomerCode = Customer?.Customer?.Codice ?? "";
+        CustomerName=Customer?.Customer?.Nome ?? "";
+    }
+
+    /// <summary>
+    /// Apply the costumer on current attachment
+    /// </summary>
+    public void ApplyCostumer()
+    {
+        try
+        {
+            if(Attach!=null)
+            {
+                Attach = _MailService._allMan.Get(nAttach);
+                Attach.SetAttributo("CodiceSoggetto", CustomerCode);
+                Attach.SetAttributo("NomeSoggetto", CustomerName);            
+                _MailService._allMan.Salva(Attach,false);
+                StateHasChanged(); 
+            }
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"Inbox[UI].ApplyCostumer: Unexpected error {ex}");
+        }
+    }
+
+    /// <summary>
+    /// Remove costumer from current attachment
+    /// </summary>
+    public void RemoveCostumer()
+    {
+        try
+        {
+            if(Attach!=null)
+            {
+                Attach = _MailService._allMan.Get(nAttach);
+                Attach.SetAttributo("CodiceSoggetto", "");
+                Attach.SetAttributo("NomeSoggetto", "");
+                CustomerCode="";
+                CustomerName = "";
+                _MailService._allMan.Salva(Attach,false);
+                StateHasChanged(); 
+            }
+        }
+        catch (Exception ex)
+        {
+            _Logger.LogError($"Inbox[UI].ApplyCostumer: Unexpected error {ex}");
+        }
     }
 
 }

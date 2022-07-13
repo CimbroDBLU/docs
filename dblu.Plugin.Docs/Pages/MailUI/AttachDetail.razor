@@ -4,15 +4,15 @@
 @using dblu.Docs.Models
 
 <div class="row">
-    <div class="col-5" style="overflow-wrap: break-word;">
-         <b>@nAttach.Chiave3 - @nAttach.Chiave4 </b><br />
-         @nAttach.GetAttributo("Mittente","")
+    <div class="col-4" style="overflow-wrap: break-word;">
+         @nAttach.GetAttributo("Mittente","")<br />
+         @nAttach.Origine
     </div>
-    <div class="col-5" style="text-align: start;overflow-wrap: break-word;">
+    <div class="col-4" style="text-align: center;overflow-wrap: break-word;">
         <b> @nAttach.Chiave5</b><br />
         
     </div>
-    <div class="col-2" style="text-align: end;overflow-wrap: break-word;">
+    <div class="col-4" style="text-align: end;overflow-wrap: break-word;">
         @{
             DateTime t = nAttach.GetAttributo("Data",DateTime.Now);
         }
