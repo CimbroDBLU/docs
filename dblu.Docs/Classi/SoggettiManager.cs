@@ -121,7 +121,9 @@ namespace dblu.Docs.Classi
                 using (SqlConnection cn = new SqlConnection(StringaConnessione))
                 {
                     EmailSoggetti em = new EmailSoggetti() { CodiceSoggetto = CodiceSoggetto, Email = Utente };
-                    cn.Insert<EmailSoggetti>(em);
+                    int EntryFound=cn.ExecuteScalar<int>("select Count(*) from EmailSoggetti where CodiceSoggetto=@CodiceSoggetto and Email=@Email", new { CodiceSoggetto,Email=Utente });
+                    if(EntryFound==0)
+                        cn.Insert<EmailSoggetti>(em);
                     return true;
                 }
             }catch(Exception ex)
