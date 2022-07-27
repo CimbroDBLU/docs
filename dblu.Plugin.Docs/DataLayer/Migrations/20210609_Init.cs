@@ -31,12 +31,13 @@ namespace dblu.Docs.DataLayer.Migrations
                     {
                         cn.Execute($"ALTER DATABASE  [{dbName}] ADD FILEGROUP [fsGroup] CONTAINS FILESTREAM;");
                     }
+                    ///Se queste operation danno errore
                     catch (Exception) { }
 
                     string DefaulyPath=cn.QueryFirstOrDefault<string>("SELECT SERVERPROPERTY('InstanceDefaultDataPath') AS InstanceDefaultDataPath");
                     try
                     {
-                        cn.Execute($@"ALTER DATABASE [{dbName}] ADD FILE(NAME = N'fsDocs', FILENAME = N'{DefaulyPath}\fsDocs_{dbName}' ) TO FILEGROUP[fsGroup];");
+                        cn.Execute($@"ALTER DATABASE [{dbName}] ADD FILE(NAME = N'fsDocs', FILENAME = N'{DefaulyPath}fsDocs_{dbName}' ) TO FILEGROUP[fsGroup];");
                     }
                     catch (Exception) { }
                 }
@@ -150,8 +151,8 @@ namespace dblu.Docs.DataLayer.Migrations
                 Create.Table("LogDoc")
                      .WithColumn("IdOggetto").AsGuid().Nullable()
                      .WithColumn("Data").AsDateTime2().Nullable()
-                     .WithColumn("Stato").AsInt16().Nullable()
-                     .WithColumn("UtenteC").AsString(20).Nullable().WithDefaultValue("")
+                     .WithColumn("TipoOggetto").AsInt16().Nullable()                     
+                     .WithColumn("Utente").AsString(20).Nullable().WithDefaultValue("")
                      .WithColumn("Operazione").AsInt16().Nullable();
 
                 Create.Index("IX_LogDoc_id_data").OnTable("LogDoc")
@@ -218,12 +219,12 @@ namespace dblu.Docs.DataLayer.Migrations
                    .OnDeleteOrUpdate(System.Data.Rule.Cascade);
 
                 Create.ForeignKey("FK_Elementi_TipiElementi")
-                    .FromTable("Allegati").ForeignColumn("Tipo")
+                    .FromTable("Elementi").ForeignColumn("Tipo")
                     .ToTable("TipiElementi").PrimaryColumn("Codice");
 
-                Create.ForeignKey("FK_Email_Soggetti")
-                    .FromTable("EmailSoggetti").ForeignColumn("CodiceSoggetto")
-                    .ToTable("Soggetti").PrimaryColumn("Codice");
+                //Create.ForeignKey("FK_Email_Soggetti")
+                //    .FromTable("EmailSoggetti").ForeignColumn("CodiceSoggetto")
+                //    .ToTable("Soggetti").PrimaryColumn("Codice");
 
                 Create.ForeignKey("FK_TipiElementi_Categorie")
                     .FromTable("TipiElementi").ForeignColumn("Categoria")
