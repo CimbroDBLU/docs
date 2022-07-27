@@ -3,8 +3,10 @@
 *@
 
 @page "/Docs/Dossier/{Id}"
+@using System.IO
 @using dblu.Docs.Models
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using dblu.Portale.Plugin.Docs.Class
 @using dblu.Portale.Plugin.Docs.Pages.Docs.Shared
 @inject dblu.Portale.Plugin.Docs.Services.AllegatiService _AttachService
 @inject dblu.Portale.Plugin.Docs.Services.MailService _MailService
@@ -80,15 +82,18 @@
                 </div>
             </CardContent>
             <CardContent EnableSeperator="true">
+                @{
+                    var List = iDossier.CategoriaNavigation._listaAttributi.OrderBy(c => c.Sequenza).ToList();
+                }
                 <div class="form-group row">
                     <div class="col-2">
-                        <label>@iDossier.CategoriaNavigation._listaAttributi.ElementAt(0)?.Descrizione</label>
+                        <label>@List.ElementAt(0)?.Descrizione</label>
                     </div>
                     <div class="col-4">
                         <SfTextBox Readonly="true" Value="@(iDossier.Chiave1)"></SfTextBox>
                     </div>
                     <div class="col-2">
-                        <label>@iDossier.CategoriaNavigation._listaAttributi.ElementAt(1)?.Descrizione</label>
+                        <label>@List.ElementAt(1)?.Descrizione</label>
                     </div>
                     <div class="col-4">
                         <SfTextBox Readonly="true" Value="@(iDossier.Chiave2)"></SfTextBox>
@@ -96,13 +101,13 @@
                 </div>
                 <div class="form-group row">
                     <div class="col-2">
-                        <label>@iDossier.CategoriaNavigation._listaAttributi.ElementAt(2)?.Descrizione</label>
+                        <label>@List.ElementAt(2)?.Descrizione</label>
                     </div>
                     <div class="col-4">
                         <SfTextBox Readonly="true" Value="@(iDossier.Chiave3)"></SfTextBox>
                     </div>
                     <div class="col-2">
-                        <label>@iDossier.CategoriaNavigation._listaAttributi.ElementAt(3)?.Descrizione</label>
+                        <label>@List.ElementAt(3)?.Descrizione</label>
                     </div>
                     <div class="col-4">
                         <SfTextBox Readonly="true" Value="@(iDossier.Chiave4)"></SfTextBox>
@@ -110,7 +115,7 @@
                 </div>
                 <div class="row">
                     <div class="col-2">
-                        <label>@iDossier.CategoriaNavigation._listaAttributi.ElementAt(4)?.Descrizione</label>
+                        <label>@List.ElementAt(4)?.Descrizione</label>
                     </div>
                     <div class="col-4">
                         <SfTextBox Readonly="true" Value="@(iDossier.Chiave5)"></SfTextBox>
@@ -216,6 +221,20 @@
         Items = new ObservableCollection<viewElementi>(Dossier.Elementi);
         CardTitle = $"Modifica fascicolo [{Dossier.DscFascicolo}]";
 
+        //List<string> GUIDS = File.ReadAllLines(@"c:\temp\compab.txt").ToList();
+        //foreach (string s in GUIDS)
+        //{
+        //    Elementi E = _MailService._elmMan.Get(s, 0);
+        //    BPMDocsProcessInfo Info = _MailService.GetProcessInfo(dblu.Docs.Classi.TipiOggetto.ELEMENTO, AzioneOggetto.INSERIMENTO);
+        //    bool bres=_MailService.AvviaProcesso(Info, E);
+        //    if(bres)
+        //    _Logger.LogInformation($"EditDossier.OnInitialized: Started process for {E.Chiave1} ");
+        //        else
+        //    _Logger.LogWarning($"EditDossier.OnInitialized: Started process failed for {E.Chiave1}");
+
+        //}
+        
+
         IsSpinnerVisible = false;
         _Logger.LogInformation($"EditDossier.OnInitialized: Loaded Item {Id} in {Sw.ElapsedMilliseconds} ms");
     }
@@ -233,13 +252,11 @@
             await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
             Url = $"{Url.Replace("blz:/", "")}/{item.Id}/REVIEW";
              await _JSRuntime.InvokeVoidAsync("BlazorSetHREF", Url);
-          //  _NavigationManager.NavigateTo(Url);
         }
         else
         {
             await _SessionStore.SetAsync("Referrer", $"/Docs/Dossier/{this.Id}");
-             await _JSRuntime.InvokeVoidAsync("BlazorSetHREF", $"/Docs/Item/{Id.ToString()}");
-           // _NavigationManager.NavigateTo($"/Docs/Item/{Id.ToString()}");
+            await _JSRuntime.InvokeVoidAsync("BlazorSetHREF", $"/Docs/Item/{Id.ToString()}");          
         }
     }
 

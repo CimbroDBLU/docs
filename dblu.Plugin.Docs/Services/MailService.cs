@@ -3197,7 +3197,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     if (_elmMan.Cancella(IdElemento, Revisione))
                     {
                         res.Successo = true;
-                        _logMan.PostLog(IdElemento, TipiOggetto.ELEMENTO, TipoOperazione.Cancellato, User.Identity.Name, $"Elemento [{el.Descrizione}] rimosso", new() { { "1", el.Chiave1 }, { "2", el.Chiave2 }, { "3", el.Chiave3 }, { "4", el.Chiave4 }, { "5", el.Chiave5 } });
+                        _logMan.PostLog(IdElemento, TipiOggetto.ELEMENTO, TipoOperazione.Cancellato, User.Identity.Name, $"Elemento [{el.Descrizione}] rimosso", new() { { "1", el.Chiave1??"" }, { "2", el.Chiave2 ?? "" }, { "3", el.Chiave3 ?? "" }, { "4", el.Chiave4 ?? "" }, { "5", el.Chiave5 ?? "" } });
                     }
                 }
             }

@@ -13,6 +13,7 @@ using dWorkerDatabase;
 using Syncfusion.Blazor.Data;
 using System.Linq;
 using System.Diagnostics;
+using dWorkerDatabase.DataLayer;
 
 namespace dWorker.Plugin.Docs
 {
