@@ -5,7 +5,7 @@
 @using dblu.Portale.Core.Infrastructure.Identity.Services
 @inject IApplicationUsersManager _ApplicationUsersManager
 
-<SfMultiSelect Placeholder="Utenti Candidati" @bind-Value="@nUsers" DataSource="@UserList">
+<SfMultiSelect CssClass=@CssClass  Placeholder="Utenti Candidati" @bind-Value="@nUsers" DataSource="@UserList">
     <MultiSelectFieldSettings Value="Code" Text="Desc"></MultiSelectFieldSettings>
 </SfMultiSelect>
 
@@ -30,6 +30,11 @@
             nUsersChanged.InvokeAsync(value);
         }
     }
+    /// <summary>
+    /// CSS class that must be inherit from internal component
+    /// </summary>
+    [Parameter]
+    public string CssClass{get;set;}
 
     /// <summary>
     /// Event for having two way binding
@@ -42,6 +47,12 @@
     /// List of all available users
     /// </summary>
     public List<UserTranslation> UserList { get; set; } = new();
+
+    /// <summary>
+    /// Filter Users for a role, if specified
+    /// </summary>
+    [Parameter]
+    public string nRoleFilter { get; set; }
 
     /// <summary>
     /// Class for relate UserIds and Description to show
@@ -74,7 +85,12 @@
     /// </summary>
     protected override void OnInitialized()
     {
-        foreach (ApplicationUser AU in _ApplicationUsersManager.GetUsers())
-            UserList.Add(new(AU.UserId, AU.ToSignPlusID));
+        if(string.IsNullOrEmpty(nRoleFilter))
+            foreach (ApplicationUser AU in _ApplicationUsersManager.GetUsers())
+                UserList.Add(new(AU.UserId, AU.ToSignPlusID));
+       else 
+           foreach (ApplicationUser AU in _ApplicationUsersManager.GetUsersWithRole(nRoleFilter))
+                UserList.Add(new(AU.UserId, AU.ToSignPlusID));
+
     }
 }

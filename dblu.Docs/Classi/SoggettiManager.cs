@@ -114,6 +114,24 @@ namespace dblu.Docs.Classi
             return l;
         }
 
+        public List<string> GetCodesByEmail(string Mail)
+        {
+            List<string> l = new List<string>();
+            try
+            {
+                using (SqlConnection cn = new SqlConnection(StringaConnessione))
+                {
+                    l = cn.Query<string>("select EmailSoggetti.CodiceSoggetto from EmailSoggetti  where  EmailSoggetti.email= '" + Mail + "'").ToList();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"GetCodesByEmail: {ex.Message}");
+            }
+            return l;
+        }
+
         public bool Associa(string Utente, string CodiceSoggetto)
         {
             try
