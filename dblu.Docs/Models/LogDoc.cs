@@ -30,7 +30,8 @@ namespace dblu.Docs.Models
         Modificato = 8,
         Annullato = 9,
         Inoltrato = 10,
-        Risposto = 11
+        Risposto = 11,
+        Protocollo=12
     }
 
 

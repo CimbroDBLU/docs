@@ -96,7 +96,7 @@ namespace dblu.Docs.Classi
                 Operazione = nOperation,
                 Utente = nUser,
                 Descrizione=nDescription,
-                JAttributi= null,
+                JAttributi= Att,
 
             };
             Task.Run(
@@ -136,7 +136,7 @@ namespace dblu.Docs.Classi
                 Operazione = nOperation,
                 Utente = nUser,
                 Descrizione = nDescription,
-                JAttributi = null,
+                JAttributi = Att,
 
             };
             Task.Run(

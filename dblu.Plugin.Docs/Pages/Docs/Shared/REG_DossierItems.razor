@@ -205,7 +205,7 @@
                 all.Stato = StatoAllegato.Chiuso;
                 _MailService._allMan.Salva(all, false);
 
-                _MailService._logMan.PostLog(Guid.Parse(nAttachID), TipiOggetto.ALLEGATO, TipoOperazione.Chiuso, User.Identity.Name, $"Allegato chiuso");
+                _MailService._logMan.PostLog(Guid.Parse(nAttachID), TipiOggetto.ALLEGATO, TipoOperazione.Chiuso, User.Identity.Name, $"Allegato [{all.Descrizione}] chiuso",new() { { "1", all.Chiave1 }, { "2", all.Chiave2 }, { "3", all.Chiave3 }, { "4", all.Chiave4 }, { "5", all.Chiave5 } });
                 ToastCompleteOK.Show();
                 OnAttachCompleted.InvokeAsync(nAttachID);
                 _Logger.LogInformation($"REG_DossierItems.Complete: Attach {nAttachID} has been completed in {sw.ElapsedMilliseconds} ms");

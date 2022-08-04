@@ -948,7 +948,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                     Allegato.Stato = StatoAllegato.Elaborato;
                     var i = _allMan.Salva(Allegato, false);
 
-                    _logMan.PostLog(Allegato.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato elaborato");
+                    _logMan.PostLog(Allegato.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato [{Allegato.Descrizione}] elaborato, Elemento [{e.Id}] come modifica", new() { { "1", Allegato.Chiave1 }, { "2", Allegato.Chiave2 }, { "3", Allegato.Chiave3 }, { "4", Allegato.Chiave4 }, { "5", Allegato.Chiave5 } });
                     //estrae i file dallo zip presenti in lista e li assegna all'elemento
                     Allegati all = await EstraiAllegatiZip(Allegato, ElencoFile, AllegaZip, Descrizione, tipoAll, true, User.Identity.Name, cancel);
 
@@ -1215,7 +1215,7 @@ namespace dblu.Portale.Plugin.Docs.Services
 
                 if (_fasMan.Salva(f, isNew) == false) return null;
 
-                _logMan.PostLog(f.Id, TipiOggetto.FASCICOLO, (isNew) ? TipoOperazione.Creato : TipoOperazione.Modificato, User.Identity.Name, $"Fascicolo " + ((isNew) ? "creato" : "modificato"));
+                _logMan.PostLog(f.Id, TipiOggetto.FASCICOLO, (isNew) ? TipoOperazione.Creato : TipoOperazione.Modificato, User.Identity.Name, $"Fascicolo [{f.Descrizione}] " + ((isNew) ? "creato" : "modificato"), new() { { "1", f.Chiave1 }, { "2", f.Chiave2 }, { "3", f.Chiave3 }, { "4", f.Chiave4 }, { "5", f.Chiave5 } });
                 
                 //crea nuovo elemento e e assegna alla mail ?
                 var e = new Elementi();
@@ -1238,12 +1238,12 @@ namespace dblu.Portale.Plugin.Docs.Services
                 e.SetAttributo("DataRichiesta", e.GetAttributo("Data"));
                 if (_elmMan.Salva(e, isNew) == false) return null;
 
-                _logMan.PostLog(e.Id, TipiOggetto.ELEMENTO, TipoOperazione.Cancellato, User.Identity.Name, $"Elemento creato");
+                _logMan.PostLog(e.Id, TipiOggetto.ELEMENTO, TipoOperazione.Creato, User.Identity.Name, $"Elemento [{e.Descrizione}] creato", new() { { "1", e.Chiave1 }, { "2", e.Chiave2 }, { "3", e.Chiave3 }, { "4", e.Chiave4 }, { "5", e.Chiave5 } });
 
                 Allegato.Stato = StatoAllegato.Elaborato;
                 if (_allMan.Salva(Allegato, false) == false) return null;
 
-                _logMan.PostLog(Allegato.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato elaborato");
+                _logMan.PostLog(Allegato.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, User.Identity.Name, $"Allegato [{Allegato.Descrizione}] elaborato, Elemento [{e.Id}] creato", new() { { "1", Allegato.Chiave1 }, { "2", Allegato.Chiave2 }, { "3", Allegato.Chiave3 }, { "4", Allegato.Chiave4 }, { "5", Allegato.Chiave5 } });
                 var estrai = await EstraiAllegatiZip(Allegato, ElencoFile, AllegaZip, Descrizione, tipoAll, false, User.Identity.Name, cancel);
 
                 return e;
@@ -1515,9 +1515,10 @@ namespace dblu.Portale.Plugin.Docs.Services
             RisultatoAzione res = new RisultatoAzione();
             try
             {
-
+                Allegati all = _allMan.Get(IdAllegato);
                 using (SqlConnection cn = new SqlConnection(_context.Connessione))
                 {
+                  
                     var n = cn.Execute("UPDATE allegati SET Origine=@Origine WHERE Id=@Id ",
                         new { Origine = Cartella, Id = IdAllegato });
                     if (n > 0)
@@ -1531,8 +1532,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                         res.Messaggio = $"parametri non validi";
                     }
                 }
+                _logMan.PostLog(Guid.Parse(IdAllegato), TipiOggetto.ALLEGATO, TipoOperazione.Spostato, User.Identity.Name, $"Allegato spostato da [{all.Origine}] a [{Cartella}]", new dbluTools.Extensions.ExtAttributes() { { "PrevSource", Cartella }, { "Source", all.Origine }, { "1", all.Chiave1 }, { "2", all.Chiave2 }, { "3", all.Chiave3 }, { "4", all.Chiave4 }, { "5", all.Chiave5 } });
 
-                _logMan.PostLog(Guid.Parse(IdAllegato), TipiOggetto.ALLEGATO, TipoOperazione.Spostato, User.Identity.Name, $"Allegato spostato in {Cartella}", new dbluTools.Extensions.ExtAttributes() { { "PrevSource", "" }, { "Source", Cartella } });  
             }
             catch (Exception ex)
             {
@@ -1560,7 +1561,7 @@ namespace dblu.Portale.Plugin.Docs.Services
                 }
                 res.Successo = _allMan.Salva(al, false);
 
-                _logMan.PostLog(Guid.Parse(IdAllegato), TipiOggetto.ALLEGATO, TipoOperazione.Riaperto, User.Identity.Name, $"Allegato riaperto");
+                _logMan.PostLog(Guid.Parse(IdAllegato), TipiOggetto.ALLEGATO, TipoOperazione.Riaperto, User.Identity.Name, $"Allegato [{al.Descrizione}] riaperto", new() { { "1", al.Chiave1 }, { "2", al.Chiave2 }, { "3", al.Chiave3 }, { "4", al.Chiave4 }, { "5", al.Chiave5 } });
 
             }
             catch (Exception ex)

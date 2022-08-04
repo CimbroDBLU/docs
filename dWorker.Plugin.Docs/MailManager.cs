@@ -269,6 +269,11 @@ namespace dWorker.Plugin.Docs
                                                 await message.WriteToAsync(file, cancel);
 
                                                 Allegati all = await allMan.SalvaAsync((Allegati)allm, file, newall);
+                                                LogDocManager logMan = new LogDocManager(new dbluDocsContext(_conf), _logger, _conf);
+                                                logMan.PostLog(all.Id, TipiOggetto.ALLEGATO, TipoOperazione.Elaborato, "dWorker", $"Allegato [{all.Descrizione}] creato", new() { { "1", all.Chiave1 }, { "2", all.Chiave2 }, { "3", all.Chiave3 }, { "4", all.Chiave4 }, { "5", all.Chiave5 } });
+
+
+
 
                                                 if (all != null)
                                                 {
