@@ -432,6 +432,7 @@ namespace dblu.Docs.Classi
                 t = types[ext];
             }
             catch {
+                return "application/octet-stream";
             }
             return t;
         }
