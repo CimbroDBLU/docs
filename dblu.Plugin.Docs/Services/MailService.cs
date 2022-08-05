@@ -1637,7 +1637,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                 {
                     if (xx.Duplicabile)
                     {
-                        xx.Valore = oldEl.GetAttributo(xx.Nome);
+                        e.SetAttributo(xx.Nome,oldEl.GetAttributo(xx.Nome));
+                        //xx.Valore = oldEl.GetAttributo(xx.Nome);
                     }
 
                 }
@@ -1771,7 +1772,8 @@ namespace dblu.Portale.Plugin.Docs.Services
                 {
                     if (xx.Duplicabile)
                     {
-                        xx.Valore = oldEl.GetAttributo(xx.Nome);
+                        e.SetAttributo(xx.Nome, oldEl.GetAttributo(xx.Nome));
+                        //xx.Valore = oldEl.GetAttributo(xx.Nome);
                     }
 
                 }
